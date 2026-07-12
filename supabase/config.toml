@@ -1,0 +1,10 @@
+project_id = "cjoayorozpsrcupbekkj"
+
+[functions.tutor-chat]
+verify_jwt = false
+
+[functions.gemini-live-token]
+verify_jwt = false
+
+[functions.tts-speak]
+verify_jwt = false

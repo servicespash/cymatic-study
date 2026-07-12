@@ -1,0 +1,147 @@
+[
+  {
+    "id": "q-m1-1a",
+    "topic_id": "m1-1",
+    "question": "What is the LCM of 12 and 18?",
+    "options": ["6", "36", "72", "24"],
+    "correct_index": 1,
+    "explanation": "12 = 2²×3, 18 = 2×3². LCM = 2²×3² = 36."
+  },
+  {
+    "id": "q-m1-1b",
+    "topic_id": "m1-1",
+    "question": "What is ¾ + ⅔?",
+    "options": ["7/12", "17/12", "5/7", "1"],
+    "correct_index": 1,
+    "explanation": "¾ + ⅔ = 9/12 + 8/12 = 17/12."
+  },
+  {
+    "id": "q-m1-1c",
+    "topic_id": "m1-1",
+    "question": "Using BODMAS, evaluate: 3 + 4 × 2",
+    "options": ["14", "11", "10", "9"],
+    "correct_index": 1,
+    "explanation": "Multiplication first: 4×2=8, then 3+8=11."
+  },
+  {
+    "id": "q-m1-1d",
+    "topic_id": "m1-1",
+    "question": "What is the HCF of 24 and 36?",
+    "options": ["6", "12", "18", "4"],
+    "correct_index": 1,
+    "explanation": "24 = 2³×3, 36 = 2²×3². HCF = 2²×3 = 12."
+  },
+  {
+    "id": "q-m1-1e",
+    "topic_id": "m1-1",
+    "question": "Express 60 as a product of prime factors.",
+    "options": ["2×3×10", "2²×3×5", "4×15", "2×30"],
+    "correct_index": 1,
+    "explanation": "60 = 2×30 = 2×2×15 = 2×2×3×5 = 2²×3×5."
+  },
+  {
+    "id": "q-m1-2a",
+    "topic_id": "m1-2",
+    "question": "Solve: 2x + 5 = 13",
+    "options": ["x = 3", "x = 4", "x = 9", "x = 6"],
+    "correct_index": 1,
+    "explanation": "2x = 13 - 5 = 8, x = 4."
+  },
+  {
+    "id": "q-m1-2b",
+    "topic_id": "m1-2",
+    "question": "Simplify: 3a + 2b + 4a - b",
+    "options": ["7a + b", "7a + 3b", "7ab", "7a - b"],
+    "correct_index": 0,
+    "explanation": "Combine like terms: (3a+4a)=7a, (2b-b)=b."
+  },
+  {
+    "id": "q-m1-2c",
+    "topic_id": "m1-2",
+    "question": "If y = 3, what is 2y² + 1?",
+    "options": ["19", "13", "7", "10"],
+    "correct_index": 0,
+    "explanation": "2(3²)+1 = 2(9)+1 = 19."
+  },
+  {
+    "id": "q-m1-2d",
+    "topic_id": "m1-2",
+    "question": "Solve: 5x - 3 = 2x + 9",
+    "options": ["x = 2", "x = 4", "x = 3", "x = 6"],
+    "correct_index": 1,
+    "explanation": "3x = 12, x = 4."
+  },
+  {
+    "id": "q-m1-2e",
+    "topic_id": "m1-2",
+    "question": "Expand: 3(2x + 5)",
+    "options": ["6x + 15", "6x + 5", "5x + 15", "6x + 8"],
+    "correct_index": 0,
+    "explanation": "3×2x = 6x, 3×5 = 15."
+  },
+  {
+    "id": "hard-logic-cells-001",
+    "topic_id": "intro-to-cells",
+    "question": "If a metabolic inhibitor completely blocks the function of the rough endoplasmic reticulum, which cellular metric drops first on the monitoring chart",
+    "options": [
+      "Adenosine triphosphate (ATP) synthesis rates",
+      "Post-translational modification and folding of secretable proteins",
+      "Unidirectional translocation of sodium-potassium active pumps",
+      "Lipid and steroid hormone macromolecule assembly"
+    ],
+    "correct_index": 1,
+    "explanation": "The rough endoplasmic reticulum is structurally studded with ribosomes and specializes in the synthesis and folding of proteins destined for secretion or membranes."
+  },
+  {
+    "id": "hard-logic-nutrition-001",
+    "topic_id": "human-nutrition",
+    "question": "A sample of chyme exiting the pyloric sphincter shows a completely unneutralized acidic pH. Which biochemical signal failed to execute in the duodenum?",
+    "options": [
+      "Amylase secretion from the salivary glands",
+      "Secretin stimulation of pancreatic bicarbonate ions",
+      "Pepsinogen activation within the gastric pits",
+      "Bile salt emulsification of lipids in the ileum"
+    ],
+    "correct_index": 1,
+    "explanation": "Secretin is triggered by acidic chyme entering the duodenum; it signals the pancreas to release bicarbonate ions to neutralize the acid. Failure results in a highly acidic state."
+  },
+  {
+    "id": "hard-logic-energetics-002",
+    "topic_id": "intro-to-cells",
+    "question": "A severe cellular pathology locks the F1 subunit of ATP synthase into a rigid configuration, preventing its physical rotation. Assuming the ETC continues pumping protons, what is the immediate kinetic consequence?",
+    "options": [
+      "The accumulation of protons in the intermembrane space causes a localized drop in pH, eventually halting upstream electron transport due to an overwhelming electrochemical gradient.",
+      "Protons reverse their trajectory and flow backward through Complex IV, forcing the immediate reduction of molecular oxygen to superoxide radicals.",
+      "Metabolic processing shifts entirely to the citric acid cycle, doubling the yield of substrate-level phosphorylation inside the matrix.",
+      "The outer mitochondrial membrane undergoes immediate lysis due to increased hydrostatic pressure from the trapped hydronium concentration."
+    ],
+    "correct_index": 0,
+    "explanation": "Without rotation of the F1 subunit, protons cannot return to the matrix. The resulting extreme electrochemical gradient creates an immense backward pressure that makes upstream electron transport thermodynamically unfavorable, halting the chain."
+  },
+  {
+    "id": "hard-logic-vascular-002",
+    "topic_id": "human-nutrition",
+    "question": "A patient exhibits a sudden constriction of an arteriole, narrowing its internal lumen radius precisely by half. If driving pressure remains constant, how does the volumetric flow rate change?",
+    "options": [
+      "The volumetric flow rate is reduced to one-half of its baseline value due to the linear relationship between pressure and diameter.",
+      "The volumetric flow rate remains unchanged because systemic homeostatic mechanisms immediately double fluid velocity.",
+      "The volumetric flow rate drops drastically to one-sixteenth of its original value.",
+      "The volumetric flow rate increases exponentially by a factor of four to clear the structural bottleneck."
+    ],
+    "correct_index": 2,
+    "explanation": "Poiseuille's Law dictates that fluid flow rate through a vessel is directly proportional to the radius raised to the fourth power. Reducing the radius by half cuts the volume down to (1/2)^4, which is 1/16th of the baseline rate."
+  },
+  {
+    "id": "hard-logic-renal-002",
+    "topic_id": "human-nutrition",
+    "question": "An experimental drug disables the active Na+/K+/2Cl- cotransporters in the thick ascending limb of the loop of Henle. What immediate failure occurs inside the renal medullary architecture?",
+    "options": [
+      "The descending limb becomes completely impermeable to water, leading to acute intracellular swelling of surrounding tissue.",
+      "The hypertonic medullary osmotic gradient is destroyed, rendering the collecting duct unable to reabsorb water regardless of ADH levels.",
+      "The Bowman's capsule suffers mechanical failure from an instantaneous surge in hydrostatic filtration pressure.",
+      "Glucose and amino acid filtration metrics jump to maximum levels due to secondary active transport saturation."
+    ],
+    "correct_index": 1,
+    "explanation": "Active ion pumping out of the ascending limb creates the hypertonic interstitial environment of the renal medulla. If this pump fails, the concentration gradient vanishes, removing the osmotic force needed to reabsorb water through the collecting ducts."
+  }
+]

@@ -1,0 +1,52 @@
+{
+  "hub_tools": {
+    "mathematics": [
+      {
+        "id": "math-quadratic-almighty",
+        "name": "Almighty Formula Solver",
+        "latex_formula": "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}",
+        "pro_logic": "Discriminant analysis (b²-4ac). If D < 0, calculates complex conjugate roots: x = α ± βi.",
+        "lab_tool_association": "None (Theoretical/Analytical)"
+      },
+      {
+        "id": "math-pythagoras-pro",
+        "name": "Pythagoras Extension",
+        "latex_formula": "c = \\sqrt{a^2 + b^2}",
+        "pro_logic": "Automatic unit normalisation; verifies if given sides form a Pythagorean Triple.",
+        "lab_tool_association": "Surveyor's Tape / Laser Rangefinder"
+      },
+      {
+        "id": "math-trig-ratios",
+        "name": "Trigonometric Ratios",
+        "latex_formula": "\\sin(\\theta) = \\frac{O}{H}, \\cos(\\theta) = \\frac{A}{H}, \\tan(\\theta) = \\frac{O}{A}",
+        "pro_logic": "Handles input in degrees/radians with dynamic conversion; computes inverse trigonometric functions (arc functions) for unknown angles.",
+        "lab_tool_association": "Theodolite / Sextant"
+      }
+    ],
+    "physics": [
+      {
+        "id": "phys-refraction",
+        "name": "Snell's Law of Refraction",
+        "latex_formula": "n_1 \\sin(\\theta_1) = n_2 \\sin(\\theta_2)",
+        "pro_logic": "Calculates Critical Angle (θ_c) for Total Internal Reflection when n1 > n2; auto-detects TIR conditions.",
+        "lab_tool_association": "Optical Bench & Glass Block"
+      },
+      {
+        "id": "phys-ohm-law",
+        "name": "Ohm's Law Analysis",
+        "latex_formula": "V = IR",
+        "pro_logic": "Automatic SI unit conversion (mA to A, kΩ to Ω); calculates power dissipation (P = IV).",
+        "lab_tool_association": "Digital Multimeter"
+      }
+    ],
+    "chemistry": [
+      {
+        "id": "chem-titration",
+        "name": "Titration Concentration",
+        "latex_formula": "C_a V_a = C_b V_b",
+        "pro_logic": "Handles stochiometric ratios (n_a/n_b) and molar mass calculations for titration accuracy.",
+        "lab_tool_association": "Burette & Pipette"
+      }
+    ]
+  }
+}

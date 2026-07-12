@@ -1,0 +1,60 @@
+# Latty's Cymatic Hub - Educational Platform
+# Uganda Secondary Curriculum Study Companion
+
+# Google
+User-agent: Googlebot
+Allow: /
+Allow: /courses
+Allow: /subjects
+Allow: /quizzes
+Allow: /notes
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /settings/
+Crawl-delay: 2
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Allow: /courses
+Allow: /subjects
+Allow: /quizzes
+Allow: /notes
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /settings/
+Crawl-delay: 2
+
+# Block known scraper bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+# Default rules
+User-agent: *
+Allow: /
+Allow: /courses
+Allow: /subjects
+Allow: /quizzes
+Allow: /notes
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /auth/
+Crawl-delay: 2
+
+# Sitemaps
+Sitemap: https://hub.cymatichub.xyz/sitemap.xml
+Sitemap: https://hub.cymatichub.xyz/sitemap-courses.xml
+Sitemap: https://hub.cymatichub.xyz/sitemap-quizzes.xml
+
+# Request rate
+Request-rate: 10/60
+
+# Host preference
+Host: https://hub.cymatichub.xyz

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "github": {
+      "enabled": true
+    },
+    "supabase": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-supabase"]
+    }
+  }
+}

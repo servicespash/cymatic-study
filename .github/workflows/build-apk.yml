@@ -1,0 +1,229 @@
+name: Build Production APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  JAVA_VERSION: "17"
+  GRADLE_VERSION: "8.0"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+          cache: "gradle"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android SDK licenses
+        run: |
+          echo "y" | $ANDROID_SDK_ROOT/tools/bin/sdkmanager --licenses || true
+          echo "y" | $ANDROID_SDK_ROOT/tools/bin/sdkmanager "build-tools;34.0.0" || true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web assets
+        run: |
+          npm run build
+          echo "Web assets built successfully to dist/client"
+
+      - name: Verify dist/client exists
+        run: |
+          if [ ! -d "dist/client" ]; then
+            echo "ERROR: dist/client directory not found!"
+            exit 1
+          fi
+          echo "✓ dist/client directory exists"
+          ls -la dist/client | head -20
+
+      - name: Run Capacitor sync
+        run: |
+          npx cap sync android
+          echo "✓ Capacitor sync completed"
+
+      - name: Build APK with Gradle
+        working-directory: ./android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleRelease \
+            --build-cache \
+            -x lint \
+            -PBUILD_VERSION=${{ github.run_number }} \
+            -PBUILD_COMMIT=${{ github.sha }}
+          echo "✓ APK build completed"
+
+      - name: Locate APK file
+        run: |
+          APK_PATH=$(find android -name "*.apk" -type f | grep release | head -1)
+          if [ -z "$APK_PATH" ]; then
+            echo "ERROR: APK file not found!"
+            ls -R android/app/build/outputs/
+            exit 1
+          fi
+          echo "APK_PATH=$APK_PATH" >> $GITHUB_ENV
+          echo "✓ APK located: $APK_PATH"
+
+      - name: Rename APK for distribution
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          COMMIT_SHORT=$(git rev-parse --short HEAD)
+          NEW_NAME="cymatichub-v${{ github.run_number }}-${COMMIT_SHORT}-${TIMESTAMP}.apk"
+          cp "${{ env.APK_PATH }}" "$NEW_NAME"
+          echo "APK_RELEASE_NAME=$NEW_NAME" >> $GITHUB_ENV
+          ls -lh "$NEW_NAME"
+
+      - name: Upload APK as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cymatichub-apk
+          path: cymatichub-v*.apk
+          retention-days: 90
+          compression-level: 0
+
+      - name: Create release info
+        run: |
+          cat > apk-release-info.json << EOF
+          {
+            "version": "${{ github.run_number }}",
+            "commit": "${{ github.sha }}",
+            "commit_short": "$(git rev-parse --short HEAD)",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "branch": "${{ github.ref_name }}",
+            "actor": "${{ github.actor }}",
+            "apk_name": "${{ env.APK_RELEASE_NAME }}"
+          }
+          EOF
+          cat apk-release-info.json
+
+      - name: Upload release info
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-info
+          path: apk-release-info.json
+          retention-days: 90
+
+      - name: Comment on commit
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const status = '${{ job.status }}';
+            const emoji = status === 'success' ? '✅' : '❌';
+
+            let comment = `${emoji} **APK Build ${status.toUpperCase()}**\n\n`;
+            comment += `- **Build #**: ${{ github.run_number }}\n`;
+            comment += `- **Commit**: \`${{ github.sha }}\`\n`;
+            comment += `- **Branch**: ${{ github.ref_name }}\n`;
+            comment += `- **Actor**: @${{ github.actor }}\n`;
+
+            if (status === 'success') {
+              comment += `- **APK**: ${{ env.APK_RELEASE_NAME }}\n`;
+              comment += `\n📥 Download from [Actions Artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n`;
+            } else {
+              comment += `\n⚠️ Check [build logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.\n`;
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number || null,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            }).catch(e => console.log('Note: Could not comment on commit', e.message));
+
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setFailed(`APK build failed. Check logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`);
+
+  publish-release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cymatichub-apk
+
+      - name: Download release info
+        uses: actions/download-artifact@v4
+        with:
+          name: release-info
+
+      - name: Display downloaded files
+        run: |
+          echo "Downloaded files:"
+          ls -lh *.apk *.json 2>/dev/null || echo "No files found"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: cymatichub-v*.apk
+          body_path: apk-release-info.json
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  download-instructions:
+    needs: build
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+      - name: Display download instructions
+        run: |
+          cat << 'EOF'
+
+          ✅ APK Build Complete!
+
+          📥 Download APK:
+          1. Go to the Actions tab in this repository
+          2. Find the latest "Build Production APK" workflow run
+          3. Scroll down to "Artifacts" section
+          4. Download "cymatichub-apk"
+
+          Or direct link (when GitHub Actions run completes):
+          https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          🚀 Installation:
+          - Install on Android: adb install cymatichub-v*.apk
+          - Or transfer to Android device and tap the APK file
+
+          📋 Build Info:
+          - Version: ${{ github.run_number }}
+          - Commit: ${{ github.sha }}
+          - Branch: ${{ github.ref_name }}
+          - Time: $(date)
+
+          EOF

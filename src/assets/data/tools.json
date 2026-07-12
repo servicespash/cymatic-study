@@ -1,0 +1,173 @@
+{
+  "tools": [
+    {
+      "id": "math-quadratic-solver",
+      "name": "Quadratic Solver",
+      "category": "math",
+      "description": "Solves quadratic equations including complex/imaginary roots.",
+      "uiComponent": "QuadraticSolver",
+      "content": {
+        "explanation": "Finds roots for ax² + bx + c = 0 using the quadratic formula.",
+        "formula": "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}",
+        "example": "x² + 5x + 6 = 0 → x = -2, -3",
+        "shortNotes": "Handles imaginary roots if discriminant < 0."
+      }
+    },
+    {
+      "id": "math-matrix-determinant",
+      "name": "3x3 Matrix Determinant",
+      "category": "math",
+      "description": "Calculates the determinant of a 3x3 matrix.",
+      "uiComponent": "Matrix3x3Determinant",
+      "content": {
+        "explanation": "Computes the scalar value representing the matrix's scaling factor.",
+        "formula": "|A| = a(ei − fh) − b(di − fg) + c(dh − eg)",
+        "example": "A = [[1,2,3],[0,4,5],[6,7,8]] → det(A) = -15",
+        "shortNotes": "A determinant of zero means the matrix is singular (not invertible)."
+      }
+    },
+    {
+      "id": "math-pythagoras",
+      "name": "Pythagoras Calculator",
+      "category": "math",
+      "description": "Calculates the unknown side of a right-angled triangle.",
+      "uiComponent": "PythagorasCalculator",
+      "content": {
+        "explanation": "Relates the three sides of a right triangle.",
+        "formula": "a^2 + b^2 = c^2",
+        "example": "a=3, b=4 → c=5",
+        "shortNotes": "Hypotenuse (c) is always the longest side."
+      }
+    },
+    {
+      "id": "math-trigonometry",
+      "name": "Trig Ratios & Inverse",
+      "category": "math",
+      "description": "Calculates Sin, Cos, Tan and their inverses.",
+      "uiComponent": "TrigonometryCalculator",
+      "content": {
+        "explanation": "Basic trigonometric functions for angles in degrees or radians.",
+        "formula": "SOH CAH TOA",
+        "example": "sin(30°) = 0.5",
+        "shortNotes": "Check your calculator mode (Deg/Rad)."
+      }
+    },
+    {
+      "id": "physics-suvat",
+      "name": "SUVAT Kinematics",
+      "category": "physics",
+      "description": "Equations of motion for constant acceleration.",
+      "uiComponent": "SUVATCalc",
+      "content": {
+        "explanation": "Solves for displacement, initial velocity, final velocity, acceleration, and time.",
+        "formula": "v = u + at, s = ut + \\frac{1}{2}at^2, v^2 = u^2 + 2as",
+        "example": "u=0, a=9.8, t=2 → v=19.6",
+        "shortNotes": "Only applicable when acceleration is constant."
+      }
+    },
+    {
+      "id": "physics-ohms-law",
+      "name": "Ohm's Law",
+      "category": "physics",
+      "description": "Relationship between Voltage, Current, and Resistance.",
+      "uiComponent": "OhmsLawCalc",
+      "content": {
+        "explanation": "Calculates V, I, or R in an electrical circuit.",
+        "formula": "V = I \\times R",
+        "example": "V=12V, R=6Ω → I=2A",
+        "shortNotes": "Valid for Ohmic conductors at constant temperature."
+      }
+    },
+    {
+      "id": "physics-momentum",
+      "name": "Momentum & Impulse",
+      "category": "physics",
+      "description": "Calculates momentum and changes in motion.",
+      "uiComponent": "MomentumCalc",
+      "content": {
+        "explanation": "Measures the quantity of motion an object has.",
+        "formula": "p = m \\times v",
+        "example": "m=2kg, v=5m/s → p=10kg\\cdot m/s",
+        "shortNotes": "Momentum is a vector quantity."
+      }
+    },
+    {
+      "id": "physics-snell",
+      "name": "Snell's Law (Refraction)",
+      "category": "physics",
+      "description": "Calculates light refraction between media.",
+      "uiComponent": "SnellsLawCalc",
+      "content": {
+        "explanation": "Relates angles of incidence and refraction.",
+        "formula": "n_1 \\sin \\theta_1 = n_2 \\sin \\theta_2",
+        "example": "n_1=1.0, \\theta_1=30, n_2=1.5 → \\theta_2=19.47",
+        "shortNotes": "Index of refraction for air/vacuum is approximately 1.0."
+      }
+    },
+    {
+      "id": "chemistry-mole-concept",
+      "name": "Mole Concept Solver",
+      "category": "chemistry",
+      "description": "Converts between mass, moles, and particles.",
+      "uiComponent": "MolesCalc",
+      "content": {
+        "explanation": "The fundamental unit for amount of substance.",
+        "formula": "n = \\frac{m}{M_r}",
+        "example": "m=44g, M_r(CO_2)=44 → n=1mol",
+        "shortNotes": "Avogadro's constant L = 6.02 \\times 10^{23} mol^{-1}."
+      }
+    },
+    {
+      "id": "chemistry-ph-calc",
+      "name": "pH & pOH Calculator",
+      "category": "chemistry",
+      "description": "Calculates acidity and basicity levels.",
+      "uiComponent": "PHCalc",
+      "content": {
+        "explanation": "Logarithmic scale for hydrogen ion concentration.",
+        "formula": "pH = -\\log[H^+]",
+        "example": "[H^+]=10^{-7} → pH=7",
+        "shortNotes": "Neutral pH is 7 at 298K."
+      }
+    },
+    {
+      "id": "chemistry-periodic-trends",
+      "name": "Periodic Trends",
+      "category": "chemistry",
+      "description": "Explains patterns in the periodic table.",
+      "uiComponent": "PeriodicTrends",
+      "content": {
+        "explanation": "Trends like electronegativity, radius, and ionization energy.",
+        "formula": "Trends across periods and groups.",
+        "example": "Fluorine is the most electronegative element.",
+        "shortNotes": "Trends are driven by effective nuclear charge and shielding."
+      }
+    },
+    {
+      "id": "biology-punnett",
+      "name": "Punnett Square",
+      "category": "biology",
+      "description": "Predicts offspring genotype ratios.",
+      "uiComponent": "PunnettSquare",
+      "content": {
+        "explanation": "Mendelian inheritance patterns for monohybrid crosses.",
+        "formula": "Genotype Cross Grid",
+        "example": "Tt \\times Tt → 1TT:2Tt:1tt",
+        "shortNotes": "Assumes independent assortment."
+      }
+    },
+    {
+      "id": "biology-magnification",
+      "name": "Microscope Magnification",
+      "category": "biology",
+      "description": "Calculates magnification and actual size.",
+      "uiComponent": "MagnificationCalc",
+      "content": {
+        "explanation": "Relationship between image size and object size.",
+        "formula": "M = \\frac{I}{A}",
+        "example": "I=10mm, A=0.1mm → M=\\times 100",
+        "shortNotes": "Ensure I and A are in the same units."
+      }
+    }
+  ]
+}

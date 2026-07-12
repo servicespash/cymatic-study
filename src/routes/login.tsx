@@ -1,0 +1,366 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState, type FormEvent } from "react";
+import {
+  Loader2,
+  LogIn,
+  Sparkles,
+  Building,
+  User,
+  School,
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  Gauge,
+  ArrowRight,
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
+import { useAuth } from "@/lib/auth-context";
+import { toast } from "sonner";
+
+export const Route = createFileRoute("/login")({
+  head: () => ({ meta: [{ title: "Sign in — Cymatic Hub" }] }),
+  component: LoginPage,
+});
+
+type LoginMode = "init" | "institutional" | "independent";
+type Role = string;
+
+const ROLES = {
+  institutional: ["School Organization/Admin", "Teacher", "Student"],
+  independent: ["Independent Student", "Independent Teacher/Private Tutor", "Independent Parent"],
+};
+
+function LoginPage() {
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
+
+  const [mode, setMode] = useState<LoginMode>("init");
+  const [role, setRole] = useState<Role | null>(null);
+  const [schoolId, setSchoolId] = useState("");
+
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!loading && user) navigate({ to: "/dashboard" });
+  }, [user, loading, navigate]);
+
+  const saveToSession = () => {
+    sessionStorage.setItem("login_mode", mode);
+    if (role) sessionStorage.setItem("login_role", role);
+    if (schoolId) sessionStorage.setItem("login_school_id", schoolId);
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (mode === "institutional" && !role) {
+      setError("Please select a role.");
+      return;
+    }
+    if (mode === "independent" && !role) {
+      setError("Please select a role.");
+      return;
+    }
+
+    setError(null);
+    setSubmitting(true);
+    saveToSession();
+
+    const cleanIdentifier = identifier.trim();
+    let emailToUse = cleanIdentifier;
+
+    // Resolve identifier if it's not an email
+    if (!cleanIdentifier.includes("@")) {
+      try {
+        const { data: resolution, error: resolveError } = await supabase.rpc("resolve_identifier", {
+          identifier: cleanIdentifier,
+        });
+
+        if (resolveError) {
+          console.error("Resolution RPC error:", resolveError);
+          if (resolveError.message?.includes("not found")) {
+            setError(
+              "Auth System Error: Resolution function missing. Please apply SQL migrations in Supabase Dashboard.",
+            );
+          } else {
+            setError(`Account resolution failed: ${resolveError.message}`);
+          }
+          setSubmitting(false);
+          return;
+        }
+
+        if (!resolution) {
+          setError("No account found with that username or phone. Use your email to sign in.");
+          setSubmitting(false);
+          return;
+        }
+
+        const res = resolution as { type: string; email?: string };
+
+        if (typeof res === "string") {
+          emailToUse = res;
+        } else if (res.type === "email") {
+          emailToUse = res.email || "";
+        } else if (res.type === "organization") {
+          setError(
+            "That looks like a School ID, not a login username. Please sign in with the associated email address.",
+          );
+          setSubmitting(false);
+          return;
+        } else {
+          setError("No account found with that username or phone. Use your email to sign in.");
+          setSubmitting(false);
+          return;
+        }
+      } catch (err: any) {
+        console.error("Resolution unexpected error:", err);
+        setError("An unexpected error occurred. Please use your email to sign in directly.");
+        setSubmitting(false);
+        return;
+      }
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: emailToUse,
+      password: password.trim(),
+    });
+
+    setSubmitting(false);
+
+    if (error) {
+      if (error.message.includes("Invalid login credentials")) {
+        setError(
+          "Invalid email, username or password. Please check your credentials and try again.",
+        );
+      } else if (error.message.includes("Email not confirmed")) {
+        setError("Your email address has not been confirmed yet. Please check your inbox.");
+      } else {
+        setError(error.message);
+      }
+    } else {
+      navigate({ to: "/dashboard" });
+    }
+  };
+
+  const handleOAuth = async (provider: "google" | "apple") => {
+    saveToSession();
+    setError(null);
+    const result = await lovable.auth.signInWithOAuth(provider, {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) {
+      setError(result.error.message ?? "Sign-in failed. Please try again.");
+      return;
+    }
+    if (result.redirected) return;
+    navigate({ to: "/dashboard" });
+  };
+
+  const handleTriggerMockSigning = () => {
+    localStorage.setItem("mock_preview_active", "true");
+    localStorage.setItem("mock_preview_role", "student");
+    localStorage.setItem("mock_preview_start", Date.now().toString());
+    window.dispatchEvent(new Event("storage"));
+    toast.success("🔑 5-Minute Guest Preview Initiated!", {
+      description: "Enjoy full app functionality, dashboards, and quizzes as a guest.",
+      duration: 5000,
+    });
+    setTimeout(() => {
+      navigate({ to: "/dashboard" });
+    }, 500);
+  };
+
+  if (mode === "init") {
+    return (
+      <div className="mx-auto flex min-h-[calc(100vh-9rem)] max-w-md items-center px-4 py-10 animate-fade-in">
+        <div className="w-full rounded-3xl border border-border bg-zinc-950 p-8 shadow-2xl relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-28 h-28 bg-cyan-500/10 rounded-full blur-2xl" />
+          <div className="absolute -bottom-10 -left-10 w-28 h-28 bg-indigo-500/10 rounded-full blur-2xl" />
+
+          <h1 className="text-2xl font-black mb-1 text-white tracking-tight">Choose Access Mode</h1>
+          <p className="text-xs text-zinc-500 mb-6">
+            Master Uganda's new NCDC curriculum with active study
+          </p>
+
+          <div className="grid gap-4">
+            <button
+              onClick={() => {
+                setMode("institutional");
+                setRole(null);
+              }}
+              className="p-5 rounded-2xl border border-zinc-800 hover:border-cyan-500/60 bg-zinc-900/60 text-left transition group"
+            >
+              <Building className="h-6 w-6 text-cyan-400 mb-2 group-hover:scale-105 transition-transform" />
+              <h3 className="font-bold text-white text-sm">Institutional Connection</h3>
+              <p className="text-xs text-zinc-400 mt-1">
+                For students, teachers, and admins part of a registered school.
+              </p>
+            </button>
+
+            <button
+              onClick={() => {
+                setMode("independent");
+                setRole(null);
+              }}
+              className="p-5 rounded-2xl border border-zinc-800 hover:border-indigo-500/60 bg-zinc-900/60 text-left transition group"
+            >
+              <User className="h-6 w-6 text-indigo-400 mb-2 group-hover:scale-105 transition-transform" />
+              <h3 className="font-bold text-white text-sm">Independent / Solo Mode</h3>
+              <p className="text-xs text-zinc-400 mt-1">
+                For self-directed scholars and single-user study environments.
+              </p>
+            </button>
+
+            <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                <div className="w-full border-t border-zinc-850" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-zinc-950 px-2 text-zinc-500 font-bold tracking-wider font-mono">
+                  Instant Preview
+                </span>
+              </div>
+            </div>
+
+            {/* Mock sign-in button */}
+            <button
+              onClick={handleTriggerMockSigning}
+              className="p-5 rounded-2xl border-2 border-dashed border-cyan-500/30 hover:border-cyan-500 bg-cyan-950/20 hover:bg-cyan-950/40 text-left transition-all group shadow-lg"
+            >
+              <div className="flex items-center justify-between">
+                <Sparkles className="h-6 w-6 text-yellow-400 mb-2 animate-pulse" />
+                <span className="text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  Free Pass
+                </span>
+              </div>
+              <h3 className="font-extrabold text-white text-sm flex items-center gap-1.5">
+                <span>5-Minute Guest Preview</span>
+                <ArrowRight className="h-3.5 w-3.5 text-cyan-400 group-hover:translate-x-1 transition-transform" />
+              </h3>
+              <p className="text-xs text-cyan-200/70 mt-1">
+                Access full features instantly without password setup. Re-routes to registration
+                screen after 5 minutes.
+              </p>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto flex min-h-[calc(100vh-9rem)] max-w-md items-center px-4 py-10">
+      <div className="w-full animate-fade-in-up rounded-3xl border border-border bg-card p-8 shadow-card">
+        <button
+          onClick={() => setMode("init")}
+          className="flex items-center gap-1 text-xs text-muted-foreground mb-6 hover:text-primary"
+        >
+          <ArrowLeft className="h-3 w-3" /> Back
+        </button>
+
+        <div className="mb-6 space-y-4">
+          <div className="rounded-3xl border border-primary/20 bg-primary/5 p-4 text-sm">
+            <p className="font-semibold text-primary">Quick sign in with Google or Apple</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Use social login to avoid extra password or email verification friction and get into
+              the Hub faster.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => handleOAuth("google")}
+              className="border p-3 rounded-lg text-sm font-semibold hover:bg-muted"
+            >
+              Google
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOAuth("apple")}
+              className="border p-3 rounded-lg text-sm font-semibold hover:bg-muted"
+            >
+              Apple
+            </button>
+          </div>
+          <div className="grid grid-cols-1 gap-2">
+            {ROLES[mode as "institutional" | "independent"].map((r) => (
+              <button
+                key={r}
+                onClick={() => setRole(r)}
+                className={`p-3 rounded-xl border text-sm font-bold ${role === r ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"}`}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+          {mode === "institutional" && (
+            <div>
+              <input
+                value={schoolId}
+                onChange={(e) => setSchoolId(e.target.value.toUpperCase())}
+                placeholder="Enter School ID (Optional)"
+                className="w-full rounded-lg border p-3 text-sm font-mono tracking-wider"
+              />
+              <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+                Add your institution's <span className="font-semibold text-primary">School ID</span>{" "}
+                to keep your account in sync with your school's records. Skip it if you don't have
+                one yet — you can link it later from Settings.
+              </p>
+            </div>
+          )}
+          {mode === "independent" && (
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3 text-sm text-primary">
+              Independent Learning Space selected. You do not need a School ID to continue.
+            </div>
+          )}
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            required
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            className="w-full rounded-lg border p-3 text-sm"
+            placeholder="Email, username or phone"
+          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-lg border p-3 text-sm pr-10"
+              placeholder="Password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground"
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+          {error && <p className="text-xs text-destructive">{error}</p>}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full bg-primary text-primary-foreground p-3 rounded-lg font-bold"
+          >
+            Sign in
+          </button>
+        </form>
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          Don't have an account?{" "}
+          <Link to="/signup" className="font-semibold text-primary hover:underline">
+            Create an account
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
