@@ -1,5 +1,5 @@
 export const BRAND = {
-  name: "Latty's Cymatic Hub",
+  name: "Latty's Cymatic Study",
   partner: "Pash Media",
   tagline: "Educate. Together we elevate. One love ✌️",
   flag: "🇺🇬",
@@ -18,6 +18,15 @@ export const subjectLabels: Record<string, string> = {
   history: "History",
   english: "English Language",
   entrepreneurship: "Entrepreneurship",
+  economics: "Economics",
+  ict: "ICT (Information & Communications Tech)",
+  divinity: "Divinity",
+  swahili: "Kiswahili",
+  luganda: "Luganda",
+  literature: "Literature in English",
+  agriculture: "Agriculture",
+  art: "Fine Art",
+  cre: "Christian Religious Education",
 };
 
 export const subjectGradients: Record<string, any> = {
@@ -29,6 +38,15 @@ export const subjectGradients: Record<string, any> = {
   history: "physics",
   english: "math",
   entrepreneurship: "chemistry",
+  economics: "math",
+  ict: "chemistry",
+  divinity: "physics",
+  swahili: "biology",
+  luganda: "history",
+  literature: "english",
+  agriculture: "biology",
+  art: "chemistry",
+  cre: "geography",
 };
 
 export const classLevels = [

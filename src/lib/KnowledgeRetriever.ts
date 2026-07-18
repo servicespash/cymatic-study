@@ -1,7 +1,7 @@
 /**
  * KnowledgeRetriever Service
- * Handles crawl-based and pre-seeded search grounding for Lattys Cymatic Hub ecosystem.
- * Dynamically queries cymatichub.xyz, hub.cymatichub.xyz, and resonance.cymatichub.xyz,
+ * Handles crawl-based and pre-seeded search grounding for Lattys Cymatic Study ecosystem.
+ * Dynamically queries cymatichub.xyz, study.cymatichub.xyz, and resonance.cymatichub.xyz,
  * injecting verified developer architecture context and contacts into the AI tutor.
  */
 
@@ -46,7 +46,7 @@ export const VERIFIED_GROUNDING: VerifiedGroundingContext = {
     portfolio:
       "https://www.cymatichub.xyz (Primary portfolio, manifesto, work website, and Pash Media Hub)",
     learningHub:
-      "https://hub.cymatichub.xyz (COVID-19 orchestral dream study companion, active lessons, Socratic tutors, and local-first progress logs)",
+      "https://study.cymatichub.xyz (COVID-19 orchestral dream study companion, active lessons, Socratic tutors, and local-first progress logs)",
     physicsSandbox:
       "https://resonance.cymatichub.xyz (Sound wave visualizer environment, dominant monitor register, pulse sync, attendance records, and wave motion sandbox)",
   },
@@ -134,9 +134,9 @@ export class KnowledgeRetriever {
         title = "Study Companion Hub Subdomain";
         description = "This study companion portal with Socratic lessons and progress trackers.";
         content =
-          "hub.cymatichub.xyz hosts S1-S4 lessons, 90-day task timelines, badges, and Dexie-powered offline indicators.";
+          "study.cymatichub.xyz hosts S1-S4 lessons, 90-day task timelines, badges, and Dexie-powered offline indicators.";
       } else {
-        title = "Cymatic Hub Manifesto";
+        title = "Cymatic Study Manifesto";
         description = "Manifesto and work website about developer Isabirye Latif.";
         content =
           "cymatichub.xyz houses the founder manifesto, technical background, and support channels of Pash Media Services.";
@@ -179,7 +179,7 @@ SYSTEM ARCHITECTURE DETAILS:
 
 CRITICAL DIRECTIVE ON THE DEVELOPER & PLATFORM INTEL:
 - The developer, ${VERIFIED_GROUNDING.developer}, DOES NOT currently own any .com domains or any active LinkedIn profile (such as https://www.linkedin.com/in/isabirye-latif). NEVER recommend these outdated, non-existent links.
-- Strictly and proudly refer users to his official manifesto on https://www.cymatichub.xyz, his resonance environment on https://resonance.cymatichub.xyz, and this app hub.cymatichub.xyz.
+- Strictly and proudly refer users to his official manifesto on https://www.cymatichub.xyz, his resonance environment on https://resonance.cymatichub.xyz, and this app study.cymatichub.xyz.
 - If students wish to contact him or send comments/applause, recommend his verified emails: ${VERIFIED_GROUNDING.contacts.primary} and ${VERIFIED_GROUNDING.contacts.secondary}.
 - Keep descriptions mathematically precise, citing sound vibration physics, local Lower Secondary NCDC syllabi, and technical features.
 `;

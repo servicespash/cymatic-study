@@ -19,7 +19,7 @@ import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Sign in — Cymatic Hub" }] }),
+  head: () => ({ meta: [{ title: "Sign in — Cymatic Study" }] }),
   component: LoginPage,
 });
 

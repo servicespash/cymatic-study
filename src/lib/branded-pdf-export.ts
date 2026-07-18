@@ -18,13 +18,14 @@ export interface BrandedPdfOptions {
   isBlackAndWhite?: boolean;
   paperSize?: "a4" | "letter";
   language?: "en" | "lg" | "sw"; // English, Luganda, Swahili
+  showAnswers?: boolean;
 }
 
 // Language translations helper
 const translations = {
   en: {
     verifyHeader: "VERIFIED ACADEMIC DOCUMENT",
-    originated: "Originated from: Lattys Cymatic Hub",
+    originated: "Originated from: Lattys Cymatic Study",
     holder: "Document Holder",
     school: "School / Center",
     date: "Generated Date",
@@ -37,11 +38,11 @@ const translations = {
     study_chart: "Study Chart",
     lesson_notes: "Lesson Notes",
     quiz: "Quiz assessment worksheet",
-    scanPrompt: "Scan QR code to verify authenticity online at hub.cymatichub.xyz",
+    scanPrompt: "Scan QR code to verify authenticity online at study.cymatichub.xyz",
   },
   lg: {
     verifyHeader: "KIWANDIIKO EKIKASIDDWA EBY'OKUSOMA",
-    originated: "Kizze okuva mu: Lattys Cymatic Hub",
+    originated: "Kizze okuva mu: Lattys Cymatic Study",
     holder: "Nnannyini Kiwandiiko",
     school: "Essomero / Kituo",
     date: "Olunaku Lwe Kyakolebwa",
@@ -54,11 +55,11 @@ const translations = {
     study_chart: "Akakiiko K'okusoma",
     lesson_notes: "Ebiwandiiko eby'Okusoma",
     quiz: "Ebibuuzo n'Eby'okwegezaamu",
-    scanPrompt: "Kuba QR koodi eno okukakasa obutuufu ku hub.cymatichub.xyz",
+    scanPrompt: "Kuba QR koodi eno okukakasa obutuufu ku study.cymatichub.xyz",
   },
   sw: {
     verifyHeader: "HATI YA KIELIMU ILIYOTHIBITISHWA",
-    originated: "Imetolewa na: Lattys Cymatic Hub",
+    originated: "Imetolewa na: Lattys Cymatic Study",
     holder: "Mmiliki wa Hati",
     school: "Shule / Kituo",
     date: "Tarehe Iliyoundwa",
@@ -71,12 +72,12 @@ const translations = {
     study_chart: "Hati ya Masomo",
     lesson_notes: "Hati ya Masomo",
     quiz: "Mtihani na Tathmini ya Mazoezi",
-    scanPrompt: "Changanua msimbo wa QR ili kuthibitisha mtandaoni kupitia hub.cymatichub.xyz",
+    scanPrompt: "Changanua msimbo wa QR ili kuthibitisha mtandaoni kupitia study.cymatichub.xyz",
   },
 };
 
 /**
- * Draws a gorgeous vector icon for Cymatic Hub in jsPDF
+ * Draws a gorgeous vector icon for Cymatic Study in jsPDF
  */
 function drawVectorAppIcon(doc: jsPDF, x: number, y: number, isBlackAndWhite = false) {
   const primaryColor = isBlackAndWhite ? [60, 60, 60] : [99, 102, 241]; // Indigo or dark gray
@@ -284,15 +285,19 @@ export async function exportToBrandedPdf(opts: BrandedPdfOptions) {
               y += 5;
             }
           }
-          if (y > h - 40) {
-            doc.addPage();
-            y = margin;
+          if (opts.showAnswers) {
+            if (y > h - 40) {
+              doc.addPage();
+              y = margin;
+            }
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(accentText[0], accentText[1], accentText[2]);
+            doc.text(`   Answer: ${quiz.a}`, margin, y);
+            doc.setTextColor(31, 41, 55);
+            y += 8;
+          } else {
+            y += 5; // Just some spacing between questions if no answer
           }
-          doc.setFont("helvetica", "bold");
-          doc.setTextColor(accentText[0], accentText[1], accentText[2]);
-          doc.text(`   Answer: ${quiz.a}`, margin, y);
-          doc.setTextColor(31, 41, 55);
-          y += 8;
           idx++;
         }
       }

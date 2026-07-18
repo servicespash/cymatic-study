@@ -1,5 +1,4 @@
-import { google } from "@ai-sdk/google";
-import { streamText } from "ai";
+import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 import { type ChatMessage, type TutorRequest } from "../types/tutor-api";
 import { getEnrichedGroundingPrompt } from "../lib/developer-grounding";
@@ -19,8 +18,24 @@ function getSupabaseRouteClient() {
   return createClient(supabaseUrl, supabaseKey);
 }
 
-function getTutorModel() {
-  return google("gemini-2.5-flash");
+function getGoogleGenAIClient() {
+  const apiKey =
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_GENERATIVE_AI_KEY ||
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("Missing Gemini API Key");
+  }
+
+  return new GoogleGenAI({
+    apiKey,
+    httpOptions: {
+      headers: {
+        "User-Agent": "aistudio-build",
+      },
+    },
+  });
 }
 
 function isOffTopic(message: string): boolean {
@@ -28,7 +43,7 @@ function isOffTopic(message: string): boolean {
   return keywords.some((k) => message.toLowerCase().includes(k));
 }
 
-const SYSTEM_PROMPT = `You are a supportive, wise, and highly practical academic tutor inside the Lattys Cymatic Hub study companion platform.
+const SYSTEM_PROMPT = `You are a supportive, wise, and highly practical academic tutor inside the Lattys Cymatic Study study companion platform.
 
 CRITICAL IDENTITY & CONTEXT RULES:
 1. Address the student in warm, conversational Ugandan English. Keep the dialogue feeling warm, respectful, and encouraging.
@@ -48,7 +63,7 @@ CREATOR & SITE ARCHITECTURE AWARENESS:
 - Note: He DOES NOT currently own any .com domains or active LinkedIn profiles (such as isabirye-latif). NEVER refer students to non-existent or inactive .com/LinkedIn pages.
 - You are aware of his verified digital ecosystems:
   * cymatichub.xyz: His primary manifesto and work website.
-  * hub.cymatichub.xyz: This exact COVID-19 orchestral dream study companion app!
+  * study.cymatichub.xyz: This exact COVID-19 orchestral dream study companion app!
   * resonance.cymatichub.xyz: A specialized sound wave physics environment, dominant monitor register, pulse sync, attendance logger, and peer science comms hub.
 - Verified safe contacts:
   * Primary support: cymatichubevolution@gmail.com
@@ -56,33 +71,60 @@ CREATOR & SITE ARCHITECTURE AWARENESS:
 - If the user asks about the developer, how to contact him, or who made this app, proudly and accurately provide information about Isabirye Latif, recommend his verified emails, and guide them to explore his manifesto on cymatichub.xyz and resonance.cymatichub.xyz!`;
 
 export async function handleTutorRequest(request: Request) {
-  const supabase = getSupabaseRouteClient();
+  let user: any = null;
+  let profile: any = null;
+  let progress: any = null;
 
-  // 1. Authenticate
-  const authHeader = request.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-  }
-  const token = authHeader.split(" ")[1];
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser(token);
-  if (error || !user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+  // 1. Authenticate (fail-safe)
+  try {
+    const authHeader = request.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      const supabase = getSupabaseRouteClient();
+      const {
+        data: { user: authUser },
+        error,
+      } = await supabase.auth.getUser(token);
+
+      if (!error && authUser) {
+        user = authUser;
+
+        // Fetch User Profile
+        const { data: userProfile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        profile = userProfile;
+      }
+    }
+  } catch (err) {
+    console.warn("[Tutor Server] Supabase auth lookup bypassed/unavailable:", err);
   }
 
-  const {
-    messages,
-    userName = "learner",
-    subject = "general",
-  } = (await request.json()) as TutorRequest;
+  const body = (await request.json().catch(() => ({}))) as TutorRequest;
+  const { messages, userName = profile?.full_name || "learner", subject = "general" } = body;
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return new Response(JSON.stringify({ error: "No messages provided" }), { status: 400 });
   }
 
-  // 2. Sanitize: Prevent system role injection
+  // 2. Fetch Curriculum Progress (fail-safe)
+  if (user) {
+    try {
+      const supabase = getSupabaseRouteClient();
+      const { data: userProgress } = await supabase
+        .from("curriculum_progress")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("subject", subject);
+      progress = userProgress;
+    } catch (e) {
+      console.warn("[Tutor Server] Progress fetch error:", e);
+    }
+  }
+
+  // 3. Sanitize: Prevent system role injection
   const sanitizedMessages: ChatMessage[] = messages
     .filter((m): m is ChatMessage => m.role === "user" || m.role === "assistant")
     .map((m) => ({
@@ -94,28 +136,57 @@ export async function handleTutorRequest(request: Request) {
   const shouldEmitOfftopic = isOffTopic(lastUserMessage);
   const groundingPrompt = getEnrichedGroundingPrompt(lastUserMessage);
 
-  const userContext = `\nYou are chatting with ${userName} on the subject: ${subject}. Ensure your replies are dynamically tailored to their progress in ${subject}, addressing them by name if appropriate.\n`;
-  const systemPrompt = SYSTEM_PROMPT + userContext + (groundingPrompt || "");
+  const dynamicContext = `
+You are an academic mentor for ${userName}.
+Current subject: ${subject}.
+Student profile: ${JSON.stringify(profile)}.
+Current progress: ${JSON.stringify(progress)}.
 
-  const result = streamText({
-    model: getTutorModel(),
-    system: systemPrompt,
-    messages: sanitizedMessages,
-    temperature: 0.7,
-    maxTokens: 1024,
+Your task is to provide personalized, Socratic guidance based on this specific student data. Adapt your pedagogical style and depth to their progress level. If the student asks for guidance, feel free to suggest curriculum upgrades or next topics based on their progress.
+`;
+
+  const systemPrompt = SYSTEM_PROMPT + "\n" + dynamicContext + (groundingPrompt || "");
+
+  const aiClient = getGoogleGenAIClient();
+  // Format previous messages for context
+  const historyText = sanitizedMessages
+    .slice(0, -1)
+    .map((m) => `${m.role === "user" ? "Student" : "Tutor"}: ${m.content}`)
+    .join("\n\n");
+
+  const currentMessage = sanitizedMessages[sanitizedMessages.length - 1]?.content || "";
+
+  const finalPrompt = historyText
+    ? `Below is the conversation history so far. Review it carefully, then respond to the Student's latest query at the end.\n\n=== CONVERSATION HISTORY ===\n${historyText}\n============================\n\nStudent's latest query: ${currentMessage}`
+    : currentMessage;
+
+  const responseStreamPromise = aiClient.models.generateContentStream({
+    model: "gemini-3.5-flash",
+    contents: finalPrompt,
+    config: {
+      systemInstruction: systemPrompt,
+    },
   });
 
   return new Response(
     (async function* () {
-      const response = await result;
-
       if (shouldEmitOfftopic) {
-        yield `data: ${JSON.stringify({ choice: { delta: { content: "<offtopic/>" } } })}\n\n`;
+        yield `data: ${JSON.stringify({ choices: [{ delta: { content: "<offtopic/>" } }] })}\n\n`;
       }
 
-      for await (const chunk of response.textStream) {
+      try {
+        const responseStream = await responseStreamPromise;
+        for await (const chunk of responseStream) {
+          if (chunk.text) {
+            yield `data: ${JSON.stringify({
+              choices: [{ delta: { content: chunk.text } }],
+            })}\n\n`;
+          }
+        }
+      } catch (err: any) {
+        console.error("[Tutor Server] Error streaming from Gemini API:", err);
         yield `data: ${JSON.stringify({
-          choices: [{ delta: { content: chunk } }],
+          error: { message: err.message || "Gemini API error" },
         })}\n\n`;
       }
 

@@ -157,10 +157,7 @@ export const VisionLiveSession: React.FC<{
           autoPlay
           playsInline
           muted
-          className={cn(
-            "h-full w-full object-cover",
-            facingMode === "user" ? "scale-x-100" : "", // Removed scale-x(-1) to prevent mirroring
-          )}
+          className="h-full w-full object-cover scale-x-100"
         />
       ) : (
         <div className="flex h-full w-full items-center justify-center bg-gray-900">

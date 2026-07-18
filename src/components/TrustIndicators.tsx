@@ -10,7 +10,7 @@ export function TrustIndicators() {
       <TrustBadge
         icon="🏫"
         label="Verified Educational"
-        tooltip="Latty's Cymatic Hub is a verified educational platform aligned with Uganda Secondary Curriculum"
+        tooltip="Latty's Cymatic Study is a verified educational platform aligned with Uganda Secondary Curriculum"
       />
 
       {/* SSL/Security */}
@@ -76,7 +76,7 @@ export function TrustFooter() {
     <div className="border-t border-border/60 px-4 py-6 text-center text-xs text-muted-foreground bg-gradient-to-r from-blue-500/5 to-purple-500/5">
       <div className="space-y-2 mb-3">
         <p>
-          Latty&apos;s Cymatic Hub is committed to educational excellence and student safety. Our
+          Latty&apos;s Cymatic Study is committed to educational excellence and student safety. Our
           platform is audited for AI safety and curriculum compliance.
         </p>
         <p className="text-xs">

@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Lattys Cymatic Hub — Dual-Theme Design System
+ * Lattys Cymatic Study — Dual-Theme Design System
  * "Deep Space" (dark): vibrant cyan + electric accents
  * "Academic Paper" (light): egg white + soft amber, paper-feel
  * All colors are oklch. Add new tokens here, never inline in components.
@@ -73,43 +73,43 @@
 .dark {
   --radius: 0.875rem;
 
-  --background: oklch(0.16 0.04 255);
-  --foreground: oklch(0.98 0.005 240);
+  --background: oklch(0.06 0.01 255); /* Deep stark space black */
+  --foreground: oklch(0.99 0.005 240); /* Radiant paper white text */
 
-  --card: oklch(0.22 0.05 255);
-  --card-foreground: oklch(0.98 0.005 240);
+  --card: oklch(0.11 0.02 255); /* Sharp pitch dark card background */
+  --card-foreground: oklch(0.99 0.005 240);
 
-  --popover: oklch(0.22 0.05 255);
-  --popover-foreground: oklch(0.98 0.005 240);
+  --popover: oklch(0.11 0.02 255);
+  --popover-foreground: oklch(0.99 0.005 240);
 
-  /* Vibrant cyan primary — close to #00F2FF */
-  --primary: oklch(0.85 0.18 200);
-  --primary-foreground: oklch(0.14 0.04 255);
-  --primary-glow: oklch(0.92 0.2 195);
+  /* Radiant high-contrast cyan primary */
+  --primary: oklch(0.88 0.15 195);
+  --primary-foreground: oklch(0.06 0.01 255);
+  --primary-glow: oklch(0.94 0.18 190);
 
-  --secondary: oklch(0.82 0.18 78);
-  --secondary-foreground: oklch(0.16 0.04 60);
+  --secondary: oklch(0.85 0.16 78);
+  --secondary-foreground: oklch(0.08 0.02 60);
 
-  --muted: oklch(0.27 0.04 255);
-  --muted-foreground: oklch(0.78 0.02 245);
+  --muted: oklch(0.16 0.02 255);
+  --muted-foreground: oklch(0.88 0.01 245); /* Bright readable gray */
 
-  --accent: oklch(0.72 0.22 295);
+  --accent: oklch(0.78 0.2 295);
   --accent-foreground: oklch(0.99 0.005 295);
 
   --destructive: oklch(0.68 0.24 25);
   --destructive-foreground: oklch(0.99 0.005 0);
 
-  --success: oklch(0.78 0.18 150);
-  --success-foreground: oklch(0.14 0.03 150);
+  --success: oklch(0.82 0.16 150);
+  --success-foreground: oklch(0.06 0.01 150);
 
-  --border: oklch(0.34 0.05 255);
-  --input: oklch(0.27 0.04 255);
-  --ring: oklch(0.85 0.18 200);
+  --border: oklch(0.22 0.02 255); /* High contrast border line */
+  --input: oklch(0.16 0.02 255);
+  --ring: oklch(0.88 0.15 195);
 
-  --math: oklch(0.78 0.2 245);
-  --physics: oklch(0.82 0.18 75);
-  --chemistry: oklch(0.78 0.2 150);
-  --biology: oklch(0.74 0.24 350);
+  --math: oklch(0.85 0.18 245);
+  --physics: oklch(0.88 0.16 75);
+  --chemistry: oklch(0.85 0.16 150);
+  --biology: oklch(0.82 0.2 350);
 
   --chart-1: var(--math);
   --chart-2: var(--physics);
@@ -117,29 +117,29 @@
   --chart-4: var(--biology);
   --chart-5: var(--accent);
 
-  --sidebar: oklch(0.18 0.04 255);
-  --sidebar-foreground: oklch(0.98 0.005 240);
+  --sidebar: oklch(0.08 0.01 255);
+  --sidebar-foreground: oklch(0.99 0.005 240);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: oklch(0.27 0.04 255);
-  --sidebar-accent-foreground: oklch(0.98 0.005 240);
-  --sidebar-border: oklch(0.34 0.05 255);
+  --sidebar-accent: oklch(0.16 0.02 255);
+  --sidebar-accent-foreground: oklch(0.99 0.005 240);
+  --sidebar-border: oklch(0.22 0.02 255);
   --sidebar-ring: var(--primary);
 
   --gradient-hero: linear-gradient(
     135deg,
-    color-mix(in oklab, var(--primary) 90%, transparent) 0%,
-    color-mix(in oklab, var(--accent) 80%, transparent) 100%
+    color-mix(in oklab, var(--primary) 95%, transparent) 0%,
+    color-mix(in oklab, var(--accent) 90%, transparent) 100%
   );
-  --gradient-math: linear-gradient(135deg, var(--math), oklch(0.6 0.22 270));
-  --gradient-physics: linear-gradient(135deg, var(--physics), oklch(0.7 0.2 40));
-  --gradient-chemistry: linear-gradient(135deg, var(--chemistry), oklch(0.65 0.2 180));
-  --gradient-biology: linear-gradient(135deg, var(--biology), oklch(0.6 0.24 320));
+  --gradient-math: linear-gradient(135deg, var(--math), oklch(0.65 0.18 270));
+  --gradient-physics: linear-gradient(135deg, var(--physics), oklch(0.72 0.16 40));
+  --gradient-chemistry: linear-gradient(135deg, var(--chemistry), oklch(0.7 0.16 180));
+  --gradient-biology: linear-gradient(135deg, var(--biology), oklch(0.68 0.2 320));
 
   --shadow-glow: 0 0 50px -10px color-mix(in oklab, var(--primary) 70%, transparent);
-  --shadow-glow-intense: 0 0 70px -10px color-mix(in oklab, var(--primary) 90%, transparent);
-  --shadow-card: 0 20px 50px -20px oklch(0 0 0 / 0.7);
-  --shadow-soft: 0 4px 20px -4px oklch(0 0 0 / 0.4);
+  --shadow-glow-intense: 0 0 70px -10px color-mix(in oklab, var(--primary) 95%, transparent);
+  --shadow-card: 0 20px 50px -20px oklch(0 0 0 / 0.95);
+  --shadow-soft: 0 4px 20px -4px oklch(0 0 0 / 0.6);
 
   --transition-smooth: 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -151,45 +151,45 @@
 .light {
   --radius: 0.875rem;
 
-  /* Egg white #FDFBF7 */
-  --background: oklch(0.985 0.008 85);
-  --foreground: oklch(0.22 0.03 250);
+  /* Perfect high-contrast paper-white layout */
+  --background: oklch(1 0 0); /* Pure White #FFFFFF */
+  --foreground: oklch(0.12 0.01 240); /* Sharp Charcoal/Black #111827 */
 
-  /* Soft amber cards #FDF1B8 — slightly muted for readability */
-  --card: oklch(0.97 0.045 95);
-  --card-foreground: oklch(0.22 0.03 250);
+  /* Incredibly clean off-white card style */
+  --card: oklch(0.985 0.005 240); /* Soft elegant light gray card #F9FAFB */
+  --card-foreground: oklch(0.12 0.01 240);
 
-  --popover: oklch(0.99 0.005 85);
-  --popover-foreground: oklch(0.22 0.03 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.12 0.01 240);
 
-  /* Deep teal primary — readable on cream */
-  --primary: oklch(0.55 0.13 200);
-  --primary-foreground: oklch(0.99 0.005 200);
-  --primary-glow: oklch(0.65 0.16 195);
+  /* Deep Royal Blue primary - incredible readability on white background */
+  --primary: oklch(0.45 0.18 245); /* Vivid high-contrast blue */
+  --primary-foreground: oklch(0.99 0.005 240);
+  --primary-glow: oklch(0.55 0.18 245);
 
-  --secondary: oklch(0.7 0.15 65);
-  --secondary-foreground: oklch(0.2 0.04 50);
+  --secondary: oklch(0.45 0.15 65);
+  --secondary-foreground: oklch(0.99 0.005 60);
 
-  --muted: oklch(0.94 0.015 85);
-  --muted-foreground: oklch(0.45 0.03 250);
+  --muted: oklch(0.94 0.01 240);
+  --muted-foreground: oklch(0.38 0.015 240); /* Highly readable steel gray, NOT faded */
 
-  --accent: oklch(0.55 0.18 295);
+  --accent: oklch(0.45 0.18 295);
   --accent-foreground: oklch(0.99 0.005 295);
 
   --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.99 0.005 0);
 
-  --success: oklch(0.55 0.16 150);
-  --success-foreground: oklch(0.99 0.005 150);
+  --success: oklch(0.42 0.15 145);
+  --success-foreground: oklch(0.99 0.005 145);
 
-  --border: oklch(0.88 0.02 85);
-  --input: oklch(0.93 0.018 85);
-  --ring: oklch(0.55 0.13 200);
+  --border: oklch(0.89 0.01 240); /* Beautiful clean borders #E5E7EB */
+  --input: oklch(0.94 0.01 240);
+  --ring: oklch(0.45 0.18 245);
 
-  --math: oklch(0.55 0.18 245);
-  --physics: oklch(0.6 0.16 60);
-  --chemistry: oklch(0.55 0.16 150);
-  --biology: oklch(0.55 0.2 350);
+  --math: oklch(0.42 0.16 245);
+  --physics: oklch(0.45 0.15 60);
+  --chemistry: oklch(0.42 0.15 150);
+  --biology: oklch(0.42 0.18 350);
 
   --chart-1: var(--math);
   --chart-2: var(--physics);
@@ -197,28 +197,28 @@
   --chart-4: var(--biology);
   --chart-5: var(--accent);
 
-  --sidebar: oklch(0.97 0.02 85);
-  --sidebar-foreground: oklch(0.22 0.03 250);
+  --sidebar: oklch(0.975 0.01 240);
+  --sidebar-foreground: oklch(0.12 0.01 240);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: oklch(0.94 0.02 85);
-  --sidebar-accent-foreground: oklch(0.22 0.03 250);
-  --sidebar-border: oklch(0.88 0.02 85);
+  --sidebar-accent: oklch(0.94 0.01 240);
+  --sidebar-accent-foreground: oklch(0.12 0.01 240);
+  --sidebar-border: oklch(0.89 0.01 240);
   --sidebar-ring: var(--primary);
 
   --gradient-hero: linear-gradient(
     135deg,
-    color-mix(in oklab, var(--primary) 90%, transparent) 0%,
-    color-mix(in oklab, var(--accent) 75%, transparent) 100%
+    color-mix(in oklab, var(--primary) 95%, transparent) 0%,
+    color-mix(in oklab, var(--accent) 80%, transparent) 100%
   );
-  --gradient-math: linear-gradient(135deg, var(--math), oklch(0.45 0.2 270));
-  --gradient-physics: linear-gradient(135deg, var(--physics), oklch(0.5 0.18 35));
-  --gradient-chemistry: linear-gradient(135deg, var(--chemistry), oklch(0.5 0.18 180));
-  --gradient-biology: linear-gradient(135deg, var(--biology), oklch(0.5 0.22 320));
+  --gradient-math: linear-gradient(135deg, var(--math), oklch(0.32 0.15 270));
+  --gradient-physics: linear-gradient(135deg, var(--physics), oklch(0.35 0.12 35));
+  --gradient-chemistry: linear-gradient(135deg, var(--chemistry), oklch(0.35 0.12 180));
+  --gradient-biology: linear-gradient(135deg, var(--biology), oklch(0.32 0.16 320));
 
   --shadow-glow: 0 8px 30px -8px color-mix(in oklab, var(--primary) 35%, transparent);
-  --shadow-card: 0 12px 32px -16px oklch(0.4 0.05 85 / 0.25);
-  --shadow-soft: 0 2px 12px -4px oklch(0.4 0.05 85 / 0.18);
+  --shadow-card: 0 12px 32px -16px oklch(0.12 0.01 240 / 0.08);
+  --shadow-soft: 0 2px 12px -4px oklch(0.12 0.01 240 / 0.06);
 
   --transition-smooth: 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -506,7 +506,8 @@
   }
 
   /* Force display of report content */
-  .print-report {
+  .print-report,
+  .print-chat {
     display: block !important;
   }
 }

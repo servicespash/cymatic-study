@@ -31,11 +31,11 @@ const INSTALL_CHECK_INTERVAL = 7 * 24 * 60 * 60 * 1000; // 7 days
 const FALLBACK_RELEASE: MobileReleaseInfo = {
   version: "v1.2.0-stable",
   releaseId: "fallback-v1.2.0",
-  downloadUrl: "https://hub.cymatichub.xyz/downloads/lattyscymatichub.apk",
-  qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent("https://hub.cymatichub.xyz/downloads/lattyscymatichub.apk")}`,
+  downloadUrl: "https://study.cymatichub.xyz/downloads/lattyscymatichub.apk",
+  qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent("https://study.cymatichub.xyz/downloads/lattyscymatichub.apk")}`,
   releaseDate: new Date().toISOString(),
   releaseNotes:
-    "Verified stable offline-capable release of Lattys Cymatic Hub S1-S4 companion. Includes offline synchronization, Dexie storage engines, and integrated AI tutoring.",
+    "Verified stable offline-capable release of Lattys Cymatic Study S1-S4 companion. Includes offline synchronization, Dexie storage engines, and integrated AI tutoring.",
   apkSize: "24.5 MB",
   sha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 };

@@ -37,7 +37,7 @@ try {
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>Cymatic Hub</title>
+    <title>Cymatic Study</title>
     ${cssFile ? `<link rel='stylesheet' href='assets/${cssFile}'>` : ""}
 </head>
 <body>

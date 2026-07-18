@@ -18,7 +18,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
     meta: [
-      { title: "Admin Login | Latty's Cymatic Hub" },
+      { title: "Admin Login | Latty's Cymatic Study" },
       {
         name: "description",
         content: "Secure login for administrators. Designed by Isabirye Latif.",
@@ -198,7 +198,7 @@ function AdminLogin() {
 
       <div className="fixed bottom-8 text-center">
         <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-600">
-          Powered by Cymatic Hub Multimodal Logic Engine
+          Powered by Cymatic Study Multimodal Logic Engine
         </p>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, RotateCcw, Trophy, XCircle, Search, Sparkles } from "lucide-react";
 import { topics } from "@/data/topics";
@@ -10,17 +10,31 @@ import { calculateTermPoints, getTutorFeedback } from "@/lib/points-engine";
 import { useAuth } from "@/lib/auth-context";
 import { useTutor } from "@/lib/TutorService";
 import { supabase } from "@/integrations/supabase/client";
+import { ExportPdfModal } from "@/components/ExportPdfModal";
+import { useSubjectProgress } from "@/hooks/useSubjectProgress";
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 
+type QuizSearch = {
+  subject?: string;
+  topicId?: string;
+};
+
 export const Route = createFileRoute("/quizzes")({
-  head: () => ({ meta: [{ title: "Quizzes — Lattys Cymatic Hub" }] }),
-  component: () => <QuizzesPage />,
+  head: () => ({ meta: [{ title: "Quizzes — Lattys Cymatic Study" }] }),
+  validateSearch: (search: Record<string, unknown>): QuizSearch => ({
+    subject: (search.subject as string) || undefined,
+    topicId: (search.topicId as string) || undefined,
+  }),
+  component: QuizzesPage,
 });
 
 type Phase = "setup" | "quiz" | "results";
 
-export function QuizzesPage({ initialSubject }: { initialSubject?: string } = {}) {
-  const { user } = useAuth();
+export function QuizzesPage() {
+  const { subject: initialSubject, topicId: initialTopicId } = useSearch({ from: "/quizzes" });
+  const { user, isTeacher, isAdmin } = useAuth();
+  const { progress } = useSubjectProgress();
   const { persona, speak } = useTutor();
   const [phase, setPhase] = useState<Phase>("setup");
   const [subject, setSubject] = useState(initialSubject ?? "math");
@@ -35,15 +49,29 @@ export function QuizzesPage({ initialSubject }: { initialSubject?: string } = {}
   const [dailyTask, setDailyTask] = useState<any>(null);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
 
-  useEffect(() => {
-    const fetchQuestions = async () => {
-      if (topicId) {
-        const data = await QuizRepository.getQuestionsByTopic(topicId);
-        setQuestions(data);
-      }
-    };
-    fetchQuestions();
-  }, [topicId]);
+  const [pdfModal, setPdfModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    subject: string;
+    docType: "quiz";
+    showAnswers: boolean;
+    content: any[];
+  }>({
+    isOpen: false,
+    title: "",
+    subject: "",
+    docType: "quiz",
+    showAnswers: false,
+    content: [],
+  });
+
+  // Determine if the current subject is "selected" (started) for students
+  const canExportCurrentSubject = useMemo(() => {
+    if (isTeacher || isAdmin) return true;
+    const label = subjectLabels[subject as keyof typeof subjectLabels] || subject;
+    const subProgress = progress.find((p) => p.subject.toLowerCase() === label.toLowerCase());
+    return (subProgress?.completedPercentage ?? 0) > 0;
+  }, [subject, isTeacher, isAdmin, progress]);
 
   useEffect(() => {
     const fetchTask = async () => {
@@ -70,16 +98,44 @@ export function QuizzesPage({ initialSubject }: { initialSubject?: string } = {}
   const q = questions[idx];
 
   const start = async (id: string) => {
-    const data = await QuizRepository.getQuestionsByTopic(id);
-    if (data.length === 0) return;
-    setTopicId(id);
-    setIdx(0);
-    setPicked(null);
-    setConfirmed(false);
-    setAnswers([]);
-    setPhase("quiz");
-    recordedRef.current = null;
+    console.log(`[QuizLifecycle] Triggering start for topic: ${id}`);
+
+    // Validation Layer: Verify topic existence
+    const topicExists = topics.some((t) => t.id === id);
+    if (!topicExists) {
+      console.error(`[QuizLifecycle] Topic ID ${id} not found in global topics registry.`);
+      toast.error("The requested topic does not exist or is no longer available.");
+      return;
+    }
+
+    try {
+      const data = await QuizRepository.getQuestionsByTopic(id);
+      if (data.length === 0) {
+        console.warn(`[QuizLifecycle] No assessment data found for topic: ${id}`);
+        toast.error("No questions found for this topic.");
+        return;
+      }
+
+      console.log(`[QuizLifecycle] Successfully loaded ${data.length} questions for ${id}`);
+      setQuestions(data);
+      setTopicId(id);
+      setIdx(0);
+      setPicked(null);
+      setConfirmed(false);
+      setAnswers([]);
+      setPhase("quiz");
+      recordedRef.current = null;
+    } catch (err) {
+      console.error(`[QuizLifecycle] Initialization failure for ${id}:`, err);
+      toast.error("Failed to load quiz. Please check your connection.");
+    }
   };
+
+  useEffect(() => {
+    if (initialTopicId) {
+      start(initialTopicId);
+    }
+  }, [initialTopicId]);
 
   const reset = () => {
     setPhase("setup");
@@ -266,8 +322,13 @@ export function QuizzesPage({ initialSubject }: { initialSubject?: string } = {}
               <button
                 onClick={() => {
                   if (dailyTask.task_type === "retry_quiz") {
-                    setSearchQuery(dailyTask.metadata?.topic_name || "");
-                    toast.info(`Searching for: ${dailyTask.metadata?.topic_name}`);
+                    const tid = dailyTask.metadata?.topic_id;
+                    if (tid) {
+                      start(tid);
+                    } else {
+                      setSearchQuery(dailyTask.metadata?.topic_name || "");
+                      toast.info(`Searching for: ${dailyTask.metadata?.topic_name}`);
+                    }
                   }
                 }}
                 className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-primary-foreground shadow-glow hover:scale-105 active:scale-95 transition-all"
@@ -316,22 +377,89 @@ export function QuizzesPage({ initialSubject }: { initialSubject?: string } = {}
 
       <div className="grid gap-3 sm:grid-cols-2">
         {availableTopics.map((t) => {
-          const count = quizQuestions.filter((q) => q.topicId === t.id).length;
+          const qs = quizQuestions.filter((q) => q.topicId === t.id);
+          const count = qs.length;
           return (
-            <button
+            <div
               key={t.id}
-              disabled={count === 0}
-              onClick={() => start(t.id)}
-              className="group rounded-xl border border-border bg-card p-4 text-left transition-smooth hover:-translate-y-0.5 hover:shadow-glow disabled:opacity-40 disabled:hover:translate-y-0"
+              className="group flex flex-col justify-between rounded-xl border border-border bg-card p-4 transition-smooth hover:-translate-y-0.5 hover:shadow-glow"
             >
-              <h3 className="font-bold text-foreground">{t.title}</h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {count} question{count === 1 ? "" : "s"}
-              </p>
-            </button>
+              <button onClick={() => start(t.id)} className="text-left">
+                <h3 className="font-bold text-foreground">{t.title}</h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {count} question{count === 1 ? "" : "s"}
+                </p>
+              </button>
+
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    if (!canExportCurrentSubject) {
+                      toast.error("Access Restricted", {
+                        description:
+                          "Complete some study in this subject first to unlock downloads.",
+                      });
+                      return;
+                    }
+
+                    try {
+                      const questionsToExport = await QuizRepository.getQuestionsByTopic(t.id);
+                      if (questionsToExport.length === 0) {
+                        toast.error("No questions available for this topic.");
+                        return;
+                      }
+
+                      const pdfContent = [
+                        {
+                          sectionTitle: "Instructions",
+                          body: "Answer all questions to the best of your ability. This assessment is based on the Uganda NCDC Secondary Curriculum.",
+                        },
+                        {
+                          sectionTitle: "Assessment Questions",
+                          body: questionsToExport.map((qz) => ({
+                            q: qz.question,
+                            options: qz.options,
+                            a: String.fromCharCode(65 + qz.correctIndex),
+                          })),
+                        },
+                      ];
+
+                      setPdfModal({
+                        isOpen: true,
+                        title: `${t.title} Assessment`,
+                        subject: t.subject.toUpperCase(),
+                        docType: "quiz",
+                        showAnswers: isTeacher || isAdmin,
+                        content: pdfContent,
+                      });
+                    } catch (err) {
+                      console.error("PDF Export error:", err);
+                      toast.error("Failed to prepare PDF for export.");
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition-smooth hover:bg-muted"
+                >
+                  <Download className="h-3 w-3" />
+                  PDF Pack
+                </button>
+              </div>
+            </div>
           );
         })}
       </div>
+
+      {pdfModal.isOpen && (
+        <ExportPdfModal
+          isOpen={pdfModal.isOpen}
+          onClose={() => setPdfModal((prev) => ({ ...prev, isOpen: false }))}
+          title={pdfModal.title}
+          subject={pdfModal.subject}
+          docType={pdfModal.docType}
+          content={pdfModal.content}
+          showAnswers={pdfModal.showAnswers}
+        />
+      )}
     </div>
   );
 }

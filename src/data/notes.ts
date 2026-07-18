@@ -2238,4 +2238,240 @@ export const topicNotes: TopicNote[] = [
       },
     ],
   },
+  // ── ECONOMICS (S5-S6) ──
+  {
+    topicId: "ec5-1",
+    sections: [
+      {
+        heading: "The Basic Economic Problem",
+        content:
+          "Economics studies how society manages its scarce resources. The fundamental economic problem is scarcity, where human wants are infinite but resources are limited.",
+      },
+      {
+        heading: "Choice and Opportunity Cost",
+        content:
+          "Because resources are scarce, choices must be made. Choosing one alternative means giving up another. Opportunity cost is the value of the next best alternative forgone.",
+      },
+      {
+        heading: "Production Possibility Curve (PPC)",
+        content:
+          "A PPC shows the maximum combination of two goods an economy can produce when all resources are fully and efficiently employed.",
+      },
+    ],
+    examples: [
+      {
+        problem:
+          "A student spends 2 hours studying instead of sleeping. What is the opportunity cost?",
+        solution:
+          "The opportunity cost is the rest and physical benefit of those 2 hours of sleep.",
+      },
+    ],
+  },
+  {
+    topicId: "ec5-2",
+    sections: [
+      {
+        heading: "Law of Demand and Supply",
+        content:
+          "The Law of Demand states that as price rises, quantity demanded falls, ceteris paribus. The Law of Supply states that as price rises, quantity supplied increases, ceteris paribus.",
+      },
+      {
+        heading: "Market Equilibrium",
+        content:
+          "Market equilibrium occurs where the quantity demanded by consumers exactly equals the quantity supplied by producers. This determines the market price.",
+      },
+    ],
+    examples: [
+      {
+        problem:
+          "If price of sugar rises from 3,000 to 3,600 UGX, and demand falls by 10%, calculate Price Elasticity of Demand.",
+        solution: "% Change in Price = (600/3000)*100 = 20%. Ed = -10%/20% = -0.5 (Inelastic).",
+      },
+    ],
+  },
+  {
+    topicId: "ec6-1",
+    sections: [
+      {
+        heading: "National Income Concepts",
+        content:
+          "National Income is the total value of all goods and services produced in a country over a specific period. GDP measures output within a country's borders, while GNP includes net income from abroad.",
+      },
+      {
+        heading: "Calculation Methods",
+        content:
+          "National Income is measured in three equivalent ways: the Income Method (summing incomes), Output Method (summing value added), and Expenditure Method (C + I + G + X - M).",
+      },
+    ],
+    examples: [
+      {
+        problem: "Calculate GDP given C=50M, I=20M, G=15M, X=10M, M=8M.",
+        solution: "GDP = 50 + 20 + 15 + (10 - 8) = 87M.",
+      },
+    ],
+  },
+  // ── ICT (S1-S5) ──
+  {
+    topicId: "ict1-1",
+    sections: [
+      {
+        heading: "Introduction to Computers",
+        content:
+          "A computer is an electronic device that inputs raw data, processes it according to specific instructions, stores it, and outputs the resulting information.",
+      },
+      {
+        heading: "Computer Hardware Components",
+        content:
+          "Hardware includes physical components: Input devices (Keyboard, Mouse), Processing unit (CPU), Output devices (Monitor, Printer), and Storage (RAM, Hard Drive).",
+      },
+    ],
+  },
+  {
+    topicId: "ict2-1",
+    sections: [
+      {
+        heading: "Word Processing Basics",
+        content:
+          "Word processors allow users to create, format, edit, and print text-based documents. Typical tasks include formatting font size, margins, alignment, and spacing.",
+      },
+      {
+        heading: "Mail Merge Utility",
+        content:
+          "Mail Merge is a powerful tool that allows users to create personalized letters or certificates for multiple recipients by combining a main document with a data source.",
+      },
+    ],
+  },
+  {
+    topicId: "ict5-1",
+    sections: [
+      {
+        heading: "Spreadsheets & Cell References",
+        content:
+          "Spreadsheets organize numerical data into rows and columns. Relative cell references (A1) adjust when copied, whereas Absolute references ($A$1) remain constant.",
+      },
+      {
+        heading: "Standard Functions",
+        content:
+          "Use functions like =SUM to add values, =AVERAGE to find the mean, and =IF to perform logical tests on cell values dynamically.",
+      },
+    ],
+    examples: [
+      {
+        problem: "Write a spreadsheet formula to calculate the average of cells B2 to B10.",
+        solution: "=AVERAGE(B2:B10)",
+      },
+    ],
+  },
+  // ── DIVINITY (S5) ──
+  {
+    topicId: "div5-1",
+    sections: [
+      {
+        heading: "The Meaning of Prophecy",
+        content:
+          "Prophecy in ancient Israel was a divine calling where chosen individuals acted as God's spokespersons. They addressed current political, social, and religious crises rather than just predicting the future.",
+      },
+      {
+        heading: "The Message of Amos",
+        content:
+          "Amos was a prophet of social justice. He fiercely condemned the oppression of the poor, corruption in judicial systems, and hypocritical worship practices in the northern kingdom of Israel.",
+      },
+    ],
+  },
+  // ── KISWAHILI (S1) ──
+  {
+    topicId: "sw1-1",
+    sections: [
+      {
+        heading: "Ngeli za Kiswahili",
+        content:
+          "Kiswahili noun classes (Ngeli) are grammatical groupings that determine how nouns interact with verbs and adjectives. Examples include A-WA for living human entities, and KI-VI for physical objects.",
+      },
+      {
+        heading: "Kusujudu na Salamu",
+        content:
+          "Greetings are highly significant in East African culture. Standard forms include 'Hujambo' (response: 'Sijambo') and 'Habari gani' (response: 'Nzuri').",
+      },
+    ],
+  },
+  // ── LUGANDA (S1) ──
+  {
+    topicId: "lug1-1",
+    sections: [
+      {
+        heading: "Ennandiki y'Oluganda",
+        content:
+          "Luganda is a tonal Bantu language with standardised spelling guidelines established in 1947. Correct spelling relies on exact doubling of vowels or consonant blending.",
+      },
+      {
+        heading: "Olulyo n'Emisoso gy'Ebitundu",
+        content:
+          "Luganda nouns are grouped into classes (Emisoso gy'ebitundu) prefixed by letters representing singular and plural states (e.g., Omu-Aba, Oki-Ebi).",
+      },
+    ],
+  },
+  // ── LITERATURE (S1) ──
+  {
+    topicId: "lit1-1",
+    sections: [
+      {
+        heading: "The Three Genres of Literature",
+        content:
+          "Literature is divided into three key genres: Prose (written narrative sentences), Drama (written as a script for stage performance), and Poetry (written in lines and stanzas utilizing rich devices).",
+      },
+      {
+        heading: "Literary Devices",
+        content:
+          "Authors use devices to deepen meaning: Similes compare things using 'like' or 'as' (e.g., as brave as a lion), while Metaphors make direct comparisons (e.g., the classroom was a zoo).",
+      },
+    ],
+  },
+  // ── AGRICULTURE (S1) ──
+  {
+    topicId: "ag1-1",
+    sections: [
+      {
+        heading: "Soil Formation and Components",
+        content:
+          "Soil is formed from the weathering of rocks by physical, chemical, and biological agents. Soil consists of four major components: mineral matter (45%), organic matter (5%), water (25%), and air (25%).",
+      },
+      {
+        heading: "The Soil Profile",
+        content:
+          "A soil profile is a vertical cross-section showing distinct layers called horizons: Horizon A (Topsoil - fertile), Horizon B (Subsoil), and Horizon C (Parent material / Bedrock).",
+      },
+    ],
+  },
+  // ── FINE ART (S1) ──
+  {
+    topicId: "art1-1",
+    sections: [
+      {
+        heading: "Still Life Drawing",
+        content:
+          "Still life is the drawing or painting of inanimate, physical objects (such as fruits, cups, and books) arranged deliberately to study composition, light, and form.",
+      },
+      {
+        heading: "Understanding Shading & Perspective",
+        content:
+          "Shading conveys depth. Methods include hatching, cross-hatching, and blending. Perspective uses vanishing points to create the illusion of three-dimensional depth on a flat piece of paper.",
+      },
+    ],
+  },
+  // ── CRE (S1) ──
+  {
+    topicId: "cre1-1",
+    sections: [
+      {
+        heading: "The Biblical Accounts of Creation",
+        content:
+          "Genesis contains two accounts: Genesis 1 outlines the orderly creation of the universe over six days, while Genesis 2 focuses on the intimate creation of Man (Adam) and Woman (Eve) in the Garden of Eden.",
+      },
+      {
+        heading: "The Fall of Man",
+        content:
+          "The Fall describes the disobedience of Adam and Eve in eating the forbidden fruit, leading to the entrance of sin, broken relationships, physical suffering, and separation from God.",
+      },
+    ],
+  },
 ];

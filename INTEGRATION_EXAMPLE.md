@@ -16,10 +16,10 @@ export const Route = createFileRoute("/quizzes")({
   head: () => {
     // 1. Generate all meta tags (title, description, OG, Twitter, etc.)
     const meta = generateMetaTags({
-      title: "Interactive Quizzes - Test Your Knowledge | Latty's Cymatic Hub",
+      title: "Interactive Quizzes - Test Your Knowledge | Latty's Cymatic Study",
       description: "Take interactive quizzes in Mathematics, Physics, Chemistry, and Biology to test your understanding of Uganda's Secondary Curriculum content.",
-      canonicalUrl: "https://hub.cymatichub.xyz/quizzes",
-      ogImage: "https://hub.cymatichub.xyz/og-quizzes.jpg",
+      canonicalUrl: "https://study.cymatichub.xyz/quizzes",
+      ogImage: "https://study.cymatichub.xyz/og-quizzes.jpg",
       ogType: "website",
       twitterCard: "summary_large_image",
       keywords: [
@@ -36,14 +36,14 @@ export const Route = createFileRoute("/quizzes")({
     });
 
     // 2. Set canonical URL to prevent duplicate content issues
-    const canonicalLink = getCanonicalLink("https://hub.cymatichub.xyz/quizzes");
+    const canonicalLink = getCanonicalLink("https://study.cymatichub.xyz/quizzes");
 
     // 3. Create structured data (JSON-LD) for Google Rich Results
     // This helps Google understand the page content better
     const courseSchema = getCourseSchema({
       name: "Interactive Quiz Practice",
       description: "Comprehensive quiz practice for Uganda Secondary Curriculum subjects",
-      provider: "Latty's Cymatic Hub",
+      provider: "Latty's Cymatic Study",
       educationLevel: "Secondary",
     });
 
@@ -161,10 +161,10 @@ export const Route = createFileRoute("/quizzes/$quizId")({
 
     // 1. Generate dynamic meta tags
     const meta = generateMetaTags({
-      title: `${quiz.title} - ${quiz.subject} Quiz | Latty's Cymatic Hub`,
+      title: `${quiz.title} - ${quiz.subject} Quiz | Latty's Cymatic Study`,
       description: quiz.description,
-      canonicalUrl: `https://hub.cymatichub.xyz/quizzes/${params.quizId}`,
-      ogImage: `https://hub.cymatichub.xyz/og-quiz-${quiz.subject.toLowerCase()}.jpg`,
+      canonicalUrl: `https://study.cymatichub.xyz/quizzes/${params.quizId}`,
+      ogImage: `https://study.cymatichub.xyz/og-quiz-${quiz.subject.toLowerCase()}.jpg`,
       ogType: "article",
       keywords: [
         quiz.subject.toLowerCase(),
@@ -177,14 +177,14 @@ export const Route = createFileRoute("/quizzes/$quizId")({
 
     // 2. Set canonical URL
     const canonicalLink = getCanonicalLink(
-      `https://hub.cymatichub.xyz/quizzes/${params.quizId}`
+      `https://study.cymatichub.xyz/quizzes/${params.quizId}`
     );
 
     // 3. Create Article schema for rich snippets
     const articleSchema = getArticleSchema({
       headline: quiz.title,
       description: quiz.description,
-      image: `https://hub.cymatichub.xyz/og-quiz-${quiz.subject.toLowerCase()}.jpg`,
+      image: `https://study.cymatichub.xyz/og-quiz-${quiz.subject.toLowerCase()}.jpg`,
       datePublished: new Date().toISOString(),
       author: "Isabirye Latif",
     });
@@ -293,7 +293,7 @@ import { useAuth } from "@/lib/auth-context";
 export const Route = createFileRoute("/admin/dashboard")({
   head: () => ({
     meta: generateMetaTags({
-      title: "Admin Dashboard - Latty's Cymatic Hub",
+      title: "Admin Dashboard - Latty's Cymatic Study",
       description: "Admin dashboard for managing releases and system health",
     }),
   }),
@@ -360,7 +360,7 @@ git push origin v1.3.0
 # Find: "Build Production APK" workflow run
 
 # 5. Verify deployment
-# Visit: https://hub.cymatichub.xyz
+# Visit: https://study.cymatichub.xyz
 # Check: window.__BUILD_VERSION__ === "1.3.0"
 
 # If issues detected:

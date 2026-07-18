@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTutor } from "@/lib/TutorService";
 import { useTheme } from "@/lib/theme-context";
 import { useAuth } from "@/lib/auth-context";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Sparkles,
   Moon,
@@ -25,27 +25,87 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/settings")({
-  head: () => ({ meta: [{ title: "Settings — Cymatic Hub" }] }),
+  head: () => ({ meta: [{ title: "Settings — Cymatic Study" }] }),
   component: SettingsPage,
 });
 
 function SettingsPage() {
   const { user, profile: authProfile } = useAuth();
   const navigate = useNavigate();
-  const {
-    voice,
-    setVoice,
-    ttsEnabled,
-    setTtsEnabled,
-    speak,
-    availableVoices,
-    voiceURI,
-    setVoiceURI,
-    pitchAdj,
-    setPitchAdj,
-    rateAdj,
-    setRateAdj,
-  } = useTutor();
+  const { voice, setVoice, ttsEnabled, setTtsEnabled, speak } = useTutor();
+
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [voiceURI, setVoiceURI] = useState<string | null>(null);
+  const [pitchAdj, setPitchAdj] = useState<number>(0);
+  const [rateAdj, setRateAdj] = useState<number>(0);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      const loadVoices = () => {
+        setAvailableVoices(window.speechSynthesis.getVoices());
+      };
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }, []);
+
+  useEffect(() => {
+    const savedVoiceURI = localStorage.getItem("tutor_voice_uri");
+    const savedPitchAdj = localStorage.getItem("tutor_pitch_adj");
+    const savedRateAdj = localStorage.getItem("tutor_rate_adj");
+
+    if (savedVoiceURI) setVoiceURI(savedVoiceURI);
+    if (savedPitchAdj) setPitchAdj(parseFloat(savedPitchAdj));
+    if (savedRateAdj) setRateAdj(parseFloat(savedRateAdj));
+  }, []);
+
+  const handleSetVoiceURI = (value: string | null) => {
+    setVoiceURI(value);
+    if (value) {
+      localStorage.setItem("tutor_voice_uri", value);
+    } else {
+      localStorage.removeItem("tutor_voice_uri");
+    }
+  };
+
+  const handleSetPitchAdj = (value: number) => {
+    setPitchAdj(value);
+    localStorage.setItem("tutor_pitch_adj", value.toString());
+  };
+
+  const handleSetRateAdj = (value: number) => {
+    setRateAdj(value);
+    localStorage.setItem("tutor_rate_adj", value.toString());
+  };
+
+  const speakWithSettings = useCallback(
+    async (text: string) => {
+      if (!ttsEnabled) return;
+
+      const baseRate = voice === "female" ? 0.85 : 1.0;
+      const basePitch = voice === "female" ? 1.2 : 0.9;
+
+      const finalRate = baseRate + rateAdj;
+      const finalPitch = basePitch + pitchAdj;
+
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = finalRate;
+        utter.pitch = finalPitch;
+        if (voiceURI) {
+          const selectedVoice = availableVoices.find((v) => v.voiceURI === voiceURI);
+          if (selectedVoice) {
+            utter.voice = selectedVoice;
+          }
+        }
+        window.speechSynthesis.speak(utter);
+      } else {
+        speak(text);
+      }
+    },
+    [voice, ttsEnabled, rateAdj, pitchAdj, voiceURI, availableVoices, speak],
+  );
   const { theme, setTheme } = useTheme();
 
   const [loading, setLoading] = useState(false);
@@ -200,11 +260,10 @@ function SettingsPage() {
               key={o.id}
               onClick={() => {
                 setVoice(o.id);
-                speak(
+                speakWithSettings(
                   o.id === "female"
                     ? "I am here, walking with you."
                     : "Yo fam, Adams in the building. Let's move!",
-                  { force: true },
                 );
               }}
               className={`relative overflow-hidden rounded-2xl border-2 p-5 text-left transition-all ${
@@ -228,7 +287,7 @@ function SettingsPage() {
             </label>
             <select
               value={voiceURI ?? ""}
-              onChange={(e) => setVoiceURI(e.target.value || null)}
+              onChange={(e) => handleSetVoiceURI(e.target.value || null)}
               className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
             >
               <option value="">Auto-pick (matches {voice === "female" ? "Hawa" : "Adams"})</option>
@@ -255,7 +314,7 @@ function SettingsPage() {
               max={0.6}
               step={0.05}
               value={pitchAdj ?? 0}
-              onChange={(e) => setPitchAdj(Number(e.target.value))}
+              onChange={(e) => handleSetPitchAdj(Number(e.target.value))}
               className="w-full accent-primary"
             />
           </div>
@@ -274,18 +333,17 @@ function SettingsPage() {
               max={0.4}
               step={0.05}
               value={rateAdj ?? 0}
-              onChange={(e) => setRateAdj(Number(e.target.value))}
+              onChange={(e) => handleSetRateAdj(Number(e.target.value))}
               className="w-full accent-primary"
             />
           </div>
 
           <button
             onClick={() =>
-              speak(
+              speakWithSettings(
                 voice === "female"
                   ? "Hello my dear, this is how I sound now."
                   : "Yo fam, peep this voice — fresh tone, locked in.",
-                { force: true },
               )
             }
             className="mt-5 w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-glow active:scale-95 transition-transform"

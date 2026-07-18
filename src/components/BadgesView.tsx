@@ -119,7 +119,7 @@ export function BadgesView() {
     {
       id: "curriculum-pioneer",
       name: "Curriculum Pioneer",
-      description: "Began your learning journey on Cymatic Hub",
+      description: "Began your learning journey on Cymatic Study",
       subject: "General",
       requirementText: "Complete 1 study session",
       checkUnlocked: (st) => st.totalSessions >= 1,

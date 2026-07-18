@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { exportToBrandedPdf, type BrandedPdfOptions } from "@/lib/branded-pdf-export";
+import { usePdfExport } from "@/hooks/usePdfExport";
 import { ExportPdfInstructionModal } from "./ExportPdfInstructionModal";
 import { supabase } from "@/integrations/supabase/client";
 import { logRecentActivity, updateSubjectProgress } from "@/lib/offline-db";
@@ -29,6 +29,7 @@ interface ExportPdfModalProps {
   title: string;
   subject?: string;
   docType: "study_chart" | "lesson_notes" | "quiz";
+  showAnswers?: boolean;
   content: {
     sectionTitle: string;
     body:
@@ -45,6 +46,7 @@ export function ExportPdfModal({
   title,
   subject = "General",
   docType,
+  showAnswers = false,
   content,
 }: ExportPdfModalProps) {
   const [isBW, setIsBW] = useState(false);
@@ -54,6 +56,7 @@ export function ExportPdfModal({
   const [schoolName, setSchoolName] = useState("Independent Study");
   const [showInstructions, setShowInstructions] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const { exportPdf } = usePdfExport();
 
   // Fetch current signed-in user profile info
   useEffect(() => {
@@ -89,16 +92,17 @@ export function ExportPdfModal({
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      await exportToBrandedPdf({
+      await exportPdf({
         title,
         subject,
-        docType,
-        content,
+        docType: docType as any,
+        content: content as any,
         userName,
         schoolName,
         isBlackAndWhite: isBW,
         paperSize,
         language,
+        includeAnswers: showAnswers,
       });
 
       // Log successful export in Dexie activity store

@@ -55,9 +55,10 @@ import { QuizEngine, type DynamicDailyTask } from "@/lib/quiz-engine";
 import { motion, AnimatePresence } from "framer-motion";
 import { StudentActivityDashboard } from "@/components/StudentActivityDashboard";
 import { SocraticTutorChat } from "@/components/SocraticTutorChat";
+import { SubjectPracticeReminder } from "@/components/SubjectPracticeReminder";
 
 export const Route = createFileRoute("/dashboard")({
-  head: () => ({ meta: [{ title: "My Hub — Cymatic Hub" }] }),
+  head: () => ({ meta: [{ title: "My Hub — Cymatic Study" }] }),
   component: DashboardPage,
 });
 
@@ -137,8 +138,8 @@ function DashboardPage() {
   const handleShare = async () => {
     try {
       await Share.share({
-        title: "Join Lattys Cymatic Hub",
-        text: `Salaam! Join me on Cymatic Hub to master the New Lower Secondary Curriculum. My Referral Code: ${user?.id?.slice(0, 8).toUpperCase()}`,
+        title: "Join Lattys Cymatic Study",
+        text: `Salaam! Join me on Cymatic Study to master the New Lower Secondary Curriculum. My Referral Code: ${user?.id?.slice(0, 8).toUpperCase()}`,
         url: "https://com.latifisabirye.cymatichub",
         dialogTitle: "Share with fellow Scholars",
       });
@@ -442,6 +443,7 @@ function DashboardPage() {
         <>
           {/* ROW 1: PERSISTENT METRICS & TIMING GOALS (The main, consistent widgets) */}
           <div className="space-y-6">
+            <SubjectPracticeReminder />
             <StudentActivityDashboard />
 
             <div className="grid gap-6 md:grid-cols-3">

@@ -24,7 +24,7 @@ import {
 export const Route = createFileRoute("/curriculum")({
   head: () => ({
     meta: [
-      { title: "Curriculum | Latty's Cymatic Hub" },
+      { title: "Curriculum | Latty's Cymatic Study" },
       {
         name: "description",
         content: "Explore the Uganda Secondary Curriculum. Designed by Isabirye Latif.",
@@ -257,7 +257,7 @@ function SensitizationHub() {
           </AccordionItem>
           <AccordionItem value="item-2" className="border rounded-2xl px-4 bg-card">
             <AccordionTrigger className="hover:no-underline font-semibold py-4">
-              How do I earn the 20% points on Cymatic Hub?
+              How do I earn the 20% points on Cymatic Study?
             </AccordionTrigger>
             <AccordionContent className="text-muted-foreground text-sm pb-4">
               Complete the 4-phase PBL tasks in the 'Projects' section and pass your topic-specific

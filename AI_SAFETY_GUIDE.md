@@ -2,7 +2,7 @@
 
 ## Overview
 
-Latty's Cymatic Hub now includes comprehensive AI safety measures to ensure the platform won't be flagged by AI systems and passes all content verification checks. This system prevents spam detection and maintains high trust indicators for both search engines and AI crawlers.
+Latty's Cymatic Study now includes comprehensive AI safety measures to ensure the platform won't be flagged by AI systems and passes all content verification checks. This system prevents spam detection and maintains high trust indicators for both search engines and AI crawlers.
 
 ## Features Implemented
 
@@ -122,7 +122,7 @@ import { TrustIndicators } from '@/components/TrustIndicators';
 export function Header() {
   return (
     <>
-      <h1>Latty's Cymatic Hub</h1>
+      <h1>Latty's Cymatic Study</h1>
       <TrustIndicators />
     </>
   );
@@ -240,7 +240,7 @@ console.log(metrics.trustScore); // 95
 ```typescript
 import { validateCymaticsCompliance } from "@/lib/ai-safety";
 
-const isValid = validateCymaticsCompliance(courseContent, "Latty's Cymatic Hub");
+const isValid = validateCymaticsCompliance(courseContent, "Latty's Cymatic Study");
 ```
 
 ## AI Bot Protection
@@ -272,7 +272,7 @@ const isValid = validateCymaticsCompliance(courseContent, "Latty's Cymatic Hub")
 1. **Check robots.txt:**
 
    ```bash
-   curl https://hub.cymatichub.xyz/robots.txt
+   curl https://study.cymatichub.xyz/robots.txt
    ```
 
 2. **Verify schema markup:**
@@ -302,7 +302,7 @@ Add to your CI/CD:
 test -f public/robots.txt && echo "robots.txt OK"
 
 # Verify security headers are valid
-curl -I https://hub.cymatichub.xyz | grep Content-Security-Policy
+curl -I https://study.cymatichub.xyz | grep Content-Security-Policy
 ```
 
 ## Troubleshooting

@@ -6,7 +6,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { Database } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/signup")({
-  head: () => ({ meta: [{ title: "Join the Hub — Cymatic Hub" }] }),
+  head: () => ({ meta: [{ title: "Join the Hub — Cymatic Study" }] }),
   component: SignupPage,
 });
 

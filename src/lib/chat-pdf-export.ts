@@ -1,27 +1,24 @@
 import jsPDF from "jspdf";
 import { Message } from "@/store/useTutorStore";
 
-export function exportChatToPdf(messages: Message[], filename: string) {
+export async function exportChatToPDF(messages: Message[]) {
   const doc = new jsPDF();
   let y = 10;
-
   doc.setFontSize(16);
-  doc.text("Chat Session Export", 10, y);
+  doc.text("Chat History", 10, y);
   y += 10;
 
   doc.setFontSize(10);
   messages.forEach((msg) => {
-    const text = `${msg.sender === "user" ? "You" : "Tutor"}: ${msg.text}`;
-    const splitText = doc.splitTextToSize(text, 180);
-
     if (y > 280) {
       doc.addPage();
       y = 10;
     }
-
-    doc.text(splitText, 10, y);
-    y += splitText.length * 5;
+    const timestamp = msg.timestamp;
+    const text = `${msg.sender === "student" ? "You" : "Tutor"}: ${msg.text}`;
+    doc.text(`[${timestamp}] ${text}`, 10, y);
+    y += 7;
   });
 
-  doc.save(filename);
+  doc.save("chat-history.pdf");
 }

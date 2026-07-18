@@ -50,7 +50,7 @@ import { Input } from "@/components/ui/input";
 export const Route = createFileRoute("/admin/dashboard")({
   head: () => ({
     meta: [
-      { title: "Admin Dashboard | Latty's Cymatic Hub" },
+      { title: "Admin Dashboard | Latty's Cymatic Study" },
       {
         name: "description",
         content: "Admin management console. Designed by Isabirye Latif.",

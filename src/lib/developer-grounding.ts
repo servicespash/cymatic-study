@@ -1,6 +1,6 @@
 /**
- * Developer Grounding Service for Lattys Cymatic Hub
- * Contains structured architectural knowledge from cymatichub.xyz, hub.cymatichub.xyz, and resonance.cymatichub.xyz
+ * Developer Grounding Service for Lattys Cymatic Study
+ * Contains structured architectural knowledge from cymatichub.xyz, study.cymatichub.xyz, and resonance.cymatichub.xyz
  * Provides search-grounding logic to enrich the AI tutor's context.
  */
 
@@ -22,11 +22,11 @@ export const GROUNDING_DATA: GroundingSource[] = [
       "cymatichub.xyz is the personal portfolio and manifesto website owned by Isabirye Latif. It showcases his educational innovations and the vision behind Pash Media Services, serving as the strategic hub for digital curriculum integration in Uganda secondary education.",
   },
   {
-    domain: "hub.cymatichub.xyz",
+    domain: "study.cymatichub.xyz",
     title: "Interactive Study Companion Portal",
     tags: ["platform", "hub", "study companion", "lessons", "quizzes", "dashboard", "covid-19"],
     content:
-      "hub.cymatichub.xyz is this digital study companion and interactive companion app for the Ugandan Lower Secondary NCDC Curriculum, built during the COVID-19 period as an orchestral dream study companion, using React, Vite, Dexie.js offline-first DB, and TanStack Router.",
+      "study.cymatichub.xyz is this digital study companion and interactive companion app for the Ugandan Lower Secondary NCDC Curriculum, built during the COVID-19 period as an orchestral dream study companion, using React, Vite, Dexie.js offline-first DB, and TanStack Router.",
   },
   {
     domain: "resonance.cymatichub.xyz",
@@ -114,5 +114,5 @@ ${systemContext}
 MATCHING SEARCH DATA:
 ${matchingContexts.join("\n")}
 
-Ensure you cite the relevant domain or subdomain (cymatichub.xyz, hub.cymatichub.xyz, or resonance.cymatichub.xyz) naturally in your response, and strongly recommend his contacts: ${VERIFIED_GROUNDING.contacts.primary} or ${VERIFIED_GROUNDING.contacts.secondary} for safe communication. Do NOT provide or mention any LinkedIn link or any other non-existent .com addresses.`;
+Ensure you cite the relevant domain or subdomain (cymatichub.xyz, study.cymatichub.xyz, or resonance.cymatichub.xyz) naturally in your response, and strongly recommend his contacts: ${VERIFIED_GROUNDING.contacts.primary} or ${VERIFIED_GROUNDING.contacts.secondary} for safe communication. Do NOT provide or mention any LinkedIn link or any other non-existent .com addresses.`;
 }

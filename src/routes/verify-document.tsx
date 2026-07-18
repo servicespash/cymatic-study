@@ -6,11 +6,11 @@ import { motion } from "framer-motion";
 export const Route = createFileRoute("/verify-document")({
   head: () => ({
     meta: [
-      { title: "Document Verification — Cymatic Hub" },
+      { title: "Document Verification — Cymatic Study" },
       {
         name: "description",
         content:
-          "Verify authenticity and metadata of downloaded academic materials from Cymatic Hub.",
+          "Verify authenticity and metadata of downloaded academic materials from Cymatic Study.",
       },
     ],
   }),
@@ -21,7 +21,7 @@ function VerifyDocumentPage() {
   const [params, setParams] = useState({
     user: "unknown",
     school: "unknown",
-    app: "Lattys Cymatic Hub",
+    app: "Lattys Cymatic Study",
     type: "study_chart",
     date: "",
     hash: "",
@@ -32,7 +32,7 @@ function VerifyDocumentPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const userParam = urlParams.get("user") || "unknown";
     const schoolParam = urlParams.get("school") || "unknown";
-    const appParam = urlParams.get("app") || "Lattys Cymatic Hub";
+    const appParam = urlParams.get("app") || "Lattys Cymatic Study";
     const typeParam = urlParams.get("type") || "study_chart";
     const dateParam = urlParams.get("date") || new Date().toLocaleDateString();
 
@@ -92,7 +92,7 @@ function VerifyDocumentPage() {
             Verified Document
           </span>
           <h1 className="text-2xl font-black tracking-tight text-white font-sans">
-            Cymatic Hub Authenticator
+            Cymatic Study Authenticator
           </h1>
           <p className="text-zinc-500 text-xs mt-1 font-mono">License ID: {params.hash}</p>
         </div>
@@ -155,13 +155,13 @@ function VerifyDocumentPage() {
           </p>
           <div className="flex flex-col gap-2">
             <a
-              href="https://hub.cymatichub.xyz"
+              href="https://study.cymatichub.xyz"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full py-3 bg-zinc-100 hover:bg-white text-zinc-950 text-sm font-bold rounded-2xl transition-all shadow-md active:scale-95"
             >
               <Globe className="w-4 h-4" />
-              Open Cymatic Hub
+              Open Cymatic Study
             </a>
             <a
               href="https://hub.sematic.com"

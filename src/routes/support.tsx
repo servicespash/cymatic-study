@@ -54,9 +54,9 @@ function SupportPage() {
   const userId = user?.id || "N/A"; // Fallback to N/A if not logged in
 
   // Construct pre-filled messages
-  const whatsappMessage = `Hello, my name is ${userName} (ID: ${userId}). I am requesting Support/Restoration for the Cymatic Hub 5,000 UGX Termly Plan.`;
-  const emailSubject = "Support/Restoration Request: Cymatic Hub";
-  const emailBody = `Hello, my name is ${userName} (ID: ${userId}). I am requesting Support/Restoration for the Cymatic Hub 5,000 UGX Termly Plan.`;
+  const whatsappMessage = `Hello, my name is ${userName} (ID: ${userId}). I am requesting Support/Restoration for the Cymatic Study 5,000 UGX Termly Plan.`;
+  const emailSubject = "Support/Restoration Request: Cymatic Study";
+  const emailBody = `Hello, my name is ${userName} (ID: ${userId}). I am requesting Support/Restoration for the Cymatic Study 5,000 UGX Termly Plan.`;
 
   if (loading) {
     return (
@@ -254,11 +254,11 @@ function SupportPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20 text-primary">
                 <Info className="h-5 w-5" />
               </div>
-              <h3 className="font-bold">About Cymatic Hub</h3>
+              <h3 className="font-bold">About Cymatic Study</h3>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               {config?.about_app ||
-                "Cymatic Hub is an advanced educational platform tailored for Uganda's New Lower Secondary Curriculum, providing students with interactive tools, high-quality notes, and AI-powered learning assistance."}
+                "Cymatic Study is an advanced educational platform tailored for Uganda's New Lower Secondary Curriculum, providing students with interactive tools, high-quality notes, and AI-powered learning assistance."}
             </p>
             <p className="mt-4 text-xs font-bold text-primary">
               Note: When sending support issues, kindly attach a screenshot of the error.

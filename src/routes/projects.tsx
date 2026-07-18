@@ -45,7 +45,7 @@ import { exportProjectReport } from "@/lib/project-pdf";
 export const Route = createFileRoute("/projects")({
   head: () => ({
     meta: [
-      { title: "NCDC PBL Tracker — Cymatic Hub" },
+      { title: "NCDC PBL Tracker — Cymatic Study" },
       {
         name: "description",
         content:

@@ -1,6 +1,7 @@
 // Offline-first queue using Dexie. Syncs to Supabase when online.
 import Dexie, { type Table } from "dexie";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export type QueuedAttempt = {
   id?: number;
@@ -47,7 +48,7 @@ class CymaticDB extends Dexie {
   attempts!: Table<QueuedAttempt, number>;
   points!: Table<QueuedPoints, number>;
   notifications!: Table<QueuedNotification, number>;
-  quizQuestions!: Table<any, string>;
+  quizQuestions!: Table<unknown, string>;
   userProgress!: Table<SubjectProgress, string>;
   recentActivity!: Table<RecentActivity, number>;
   constructor() {
@@ -123,13 +124,20 @@ export async function syncQueue() {
     for (const a of pendingA) {
       // Server re-calculates score based on answers and awards points.
       // This RPC now handles the logic server-side for security.
-      const { error } = await (supabase as any).rpc("submit_quiz_attempt", {
+      const { error } = await (
+        supabase as unknown as {
+          rpc: (name: string, args: Record<string, unknown>) => Promise<{ error: Error | null }>;
+        }
+      ).rpc("submit_quiz_attempt", {
         _topic_id: a.topic_id,
         _answers: a.answers,
       });
       if (!error && a.id != null) {
         await db.attempts.update(a.id, { synced: 1 });
       }
+    }
+    if (pendingA.length > 0) {
+      toast.success("Progress synced successfully!");
     }
     // Points are awarded server-side by the trigger on task_attempts.
     // We mark local point rows synced so they don't get double-counted if we ever
@@ -178,10 +186,16 @@ export async function getAllSubjectProgress(): Promise<SubjectProgress[]> {
     if (existing) {
       finalProgress.push(existing);
     } else {
+      let daysAgo = 0;
+      if (sub === "Chemistry") daysAgo = 2.3; // ~55 hours (neglected)
+      if (sub === "Biology") daysAgo = 3.2; // ~76 hours (neglected)
+      if (sub === "Physics") daysAgo = 0.5; // ~12 hours
+      const lastInteracted = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
+
       const defaultRecord = {
         subject: sub,
         completedPercentage: 15,
-        lastInteracted: new Date().toISOString(),
+        lastInteracted,
       };
       await db.userProgress.put(defaultRecord);
       finalProgress.push(defaultRecord);

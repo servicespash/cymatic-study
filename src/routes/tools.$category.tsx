@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Download, BookOpen, Dumbbell, Sparkles } from "lucide-react";
+import { useState } from "react";
 import { topics } from "@/data/topics";
 import { topicNotes } from "@/data/notes";
 import { quizQuestions } from "@/data/quizzes";
@@ -17,9 +18,14 @@ import QuadraticSolver from "@/components/tools/math/QuadraticSolver";
 import TrigonometryCalculator from "@/components/tools/math/TrigonometryCalculator";
 import Matrix3x3Determinant from "@/components/tools/math/Matrix3x3Determinant";
 import AreaPerimeterCalc from "@/components/tools/math/AreaPerimeterCalc";
+import SimultaneousEquations from "@/components/tools/math/SimultaneousEquations";
+import StatisticsCalculator from "@/components/tools/math/StatisticsCalculator";
+
+// Export PDF Modal
+import { ExportPdfModal } from "@/components/ExportPdfModal";
 
 export const Route = createFileRoute("/tools/$category")({
-  head: () => ({ meta: [{ title: "Tools — Latty's Cymatic Hub" }] }),
+  head: () => ({ meta: [{ title: "Tools — Latty's Cymatic Study" }] }),
   component: ToolCategoryPage,
 });
 
@@ -62,11 +68,67 @@ function buildExercisesFile(subject: Subject) {
   return lines.join("\n");
 }
 
+function buildNotesPdfContent(subject: Subject) {
+  const subj = topics.filter((t) => t.subject === subject);
+  const contentList: { sectionTitle: string; body: string[] }[] = [];
+
+  subj.forEach((t) => {
+    const bodies: string[] = [];
+    bodies.push(`Level: Senior ${t.level}`);
+    bodies.push(`Description: ${t.description}`);
+    if (t.formulas?.length) {
+      bodies.push(`Key formulas: ${t.formulas.join(", ")}`);
+    }
+    const note = topicNotes.find((n) => n.topicId === t.id);
+    note?.sections.forEach((s) => {
+      bodies.push(`-- ${s.heading} --`);
+      bodies.push(s.content);
+    });
+    if (note?.examples?.length) {
+      note.examples.forEach((ex) => {
+        bodies.push(`Worked Example: ${ex.problem}`);
+        bodies.push(`Solution: ${ex.solution}`);
+      });
+    }
+    contentList.push({
+      sectionTitle: t.title,
+      body: bodies,
+    });
+  });
+  return contentList;
+}
+
+function buildExercisesPdfContent(subject: Subject) {
+  const subj = topics.filter((t) => t.subject === subject);
+  const contentList: {
+    sectionTitle: string;
+    body: { q: string; options?: string[]; a: string }[];
+  }[] = [];
+
+  subj.forEach((t) => {
+    const qs = quizQuestions.filter((q) => q.topicId === t.id);
+    if (!qs.length) return;
+    const body: { q: string; options?: string[]; a: string }[] = qs.map((q) => ({
+      q: q.question,
+      options: q.options,
+      a: q.options[q.correctIndex],
+    }));
+    contentList.push({
+      sectionTitle: `${t.title} (S${t.level})`,
+      body,
+    });
+  });
+  return contentList;
+}
+
 function ToolCategoryPage() {
   const { category } = Route.useParams();
   const subject = category as Subject;
   const label = subjectLabels[subject] ?? category;
   const subjTopics = topics.filter((t) => t.subject === subject);
+
+  const [isNotesPdfOpen, setIsNotesPdfOpen] = useState(false);
+  const [isExercisesPdfOpen, setIsExercisesPdfOpen] = useState(false);
 
   const renderInteractiveTools = () => {
     switch (subject) {
@@ -78,6 +140,8 @@ function ToolCategoryPage() {
             <TrigonometryCalculator />
             <Matrix3x3Determinant />
             <AreaPerimeterCalc />
+            <SimultaneousEquations />
+            <StatisticsCalculator />
           </div>
         );
       case "physics":
@@ -142,12 +206,29 @@ function ToolCategoryPage() {
               <BookOpen className="h-6 w-6" />
             </div>
             <div className="flex-1">
-              <p className="font-bold">Download Full Notes</p>
-              <p className="text-xs text-muted-foreground">
-                All {label.toLowerCase()} topics, S1–S4
-              </p>
+              <p className="font-bold">Download Plain Notes</p>
+              <p className="text-xs text-muted-foreground">Offline TXT format, S1–S4</p>
             </div>
             <Download className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+          </button>
+
+          <button
+            onClick={() => setIsNotesPdfOpen(true)}
+            className="group flex items-center gap-3 rounded-2xl border border-teal-500/30 bg-teal-500/5 p-5 text-left shadow-card transition-smooth hover:-translate-y-1 hover:shadow-glow"
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-500/15 text-teal-400">
+              <Sparkles className="h-6 w-6" />
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-teal-300 flex items-center gap-1.5">
+                Export Branded Notes
+                <span className="text-[9px] font-bold uppercase tracking-wider bg-teal-500/20 text-teal-300 px-1.5 py-0.5 rounded">
+                  PDF
+                </span>
+              </p>
+              <p className="text-xs text-teal-400/70">Verifiable layout, QR codes, S1–S4 labels</p>
+            </div>
+            <Download className="h-5 w-5 text-teal-400/50 group-hover:text-teal-300" />
           </button>
 
           <button
@@ -158,12 +239,31 @@ function ToolCategoryPage() {
               <Dumbbell className="h-6 w-6" />
             </div>
             <div className="flex-1">
-              <p className="font-bold">Download Practice Book</p>
-              <p className="text-xs text-muted-foreground">
-                Questions with answers for offline use
+              <p className="font-bold">Download Plain Practice Book</p>
+              <p className="text-xs text-muted-foreground">Offline TXT format, S1–S4</p>
+            </div>
+            <Download className="h-5 w-5 text-muted-foreground group-hover:text-success" />
+          </button>
+
+          <button
+            onClick={() => setIsExercisesPdfOpen(true)}
+            className="group flex items-center gap-3 rounded-2xl border border-indigo-500/30 bg-indigo-500/5 p-5 text-left shadow-card transition-smooth hover:-translate-y-1 hover:shadow-glow"
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-400">
+              <Sparkles className="h-6 w-6" />
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-indigo-300 flex items-center gap-1.5">
+                Export Branded Practice Book
+                <span className="text-[9px] font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded">
+                  PDF
+                </span>
+              </p>
+              <p className="text-xs text-indigo-400/70">
+                Verifiable layout, QR codes, S1–S4 labels
               </p>
             </div>
-            <Download className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+            <Download className="h-5 w-5 text-indigo-400/50 group-hover:text-indigo-300" />
           </button>
         </div>
       </section>
@@ -186,6 +286,25 @@ function ToolCategoryPage() {
           ))}
         </div>
       </section>
+
+      {/* MODALS */}
+      <ExportPdfModal
+        isOpen={isNotesPdfOpen}
+        onClose={() => setIsNotesPdfOpen(false)}
+        title={`${label} Study Notes`}
+        subject={subject}
+        docType="lesson_notes"
+        content={buildNotesPdfContent(subject)}
+      />
+
+      <ExportPdfModal
+        isOpen={isExercisesPdfOpen}
+        onClose={() => setIsExercisesPdfOpen(false)}
+        title={`${label} Practice Book`}
+        subject={subject}
+        docType="quiz"
+        content={buildExercisesPdfContent(subject)}
+      />
     </div>
   );
 }

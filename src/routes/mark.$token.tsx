@@ -7,7 +7,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/mark/$token")({
   head: () => ({
     meta: [
-      { title: "Marking Station — Cymatic Hub" },
+      { title: "Marking Station — Cymatic Study" },
       { name: "description", content: "External teacher marking station." },
       { name: "robots", content: "noindex,nofollow" },
     ],

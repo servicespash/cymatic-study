@@ -17,12 +17,14 @@ import {
   Briefcase,
   ChevronLeft,
   ChevronRight,
+  Trophy,
+  Activity,
 } from "lucide-react";
 import { SubjectCard } from "@/components/SubjectCard";
 import { TermGoalGauge } from "@/components/TermGoalGauge";
 import { BRAND } from "@/lib/constants";
 import { useEffect, useState, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTutor } from "@/lib/TutorService";
 import { buildGreeting, fetchWeatherSummary } from "@/lib/greetings";
 import { useAuth } from "@/lib/auth-context";
@@ -42,15 +44,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { curriculumSubjects, CurriculumSubject } from "@/data/curriculumSubjects";
 
 export const Route = createFileRoute("/")({
   head: () => {
     const meta = generateMetaTags({
-      title: "Latty's Cymatic Hub - Interactive Study Companion for Uganda Curriculum",
+      title: "Latty's Cymatic Study - Interactive Study Companion for Uganda Curriculum",
       description:
-        "Elevate your learning with Latty's Cymatic Hub. Interactive study tools, notes, and quizzes for Mathematics, Physics, Chemistry, and Biology (Senior 1–4, Uganda New Curriculum).",
-      canonicalUrl: "https://hub.cymatichub.xyz/",
-      ogImage: "https://hub.cymatichub.xyz/og-home.jpg",
+        "Elevate your learning with Latty's Cymatic Study. Interactive study tools, notes, and quizzes for Mathematics, Physics, Chemistry, and Biology (Senior 1–4, Uganda New Curriculum).",
+      canonicalUrl: "https://study.cymatichub.xyz/",
+      ogImage: "https://study.cymatichub.xyz/og-home.jpg",
       keywords: [
         "Uganda curriculum",
         "secondary school",
@@ -63,13 +66,13 @@ export const Route = createFileRoute("/")({
       ],
     });
     const schema = getWebPageSchema({
-      name: "Latty's Cymatic Hub",
+      name: "Latty's Cymatic Study",
       description:
         "Interactive study companion for Uganda Secondary Curriculum with notes, quizzes, and tools for Math, Physics, Chemistry, and Biology.",
     });
     return {
       meta,
-      links: [getCanonicalLink("https://hub.cymatichub.xyz/")],
+      links: [getCanonicalLink("https://study.cymatichub.xyz/")],
       scripts: [
         {
           type: "application/ld+json",
@@ -81,90 +84,42 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-const subjects = [
-  {
-    title: "Mathematics",
-    description: "Algebra, geometry, trig & statistics with interactive calculators.",
-    icon: Calculator,
-    gradient: "math" as const,
-    category: "math" as const,
-  },
-  {
-    title: "Physics",
-    description: "Forces, motion, electricity, waves and the laws of nature.",
-    icon: Zap,
-    gradient: "physics" as const,
-    category: "physics" as const,
-  },
-  {
-    title: "Chemistry",
-    description: "Atoms, bonding, reactions and organic chemistry made clear.",
-    icon: Atom,
-    gradient: "chemistry" as const,
-    category: "chemistry" as const,
-  },
-  {
-    title: "Biology",
-    description: "Cells, human systems, ecology and the science of life.",
-    icon: Leaf,
-    gradient: "biology" as const,
-    category: "biology" as const,
-  },
-  {
-    title: "Geography",
-    description: "Map reading, weather, landforms, and world economic systems.",
-    icon: Compass,
-    gradient: "geography" as const,
-    category: "geography" as const,
-  },
-  {
-    title: "History",
-    description: "East African, West African, South African and European world history.",
-    icon: Landmark,
-    gradient: "history" as const,
-    category: "history" as const,
-  },
-  {
-    title: "English Language",
-    description: "Grammar, written correspondence, creative writing, and rhetorics.",
-    icon: BookOpen,
-    gradient: "english" as const,
-    category: "english" as const,
-  },
-  {
-    title: "Entrepreneurship",
-    description: "Business ideas, bookkeeping, taxation, strategic plans, and auditing.",
-    icon: Briefcase,
-    gradient: "entrepreneurship" as const,
-    category: "entrepreneurship" as const,
-  },
-];
-
 const features = [
   {
     icon: FlaskConical,
-    title: "Uganda Curriculum",
-    desc: "Aligned with the UNEB Senior 1–4 syllabus, end-to-end.",
+    title: "Uganda & Intl Curriculum",
+    desc: "Syllabus aligned for Senior 1–4 (O-Level) & Senior 5–6 (A-Level).",
   },
   {
     icon: Wand2,
-    title: "Your Live Tutor",
-    desc: "Ask anything. Adams or Hawa explains it with heart.",
+    title: "Your AI Study Buddies",
+    desc: "Adams and Hawa are ready to coach and cheer you on daily.",
   },
   {
     icon: BookOpen,
-    title: "Offline-friendly Notes",
-    desc: "Saved lessons stay readable even without internet.",
+    title: "Offline-First Study Notes",
+    desc: "Access your lessons anywhere, anytime even without internet.",
   },
 ];
 
-function HomePage() {
+type GoalPeriod = "daily" | "weekly" | "term";
+
+export function HomePage() {
   const { persona, speak } = useTutor();
   const { user } = useAuth();
+
+  // Points logic
   const [todayPoints, setTodayPoints] = useState(0);
+  const [weeklyPoints, setWeeklyPoints] = useState(0);
+  const [termPoints, setTermPoints] = useState(0);
+  const [selectedGoal, setSelectedGoal] = useState<GoalPeriod>("term");
+
+  // Tab configuration for O-Level vs A-Level arrangement
+  const [curriculumTab, setCurriculumTab] = useState<"all" | "alevel" | "olevel">("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
   const carouselRef = useRef<HTMLDivElement>(null);
+
   const scroll = (direction: "left" | "right") => {
     if (carouselRef.current) {
       const { scrollLeft, clientWidth } = carouselRef.current;
@@ -176,45 +131,106 @@ function HomePage() {
     }
   };
 
-  const filteredSubjects =
-    categoryFilter === "all" ? subjects : subjects.filter((s) => s.category === categoryFilter);
+  // Filter and arrange subjects
+  const filteredSubjects = curriculumSubjects.filter((subj) => {
+    // 1. Level Filter
+    if (curriculumTab === "alevel" && subj.level !== "Senior 5–6 (A-Level)") return false;
+    if (curriculumTab === "olevel" && subj.level !== "Senior 1–4 (O-Level)") return false;
 
+    // 2. Category Filter
+    if (categoryFilter !== "all" && subj.category !== categoryFilter) return false;
+
+    return true;
+  });
+
+  // Sort logically: Compulsory first, then Selectables/Optionals
+  const arrangedSubjects = [...filteredSubjects].sort((a, b) => {
+    // Keep A-Level arranged above O-Level in the "all" view
+    if (curriculumTab === "all") {
+      if (a.level !== b.level) {
+        return a.level.includes("A-Level") ? -1 : 1;
+      }
+    }
+    // Sort by compulsory status
+    if (a.type === "Compulsory" && b.type !== "Compulsory") return -1;
+    if (a.type !== "Compulsory" && b.type === "Compulsory") return 1;
+    return a.title.localeCompare(b.title);
+  });
+
+  // Fetch real points from online & offline local DB
   useEffect(() => {
     if (!user) {
       setTodayPoints(0);
+      setWeeklyPoints(0);
+      setTermPoints(0);
       return;
     }
     let cancelled = false;
     (async () => {
+      const now = new Date();
+
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
-      let total = 0;
+
+      const startOfWeek = new Date();
+      startOfWeek.setDate(now.getDate() - 7);
+      startOfWeek.setHours(0, 0, 0, 0);
+
+      const startOfTerm = new Date();
+      startOfTerm.setDate(now.getDate() - 90);
+      startOfTerm.setHours(0, 0, 0, 0);
+
+      let remotePoints: any[] = [];
       try {
         const { data } = await supabase
           .from("user_points")
           .select("points, created_at")
           .eq("user_id", user.id)
-          .gte("created_at", startOfDay.toISOString());
-        total = (data ?? []).reduce((s, r) => s + (r.points ?? 0), 0);
+          .gte("created_at", startOfTerm.toISOString());
+        remotePoints = data ?? [];
       } catch (err) {
-        console.warn("Operation failed", err);
+        console.warn("Could not load remote points", err);
       }
+
+      let localPoints: any[] = [];
       try {
-        const local = await db.points.where("user_id").equals(user.id).toArray();
-        const localToday = local
-          .filter((p) => p.synced === 0 && new Date(p.created_at) >= startOfDay)
-          .reduce((s, p) => s + p.points, 0);
-        total += localToday;
+        localPoints = await db.points.where("user_id").equals(user.id).toArray();
       } catch (err) {
-        console.warn("Operation failed", err);
+        console.warn("Could not load local points", err);
       }
-      if (!cancelled) setTodayPoints(total);
+
+      // Compute aggregates
+      const remoteToday = remotePoints
+        .filter((r) => new Date(r.created_at) >= startOfDay)
+        .reduce((sum, r) => sum + (r.points ?? 0), 0);
+      const localToday = localPoints
+        .filter((p) => new Date(p.created_at) >= startOfDay)
+        .reduce((sum, p) => sum + p.points, 0);
+
+      const remoteWeekly = remotePoints
+        .filter((r) => new Date(r.created_at) >= startOfWeek)
+        .reduce((sum, r) => sum + (r.points ?? 0), 0);
+      const localWeekly = localPoints
+        .filter((p) => new Date(p.created_at) >= startOfWeek)
+        .reduce((sum, p) => sum + p.points, 0);
+
+      const remoteTerm = remotePoints.reduce((sum, r) => sum + (r.points ?? 0), 0);
+      const localTerm = localPoints
+        .filter((p) => new Date(p.created_at) >= startOfTerm)
+        .reduce((sum, p) => sum + p.points, 0);
+
+      if (!cancelled) {
+        setTodayPoints(remoteToday + localToday);
+        setWeeklyPoints(remoteWeekly + localWeekly);
+        setTermPoints(remoteTerm + localTerm);
+      }
     })();
     return () => {
       cancelled = true;
     };
   }, [user]);
 
+  // Handle live greeting on entry
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -253,175 +269,222 @@ function HomePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Determine current gauge value and limit based on challenge period
+  const activePointsValue =
+    selectedGoal === "daily" ? todayPoints : selectedGoal === "weekly" ? weeklyPoints : termPoints;
+  const activeGoalMax = selectedGoal === "daily" ? 20 : selectedGoal === "weekly" ? 50 : 100;
+
   return (
-    <div>
-      {/* Hero */}
-      <section className="relative overflow-hidden px-4 py-12 md:py-20">
+    <div className="space-y-8 pb-12">
+      {/* Hero Header */}
+      <section className="relative overflow-hidden px-4 py-12 md:py-16">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          {[...Array(5)].map((_, i) => (
+          {[...Array(3)].map((_, i) => (
             <div
               key={i}
-              className="absolute rounded-full opacity-25 blur-3xl animate-float"
+              className="absolute rounded-full opacity-20 blur-3xl animate-float"
               style={{
-                width: `${180 + i * 60}px`,
-                height: `${180 + i * 60}px`,
-                top: `${5 + i * 18}%`,
-                left: `${(i * 23) % 90}%`,
-                background: i % 2 === 0 ? "var(--gradient-math)" : "var(--gradient-biology)",
-                animationDelay: `${i * 0.6}s`,
+                width: `${200 + i * 80}px`,
+                height: `${200 + i * 80}px`,
+                top: `${10 + i * 20}%`,
+                left: `${15 + i * 30}%`,
+                background: i % 2 === 0 ? "var(--primary)" : "var(--accent)",
+                animationDelay: `${i * 0.8}s`,
               }}
             />
           ))}
         </div>
 
         <div className="relative mx-auto max-w-4xl">
-          <div className="glass rounded-3xl p-8 md:p-12 text-center border border-border/40 shadow-card backdrop-blur-md animate-fade-in-up">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary backdrop-blur">
+          <div className="glass rounded-3xl border border-border bg-card/60 p-8 md:p-12 text-center shadow-card backdrop-blur-md animate-fade-in-up">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-primary">
               <Sparkles className="h-3.5 w-3.5" />
-              New Lower Secondary · Uganda {BRAND.flag}
+              Comprehensive Academic Curriculum · Uganda {BRAND.flag}
             </div>
 
-            <h1 className="mb-4 text-4xl font-extrabold leading-[1.1] tracking-tight md:text-6xl lg:text-7xl">
-              <span className="bg-gradient-hero bg-clip-text text-transparent">Cymatic Hub</span>
+            <h1 className="mb-4 text-4xl font-extrabold leading-tight tracking-tight md:text-6xl text-foreground">
+              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                Cymatic Study
+              </span>
             </h1>
 
-            <p className="mx-auto mb-4 max-w-2xl text-base text-muted-foreground md:text-lg font-medium leading-relaxed">
-              An interactive study companion built for the Uganda Secondary Curriculum. Access
-              notes, quizzes, projects, and advanced learning tools for Mathematics, Physics,
-              Chemistry, and Biology.
+            <p className="mx-auto mb-6 max-w-2xl text-base text-muted-foreground md:text-lg font-medium leading-relaxed">
+              An interactive learning companion customized for both Lower Secondary (Senior 1–4) and
+              Advanced Level (Senior 5–6) Uganda curricula. Track your goals, practice quizzes, and
+              earn rewards!
             </p>
 
-            <p className="mb-10 text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground/60">
+            <p className="mb-8 text-[11px] font-bold uppercase tracking-[0.25em] text-muted-foreground/80">
               {BRAND.name} × {BRAND.partner} · {BRAND.tagline} {BRAND.flag}
             </p>
 
-            {/* Three CTAs */}
+            {/* Main CTAs */}
             <div className="grid gap-3 sm:grid-cols-3">
               <Link
                 to="/lessons"
-                className="group flex items-center justify-between gap-3 rounded-2xl bg-primary px-5 py-4 text-left text-sm font-semibold text-primary-foreground shadow-glow transition-smooth hover:scale-[1.03]"
+                className="group flex items-center justify-between gap-3 rounded-2xl bg-primary px-5 py-4 text-left text-sm font-bold text-primary-foreground shadow-glow transition-all hover:scale-[1.02]"
               >
-                <span className="flex items-center gap-2.5">
+                <span className="flex items-center gap-2">
                   <BookOpen className="h-5 w-5" />
                   Explore Lessons
                 </span>
-                <ArrowRight className="h-4 w-4 transition-smooth group-hover:translate-x-1" />
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
                 to="/quizzes"
-                className="group flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-5 py-4 text-left text-sm font-semibold text-foreground transition-smooth hover:scale-[1.03] hover:bg-card/70"
+                className="group flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-5 py-4 text-left text-sm font-bold text-foreground transition-all hover:scale-[1.02] hover:bg-muted/40"
               >
-                <span className="flex items-center gap-2.5">
+                <span className="flex items-center gap-2">
                   <Lightbulb className="h-5 w-5 text-secondary" />
                   Take Quizzes
                 </span>
-                <ArrowRight className="h-4 w-4 transition-smooth group-hover:translate-x-1" />
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
                 to="/tools"
-                className="group flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-5 py-4 text-left text-sm font-semibold text-foreground transition-smooth hover:scale-[1.03] hover:bg-card/70"
+                className="group flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-5 py-4 text-left text-sm font-bold text-foreground transition-all hover:scale-[1.02] hover:bg-muted/40"
               >
-                <span className="flex items-center gap-2.5">
+                <span className="flex items-center gap-2">
                   <Calculator className="h-5 w-5 text-accent" />
-                  Explore Tools
+                  Study Tools
                 </span>
-                <ArrowRight className="h-4 w-4 transition-smooth group-hover:translate-x-1" />
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Combined NCDC Subjects Accordion & Horizontal Carousel */}
+      {/* Upgraded NCDC Subjects Section with Perfect Adaptive Contrast */}
       <section
-        className="mx-auto max-w-6xl px-4 pb-12 animate-fade-in-up"
-        style={{ animationDelay: "150ms" }}
+        className="mx-auto max-w-6xl px-4 animate-fade-in-up"
+        style={{ animationDelay: "100ms" }}
       >
         <Accordion type="single" defaultValue="curriculum-subjects" collapsible className="w-full">
           <AccordionItem value="curriculum-subjects" className="border-none">
-            <div className="glass rounded-3xl p-6 sm:p-8 border border-white/10 bg-white/5 backdrop-blur-md shadow-xl">
+            <div className="rounded-3xl border border-border bg-card/45 p-6 sm:p-8 shadow-card backdrop-blur-md">
               <AccordionTrigger className="hover:no-underline py-0 text-left flex items-center justify-between w-full">
                 <div className="flex flex-col gap-1 pr-4">
-                  <span className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-400 w-fit">
+                  <span className="mb-2.5 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-bold text-primary w-fit">
                     <GraduationCap className="h-3.5 w-3.5" />
-                    Lower Secondary &amp; A-Level Curriculum
+                    NCDC Approved Curriculum &amp; General Subjects
                   </span>
-                  <h2 className="text-2xl font-extrabold tracking-tight text-white md:text-3xl mt-1">
-                    NCDC Interactive Subjects
+                  <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl mt-1">
+                    Uganda National Curriculum Subjects
                   </h2>
-                  <p className="text-sm text-zinc-400">
-                    Senior 1 to Senior 6 — Scroll aside to launch syllabus-mapped topics, notes, and
-                    worksheets
+                  <p className="text-sm text-muted-foreground">
+                    Senior 1 to Senior 6 — Swipe or scroll through the compact interactive subject
+                    cards below
                   </p>
                 </div>
               </AccordionTrigger>
 
-              <AccordionContent className="pt-8">
-                {/* Category Filter and Scroll Controls */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger className="w-[200px] bg-white/5 border-white/10 text-white">
-                      <SelectValue placeholder="Filter by category" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
-                      <SelectItem value="all">All NCDC Subjects</SelectItem>
-                      <SelectItem value="math">Mathematics</SelectItem>
-                      <SelectItem value="physics">Physics</SelectItem>
-                      <SelectItem value="chemistry">Chemistry</SelectItem>
-                      <SelectItem value="biology">Biology</SelectItem>
-                      <SelectItem value="geography">Geography</SelectItem>
-                      <SelectItem value="history">History</SelectItem>
-                      <SelectItem value="english">English Language</SelectItem>
-                      <SelectItem value="entrepreneurship">Entrepreneurship</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <AccordionContent className="pt-6">
+                {/* Curriculum Level Toggle & Filters */}
+                <div className="flex flex-col gap-4 border-t border-border/60 pt-6 md:flex-row md:items-center md:justify-between">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => setCurriculumTab("all")}
+                      className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                        curriculumTab === "all"
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "bg-muted/60 text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      All Subjects ({curriculumSubjects.length})
+                    </button>
+                    <button
+                      onClick={() => setCurriculumTab("alevel")}
+                      className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                        curriculumTab === "alevel"
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "bg-muted/60 text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      Senior 5 &amp; Senior 6 (A-Level)
+                    </button>
+                    <button
+                      onClick={() => setCurriculumTab("olevel")}
+                      className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                        curriculumTab === "olevel"
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "bg-muted/60 text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      Senior 1 to Senior 4 (O-Level)
+                    </button>
+                  </div>
 
-                  {/* Slider controls */}
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        scroll("left");
-                      }}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white transition-smooth"
-                      title="Scroll Left"
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        scroll("right");
-                      }}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white transition-smooth"
-                      title="Scroll Right"
-                    >
-                      <ChevronRight className="h-5 w-5" />
-                    </button>
+                  <div className="flex items-center justify-between gap-4">
+                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                      <SelectTrigger className="w-[180px] rounded-xl border border-border bg-card text-foreground">
+                        <SelectValue placeholder="Category" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover border-border text-popover-foreground">
+                        <SelectItem value="all">All Fields</SelectItem>
+                        <SelectItem value="math">Mathematics</SelectItem>
+                        <SelectItem value="physics">Physics</SelectItem>
+                        <SelectItem value="chemistry">Chemistry</SelectItem>
+                        <SelectItem value="biology">Biology</SelectItem>
+                        <SelectItem value="geography">Geography</SelectItem>
+                        <SelectItem value="history">History</SelectItem>
+                        <SelectItem value="english">English &amp; Lit</SelectItem>
+                        <SelectItem value="entrepreneurship">Business</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {/* Carousel controls */}
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          scroll("left");
+                        }}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all"
+                        title="Scroll Left"
+                      >
+                        <ChevronLeft className="h-4.5 w-4.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          scroll("right");
+                        }}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all"
+                        title="Scroll Right"
+                      >
+                        <ChevronRight className="h-4.5 w-4.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                {/* Horizontal Scrolling Carousel with Framer Motion */}
-                <div className="relative">
+                {/* Horizontal Sliding Carousel of Small Compact Cards */}
+                <div className="relative mt-6">
                   <div
                     ref={carouselRef}
-                    className="flex overflow-x-auto gap-6 pb-4 px-1 scrollbar-none snap-x snap-mandatory scroll-smooth"
+                    className="flex overflow-x-auto gap-4 pb-4 px-1 scrollbar-none snap-x snap-mandatory scroll-smooth"
                     style={{ WebkitOverflowScrolling: "touch" }}
                   >
-                    {filteredSubjects.map((s, i) => (
+                    {arrangedSubjects.map((s, i) => (
                       <motion.div
                         key={s.title}
                         layout
-                        initial={{ opacity: 0, x: 50 }}
+                        initial={{ opacity: 0, x: 30 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.4, delay: i * 0.05 }}
-                        className="w-[280px] sm:w-[320px] shrink-0 snap-start"
+                        transition={{ duration: 0.3, delay: i * 0.03 }}
+                        className="w-[240px] sm:w-[280px] shrink-0 snap-start"
                       >
-                        <SubjectCard subject={s} delay={i * 50} />
+                        <SubjectCard subject={s} delay={i * 30} />
                       </motion.div>
                     ))}
+                    {arrangedSubjects.length === 0 && (
+                      <div className="w-full py-12 text-center text-sm text-muted-foreground border border-dashed border-border rounded-2xl">
+                        No subjects match the selected filters. Try another tab or category.
+                      </div>
+                    )}
                   </div>
                 </div>
               </AccordionContent>
@@ -430,60 +493,118 @@ function HomePage() {
         </Accordion>
       </section>
 
-      {/* Term goal + projects teaser */}
-      <section className="mx-auto max-w-6xl px-4 pb-12">
+      {/* Upgraded 100-Point Challenge Card & Practical Work Projects Teaser */}
+      <section className="mx-auto max-w-6xl px-4">
         <div className="grid gap-5 md:grid-cols-3">
-          <div className="glass animate-fade-in-up rounded-2xl p-6 shadow-card md:col-span-1">
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Term Goal
-            </p>
-            <h3 className="mb-4 text-lg font-bold text-foreground">100-point challenge</h3>
-            <TermGoalGauge value={todayPoints} />
-            <p className="mt-3 text-xs text-muted-foreground">
-              Pass quizzes (≥70%) to earn points. Adams &amp; Hawa cheer you on every day.
-            </p>
+          {/* Challenge Card - Connected to Dashboard & Filterable Dropdown */}
+          <div className="glass animate-fade-in-up rounded-2xl border border-border bg-card p-6 shadow-card md:col-span-1 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <div className="flex items-center gap-1.5">
+                  <Trophy className="h-4 w-4 text-secondary" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Active Study Goal
+                  </span>
+                </div>
+
+                {/* Period filter dropdown */}
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Select
+                    value={selectedGoal}
+                    onValueChange={(val) => setSelectedGoal(val as GoalPeriod)}
+                  >
+                    <SelectTrigger className="h-7 w-[110px] text-[10px] font-bold uppercase bg-muted/60 border-border rounded-lg px-2 text-foreground">
+                      <SelectValue placeholder="Period" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border text-popover-foreground text-xs font-bold">
+                      <SelectItem value="daily">Daily Goal</SelectItem>
+                      <SelectItem value="weekly">Weekly Goal</SelectItem>
+                      <SelectItem value="term">Term Goal</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <h3 className="text-base font-black tracking-tight text-foreground mb-4">
+                {selectedGoal === "daily" && "Daily 20-Point Quest"}
+                {selectedGoal === "weekly" && "Weekly 50-Point Sprint"}
+                {selectedGoal === "term" && "Term 100-Point Challenge"}
+              </h3>
+
+              <div className="flex justify-center py-2">
+                <TermGoalGauge value={activePointsValue} max={activeGoalMax} />
+              </div>
+            </div>
+
+            <div className="mt-4 border-t border-border/50 pt-4">
+              <p className="text-[11px] leading-relaxed text-muted-foreground mb-3">
+                {selectedGoal === "daily" &&
+                  "Earn 20 points today by completing quizzes and scoring over 70%."}
+                {selectedGoal === "weekly" &&
+                  "Consistency pays off! Hit 50 points this week to unlock study badges."}
+                {selectedGoal === "term" &&
+                  "Build long-term success. Master subjects and complete term goals."}
+              </p>
+
+              <Link
+                to="/dashboard"
+                className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-xs font-bold text-primary py-2.5 transition-all"
+              >
+                <Activity className="h-3.5 w-3.5" />
+                Go to Student Dashboard
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
           </div>
 
+          {/* Practical Projects Teaser */}
           <Link
             to="/projects"
-            className="group glass animate-fade-in-up overflow-hidden rounded-2xl p-6 shadow-card transition-smooth hover:-translate-y-1 hover:shadow-glow md:col-span-2"
-            style={{ animationDelay: "120ms" }}
+            className="group glass animate-fade-in-up overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md md:col-span-2 flex flex-col justify-between"
+            style={{ animationDelay: "100ms" }}
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-accent">
+                <div className="mb-3.5 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-accent">
                   <GraduationCap className="h-3.5 w-3.5" />
                   Practical Project Work
                 </div>
-                <h3 className="mb-2 text-xl font-bold text-foreground">
-                  Build, measure, observe — 7 hands-on projects per subject, per class.
+                <h3 className="mb-3.5 text-xl font-black text-foreground tracking-tight leading-snug">
+                  Build, measure, observe — Hands-on projects mapping both O-Level &amp; A-Level
+                  subjects.
                 </h3>
-                <p className="text-sm text-muted-foreground">
-                  Real-world tasks with clear objectives, materials, steps and a marking guide. Work
-                  alone or in your study group.
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Real-world tasks with detailed objective outlines, required materials, methodology
+                  instructions, and a precise marking guide. Work at your own pace or collaborate in
+                  group studies.
                 </p>
               </div>
-              <ArrowRight className="hidden h-5 w-5 shrink-0 text-primary transition-smooth group-hover:translate-x-1 sm:block" />
+              <ArrowRight className="hidden h-5 w-5 shrink-0 text-primary transition-transform group-hover:translate-x-1.5 sm:block" />
+            </div>
+
+            <div className="mt-6 flex items-center gap-2 text-xs font-bold text-primary group-hover:underline">
+              Explore hands-on curriculum projects
+              <ArrowRight className="h-3.5 w-3.5" />
             </div>
           </Link>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="border-t border-border/60 bg-card/30 px-4 py-16">
+      {/* Trust Highlights & Features */}
+      <section className="border-t border-border bg-card/10 px-4 py-12">
         <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
           {features.map((f, i) => (
             <div
               key={f.title}
               className="flex animate-fade-in-up gap-4"
-              style={{ animationDelay: `${i * 100}ms` }}
+              style={{ animationDelay: `${i * 80}ms` }}
             >
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
-                <f.icon className="h-5 w-5" />
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/10">
+                <f.icon className="h-5.5 w-5.5" />
               </div>
               <div>
-                <h3 className="mb-1 font-semibold text-foreground">{f.title}</h3>
-                <p className="text-sm text-muted-foreground">{f.desc}</p>
+                <h3 className="mb-1 text-sm font-bold text-foreground">{f.title}</h3>
+                <p className="text-xs leading-relaxed text-muted-foreground">{f.desc}</p>
               </div>
             </div>
           ))}

@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/news")({
-  head: () => ({ meta: [{ title: "News & Podcasts — Latty's Cymatic Hub" }] }),
+  head: () => ({ meta: [{ title: "News & Podcasts — Latty's Cymatic Study" }] }),
   component: NewsPage,
 });
 

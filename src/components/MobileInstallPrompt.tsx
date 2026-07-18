@@ -54,7 +54,7 @@ export function MobileInstallPrompt() {
 
         {/* Description */}
         <p className="text-gray-600 dark:text-gray-300 mb-6">
-          Get the Latty&apos;s Cymatic Hub app on your mobile device for offline access and better
+          Get the Latty&apos;s Cymatic Study app on your mobile device for offline access and better
           learning experience.
         </p>
 

@@ -2103,4 +2103,181 @@ export const quizQuestions: QuizQuestion[] = [
     options: ["Oxygen", "Nitrogen", "Carbon dioxide", "Hydrogen"],
     correctIndex: 2,
   },
+
+  // ── ECONOMICS ──
+  {
+    id: "q-ec5-1a",
+    topicId: "ec5-1",
+    question: "What is the fundamental economic problem?",
+    options: ["Unemployment", "Inflation", "Scarcity of resources", "High taxation"],
+    correctIndex: 2,
+    explanation:
+      "Scarcity is the basic economic problem, as human wants are infinite but resources are limited.",
+  },
+  {
+    id: "q-ec5-1b",
+    topicId: "ec5-1",
+    question: "Opportunity cost is defined as:",
+    options: [
+      "The cash price paid for a good",
+      "The next best alternative forgone",
+      "The total manufacturing cost",
+      "The loss of business utility",
+    ],
+    correctIndex: 1,
+    explanation:
+      "Opportunity cost is the value of the next best choice that you give up when making a decision.",
+  },
+  {
+    id: "q-ec5-2a",
+    topicId: "ec5-2",
+    question: "The Law of Demand states that, ceteris paribus:",
+    options: [
+      "As price rises, demand rises",
+      "As price rises, quantity demanded falls",
+      "As income rises, demand falls",
+      "As supply rises, price rises",
+    ],
+    correctIndex: 1,
+    explanation:
+      "The Law of Demand describes an inverse relationship between price and quantity demanded.",
+  },
+  {
+    id: "q-ec6-1a",
+    topicId: "ec6-1",
+    question:
+      "Which of the following is the standard formula for GDP using the expenditure approach?",
+    options: [
+      "GDP = C + I + G",
+      "GDP = C + I + G + (X - M)",
+      "GDP = C + S + T",
+      "GDP = Net National Income - Depreciation",
+    ],
+    correctIndex: 1,
+    explanation:
+      "GDP = Consumption (C) + Investment (I) + Government spending (G) + Net exports (X - M).",
+  },
+
+  // ── ICT ──
+  {
+    id: "q-ict1-1a",
+    topicId: "ict1-1",
+    question: "Which of the following is classified as an input device?",
+    options: ["Monitor", "Printer", "Keyboard", "Speaker"],
+    correctIndex: 2,
+    explanation: "A keyboard is used to enter data into the computer, making it an input device.",
+  },
+  {
+    id: "q-ict2-1a",
+    topicId: "ict2-1",
+    question:
+      "Which feature allows you to send a single document template to multiple recipients with customized fields?",
+    options: ["Mail Merge", "Hyperlink", "Macro", "Cross-reference"],
+    correctIndex: 0,
+    explanation: "Mail Merge is used to personalize generic templates for a bulk list of contacts.",
+  },
+  {
+    id: "q-ict5-1a",
+    topicId: "ict5-1",
+    question: "In spreadsheet software, what does the formula '=AVERAGE(C1:C5)' do?",
+    options: [
+      "Adds C1 and C5",
+      "Finds the arithmetic mean of cells C1 through C5",
+      "Compares values of C1 and C5",
+      "Counts the number of cells containing text",
+    ],
+    correctIndex: 1,
+    explanation:
+      "=AVERAGE calculates the average (mean) of all numeric values in the specified cell range.",
+  },
+
+  // ── DIVINITY ──
+  {
+    id: "q-div5-1a",
+    topicId: "div5-1",
+    question:
+      "Which of the following describes the primary role of Old Testament prophets in Israel?",
+    options: [
+      "To predict the far future exclusively",
+      "To serve as military commanders",
+      "To act as God's spokespersons calling for covenant faithfulness",
+      "To administer temple sacrifices",
+    ],
+    correctIndex: 2,
+    explanation:
+      "Prophets were primarily messengers of God who called Israel back to justice, righteousness, and covenant loyalty.",
+  },
+
+  // ── KISWAHILI ──
+  {
+    id: "q-sw1-1a",
+    topicId: "sw1-1",
+    question: "What is the standard response to the greeting 'Hujambo'?",
+    options: ["Sijambo", "Nzuri", "Salama", "Marahaba"],
+    correctIndex: 0,
+    explanation: "'Hujambo' is answered with 'Sijambo' (I have no issues / I am fine).",
+  },
+
+  // ── LUGANDA ──
+  {
+    id: "q-lug1-1a",
+    topicId: "lug1-1",
+    question:
+      "Which of the following is the correct plural noun class prefix for 'Omuntu' (Person)?",
+    options: ["Ebi-", "Aba-", "Emi-", "Ama-"],
+    correctIndex: 1,
+    explanation: "The plural of 'Omuntu' is 'Abantu' using the prefix 'Aba-'.",
+  },
+
+  // ── LITERATURE ──
+  {
+    id: "q-lit1-1a",
+    topicId: "lit1-1",
+    question: "Which literary genre is written specifically to be performed on a stage by actors?",
+    options: ["Prose", "Poetry", "Drama", "Biography"],
+    correctIndex: 2,
+    explanation: "Drama is written in dialogue form as a script intended for stage representation.",
+  },
+
+  // ── AGRICULTURE ──
+  {
+    id: "q-ag1-1a",
+    topicId: "ag1-1",
+    question:
+      "Which soil horizon is generally the most fertile and contains high amounts of organic matter?",
+    options: [
+      "Horizon A (Topsoil)",
+      "Horizon B (Subsoil)",
+      "Horizon C (Parent material)",
+      "Bedrock",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Horizon A (Topsoil) is rich in organic humus and minerals, making it highly fertile for plant growth.",
+  },
+
+  // ── FINE ART ──
+  {
+    id: "q-art1-1a",
+    topicId: "art1-1",
+    question: "What is drawing inanimate objects such as fruit, bottles, and boxes called?",
+    options: ["Landscape drawing", "Still life drawing", "Portraiture", "Abstract painting"],
+    correctIndex: 1,
+    explanation: "Still life is the traditional study of arranged, non-moving physical objects.",
+  },
+
+  // ── CRE ──
+  {
+    id: "q-cre1-1a",
+    topicId: "cre1-1",
+    question: "According to the Genesis accounts, in whose image did God create human beings?",
+    options: [
+      "In the image of angels",
+      "In God's own image",
+      "In the likeness of other creatures",
+      "In the image of the stars",
+    ],
+    correctIndex: 1,
+    explanation: "Genesis 1:27 states that God created mankind in His own image and likeness.",
+  },
 ];

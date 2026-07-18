@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/onboarding")({
-  head: () => ({ meta: [{ title: "Complete Your Profile — Cymatic Hub" }] }),
+  head: () => ({ meta: [{ title: "Complete Your Profile — Cymatic Study" }] }),
   component: OnboardingPage,
 });
 

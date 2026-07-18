@@ -34,6 +34,7 @@ import { AssertQueryClient } from "@/lib/assert-query-client";
 import { shouldGreet, markGreeted } from "@/lib/tutor-context";
 import { getOrganizationSchema, getPersonSchema } from "@/lib/seo";
 import { MobileInstallPrompt } from "@/components/MobileInstallPrompt";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { CymaticBackground } from "@/components/CymaticBackground";
 
 function NotFoundComponent() {
@@ -137,6 +138,7 @@ function RootComponent() {
                   <MediaProvider>
                     <MoodOverlay />
                     <MobileInstallPrompt />
+                    <PWAInstallPrompt />
                     <div className="flex min-h-screen flex-col">
                       <Navbar />
                       <main className="flex-1">

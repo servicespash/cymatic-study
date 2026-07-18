@@ -32,5 +32,5 @@ INSERT INTO public.app_config (
     'Send 5,000 UGX to +256 768 715065 (MTN) - Latif Sabirye. After payment, send a screenshot to WhatsApp for instant activation.',
     '7064464',
     '5,000 UGX',
-    'Cymatic Hub is an advanced educational platform tailored for Uganda''s New Lower Secondary Curriculum, providing students with interactive tools, high-quality notes, and AI-powered learning assistance.'
+    'Cymatic Study is an advanced educational platform tailored for Uganda''s New Lower Secondary Curriculum, providing students with interactive tools, high-quality notes, and AI-powered learning assistance.'
 ) ON CONFLICT DO NOTHING;

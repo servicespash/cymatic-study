@@ -18,26 +18,6 @@ export const MoodPicker: React.FC<{ onSelect?: (m: UserMood) => void }> = ({ onS
     if (onSelect) onSelect(m);
 
     // Side effects as per plan.md
-    if (m === "focused") {
-      toast.success("Focus Mode: 25-minute Pomodoro started. You got this!", {
-        description: "Adams: Headphones on, distractions off — we cooking.",
-      });
-      // In a real app, this would start a global timer
-    } else if (m === "confused") {
-      navigate({ to: "/tutor" });
-    } else if (m === "tired") {
-      toast.info("Adams: Aight fam, rest is part of the grind. Try one small quiz then nap.", {
-        action: {
-          label: "Go to Quizzes",
-          onClick: () => navigate({ to: "/quizzes" }),
-        },
-      });
-    }
-
-    // Dynamic AI feedback for mood selection
-    const isOnline = typeof navigator !== "undefined" && navigator.onLine;
-    const name = user?.user_metadata?.display_name || user?.email?.split("@")[0] || "learner";
-
     const feedback = await generateEmpathyResponse(
       persona,
       {
@@ -49,12 +29,23 @@ export const MoodPicker: React.FC<{ onSelect?: (m: UserMood) => void }> = ({ onS
       "mood_change",
     );
 
-    if (feedback) {
-      // Stressed mood drops TTS rate to 0.7
-      void speak(feedback, {
-        force: true,
-        rate: m === "stressed" ? 0.7 : undefined,
+    if (m === "focused") {
+      toast.success(feedback || "Focus Mode: 25-minute Pomodoro started. You got this!", {
+        description: "Adams: Headphones on, distractions off — we cooking.",
       });
+      // In a real app, this would start a global timer
+    } else if (m === "confused") {
+      navigate({ to: "/tutor" });
+    } else if (m === "tired") {
+      toast.info(
+        feedback || "Adams: Aight fam, rest is part of the grind. Try one small quiz then nap.",
+        {
+          action: {
+            label: "Go to Quizzes",
+            onClick: () => navigate({ to: "/quizzes" }),
+          },
+        },
+      );
     }
   };
 

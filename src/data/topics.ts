@@ -3,7 +3,7 @@ import { TOPIC_IDS } from "../lib/constants/topic-ids";
 export interface Topic {
   id: string;
   title: string;
-  subject: "math" | "physics" | "chemistry" | "biology";
+  subject: string;
   level: number;
   description: string;
   formulas?: string[];
@@ -1763,6 +1763,217 @@ export const topics: Topic[] = [
       "Analyzing balance sheets and profit & loss statements",
       "Evaluating investment opportunities using ROI and payback period",
       "Corporate social responsibility (CSR) guidelines in East Africa",
+    ],
+  },
+  // ═══════════════════════════════════════
+  // ECONOMICS
+  // ═══════════════════════════════════════
+  {
+    id: "ec5-1",
+    title: "Introduction to Economics",
+    subject: "economics",
+    level: 5,
+    description:
+      "Scarcity, choice, opportunity cost, and production possibility curves in economic systems.",
+    keyPoints: [
+      "The basic economic problem of scarcity",
+      "Choice and Opportunity Cost",
+      "Production Possibility Curve (PPC)",
+      "Classification of economic systems (Free market, Planned, Mixed)",
+    ],
+  },
+  {
+    id: "ec5-2",
+    title: "Price Theory & Market Equilibrium",
+    subject: "economics",
+    level: 5,
+    description: "Detailed analysis of demand, supply, price determination, and price elasticity.",
+    formulas: ["Elasticity of Demand (Ed) = (% Change in Qty Demanded) / (% Change in Price)"],
+    keyPoints: [
+      "The Law of Demand and the Law of Supply",
+      "Factors affecting demand and supply curves",
+      "Market equilibrium price determination",
+      "Price elasticity of demand and supply",
+    ],
+  },
+  {
+    id: "ec6-1",
+    title: "National Income Accounting",
+    subject: "economics",
+    level: 6,
+    description:
+      "GDP, GNP, methods of national income calculation, and the circular flow of income.",
+    formulas: ["GDP = C + I + G + (X - M)"],
+    keyPoints: [
+      "Gross Domestic Product vs Gross National Product",
+      "Three methods of calculating national income (Income, Output, Expenditure)",
+      "The circular flow of national income",
+      "Difficulties in measuring national income in developing economies",
+    ],
+  },
+
+  // ═══════════════════════════════════════
+  // ICT (INFORMATION & COMMUNICATIONS TECH)
+  // ═══════════════════════════════════════
+  {
+    id: "ict1-1",
+    title: "Introduction to Computers & Hardware",
+    subject: "ict",
+    level: 1,
+    description: "Hardware, software, information processing cycle, and computer classification.",
+    keyPoints: [
+      "Definition of a computer and its characteristics",
+      "Input, processing, storage, and output devices",
+      "System software vs application software",
+      "Safe usage and care of computer systems",
+    ],
+  },
+  {
+    id: "ict2-1",
+    title: "Word Processing & Documentation",
+    subject: "ict",
+    level: 2,
+    description: "Creating, editing, formatting, and printing high-quality documents.",
+    keyPoints: [
+      "Introduction to word processing packages (e.g. MS Word)",
+      "Page setup, margins, and text alignment",
+      "Inserting tables, pictures, and headers/footers",
+      "Mail merge and print settings",
+    ],
+  },
+  {
+    id: "ict5-1",
+    title: "Applied Computing & Spreadsheets",
+    subject: "ict",
+    level: 5,
+    description: "A-Level Subsidiary ICT: spreadsheet formulas, functions, and database design.",
+    formulas: ["=SUM(range)", "=AVERAGE(range)", "=IF(condition, value_if_true, value_if_false)"],
+    keyPoints: [
+      "Cell referencing (Relative and Absolute)",
+      "Data analysis using functions and charts",
+      "Database tables, primary keys, and relationships",
+      "Information safety and file protection protocols",
+    ],
+  },
+
+  // ═══════════════════════════════════════
+  // DIVINITY
+  // ═══════════════════════════════════════
+  {
+    id: "div5-1",
+    title: "Prophetic Ministry in Israel",
+    subject: "divinity",
+    level: 5,
+    description:
+      "The historical context, call, and theological messages of the Old Testament prophets.",
+    keyPoints: [
+      "Definition and origins of prophecy in Israel",
+      "Prophetic roles of Elijah, Amos, and Hosea",
+      "Themes of social justice and repentance",
+      "The relevance of prophetic messages to modern society",
+    ],
+  },
+
+  // ═══════════════════════════════════════
+  // KISWAHILI
+  // ═══════════════════════════════════════
+  {
+    id: "sw1-1",
+    title: "Sarufi na Msamiati wa Kiswahili",
+    subject: "swahili",
+    level: 1,
+    description: "Kiswahili noun classes, verb conjugation, greetings, and basic dialogue.",
+    keyPoints: [
+      "Ngeli za Kiswahili (Noun Classes - e.g. A-WA, KI-VI)",
+      "Kujifunza salamu na mazungumzo ya kila siku",
+      "Unyambulishaji wa vitenzi (Verb derivations)",
+      "Kusoma na kuelewa hadithi fupi za Kiswahili",
+    ],
+  },
+
+  // ═══════════════════════════════════════
+  // LUGANDA
+  // ═══════════════════════════════════════
+  {
+    id: "lug1-1",
+    title: "Ennono z'Oluganda n'Engeri y'Oluwandiikamu",
+    subject: "luganda",
+    level: 1,
+    description: "Luganda orthography, writing guidelines, noun classes, and proverbs.",
+    keyPoints: [
+      "Ennandiki y'Oluganda Entongole (Luganda spelling guidelines)",
+      "Ebika by'ebigambo mu Luganda",
+      "Emisoso gy'ebitundu n'ebika by'ebitontome",
+      "Engero z'Oluganda ez'amakulu",
+    ],
+  },
+
+  // ═══════════════════════════════════════
+  // LITERATURE IN ENGLISH
+  // ═══════════════════════════════════════
+  {
+    id: "lit1-1",
+    title: "Introduction to Literary Genres",
+    subject: "literature",
+    level: 1,
+    description:
+      "Understanding the elements of Prose, Drama, and Poetry with introductory analysis.",
+    keyPoints: [
+      "Characteristics of prose, drama, and poetry",
+      "Plot, setting, characterization, and themes",
+      "Figures of speech: Similes, metaphors, and personification",
+      "Basic appreciation of simple plays and poems",
+    ],
+  },
+
+  // ═══════════════════════════════════════
+  // AGRICULTURE
+  // ═══════════════════════════════════════
+  {
+    id: "ag1-1",
+    title: "Introduction to Soil Science",
+    subject: "agriculture",
+    level: 1,
+    description: "Soil formation, soil profiles, composition, and physical properties.",
+    keyPoints: [
+      "Agents of weathering in soil formation",
+      "The soil profile layers (Topsoil, Subsoil, Bedrock)",
+      "Components of soil (mineral matter, organic matter, water, air)",
+      "Soil texture, structure, and temperature management",
+    ],
+  },
+
+  // ═══════════════════════════════════════
+  // FINE ART
+  // ═══════════════════════════════════════
+  {
+    id: "art1-1",
+    title: "Still Life Drawing & Perspective",
+    subject: "art",
+    level: 1,
+    description: "Drawing from observation, shading techniques, and perspective.",
+    keyPoints: [
+      "Drawing cylinders, spheres, and rectangular objects",
+      "Shading methods: hatching, cross-hatching, and blending",
+      "One-point and two-point linear perspectives",
+      "Arranging a still life composition balanced by light",
+    ],
+  },
+
+  // ═══════════════════════════════════════
+  // CHRISTIAN RELIGIOUS EDUCATION (CRE)
+  // ═══════════════════════════════════════
+  {
+    id: "cre1-1",
+    title: "Creation and the Fall of Man",
+    subject: "cre",
+    level: 1,
+    description: "Biblical Genesis creation accounts, covenants, and the consequences of the Fall.",
+    keyPoints: [
+      "The two creation accounts in Genesis 1 and 2",
+      "The significance of being made in God's image",
+      "The Fall of man and the entrance of sin",
+      "God's covenant promise to Abraham and humanity",
     ],
   },
 ];

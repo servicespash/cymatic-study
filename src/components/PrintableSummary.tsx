@@ -380,7 +380,8 @@ export function PrintableSummary() {
                   minute: "2-digit",
                 });
                 const userMsg =
-                  session.messages.find((m) => m.sender === "user")?.text || "General chat inquiry";
+                  session.messages.find((m) => m.sender === "student" || m.sender === "user")
+                    ?.text || "General chat inquiry";
                 const summary = userMsg.length > 80 ? userMsg.substring(0, 80) + "..." : userMsg;
 
                 return (
@@ -466,7 +467,7 @@ export function PrintableSummary() {
           textAlign: "center",
         }}
       >
-        Cymatic Hub Portfolio Report · NCDC Upper Lower-Secondary assessment framework · 2026
+        Cymatic Study Portfolio Report · NCDC Upper Lower-Secondary assessment framework · 2026
       </div>
     </div>
   );

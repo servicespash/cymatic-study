@@ -47,7 +47,7 @@ export function getSecurityHeaders() {
  * Allows indexing while protecting sensitive paths
  */
 export function getEnhancedRobotsTxt(): string {
-  return `# Latty's Cymatic Hub - Educational Platform
+  return `# Latty's Cymatic Study - Educational Platform
 # Uganda Secondary Curriculum Study Companion
 # Last updated: ${new Date().toISOString()}
 
@@ -113,9 +113,9 @@ Disallow: /auth/
 Disallow: /profile/
 
 # Sitemap location
-Sitemap: https://hub.cymatichub.xyz/sitemap.xml
-Sitemap: https://hub.cymatichub.xyz/sitemap-courses.xml
-Sitemap: https://hub.cymatichub.xyz/sitemap-quizzes.xml
+Sitemap: https://study.cymatichub.xyz/sitemap.xml
+Sitemap: https://study.cymatichub.xyz/sitemap-courses.xml
+Sitemap: https://study.cymatichub.xyz/sitemap-quizzes.xml
 
 # Crawl delay for general bots (2 seconds between requests)
 Crawl-delay: 2
@@ -124,7 +124,7 @@ Crawl-delay: 2
 Request-rate: 10/60
 
 # Preferred domain
-Host: https://hub.cymatichub.xyz
+Host: https://study.cymatichub.xyz
 `;
 }
 
@@ -137,13 +137,13 @@ export function getEducationalOrgSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "EducationalOrganization",
-    "@id": "https://hub.cymatichub.xyz/#organization",
-    name: "Latty's Cymatic Hub",
-    alternateName: "Cymatic Hub",
+    "@id": "https://study.cymatichub.xyz/#organization",
+    name: "Latty's Cymatic Study",
+    alternateName: "Cymatic Study",
     description:
       "Interactive study companion for Uganda Secondary Curriculum with comprehensive notes, quizzes, and educational tools for Mathematics, Physics, Chemistry, and Biology.",
-    url: "https://hub.cymatichub.xyz",
-    logo: "https://hub.cymatichub.xyz/logo.png",
+    url: "https://study.cymatichub.xyz",
+    logo: "https://study.cymatichub.xyz/logo.png",
     sameAs: ["https://twitter.com/cymatichub", "https://www.facebook.com/cymatichub"],
     contactPoint: {
       "@type": "ContactPoint",
@@ -164,7 +164,7 @@ export function getEducationalOrgSchema() {
     founder: {
       "@type": "Person",
       name: "Isabirye Latif",
-      url: "https://hub.cymatichub.xyz/about",
+      url: "https://study.cymatichub.xyz/about",
     },
     foundingDate: "2024",
     foundingLocation: "Uganda",
@@ -200,17 +200,17 @@ export function getEducationalOrgSchema() {
     author: {
       "@type": "Person",
       name: "Isabirye Latif",
-      url: "https://hub.cymatichub.xyz/about",
+      url: "https://study.cymatichub.xyz/about",
     },
     publisher: {
       "@type": "Organization",
-      name: "Latty's Cymatic Hub",
-      logo: "https://hub.cymatichub.xyz/logo.png",
-      url: "https://hub.cymatichub.xyz",
+      name: "Latty's Cymatic Study",
+      logo: "https://study.cymatichub.xyz/logo.png",
+      url: "https://study.cymatichub.xyz",
     },
     mainEntity: {
       "@type": "WebApplication",
-      name: "Latty's Cymatic Hub",
+      name: "Latty's Cymatic Study",
       applicationCategory: "EducationalApplication",
       offers: {
         "@type": "Offer",
@@ -287,7 +287,7 @@ export function verifyContentSafety(content: {
     trustScore,
     flags,
     lastChecked: new Date(),
-    schoolName: "Latty's Cymatic Hub",
+    schoolName: "Latty's Cymatic Study",
     curriculum: content.curriculum,
   };
 }

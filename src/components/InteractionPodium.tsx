@@ -202,7 +202,7 @@ export const InteractionPodium = ({
     const shareUrl = `${baseUrl}/news?id=${itemId}`;
     const shareData = {
       title: item?.title || "Update",
-      text: `${item?.title || "Update"} - Latty's Cymatic Hub`,
+      text: `${item?.title || "Update"} - Latty's Cymatic Study`,
       url: shareUrl,
     };
     try {

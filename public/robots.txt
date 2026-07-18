@@ -1,4 +1,4 @@
-# Latty's Cymatic Hub - Educational Platform
+# Latty's Cymatic Study - Educational Platform
 # Uganda Secondary Curriculum Study Companion
 
 # Google
@@ -49,12 +49,12 @@ Disallow: /auth/
 Crawl-delay: 2
 
 # Sitemaps
-Sitemap: https://hub.cymatichub.xyz/sitemap.xml
-Sitemap: https://hub.cymatichub.xyz/sitemap-courses.xml
-Sitemap: https://hub.cymatichub.xyz/sitemap-quizzes.xml
+Sitemap: https://study.cymatichub.xyz/sitemap.xml
+Sitemap: https://study.cymatichub.xyz/sitemap-courses.xml
+Sitemap: https://study.cymatichub.xyz/sitemap-quizzes.xml
 
 # Request rate
 Request-rate: 10/60
 
 # Host preference
-Host: https://hub.cymatichub.xyz
+Host: https://study.cymatichub.xyz

@@ -24,7 +24,7 @@ export interface JSONLDSchema {
   [key: string]: unknown;
 }
 
-const BASE_URL = "https://hub.cymatichub.xyz";
+const BASE_URL = "https://study.cymatichub.xyz";
 const DEFAULT_AUTHOR = "Isabirye Latif";
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.jpg`;
 
@@ -106,12 +106,12 @@ export function getPersonSchema(): JSONLDSchema {
     sameAs: [
       "https://www.cymatichub.xyz",
       "https://resonance.cymatichub.xyz",
-      "https://hub.cymatichub.xyz",
+      "https://study.cymatichub.xyz",
     ],
     jobTitle: "Educational Technologist & Systems Architect",
     worksFor: {
       "@type": "Organization",
-      name: "Latty's Cymatic Hub",
+      name: "Latty's Cymatic Study",
     },
     email: "latifisabirye123@gmail.com",
   };
@@ -124,7 +124,7 @@ export function getOrganizationSchema(): JSONLDSchema {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "Latty's Cymatic Hub",
+    name: "Latty's Cymatic Study",
     url: BASE_URL,
     logo: `${BASE_URL}/logo.png`,
     description: "Interactive study companion for Uganda Secondary Curriculum (NCDC Aligned)",

@@ -13,7 +13,7 @@ import { generateMetaTags } from "@/lib/seo";
 export const Route = createFileRoute("/path")({
   head: () => ({
     meta: generateMetaTags({
-      title: "Page Title - Latty's Cymatic Hub",
+      title: "Page Title - Latty's Cymatic Study",
       description: "Your page description here",
     }),
   }),
@@ -29,13 +29,13 @@ import { generateMetaTags, getCanonicalLink, getArticleSchema } from "@/lib/seo"
 export const Route = createFileRoute("/blog/$postId")({
   head: () => ({
     meta: generateMetaTags({
-      title: "Post Title - Latty's Cymatic Hub",
+      title: "Post Title - Latty's Cymatic Study",
       description: "Post description for search results",
-      canonicalUrl: "https://hub.cymatichub.xyz/blog/slug",
-      ogImage: "https://hub.cymatichub.xyz/og-image.jpg",
+      canonicalUrl: "https://study.cymatichub.xyz/blog/slug",
+      ogImage: "https://study.cymatichub.xyz/og-image.jpg",
       keywords: ["keyword1", "keyword2", "keyword3"],
     }),
-    links: [getCanonicalLink("https://hub.cymatichub.xyz/blog/slug")],
+    links: [getCanonicalLink("https://study.cymatichub.xyz/blog/slug")],
     scripts: [
       {
         type: "application/ld+json",
@@ -192,7 +192,7 @@ git push origin v1.2.3
 # Watch: "Build Production APK" workflow
 
 # 5. Verify deployment
-# Visit: hub.cymatichub.xyz
+# Visit: study.cymatichub.xyz
 # Check: window.__BUILD_VERSION__ in console
 
 # 6. If issues - rollback
@@ -220,7 +220,7 @@ getArticleSchema({
 getCourseSchema({
   name: "Mathematics S2",
   description: "Full curriculum",
-  provider: "Latty's Cymatic Hub",
+  provider: "Latty's Cymatic Study",
   educationLevel: "Secondary",
   courseCode: "MATH-S2",
 });

@@ -42,10 +42,10 @@ export default async (req: Request) => {
 
   const emailHtml = `
     <div style="font-family: system-ui, sans-serif; color: #0f172a;">
-      <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 0.75rem;">Welcome to Cymatic Hub</h1>
+      <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 0.75rem;">Welcome to Cymatic Study</h1>
       <p style="font-size: 16px; margin-bottom: 1rem;">Hi ${adminName},</p>
       <p style="font-size: 14px; margin-bottom: 1rem; line-height: 1.6;">
-        Your institution <strong>${orgName}</strong> is now registered on Cymatic Hub.
+        Your institution <strong>${orgName}</strong> is now registered on Cymatic Study.
         Share the School ID below with teachers and students so they can link their accounts safely.
       </p>
       <div style="background: #eff6ff; border: 1px solid #dbeafe; border-radius: 12px; padding: 1rem; margin-bottom: 1rem;">
@@ -68,7 +68,7 @@ export default async (req: Request) => {
     body: JSON.stringify({
       from: SENDER_EMAIL,
       to: [adminEmail],
-      subject: `Welcome to Cymatic Hub — ${orgName}`,
+      subject: `Welcome to Cymatic Study — ${orgName}`,
       html: emailHtml,
     }),
   });

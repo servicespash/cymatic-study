@@ -2,7 +2,7 @@ import { createResendAdapter } from "@resend/chat-sdk-adapter";
 
 // Configuration
 const fromAddress = "support@cymatichub.xyz";
-const fromName = "Cymatic Hub Support";
+const fromName = "Cymatic Study Support";
 
 // Initialize Adapter
 const resendAdapter = createResendAdapter({
@@ -76,7 +76,7 @@ export async function handleEmailRequest(req: any, res: any) {
         };
         break;
       case "INSTITUTIONAL_SIGNUP":
-        message.subject = "Welcome to Cymatic Hub";
+        message.subject = "Welcome to Cymatic Study";
         message.ui = {
           type: "card",
           title: "Onboarding Complete",

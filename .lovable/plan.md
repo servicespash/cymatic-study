@@ -1,4 +1,4 @@
-# Refactor Plan — Cymatic Hub
+# Refactor Plan — Cymatic Study
 
 Scope confirmed: keep current Lovable Cloud backend (`cjoayorozpsrcupbekkj`). Do **not** touch `src/integrations/supabase/client.ts` or `.env`.
 

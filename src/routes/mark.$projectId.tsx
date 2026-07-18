@@ -14,7 +14,7 @@ import { generateVectorPdf, safeFilename } from "@/lib/pdf-export";
 export const Route = createFileRoute("/mark/$projectId")({
   head: () => ({
     meta: [
-      { title: "Teacher's Marking Section — Cymatic Hub" },
+      { title: "Teacher's Marking Section — Cymatic Study" },
       {
         name: "description",
         content: "Open a student-submitted project, award marks, and download the official report.",

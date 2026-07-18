@@ -74,7 +74,9 @@ export function PastSessionsList() {
     }
 
     // Get a summary from first user message
-    const firstUserMsg = session.messages.find((m) => m.sender === "user");
+    const firstUserMsg = session.messages.find(
+      (m) => m.sender === "student" || m.sender === "user",
+    );
     const summaryText = firstUserMsg
       ? firstUserMsg.text.length > 70
         ? firstUserMsg.text.substring(0, 70) + "..."

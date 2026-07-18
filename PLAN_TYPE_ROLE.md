@@ -24,4 +24,4 @@
 
 - [x] Section Mapping: `[data-pdf-section]` tags
 - [x] Pagination: Section-based page breaks
-- [x] Branding: Pash Media Studio / Cymatic Hub
+- [x] Branding: Pash Media Studio / Cymatic Study

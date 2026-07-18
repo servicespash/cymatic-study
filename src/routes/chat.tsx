@@ -52,7 +52,7 @@ export interface ChatMessage {
 export const Route = createFileRoute("/chat")({
   head: () => ({
     meta: [
-      { title: "Tutor Chat | Latty's Cymatic Hub" },
+      { title: "Tutor Chat | Latty's Cymatic Study" },
       {
         name: "description",
         content: "Live chat with your AI tutor. Designed by Isabirye Latif.",
@@ -298,18 +298,18 @@ function ChatRoomPage() {
         }
       }
 
-      let parsed: any;
+      let replyText = "";
+      let parsed: any = null;
       try {
         parsed = JSON.parse(fullJsonString);
+        replyText = parsed.spoken_text || fullJsonString;
       } catch (e) {
-        console.error("Failed to parse Tutor JSON:", fullJsonString);
-        throw new Error("Invalid response format");
+        // Fall back gracefully if the API returns raw plain text instead of JSON
+        replyText = fullJsonString || "I'm here, but couldn't form a response right now.";
       }
 
-      const replyText = parsed.spoken_text || "I'm here, but couldn't form a response right now.";
-
       // Trigger UI Actions
-      if (parsed.ui_actions) {
+      if (parsed && parsed.ui_actions) {
         for (const action of parsed.ui_actions) {
           console.log("Triggering Tutor Action:", action);
           if (action.type === "trigger_haptic") {
@@ -398,8 +398,8 @@ function ChatRoomPage() {
 
   const handleInvite = async () => {
     const inviteMsg = isInstitutional
-      ? `Hey! Join our official [${chatContext.level}] study network on Cymatic Hub Evolution. Tap here to connect: https://lattyscymatic.com/join`
-      : `Join the Independent Learning Space on Cymatic Hub! https://lattyscymatic.com/join`;
+      ? `Hey! Join our official [${chatContext.level}] study network on Cymatic Study Evolution. Tap here to connect: https://lattyscymatic.com/join`
+      : `Join the Independent Learning Space on Cymatic Study! https://lattyscymatic.com/join`;
 
     if (Capacitor.isNativePlatform()) {
       try {

@@ -4,17 +4,22 @@ import { ChevronDown, Download, Search, RefreshCw, Loader2 } from "lucide-react"
 import { topics } from "@/data/topics";
 import { topicNotes as initialTopicNotes } from "@/data/notes";
 import { quizQuestions } from "@/data/quizzes";
+import { QuizRepository } from "@/repositories/quiz.repository";
 import { subjectLabels, classLevels } from "@/lib/constants";
 import { downloadText } from "@/lib/download";
 import { ExportPdfModal } from "@/components/ExportPdfModal";
+import { useAuth } from "@/hooks/useAuth";
+import { useSubjectProgress } from "@/hooks/useSubjectProgress";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/lessons")({
-  head: () => ({ meta: [{ title: "Lessons — Lattys Cymatic Hub" }] }),
+  head: () => ({ meta: [{ title: "Lessons — Lattys Cymatic Study" }] }),
   component: LessonsPage,
 });
 
 function LessonsPage() {
+  const { isTeacher, isAdmin } = useAuth();
+  const { progress } = useSubjectProgress();
   const [subject, setSubject] = useState("math");
   const [level, setLevel] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,14 +33,24 @@ function LessonsPage() {
     title: string;
     subject: string;
     docType: "lesson_notes" | "study_chart" | "quiz";
+    showAnswers: boolean;
     content: { sectionTitle: string; body: any }[];
   }>({
     isOpen: false,
     title: "",
     subject: "",
     docType: "lesson_notes",
+    showAnswers: false,
     content: [],
   });
+
+  // Determine if the current subject is "selected" (started) for students
+  const canExportCurrentSubject = useMemo(() => {
+    if (isTeacher || isAdmin) return true;
+    const label = subjectLabels[subject as keyof typeof subjectLabels] || subject;
+    const subProgress = progress.find((p) => p.subject.toLowerCase() === label.toLowerCase());
+    return (subProgress?.completedPercentage ?? 0) > 0;
+  }, [subject, isTeacher, isAdmin, progress]);
 
   const filtered = useMemo(() => {
     return topics.filter((t) => {
@@ -240,12 +255,21 @@ function LessonsPage() {
                     </Link>
                     <Link
                       to="/quizzes"
+                      search={{ subject: t.subject, topicId: t.id }}
                       className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted"
                     >
                       Quiz this topic →
                     </Link>
                     <button
                       onClick={() => {
+                        if (!canExportCurrentSubject) {
+                          toast.error("Access Restricted", {
+                            description:
+                              "Students can only download notes for subjects they have started in the hub.",
+                          });
+                          return;
+                        }
+
                         const pdfContent: { sectionTitle: string; body: any }[] = [
                           {
                             sectionTitle: "Introduction & Overview",
@@ -293,6 +317,7 @@ function LessonsPage() {
                           title: t.title,
                           subject: t.subject.toUpperCase(),
                           docType: "lesson_notes",
+                          showAnswers: isTeacher || isAdmin,
                           content: pdfContent,
                         });
                       }}
@@ -316,6 +341,7 @@ function LessonsPage() {
           subject={pdfModal.subject}
           docType={pdfModal.docType}
           content={pdfModal.content}
+          showAnswers={pdfModal.showAnswers}
         />
       )}
     </div>

@@ -19,7 +19,7 @@ export function FoundersSpotlight() {
                 >
                   <img
                     src={founderImg}
-                    alt="Isabirye Latif, Founder of Cymatic Hub Evolution"
+                    alt="Isabirye Latif, Founder of Cymatic Study Evolution"
                     className="h-full w-full object-cover object-center transition-opacity group-hover/img:opacity-90"
                     loading="lazy"
                   />
@@ -97,7 +97,7 @@ export function FoundersSpotlight() {
             {/* New Empathetic Narrative */}
             <p className="pl-8">
               I know the weight of an impersonal system—the feeling of being just a number in a
-              crowded hall, fighting for a future that feels out of reach. I built Cymatic Hub
+              crowded hall, fighting for a future that feels out of reach. I built Cymatic Study
               because I refuse to let that be your story. Every student in this country carries a
               spark of genius that the traditional walls of education often fail to protect.
             </p>
@@ -133,7 +133,7 @@ export function FoundersSpotlight() {
             <div>
               <p className="font-serif text-2xl font-bold italic text-foreground">Isabirye Latif</p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Founder & Chief Architect, Cymatic Hub Evolution
+                Founder & Chief Architect, Cymatic Study Evolution
               </p>
             </div>
             <a

@@ -35,7 +35,7 @@ export async function scheduleDailyNudges(personaName: "Adams" | "Haawa") {
 
     await LocalNotifications.schedule({
       notifications: selected.map((m) => ({
-        title: "Cymatic Hub",
+        title: "Cymatic Study",
         body: m.body,
         id: m.id,
         schedule: { on: { hour: m.hour, minute: 0 }, repeats: true, allowWhileIdle: true },

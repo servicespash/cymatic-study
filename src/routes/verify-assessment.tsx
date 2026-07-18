@@ -16,7 +16,7 @@ import { gradeLabel, scoreToGrade, type Project } from "@/lib/projects-store";
 export const Route = createFileRoute("/verify-assessment")({
   head: () => ({
     meta: [
-      { title: "Teacher Verification — Cymatic Hub" },
+      { title: "Teacher Verification — Cymatic Study" },
       { name: "description", content: "Secure teacher-only project marking section." },
     ],
   }),
@@ -118,7 +118,7 @@ function VerifyAssessmentPage() {
       <div className="mx-auto max-w-3xl space-y-5">
         <header className="rounded-2xl border border-primary/30 bg-primary/10 p-5">
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
-            <ShieldCheck className="h-4 w-4" /> Cymatic Hub Teacher's Marking Section
+            <ShieldCheck className="h-4 w-4" /> Cymatic Study Teacher's Marking Section
           </p>
           <h1 className="mt-2 text-2xl font-black">{project.title || "Untitled project"}</h1>
           <p className="text-sm text-muted-foreground">

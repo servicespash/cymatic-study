@@ -1,21 +1,6 @@
 import React, { useEffect, useState } from "react";
-import {
-  Camera,
-  Mic,
-  Bell,
-  HardDrive,
-  MapPin,
-  Monitor,
-  Smartphone,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
+import { Camera, Mic, Bell, HardDrive, MapPin, Monitor, CheckCircle2 } from "lucide-react";
 import { requestAllPermissions, type PermissionStatus } from "@/lib/permissions";
-import { LocalNotifications } from "@capacitor/local-notifications";
-import { Camera as CapCamera } from "@capacitor/camera";
-import { SpeechRecognition } from "@capacitor-community/speech-recognition";
-import { Geolocation } from "@capacitor/geolocation";
-import { Filesystem } from "@capacitor/filesystem";
 import { Capacitor } from "@capacitor/core";
 
 export const PermissionsPanel: React.FC = () => {
@@ -34,11 +19,26 @@ export const PermissionsPanel: React.FC = () => {
     if (!Capacitor.isNativePlatform()) return;
 
     try {
-      if (key === "camera") await CapCamera.requestPermissions();
-      if (key === "microphone") await SpeechRecognition.requestPermissions();
-      if (key === "notifications") await LocalNotifications.requestPermissions();
-      if (key === "geolocation") await Geolocation.requestPermissions();
-      if (key === "storage") await Filesystem.requestPermissions();
+      if (key === "camera") {
+        const { Camera } = await import("@capacitor/camera");
+        await Camera.requestPermissions();
+      }
+      if (key === "microphone") {
+        const { SpeechRecognition } = await import("@capacitor-community/speech-recognition");
+        await SpeechRecognition.requestPermissions();
+      }
+      if (key === "notifications") {
+        const { LocalNotifications } = await import("@capacitor/local-notifications");
+        await LocalNotifications.requestPermissions();
+      }
+      if (key === "geolocation") {
+        const { Geolocation } = await import("@capacitor/geolocation");
+        await Geolocation.requestPermissions();
+      }
+      if (key === "storage") {
+        const { Filesystem } = await import("@capacitor/filesystem");
+        await Filesystem.requestPermissions();
+      }
     } catch (e) {
       console.warn("Permission request failed", e);
     }
@@ -61,7 +61,7 @@ export const PermissionsPanel: React.FC = () => {
       icon: Bell,
       desc: "For daily discipline nudges",
     },
-    { key: "location", label: "Location", icon: MapPin, desc: "For weather-aware greetings" },
+    { key: "geolocation", label: "Location", icon: MapPin, desc: "For weather-aware greetings" },
     { key: "storage", label: "Storage", icon: HardDrive, desc: "For offline notes and assets" },
   ];
 

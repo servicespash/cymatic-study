@@ -221,7 +221,7 @@ export const QuizEngine = {
       snoozeCount: 0,
       tutorExplanation:
         opts.tutorExplanation ||
-        "A custom assignment verified safe by Lattys Cymatic Hub authorities.",
+        "A custom assignment verified safe by Lattys Cymatic Study authorities.",
       created_by: opts.created_by,
       created_at: new Date().toISOString(),
     };

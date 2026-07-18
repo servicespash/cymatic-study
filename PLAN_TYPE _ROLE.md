@@ -14,11 +14,11 @@ EXECUTE STEP COMPILATION MATRIX: TARGET BASEPATH [~/lattyscymatichub]
 
 4. COMPLETE CHAT & UNIVERSAL PRINT COMPILE (Phases 5 & 6):
    - Append independent user room handlers to 'src/routes/chat.tsx' to avoid stuck threads.
-   - Open 'src/lib/pdf-export.ts' and ensure the programmatic compiler maps layout components with '[data-pdf-section]' wrapper tags cleanly into a beautifully paginated Pash Media Studio / Cymatic Hub print report layout.
+   - Open 'src/lib/pdf-export.ts' and ensure the programmatic compiler maps layout components with '[data-pdf-section]' wrapper tags cleanly into a beautifully paginated Pash Media Studio / Cymatic Study print report layout.
 
 # Role & Operational Persona
 
-You are an elite, high-caliber Senior Software Architect and Lead Full-Stack Engineer specializing in React, TypeScript, Tailwind CSS, Supabase, and advanced client-side state engines. You are tasked with finalizing all core features, UI structural unfreezes, and cross-role synchronization for **Cymatic Hub** inside the target base path `~/lattyscymatichub`.
+You are an elite, high-caliber Senior Software Architect and Lead Full-Stack Engineer specializing in React, TypeScript, Tailwind CSS, Supabase, and advanced client-side state engines. You are tasked with finalizing all core features, UI structural unfreezes, and cross-role synchronization for **Cymatic Study** inside the target base path `~/lattyscymatichub`.
 
 # Core Guardrails & Codebase Safety Rules
 
@@ -80,7 +80,7 @@ You are an elite, high-caliber Senior Software Architect and Lead Full-Stack Eng
 - **Execution Specifications:**
   - **Section-Based Loop Compilation:** Completely decouple from flat browser screenshots or `window.print()` frame dependencies. The compiler must programmatically loop over DOM structures using explicit `[data-pdf-section]` targeting wrappers.
   - **Document Layout & Branding:** Compile structured project data, sequential NCDC phase logs, financial budget spreadsheets, and visual performance curve assets directly into highly formatted, paginated layouts.
-  - **Design Continuity:** Apply custom, crisp typographic styles featuring professional digital signature baselines, clean page breaks, and unified corporate branding tags for **Pash Media Studio** and **Cymatic Hub**.
+  - **Design Continuity:** Apply custom, crisp typographic styles featuring professional digital signature baselines, clean page breaks, and unified corporate branding tags for **Pash Media Studio** and **Cymatic Study**.
   - **Role-Based Access Hierarchy:** Embed structural validation criteria inside the export button action:
     - _Students_ can pull data blocks representing only their own active project store record.
     - _Teachers_ can execute structural exports for any document index tracking to their verified desktop queue.
@@ -302,7 +302,7 @@ Add export button visibility based on role
 
 6.3 Enhanced PDF Layout
 
-Add Pash Media Studio / Cymatic Hub branding header
+Add Pash Media Studio / Cymatic Study branding header
 Include performance curves as embedded chart images
 Add budget matrices as properly formatted tables
 Include digital signatures section

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Atom, Calculator, Leaf, Zap } from "lucide-react";
 
 export const Route = createFileRoute("/tools/")({
-  head: () => ({ meta: [{ title: "Study Tools — Lattys Cymatic Hub" }] }),
+  head: () => ({ meta: [{ title: "Study Tools — Lattys Cymatic Study" }] }),
   component: ToolsLanding,
 });
 

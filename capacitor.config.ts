@@ -2,7 +2,7 @@ import { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "com.latifisabirye.cymatichub",
-  appName: "Cymatic Hub",
+  appName: "Cymatic Study",
   webDir: "dist/client",
   server: {
     androidScheme: "https",

@@ -100,9 +100,17 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
     const textToSpeak = ttsQueue.current.shift();
     if (textToSpeak) {
       try {
+        const savedPitchAdj =
+          typeof window !== "undefined"
+            ? parseFloat(localStorage.getItem("tutor_pitch_adj") || "0")
+            : 0;
+        const savedRateAdj =
+          typeof window !== "undefined"
+            ? parseFloat(localStorage.getItem("tutor_rate_adj") || "0")
+            : 0;
         await HardwareBridge.ttsSpeak(textToSpeak, {
-          rate: persona.rate,
-          pitch: persona.pitch,
+          rate: persona.rate + savedRateAdj,
+          pitch: persona.pitch + savedPitchAdj,
           lang: persona.voice === "male" ? "en-GB" : "en-US",
         });
       } catch (e) {

@@ -195,7 +195,7 @@ export async function generateVectorPdf(project: any, filename: string) {
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(8);
-    doc.text(`Cymatic Hub PBL Tracker - Page ${i} of ${pageCount}`, A4_W_MM / 2, A4_H_MM - 10, {
+    doc.text(`Cymatic Study PBL Tracker - Page ${i} of ${pageCount}`, A4_W_MM / 2, A4_H_MM - 10, {
       align: "center",
     });
   }

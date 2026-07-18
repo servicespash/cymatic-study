@@ -1,6 +1,6 @@
 # Deployment & Rollback Strategy
 
-This document outlines the deployment process, version management, and rollback procedures for Latty's Cymatic Hub.
+This document outlines the deployment process, version management, and rollback procedures for Latty's Cymatic Study.
 
 ## Table of Contents
 
@@ -286,7 +286,7 @@ Before deploying to production:
    - Check status at: `https://github.com/servicespash/lattyscymatichub/actions`
 
 6. **Verify deployment**:
-   - Visit: `https://hub.cymatichub.xyz`
+   - Visit: `https://study.cymatichub.xyz`
    - Check version: Open DevTools → Console → `window.__BUILD_VERSION__`
    - Test core features
 

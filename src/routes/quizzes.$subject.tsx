@@ -3,7 +3,7 @@ import { QuizzesPage } from "./quizzes";
 
 export const Route = createFileRoute("/quizzes/$subject")({
   head: ({ params }) => ({
-    meta: [{ title: `${params.subject.toUpperCase()} Quizzes — Latty's Cymatic Hub` }],
+    meta: [{ title: `${params.subject.toUpperCase()} Quizzes — Latty's Cymatic Study` }],
   }),
   component: SubjectQuizzesPage,
 });

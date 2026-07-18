@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyDocumentRouteImport } from './routes/verify-document'
 import { Route as VerifyAssessmentRouteImport } from './routes/verify-assessment'
 import { Route as TutorRouteImport } from './routes/tutor'
 import { Route as SupportRouteImport } from './routes/support'
@@ -30,10 +31,14 @@ import { Route as ToolsCategoryRouteImport } from './routes/tools.$category'
 import { Route as QuizzesSubjectRouteImport } from './routes/quizzes.$subject'
 import { Route as MarkTokenRouteImport } from './routes/mark.$token'
 import { Route as MarkProjectIdRouteImport } from './routes/mark.$projectId'
-import { Route as ApiTutorRouteImport } from './routes/api/tutor'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
 
+const VerifyDocumentRoute = VerifyDocumentRouteImport.update({
+  id: '/verify-document',
+  path: '/verify-document',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VerifyAssessmentRoute = VerifyAssessmentRouteImport.update({
   id: '/verify-assessment',
   path: '/verify-assessment',
@@ -139,11 +144,6 @@ const MarkProjectIdRoute = MarkProjectIdRouteImport.update({
   path: '/mark/$projectId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiTutorRoute = ApiTutorRouteImport.update({
-  id: '/api/tutor',
-  path: '/api/tutor',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin/login',
   path: '/admin/login',
@@ -172,9 +172,9 @@ export interface FileRoutesByFullPath {
   '/support': typeof SupportRoute
   '/tutor': typeof TutorRoute
   '/verify-assessment': typeof VerifyAssessmentRoute
+  '/verify-document': typeof VerifyDocumentRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
-  '/api/tutor': typeof ApiTutorRoute
   '/mark/$projectId': typeof MarkProjectIdRoute
   '/mark/$token': typeof MarkTokenRoute
   '/quizzes/$subject': typeof QuizzesSubjectRoute
@@ -198,9 +198,9 @@ export interface FileRoutesByTo {
   '/support': typeof SupportRoute
   '/tutor': typeof TutorRoute
   '/verify-assessment': typeof VerifyAssessmentRoute
+  '/verify-document': typeof VerifyDocumentRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
-  '/api/tutor': typeof ApiTutorRoute
   '/mark/$projectId': typeof MarkProjectIdRoute
   '/mark/$token': typeof MarkTokenRoute
   '/quizzes/$subject': typeof QuizzesSubjectRoute
@@ -225,9 +225,9 @@ export interface FileRoutesById {
   '/support': typeof SupportRoute
   '/tutor': typeof TutorRoute
   '/verify-assessment': typeof VerifyAssessmentRoute
+  '/verify-document': typeof VerifyDocumentRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
-  '/api/tutor': typeof ApiTutorRoute
   '/mark/$projectId': typeof MarkProjectIdRoute
   '/mark/$token': typeof MarkTokenRoute
   '/quizzes/$subject': typeof QuizzesSubjectRoute
@@ -253,9 +253,9 @@ export interface FileRouteTypes {
     | '/support'
     | '/tutor'
     | '/verify-assessment'
+    | '/verify-document'
     | '/admin/dashboard'
     | '/admin/login'
-    | '/api/tutor'
     | '/mark/$projectId'
     | '/mark/$token'
     | '/quizzes/$subject'
@@ -279,9 +279,9 @@ export interface FileRouteTypes {
     | '/support'
     | '/tutor'
     | '/verify-assessment'
+    | '/verify-document'
     | '/admin/dashboard'
     | '/admin/login'
-    | '/api/tutor'
     | '/mark/$projectId'
     | '/mark/$token'
     | '/quizzes/$subject'
@@ -305,9 +305,9 @@ export interface FileRouteTypes {
     | '/support'
     | '/tutor'
     | '/verify-assessment'
+    | '/verify-document'
     | '/admin/dashboard'
     | '/admin/login'
-    | '/api/tutor'
     | '/mark/$projectId'
     | '/mark/$token'
     | '/quizzes/$subject'
@@ -332,9 +332,9 @@ export interface RootRouteChildren {
   SupportRoute: typeof SupportRoute
   TutorRoute: typeof TutorRoute
   VerifyAssessmentRoute: typeof VerifyAssessmentRoute
+  VerifyDocumentRoute: typeof VerifyDocumentRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminLoginRoute: typeof AdminLoginRoute
-  ApiTutorRoute: typeof ApiTutorRoute
   MarkProjectIdRoute: typeof MarkProjectIdRoute
   MarkTokenRoute: typeof MarkTokenRoute
   ToolsCategoryRoute: typeof ToolsCategoryRoute
@@ -343,6 +343,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-document': {
+      id: '/verify-document'
+      path: '/verify-document'
+      fullPath: '/verify-document'
+      preLoaderRoute: typeof VerifyDocumentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/verify-assessment': {
       id: '/verify-assessment'
       path: '/verify-assessment'
@@ -490,13 +497,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarkProjectIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/tutor': {
-      id: '/api/tutor'
-      path: '/api/tutor'
-      fullPath: '/api/tutor'
-      preLoaderRoute: typeof ApiTutorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin/login': {
       id: '/admin/login'
       path: '/admin/login'
@@ -542,9 +542,9 @@ const rootRouteChildren: RootRouteChildren = {
   SupportRoute: SupportRoute,
   TutorRoute: TutorRoute,
   VerifyAssessmentRoute: VerifyAssessmentRoute,
+  VerifyDocumentRoute: VerifyDocumentRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminLoginRoute: AdminLoginRoute,
-  ApiTutorRoute: ApiTutorRoute,
   MarkProjectIdRoute: MarkProjectIdRoute,
   MarkTokenRoute: MarkTokenRoute,
   ToolsCategoryRoute: ToolsCategoryRoute,

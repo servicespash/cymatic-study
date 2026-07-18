@@ -1,6 +1,6 @@
 # 🚀 Implementation Complete: SEO, Rollback & APK Workflow
 
-Three major production-ready features have been successfully implemented for Latty's Cymatic Hub.
+Three major production-ready features have been successfully implemented for Latty's Cymatic Study.
 
 ## 📋 What's Included
 
@@ -132,11 +132,11 @@ import { generateMetaTags, getCanonicalLink } from "@/lib/seo";
 export const Route = createFileRoute("/my-page")({
   head: () => ({
     meta: generateMetaTags({
-      title: "My Page - Latty's Cymatic Hub",
+      title: "My Page - Latty's Cymatic Study",
       description: "Page description for search results",
-      canonicalUrl: "https://hub.cymatichub.xyz/my-page",
+      canonicalUrl: "https://study.cymatichub.xyz/my-page",
     }),
-    links: [getCanonicalLink("https://hub.cymatichub.xyz/my-page")],
+    links: [getCanonicalLink("https://study.cymatichub.xyz/my-page")],
   }),
   component: MyPage,
 });

@@ -1,24 +1,46 @@
 import { useRef, useEffect, useState } from "react";
 import { Paperclip, Mic, Send, MicOff } from "lucide-react";
-import { SpeechRecognition } from "@capacitor-community/speech-recognition";
 
 export function InputField({
   input,
   setInput,
   onSubmit,
   isLoading,
-  onFileClick,
-  onMicClick: _onMicClick,
+  onFileSelect,
+  attachedFileName,
+  onRemoveAttachment,
 }: {
   input: string;
   setInput: (s: string) => void;
   onSubmit: () => void;
   isLoading: boolean;
-  onFileClick: () => void;
-  onMicClick: () => void;
+  onFileSelect?: (file: { name: string; content: string }) => void;
+  attachedFileName?: string | null;
+  onRemoveAttachment?: () => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.lang = "en-US";
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInput((prev) => (prev ? prev + " " + transcript : transcript));
+        setIsListening(false);
+      };
+      recognitionRef.current.onend = () => setIsListening(false);
+    }
+    return () => {
+      recognitionRef.current?.stop();
+    };
+  }, [setInput]);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -34,35 +56,66 @@ export function InputField({
     }
   };
 
-  const toggleListening = async () => {
+  const toggleListening = () => {
     if (isListening) {
-      await SpeechRecognition.stop();
+      recognitionRef.current?.stop();
       setIsListening(false);
     } else {
-      const { available } = await SpeechRecognition.available();
-      if (available) {
-        setIsListening(true);
-        await SpeechRecognition.start({
-          popup: false,
-          partialResults: true,
-          language: "en-US",
-        });
+      recognitionRef.current?.start();
+      setIsListening(true);
+    }
+  };
 
-        SpeechRecognition.addListener("partialResults", (data: any) => {
-          if (data.matches && data.matches.length > 0) {
-            setInput(data.matches[0]);
-          }
-        });
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Please select a file smaller than 2MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      if (onFileSelect) {
+        onFileSelect({ name: file.name, content });
       }
+    };
+    reader.readAsText(file);
+    if (e.target) {
+      e.target.value = ""; // Reset file input so same file can be uploaded again
     }
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto p-4">
+    <div className="w-full max-w-3xl mx-auto p-4 flex flex-col gap-2">
+      {/* File Attachment Preview */}
+      {attachedFileName && (
+        <div className="flex items-center gap-2 self-start bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs px-3 py-1.5 rounded-full ml-4 shadow-sm">
+          <Paperclip className="h-3.5 w-3.5 text-purple-400" />
+          <span className="font-mono truncate max-w-[200px]">{attachedFileName}</span>
+          <button
+            onClick={onRemoveAttachment}
+            className="text-zinc-500 hover:text-white font-bold ml-1 h-4 w-4 rounded-full flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 transition-colors cursor-pointer"
+            title="Remove file"
+          >
+            &times;
+          </button>
+        </div>
+      )}
+
       <div className="relative bg-zinc-900 border border-zinc-800 rounded-full flex items-end p-2 shadow-lg focus-within:border-zinc-700 transition-colors">
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept=".txt,.js,.ts,.tsx,.json,.md,.html,.css,.xml"
+          className="hidden"
+        />
         <button
-          onClick={onFileClick}
-          className="p-3 text-zinc-500 hover:text-white"
+          onClick={() => fileInputRef.current?.click()}
+          className="p-3 text-zinc-500 hover:text-white cursor-pointer"
           aria-label="Attach file"
         >
           <Paperclip className="h-5 w-5" />
@@ -79,15 +132,15 @@ export function InputField({
         />
         <button
           onClick={toggleListening}
-          className={`p-3 hover:text-white ${isListening ? "text-red-500" : "text-zinc-500"}`}
+          className={`p-3 hover:text-white transition-colors cursor-pointer ${isListening ? "text-red-500 animate-pulse" : "text-zinc-500"}`}
           aria-label={isListening ? "Stop voice input" : "Start voice input"}
         >
           {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
         </button>
         <button
           onClick={onSubmit}
-          disabled={isLoading || !input.trim()}
-          className="p-3 bg-white text-black rounded-full disabled:opacity-50"
+          disabled={isLoading || (!input.trim() && !attachedFileName)}
+          className="p-3 bg-white text-black rounded-full disabled:opacity-50 cursor-pointer hover:bg-zinc-200 transition-colors"
           aria-label="Send message"
         >
           <Send className="h-5 w-5" />

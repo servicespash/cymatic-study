@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 export const Route = createFileRoute("/analytics")({
   head: () => ({
     meta: [
-      { title: "Analytics | Latty's Cymatic Hub" },
+      { title: "Analytics | Latty's Cymatic Study" },
       {
         name: "description",
         content: "Performance metrics and student insights. Designed by Isabirye Latif.",

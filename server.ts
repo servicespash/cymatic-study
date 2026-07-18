@@ -1,13 +1,26 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+dotenv.config({ override: true });
+
+// Auto-map Gemini key variations for maximum robustness
+process.env.GOOGLE_GENERATIVE_AI_API_KEY =
+  process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_KEY;
+
 import express from "express";
 import path from "path";
-import { createServer as createViteServer } from "vite";
 import { handleTutorRequest } from "./src/server/tutor";
 import { handleNcdcNewsRequest } from "./src/server/ncdc-news";
 import { handleDynamicNotesRequest } from "./src/server/dynamic-notes";
 import { handleEmailRequest } from "./src/server/email-router";
+import { handleAttendanceRequest } from "./src/server/attendance";
 
 async function startServer() {
+  console.log("[Boot] Current working directory:", process.cwd());
+  console.log("[Boot] GEMINI_API_KEY length:", process.env.GEMINI_API_KEY?.length || 0);
+  console.log(
+    "[Boot] GEMINI_API_KEY prefix:",
+    process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.substring(0, 15) : "none",
+  );
+
   const app = express();
   const PORT = 3000;
 
@@ -21,15 +34,33 @@ async function startServer() {
     const host = req.get("host");
     const url = new URL(req.originalUrl, `${protocol}://${host}`);
 
+    const body = ["POST", "PUT", "PATCH"].includes(req.method)
+      ? JSON.stringify(req.body)
+      : undefined;
+
     return new Request(url.toString(), {
       method: req.method,
       headers: new Headers(req.headers as any),
-      body: ["POST", "PUT", "PATCH"].includes(req.method) ? JSON.stringify(req.body) : undefined,
+      body,
     });
   }
 
   // API Routes
+  app.get("/api/debug-env", (req, res) => {
+    res.json({
+      cwd: process.cwd(),
+      keys: Object.keys(process.env).filter(
+        (k) => k.includes("GEMINI") || k.includes("GOOGLE") || k.includes("API"),
+      ),
+      geminiLength: process.env.GEMINI_API_KEY?.length || 0,
+      geminiPrefix: process.env.GEMINI_API_KEY
+        ? process.env.GEMINI_API_KEY.substring(0, 15)
+        : "none",
+    });
+  });
+
   app.post("/api/tutor", async (req, res) => {
+    console.log(`[API] POST /api/tutor from ${req.ip}`);
     try {
       const webReq = toWebRequest(req);
       const response = await handleTutorRequest(webReq);
@@ -60,6 +91,7 @@ async function startServer() {
   });
 
   app.post("/api/ncdc-news", async (req, res) => {
+    console.log(`[API] POST /api/ncdc-news from ${req.ip}`);
     try {
       const webReq = toWebRequest(req);
       const response = await handleNcdcNewsRequest(webReq);
@@ -72,6 +104,7 @@ async function startServer() {
   });
 
   app.post("/api/dynamic-notes", async (req, res) => {
+    console.log(`[API] POST /api/dynamic-notes from ${req.ip}`);
     try {
       const webReq = toWebRequest(req);
       const response = await handleDynamicNotesRequest(webReq);
@@ -92,9 +125,23 @@ async function startServer() {
     }
   });
 
+  app.post("/api/attendance", async (req, res) => {
+    console.log(`[API] POST /api/attendance from ${req.ip}`);
+    try {
+      const webReq = toWebRequest(req);
+      const response = await handleAttendanceRequest(webReq);
+      const data = await response.json();
+      res.status(response.status).json(data);
+    } catch (error: any) {
+      console.error("Attendance API error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
+    const { createServer } = await import("vite");
+    const vite = await createServer({
       server: { middlewareMode: true },
       appType: "spa",
     });

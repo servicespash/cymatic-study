@@ -24,16 +24,16 @@ import { generateMetaTags, getCanonicalLink } from "@/lib/seo";
 export const Route = createFileRoute("/lessons")({
   head: () => {
     const meta = generateMetaTags({
-      title: "Interactive Lessons - Latty's Cymatic Hub",
+      title: "Interactive Lessons - Latty's Cymatic Study",
       description:
         "Explore interactive lessons for Mathematics, Physics, Chemistry, and Biology aligned with Uganda's Senior 1-4 curriculum.",
-      canonicalUrl: "https://hub.cymatichub.xyz/lessons",
+      canonicalUrl: "https://study.cymatichub.xyz/lessons",
       keywords: ["lessons", "interactive learning", "Uganda curriculum"],
     });
 
     return {
       meta,
-      links: [getCanonicalLink("https://hub.cymatichub.xyz/lessons")],
+      links: [getCanonicalLink("https://study.cymatichub.xyz/lessons")],
     };
   },
   component: LessonsPage,
@@ -48,9 +48,9 @@ import { generateMetaTags, getArticleSchema } from "@/lib/seo";
 export const Route = createFileRoute("/blog/$postId")({
   head: ({ params }) => {
     const meta = generateMetaTags({
-      title: `${post.title} - Latty's Cymatic Hub Blog`,
+      title: `${post.title} - Latty's Cymatic Study Blog`,
       description: post.excerpt,
-      canonicalUrl: `https://hub.cymatichub.xyz/blog/${params.postId}`,
+      canonicalUrl: `https://study.cymatichub.xyz/blog/${params.postId}`,
       ogImage: post.featuredImage,
       ogType: "article",
     });
@@ -67,7 +67,7 @@ export const Route = createFileRoute("/blog/$postId")({
 
     return {
       meta,
-      links: [getCanonicalLink(`https://hub.cymatichub.xyz/blog/${params.postId}`)],
+      links: [getCanonicalLink(`https://study.cymatichub.xyz/blog/${params.postId}`)],
       scripts: [
         {
           type: "application/ld+json",
@@ -88,23 +88,23 @@ import { generateMetaTags, getCourseSchema } from "@/lib/seo";
 export const Route = createFileRoute("/curriculum/$subject")({
   head: ({ params }) => {
     const meta = generateMetaTags({
-      title: `${subject.name} Curriculum - Latty's Cymatic Hub`,
+      title: `${subject.name} Curriculum - Latty's Cymatic Study`,
       description: `Complete ${subject.name} curriculum for Uganda Senior 1-4 with interactive notes and quizzes.`,
-      canonicalUrl: `https://hub.cymatichub.xyz/curriculum/${params.subject}`,
+      canonicalUrl: `https://study.cymatichub.xyz/curriculum/${params.subject}`,
       keywords: ["curriculum", params.subject.toLowerCase(), "Uganda", "notes", "quizzes"],
     });
 
     const schema = getCourseSchema({
       name: `${subject.name} Course`,
       description: subject.description,
-      provider: "Latty's Cymatic Hub",
+      provider: "Latty's Cymatic Study",
       educationLevel: "Secondary",
       courseCode: subject.code,
     });
 
     return {
       meta,
-      links: [getCanonicalLink(`https://hub.cymatichub.xyz/curriculum/${params.subject}`)],
+      links: [getCanonicalLink(`https://study.cymatichub.xyz/curriculum/${params.subject}`)],
       scripts: [
         {
           type: "application/ld+json",
@@ -151,7 +151,7 @@ const meta = generateMetaTags({
   title: "My Page",
   description: "A great page",
   keywords: ["seo", "example"],
-  ogImage: "https://hub.cymatichub.xyz/og-image.jpg",
+  ogImage: "https://study.cymatichub.xyz/og-image.jpg",
 });
 ```
 
@@ -168,8 +168,8 @@ Generates a canonical link tag to prevent duplicate content penalties.
 **Example:**
 
 ```typescript
-const link = getCanonicalLink("https://hub.cymatichub.xyz/page");
-// Returns: { rel: 'canonical', href: 'https://hub.cymatichub.xyz/page' }
+const link = getCanonicalLink("https://study.cymatichub.xyz/page");
+// Returns: { rel: 'canonical', href: 'https://study.cymatichub.xyz/page' }
 ```
 
 ### getOrganizationSchema()
@@ -240,7 +240,7 @@ Generates Course schema for educational content.
 const schema = getCourseSchema({
   name: "Mathematics for Senior 2",
   description: "Complete mathematics curriculum",
-  provider: "Latty's Cymatic Hub",
+  provider: "Latty's Cymatic Study",
   educationLevel: "Secondary",
   courseCode: "MATH-S2",
 });
@@ -285,7 +285,7 @@ For every route, ensure:
 - Be descriptive and click-worthy
 - Include brand name at the end
 
-**Good:** "Physics Lessons - Interactive Tutorials | Latty's Cymatic Hub"
+**Good:** "Physics Lessons - Interactive Tutorials | Latty's Cymatic Study"
 **Bad:** "Page 1"
 
 ### Descriptions
@@ -315,8 +315,8 @@ For every route, ensure:
 - Ensure it's a real, accessible URL
 - Keep consistent casing
 
-**Good:** `https://hub.cymatichub.xyz/lessons`
-**Bad:** `lessons` or `hub.cymatichub.xyz/lessons` or `HTTPS://HUB.CYMATICHUB.XYZ/LESSONS`
+**Good:** `https://study.cymatichub.xyz/lessons`
+**Bad:** `lessons` or `study.cymatichub.xyz/lessons` or `HTTPS://HUB.CYMATICHUB.XYZ/LESSONS`
 
 ### Open Graph Tags
 
@@ -369,12 +369,12 @@ For every route, ensure:
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: generateMetaTags({
-      title: "Student Dashboard - Track Your Progress | Latty's Cymatic Hub",
+      title: "Student Dashboard - Track Your Progress | Latty's Cymatic Study",
       description:
         "View your learning progress, earned points, completed quizzes, and personalized recommendations.",
-      canonicalUrl: "https://hub.cymatichub.xyz/dashboard",
+      canonicalUrl: "https://study.cymatichub.xyz/dashboard",
     }),
-    links: [getCanonicalLink("https://hub.cymatichub.xyz/dashboard")],
+    links: [getCanonicalLink("https://study.cymatichub.xyz/dashboard")],
   }),
   component: Dashboard,
 });
@@ -389,12 +389,12 @@ export const Route = createFileRoute("/quizzes/$quizId")({
 
     return {
       meta: generateMetaTags({
-        title: `${quiz.title} Quiz | Latty's Cymatic Hub`,
+        title: `${quiz.title} Quiz | Latty's Cymatic Study`,
         description: quiz.description,
-        canonicalUrl: `https://hub.cymatichub.xyz/quizzes/${params.quizId}`,
+        canonicalUrl: `https://study.cymatichub.xyz/quizzes/${params.quizId}`,
         keywords: [quiz.subject.toLowerCase(), "quiz", "practice"],
       }),
-      links: [getCanonicalLink(`https://hub.cymatichub.xyz/quizzes/${params.quizId}`)],
+      links: [getCanonicalLink(`https://study.cymatichub.xyz/quizzes/${params.quizId}`)],
     };
   },
   component: QuizPage,

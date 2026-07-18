@@ -1,16 +1,22 @@
 import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
 import { Message, useTutorStore } from "@/store/useTutorStore";
-import { Download } from "lucide-react";
+import { Download, Volume2, VolumeX } from "lucide-react";
 import { useState } from "react";
 import { ExportPdfModal } from "./ExportPdfModal";
+import { useTutor } from "@/lib/TutorService";
 
 export function ChatArea({ messages, isLoading }: { messages: Message[]; isLoading: boolean }) {
+  const { isTeacher, isAdmin } = useAuth();
   const persona = useTutorStore((s) => s.persona);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { speak, stopSpeaking, speaking } = useTutor();
+  const [activeSpeakingId, setActiveSpeakingId] = useState<string | null>(null);
 
   const formattedChatContent = messages
     .map((msg) => {
-      const roleLabel = msg.sender === "user" ? "Learner" : persona;
+      const isStudent = msg.sender === "student" || msg.sender === "user";
+      const roleLabel = isStudent ? "Learner" : persona;
       return `[${msg.timestamp || ""}] ${roleLabel}: ${msg.text}`;
     })
     .join("\n\n");
@@ -21,6 +27,17 @@ export function ChatArea({ messages, isLoading }: { messages: Message[]; isLoadi
       body: formattedChatContent || "No messages in this chat session yet.",
     },
   ];
+
+  const handleSpeak = async (msgId: string, text: string) => {
+    if (speaking && activeSpeakingId === msgId) {
+      await stopSpeaking();
+      setActiveSpeakingId(null);
+    } else {
+      await stopSpeaking();
+      setActiveSpeakingId(msgId);
+      await speak(text);
+    }
+  };
 
   return (
     <div
@@ -39,21 +56,46 @@ export function ChatArea({ messages, isLoading }: { messages: Message[]; isLoadi
           Export PDF
         </button>
       </div>
-      {messages.map((msg) => (
-        <motion.div
-          key={msg.id}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className={`max-w-3xl mx-auto ${msg.sender === "user" ? "text-right" : "text-left"}`}
-        >
-          <div
-            className={`inline-block p-4 rounded-2xl text-sm ${msg.sender === "user" ? "bg-zinc-800 text-white" : "bg-zinc-900/50 text-zinc-100"}`}
+      {messages.map((msg) => {
+        const isStudent = msg.sender === "student" || msg.sender === "user";
+        return (
+          <motion.div
+            key={msg.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className={`max-w-3xl mx-auto ${isStudent ? "text-right" : "text-left"}`}
           >
-            {msg.text}
-          </div>
-        </motion.div>
-      ))}
+            <div
+              className={`flex items-end gap-2 group ${isStudent ? "justify-end" : "justify-start"}`}
+            >
+              <div
+                className={`inline-block p-4 rounded-2xl text-sm text-left ${
+                  isStudent
+                    ? "bg-zinc-800 text-white"
+                    : "bg-zinc-900/50 text-zinc-100 border border-zinc-800/80"
+                }`}
+              >
+                {msg.text}
+              </div>
+              {!isStudent && msg.text && (
+                <button
+                  onClick={() => handleSpeak(msg.id, msg.text)}
+                  className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-850 rounded-lg transition-all shrink-0 cursor-pointer"
+                  aria-label={speaking && activeSpeakingId === msg.id ? "Stop voice" : "Read aloud"}
+                  title={speaking && activeSpeakingId === msg.id ? "Stop reading" : "Read aloud"}
+                >
+                  {speaking && activeSpeakingId === msg.id ? (
+                    <VolumeX className="h-4 w-4 text-purple-400 animate-pulse" />
+                  ) : (
+                    <Volume2 className="h-4 w-4" />
+                  )}
+                </button>
+              )}
+            </div>
+          </motion.div>
+        );
+      })}
       {isLoading && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -75,6 +117,7 @@ export function ChatArea({ messages, isLoading }: { messages: Message[]; isLoadi
           title="Tutor Session Export"
           subject="Physics & Mathematics"
           docType="lesson_notes"
+          showAnswers={isTeacher || isAdmin}
           content={pdfContent}
         />
       )}

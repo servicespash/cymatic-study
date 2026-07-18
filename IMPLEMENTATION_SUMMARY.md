@@ -1,6 +1,6 @@
 # Implementation Summary
 
-This document summarizes the three major features implemented for Latty's Cymatic Hub.
+This document summarizes the three major features implemented for Latty's Cymatic Study.
 
 ## 1. Route-Level SEO Implementation ✅
 
@@ -34,12 +34,12 @@ import { generateMetaTags, getCanonicalLink, getArticleSchema } from "@/lib/seo"
 export const Route = createFileRoute("/page")({
   head: () => ({
     meta: generateMetaTags({
-      title: "Page Title - Latty's Cymatic Hub",
+      title: "Page Title - Latty's Cymatic Study",
       description: "Page description for search results",
-      canonicalUrl: "https://hub.cymatichub.xyz/page",
+      canonicalUrl: "https://study.cymatichub.xyz/page",
       keywords: ["keyword1", "keyword2"],
     }),
-    links: [getCanonicalLink("https://hub.cymatichub.xyz/page")],
+    links: [getCanonicalLink("https://study.cymatichub.xyz/page")],
   }),
   component: Page,
 });

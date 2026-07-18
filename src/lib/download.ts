@@ -17,7 +17,7 @@ export async function downloadText(filename: string, content: string) {
       try {
         await Share.share({
           title: filename,
-          text: "Saved from Latty's Cymatic Hub",
+          text: "Saved from Latty's Cymatic Study",
           url: res.uri,
         });
       } catch (err) {

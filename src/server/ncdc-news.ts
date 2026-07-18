@@ -112,7 +112,7 @@ export async function handleNcdcNewsRequest(request: Request) {
       title: "Student Spotlight: Joy Mary Alupo Tops National STEM Challenge",
       body: JSON.stringify({
         description:
-          "Joy Mary Alupo, a Senior 5 student from Tororo, has won the National Youth STEM Cup using Cymatic Hub's interactive physics calculators to design a miniature eco-friendly irrigation sensor. We are incredibly proud of Joy! Keep shining!",
+          "Joy Mary Alupo, a Senior 5 student from Tororo, has won the National Youth STEM Cup using Cymatic Study's interactive physics calculators to design a miniature eco-friendly irrigation sensor. We are incredibly proud of Joy! Keep shining!",
         subject: "Physics",
         achievement: "National STEM Cup Winner",
         school: "Tororo Girls' School",
@@ -126,7 +126,7 @@ export async function handleNcdcNewsRequest(request: Request) {
       title: "Student Spotlight: Ronald Okello Designs Matrix Calculator",
       body: JSON.stringify({
         description:
-          "Ronald Okello, an S6 student from Gulu, built an offline matrix solver tool using Cymatic Hub's documentation. His tool helps classmates verify linear transformation determinants. Truly excellent innovation, Ronald!",
+          "Ronald Okello, an S6 student from Gulu, built an offline matrix solver tool using Cymatic Study's documentation. His tool helps classmates verify linear transformation determinants. Truly excellent innovation, Ronald!",
         subject: "Mathematics",
         achievement: "Matrix Solver App Creator",
         school: "St. Joseph's College Layibi",
@@ -165,26 +165,37 @@ export async function handleNcdcNewsRequest(request: Request) {
     process.env.GEMINI_API_KEY ||
     process.env.VITE_GOOGLE_GENERATIVE_AI_KEY ||
     process.env.GOOGLE_GENERATIVE_AI_KEY;
+
+  if (apiKey) {
+    console.log(
+      `[GeminiNews] API key present (len: ${apiKey.length}, starts with: ${apiKey.substring(0, 5)}...)`,
+    );
+  } else {
+    console.warn("[GeminiNews] No Gemini API key found in environment variables.");
+  }
   // Use Gemini for grounded news if API key is present
   if (apiKey) {
     const ai = new GoogleGenAI({
-      apiKey: apiKey,
-      httpOptions: { headers: { "User-Agent": "aistudio-build" } },
+      apiKey,
+      httpOptions: {
+        headers: {
+          "User-Agent": "aistudio-build",
+        },
+      },
     });
 
     try {
-      console.log("Fetching live news from Gemini 2.5 Flash search grounding...");
+      console.log("Fetching live news from Gemini 3.5 Flash search grounding...");
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3.5-flash",
         contents:
-          "Provide exactly 3 distinct, highly professional real-time news items about the National Curriculum Development Centre (NCDC) or Uganda National Examinations Board (UNEB) regarding Ugandan secondary school curriculum updates, syllabus rollouts, or mocks schedules for Advanced/Ordinary Level science subjects (Mathematics, Physics, Chemistry, Biology). Return the result in JSON format as an array of objects with 'title' and 'body' fields. Keep the body text clear, descriptive, and academic.",
+          "Provide exactly 3 distinct, highly professional real-time news items about the National Curriculum Development Centre (NCDC) or Uganda National Examinations Board (UNEB) regarding Ugandan secondary school curriculum updates, syllabus rollouts, or mocks schedules for Advanced/Ordinary Level science subjects (Mathematics, Physics, Chemistry, Biology). Return the result in JSON format as an array of objects with 'title' and 'body' fields. Keep the body text clear, descriptive, and academic. Do not include markdown formatting like ```json.",
+        tools: [{ googleSearch: {} }],
         config: {
-          tools: [{ googleSearch: {} }],
           responseMimeType: "application/json",
         },
       });
-
-      let text = response.text;
+      let text = response.text || "";
       if (text) {
         text = text
           .replace(/```json/gi, "")
@@ -197,8 +208,12 @@ export async function handleNcdcNewsRequest(request: Request) {
           generatedNews = parsed.news;
         }
       }
-    } catch (e) {
-      console.error("Gemini grounding news search failed:", e);
+    } catch (e: any) {
+      if (e?.message?.includes("API key not valid")) {
+        console.warn("[GeminiNews] API key invalid, skipping grounded search.");
+      } else {
+        console.error("Gemini grounding news search failed:", e);
+      }
     }
   }
 

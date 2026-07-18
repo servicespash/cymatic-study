@@ -69,7 +69,7 @@ export function TermSummaryPanel() {
 
               <p className="text-[11px] leading-relaxed">
                 {isAhead
-                  ? "Outstanding consistency! Your dedicated daily efforts under Lattys Cymatic Hub align perfectly with Ugandan lower secondary competence metrics. This regular practice ensures that your final compiled grades remain stellar."
+                  ? "Outstanding consistency! Your dedicated daily efforts under Lattys Cymatic Study align perfectly with Ugandan lower secondary competence metrics. This regular practice ensures that your final compiled grades remain stellar."
                   : "Every day counts. Simply completing one extra quiz or taking on today's personalized project with your AI tutor will immediately realign your score with the ideal 90-day trajectory. Keep climbing!"}
               </p>
             </div>
