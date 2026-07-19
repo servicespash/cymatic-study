@@ -33,7 +33,7 @@ const ROLES = {
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, startGuestSession } = useAuth();
 
   const [mode, setMode] = useState<LoginMode>("init");
   const [role, setRole] = useState<Role | null>(null);
@@ -161,10 +161,9 @@ function LoginPage() {
   };
 
   const handleTriggerMockSigning = () => {
-    localStorage.setItem("guest_session_active", "true");
-    localStorage.setItem("guest_session_role", "student");
-    localStorage.setItem("guest_session_start", Date.now().toString());
-    window.dispatchEvent(new Event("storage"));
+    if (startGuestSession) {
+      startGuestSession("student");
+    }
     toast.success("🔑 5-Minute Guest Session Initiated!", {
       description: "Enjoy full app functionality, dashboards, and quizzes as a guest.",
       duration: 5000,

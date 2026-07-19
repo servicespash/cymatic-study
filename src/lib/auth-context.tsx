@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useCallback, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Ctx, type AuthCtx, type UserProfile } from "./auth-context-core";
@@ -17,7 +17,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Guest Session Mode States
   const [isGuestMode, setIsGuestMode] = useState(false);
   const [guestRole, setGuestRoleState] = useState<"student" | "teacher" | "admin">("student");
-  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+
+  const endGuestSession = useCallback(() => {
+    localStorage.removeItem("guest_session_active");
+    localStorage.removeItem("guest_session_role");
+    localStorage.removeItem("guest_session_start");
+    setIsGuestMode(false);
+    setSession(null);
+    setUser(null);
+    setProfile(null);
+    window.dispatchEvent(new Event("storage"));
+  }, []);
+
+  const signOut = useCallback(async () => {
+    if (isGuestMode) {
+      endGuestSession();
+      toast.info("Signed out of Guest Session mode.");
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 500);
+    } else {
+      await supabase.auth.signOut();
+    }
+  }, [isGuestMode, endGuestSession]);
 
   useEffect(() => {
     // Check if guest session is currently active
@@ -34,7 +56,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (elapsed < fiveMinutesMs) {
         setIsGuestMode(true);
         setGuestRoleState(savedRole);
-        setTimeLeft(Math.ceil((fiveMinutesMs - elapsed) / 1000));
         setLoading(false);
         return;
       } else {
@@ -87,11 +108,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkGuest = () => {
       const isGuestActive = localStorage.getItem("guest_session_active") === "true";
       const savedRole =
-        (localStorage.getItem("guest_session_role") as "student" | "teacher" | "admin") || "student";
+        (localStorage.getItem("guest_session_role") as "student" | "teacher" | "admin") ||
+        "student";
       if (isGuestActive && !isGuestMode) {
         setIsGuestMode(true);
         setGuestRoleState(savedRole);
-        setTimeLeft(300); // 5 minutes fresh
         setLoading(false);
       }
     };
@@ -123,13 +144,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             "Your 5-minute guest session has ended. Please sign in or register an account to keep your progress!",
           duration: 8000,
         });
-      } else {
-        setTimeLeft(Math.ceil((fiveMinutesMs - elapsed) / 1000));
       }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isGuestMode]);
+  }, [isGuestMode, signOut]);
 
   useEffect(() => {
     if (!user || typeof window === "undefined" || isGuestMode) return;
@@ -176,22 +195,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signOut = async () => {
-    if (isGuestMode) {
-      localStorage.removeItem("guest_session_active");
-      localStorage.removeItem("guest_session_role");
-      localStorage.removeItem("guest_session_start");
-      setIsGuestMode(false);
-      setSession(null);
-      setUser(null);
-      setProfile(null);
-      toast.info("Signed out of Guest Session mode.");
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 500);
-    } else {
-      await supabase.auth.signOut();
-    }
+  const startGuestSession = (role: "student" | "teacher" | "admin" = "student") => {
+    localStorage.setItem("guest_session_active", "true");
+    localStorage.setItem("guest_session_role", role);
+    localStorage.setItem("guest_session_start", Date.now().toString());
+    setIsGuestMode(true);
+    setGuestRoleState(role);
+    setLoading(false);
+    window.dispatchEvent(new Event("storage"));
   };
 
   const setGuestRole = (role: "student" | "teacher" | "admin") => {
@@ -251,6 +262,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isGuestMode,
     setGuestRole,
     guestRole,
+    startGuestSession,
+    endGuestSession,
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
