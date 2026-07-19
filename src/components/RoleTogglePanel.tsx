@@ -4,7 +4,7 @@ import { User, ShieldCheck, BookOpen, GraduationCap, ArrowRight } from "lucide-r
 import { motion } from "framer-motion";
 
 export function RoleTogglePanel() {
-  const { isMockPreview, mockRole, setMockRole, startMockPreview } = useAuth();
+  const { isGuestMode, guestRole, setGuestRole, startGuestSession } = useAuth();
 
   const roles = [
     {
@@ -41,11 +41,11 @@ export function RoleTogglePanel() {
   ];
 
   const handleRoleSelect = (roleId: "student" | "teacher" | "admin") => {
-    if (!isMockPreview) {
-      // If we are not in mock mode, trigger it so they can test immediately
-      startMockPreview(roleId);
-    } else if (setMockRole) {
-      setMockRole(roleId);
+    if (!isGuestMode) {
+      // If we are not in guest mode, trigger it so they can test immediately
+      if (startGuestSession) startGuestSession(roleId);
+    } else if (setGuestRole) {
+      setGuestRole(roleId);
     }
   };
 
@@ -67,7 +67,7 @@ export function RoleTogglePanel() {
 
       <div className="grid md:grid-cols-3 gap-4">
         {roles.map((r) => {
-          const isActive = isMockPreview && mockRole === r.id;
+          const isActive = isGuestMode && guestRole === r.id;
           return (
             <button
               key={r.id}

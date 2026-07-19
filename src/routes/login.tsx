@@ -161,11 +161,11 @@ function LoginPage() {
   };
 
   const handleTriggerMockSigning = () => {
-    localStorage.setItem("mock_preview_active", "true");
-    localStorage.setItem("mock_preview_role", "student");
-    localStorage.setItem("mock_preview_start", Date.now().toString());
+    localStorage.setItem("guest_session_active", "true");
+    localStorage.setItem("guest_session_role", "student");
+    localStorage.setItem("guest_session_start", Date.now().toString());
     window.dispatchEvent(new Event("storage"));
-    toast.success("🔑 5-Minute Guest Preview Initiated!", {
+    toast.success("🔑 5-Minute Guest Session Initiated!", {
       description: "Enjoy full app functionality, dashboards, and quizzes as a guest.",
       duration: 5000,
     });
@@ -238,7 +238,7 @@ function LoginPage() {
                 </span>
               </div>
               <h3 className="font-extrabold text-white text-sm flex items-center gap-1.5">
-                <span>5-Minute Guest Preview</span>
+                <span>5-Minute Guest Session</span>
                 <ArrowRight className="h-3.5 w-3.5 text-cyan-400 group-hover:translate-x-1 transition-transform" />
               </h3>
               <p className="text-xs text-cyan-200/70 mt-1">

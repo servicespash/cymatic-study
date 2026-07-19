@@ -49,7 +49,7 @@ import { MilestoneBadges } from "@/components/MilestoneBadges";
 import { TermSummaryPanel } from "@/components/TermSummaryPanel";
 import { QuickQuizButton } from "@/components/QuickQuizButton";
 import { TaskContextMenu } from "@/components/TaskContextMenu";
-import { useMockSession } from "@/hooks/useMockSession";
+import { useGuestSession } from "@/hooks/useGuestSession";
 import { useTermProgress } from "@/hooks/useTermProgress";
 import { QuizEngine, type DynamicDailyTask } from "@/lib/quiz-engine";
 import { motion, AnimatePresence } from "framer-motion";
@@ -63,10 +63,10 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function DashboardPage() {
-  const { user, loading, signOut, profile, isMockPreview, mockRole } = useAuth();
+  const { user, loading, signOut, profile, isGuestMode, guestRole } = useAuth();
 
   const navigate = useNavigate();
-  const { timeLeft, showLoginModal } = useMockSession();
+  const { timeLeft, showLoginModal } = useGuestSession();
   const { completeTaskAndSync } = useTermProgress();
   const [isPending, startTransition] = useTransition();
 
@@ -165,7 +165,7 @@ function DashboardPage() {
     }
 
     const fetchDailyPoints = async () => {
-      if (user && !isMockPreview) {
+      if (user && !isGuestMode) {
         const today = new Date().toISOString().split("T")[0];
         const { data, error } = await supabase
           .from("user_points")
@@ -177,7 +177,7 @@ function DashboardPage() {
           const total = data.reduce((acc, curr) => acc + (curr.points || 0), 0);
           setDailyPoints(total);
         }
-      } else if (isMockPreview) {
+      } else if (isGuestMode) {
         // Mock points display
         setDailyPoints(45);
       }
@@ -191,7 +191,7 @@ function DashboardPage() {
       const timer = setTimeout(() => setPoints((prev) => Math.min(prev + step, dailyPoints)), 30);
       return () => clearTimeout(timer);
     }
-  }, [user, loading, navigate, points, isMockPreview, dailyPoints]);
+  }, [user, loading, navigate, points, isGuestMode, dailyPoints]);
 
   if (loading || !user) {
     return (
@@ -210,11 +210,11 @@ function DashboardPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 space-y-8">
       {/* 5-MINUTE PREVIEW HEADS-UP TIMER */}
-      {isMockPreview && timeLeft !== null && (
+      {isGuestMode && timeLeft !== null && (
         <div className="flex items-center justify-between px-5 py-3 bg-zinc-950 border border-yellow-500/20 rounded-xl text-xs">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-yellow-500 animate-pulse" />
-            <span className="text-zinc-300 font-medium">Guest Preview Session Duration:</span>
+            <span className="text-zinc-300 font-medium">Guest Session Duration:</span>
           </div>
           <span className="font-mono text-yellow-400 font-bold bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/20">
             {formatTime(timeLeft)}
@@ -226,7 +226,7 @@ function DashboardPage() {
       <RoleTogglePanel />
 
       {/* RENDER ACTIVE DASHBOARD ACCORDING TO ROLE */}
-      {isMockPreview && mockRole === "teacher" ? (
+      {isGuestMode && guestRole === "teacher" ? (
         <div className="space-y-6">
           <div className="p-6 bg-gradient-to-r from-zinc-900 to-zinc-950 rounded-2xl border border-zinc-800 shadow-xl">
             <h2 className="text-xl font-bold text-white tracking-tight">
@@ -385,7 +385,7 @@ function DashboardPage() {
             </div>
           </div>
         </div>
-      ) : isMockPreview && mockRole === "admin" ? (
+      ) : isGuestMode && guestRole === "admin" ? (
         <div className="space-y-6">
           <div className="p-6 bg-gradient-to-r from-zinc-900 to-zinc-950 rounded-2xl border border-zinc-800 shadow-xl">
             <h2 className="text-xl font-bold text-white tracking-tight">
@@ -754,9 +754,9 @@ function DashboardPage() {
               <div className="space-y-3 pt-2">
                 <button
                   onClick={() => {
-                    localStorage.removeItem("mock_preview_active");
-                    localStorage.removeItem("mock_preview_role");
-                    localStorage.removeItem("mock_preview_start");
+                    localStorage.removeItem("guest_session_active");
+                    localStorage.removeItem("guest_session_role");
+                    localStorage.removeItem("guest_session_start");
                     window.location.href = "/login";
                   }}
                   className="w-full rounded-xl bg-cyan-500 hover:bg-cyan-600 py-3.5 text-xs font-bold uppercase tracking-wider text-black shadow-glow shadow-cyan-500/10 transition-all"

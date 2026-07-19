@@ -21,9 +21,9 @@ export type AuthCtx = {
   isTeacher: boolean;
   isAdmin: boolean;
   signOut: () => Promise<void>;
-  isMockPreview?: boolean;
-  setMockRole?: (role: "student" | "teacher" | "admin") => void;
-  mockRole?: "student" | "teacher" | "admin";
+  isGuestMode?: boolean;
+  setGuestRole?: (role: "student" | "teacher" | "admin") => void;
+  guestRole?: "student" | "teacher" | "admin";
 };
 
 export const Ctx = createContext<AuthCtx>({
@@ -36,9 +36,9 @@ export const Ctx = createContext<AuthCtx>({
   isTeacher: false,
   isAdmin: false,
   signOut: async () => {},
-  isMockPreview: false,
-  setMockRole: () => {},
-  mockRole: "student",
+  isGuestMode: false,
+  setGuestRole: () => {},
+  guestRole: "student",
 });
 
 export const useAuth = () => useContext(Ctx);

@@ -3,25 +3,25 @@ import { useAuth } from "./useAuth";
 import { toast } from "sonner";
 
 /**
- * useMockSession Hook
+ * useGuestSession Hook
  * Tracks a 5-minute timer upon initial entry, enabling full app feature previews.
  * Once the 5-minute guest session expires, it triggers a sign-in login modal or forces redirection.
  */
-export function useMockSession() {
-  const { isMockPreview, signOut } = useAuth();
+export function useGuestSession() {
+  const { isGuestMode, signOut } = useAuth();
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [isExpired, setIsExpired] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
-    if (!isMockPreview) {
+    if (!isGuestMode) {
       setTimeLeft(null);
       setIsExpired(false);
       return;
     }
 
     const checkTime = () => {
-      const startTimeStr = localStorage.getItem("mock_preview_start");
+      const startTimeStr = localStorage.getItem("guest_session_start");
       if (!startTimeStr) return;
 
       const startTime = parseInt(startTimeStr, 10);
@@ -34,13 +34,13 @@ export function useMockSession() {
         setShowLoginModal(true);
 
         // Notify the user
-        toast.error("⏱️ Guest Preview Expired", {
+        toast.error("⏱️ Guest Session Expired", {
           description:
-            "Your 5-minute guest preview session has ended. Please sign in or register to keep your progress!",
+            "Your 5-minute guest session has ended. Please sign in or register to keep your progress!",
           duration: 10000,
         });
 
-        // Force sign out from mock mode
+        // Force sign out from guest mode
         signOut();
       } else {
         const remainingSeconds = Math.ceil((fiveMinutesMs - elapsed) / 1000);
@@ -56,7 +56,7 @@ export function useMockSession() {
     const interval = setInterval(checkTime, 1000);
 
     return () => clearInterval(interval);
-  }, [isMockPreview, signOut]);
+  }, [isGuestMode, signOut]);
 
   const closeLoginModal = () => {
     setShowLoginModal(false);
@@ -69,7 +69,7 @@ export function useMockSession() {
   return {
     timeLeft,
     isExpired,
-    isActive: !!isMockPreview,
+    isActive: !!isGuestMode,
     showLoginModal,
     triggerLoginModal,
     closeLoginModal,

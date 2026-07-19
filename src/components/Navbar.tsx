@@ -46,7 +46,7 @@ const links: readonly NavLink[] = [
 ] as const;
 
 export function Navbar() {
-  const { user, isMockPreview, mockRole, profile } = useAuth();
+  const { user, isGuestMode, guestRole, profile } = useAuth();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -76,8 +76,8 @@ export function Navbar() {
         return;
       }
 
-      if (isMockPreview) {
-        setIsAdmin(mockRole === "admin");
+      if (isGuestMode) {
+        setIsAdmin(guestRole === "admin");
         return;
       }
 
@@ -102,7 +102,7 @@ export function Navbar() {
       }
     };
     checkAdmin();
-  }, [user, isMockPreview, mockRole, profile]);
+  }, [user, isGuestMode, guestRole, profile]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/75 backdrop-blur-xl">

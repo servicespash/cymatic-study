@@ -14,34 +14,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Mock Preview Mode States
-  const [isMockPreview, setIsMockPreview] = useState(false);
-  const [mockRole, setMockRoleState] = useState<"student" | "teacher" | "admin">("student");
+  // Guest Session Mode States
+  const [isGuestMode, setIsGuestMode] = useState(false);
+  const [guestRole, setGuestRoleState] = useState<"student" | "teacher" | "admin">("student");
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
   useEffect(() => {
-    // Check if mock preview is currently active
-    const isMockActive = localStorage.getItem("mock_preview_active") === "true";
+    // Check if guest session is currently active
+    const isGuestActive = localStorage.getItem("guest_session_active") === "true";
     const savedRole =
-      (localStorage.getItem("mock_preview_role") as "student" | "teacher" | "admin") || "student";
-    const startTimeStr = localStorage.getItem("mock_preview_start");
+      (localStorage.getItem("guest_session_role") as "student" | "teacher" | "admin") || "student";
+    const startTimeStr = localStorage.getItem("guest_session_start");
 
-    if (isMockActive && startTimeStr) {
+    if (isGuestActive && startTimeStr) {
       const startTime = parseInt(startTimeStr, 10);
       const elapsed = Date.now() - startTime;
       const fiveMinutesMs = 5 * 60 * 1000;
 
       if (elapsed < fiveMinutesMs) {
-        setIsMockPreview(true);
-        setMockRoleState(savedRole);
+        setIsGuestMode(true);
+        setGuestRoleState(savedRole);
         setTimeLeft(Math.ceil((fiveMinutesMs - elapsed) / 1000));
         setLoading(false);
         return;
       } else {
         // Expired
-        localStorage.removeItem("mock_preview_active");
-        localStorage.removeItem("mock_preview_role");
-        localStorage.removeItem("mock_preview_start");
+        localStorage.removeItem("guest_session_active");
+        localStorage.removeItem("guest_session_role");
+        localStorage.removeItem("guest_session_start");
       }
     }
 
@@ -84,32 +84,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Listen to changes in localStorage from other tabs or actions
   useEffect(() => {
-    const checkMock = () => {
-      const isMockActive = localStorage.getItem("mock_preview_active") === "true";
+    const checkGuest = () => {
+      const isGuestActive = localStorage.getItem("guest_session_active") === "true";
       const savedRole =
-        (localStorage.getItem("mock_preview_role") as "student" | "teacher" | "admin") || "student";
-      if (isMockActive && !isMockPreview) {
-        setIsMockPreview(true);
-        setMockRoleState(savedRole);
+        (localStorage.getItem("guest_session_role") as "student" | "teacher" | "admin") || "student";
+      if (isGuestActive && !isGuestMode) {
+        setIsGuestMode(true);
+        setGuestRoleState(savedRole);
         setTimeLeft(300); // 5 minutes fresh
         setLoading(false);
       }
     };
 
-    window.addEventListener("storage", checkMock);
-    const interval = setInterval(checkMock, 1500);
+    window.addEventListener("storage", checkGuest);
+    const interval = setInterval(checkGuest, 1500);
     return () => {
-      window.removeEventListener("storage", checkMock);
+      window.removeEventListener("storage", checkGuest);
       clearInterval(interval);
     };
-  }, [isMockPreview]);
+  }, [isGuestMode]);
 
-  // Handle Mock Countdown
+  // Handle Guest Countdown
   useEffect(() => {
-    if (!isMockPreview) return;
+    if (!isGuestMode) return;
 
     const timer = setInterval(() => {
-      const startTimeStr = localStorage.getItem("mock_preview_start");
+      const startTimeStr = localStorage.getItem("guest_session_start");
       if (!startTimeStr) return;
       const startTime = parseInt(startTimeStr, 10);
       const elapsed = Date.now() - startTime;
@@ -118,9 +118,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (elapsed >= fiveMinutesMs) {
         clearInterval(timer);
         signOut();
-        toast.error("⏱️ Guest Preview Expired", {
+        toast.error("⏱️ Guest Session Expired", {
           description:
-            "Your 5-minute guest preview session has ended. Please sign in or register an account to keep your progress!",
+            "Your 5-minute guest session has ended. Please sign in or register an account to keep your progress!",
           duration: 8000,
         });
       } else {
@@ -129,10 +129,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isMockPreview]);
+  }, [isGuestMode]);
 
   useEffect(() => {
-    if (!user || typeof window === "undefined" || isMockPreview) return;
+    if (!user || typeof window === "undefined" || isGuestMode) return;
     const pendingReferralCode = window.localStorage.getItem(REFERRAL_STORAGE_KEY);
     if (!pendingReferralCode?.trim()) return;
 
@@ -149,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     void applyPendingReferral();
-  }, [user, isMockPreview]);
+  }, [user, isGuestMode]);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -177,15 +177,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    if (isMockPreview) {
-      localStorage.removeItem("mock_preview_active");
-      localStorage.removeItem("mock_preview_role");
-      localStorage.removeItem("mock_preview_start");
-      setIsMockPreview(false);
+    if (isGuestMode) {
+      localStorage.removeItem("guest_session_active");
+      localStorage.removeItem("guest_session_role");
+      localStorage.removeItem("guest_session_start");
+      setIsGuestMode(false);
       setSession(null);
       setUser(null);
       setProfile(null);
-      toast.info("Signed out of Guest Preview mode.");
+      toast.info("Signed out of Guest Session mode.");
       setTimeout(() => {
         window.location.href = "/login";
       }, 500);
@@ -194,21 +194,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const setMockRole = (role: "student" | "teacher" | "admin") => {
-    setMockRoleState(role);
-    localStorage.setItem("mock_preview_role", role);
-    toast.success(`Switched role to ${role.toUpperCase()} (Guest Preview)`);
+  const setGuestRole = (role: "student" | "teacher" | "admin") => {
+    setGuestRoleState(role);
+    localStorage.setItem("guest_session_role", role);
+    toast.success(`Switched role to ${role.toUpperCase()} (Guest Session)`);
   };
 
-  // Determine actual roles based on either mock preview state or actual DB profile
-  const finalRole = isMockPreview ? mockRole : profile?.role || "";
-  const isInstitutional = isMockPreview ? mockRole === "admin" : !!profile?.org_id;
+  // Determine actual roles based on either guest session state or actual DB profile
+  const finalRole = isGuestMode ? guestRole : profile?.role || "";
+  const isInstitutional = isGuestMode ? guestRole === "admin" : !!profile?.org_id;
   const isStudent = finalRole === "student" || (!finalRole && isInstitutional);
   const isTeacher = finalRole === "teacher" || finalRole === "independent_teacher";
   const isAdmin = finalRole === "admin" || finalRole === "school_admin";
 
   const guestUser: User = {
-    id: "mock-user-123",
+    id: "guest-user",
     app_metadata: {},
     aud: "authenticated",
     created_at: new Date().toISOString(),
@@ -221,36 +221,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const guestSession: Session = {
-    access_token: "mock-jwt-token",
+    access_token: "guest-jwt-token",
     token_type: "bearer",
     expires_in: 3600,
-    refresh_token: "mock-refresh-token",
+    refresh_token: "guest-refresh-token",
     user: guestUser,
   };
 
   const guestProfile: UserProfile = {
-    user_id: "mock-user-123",
+    user_id: "guest-user",
     display_name: "Guest Scholar",
     avatar_url: null,
-    role: mockRole,
-    org_id: mockRole === "admin" ? "mock-org-1" : null,
+    role: guestRole,
+    org_id: guestRole === "admin" ? "guest-org-1" : null,
     teacher_license_id: null,
     full_name: "Guest Scholar",
   };
 
   const value: AuthCtx = {
-    user: isMockPreview ? guestUser : user,
-    session: isMockPreview ? guestSession : session,
+    user: isGuestMode ? guestUser : user,
+    session: isGuestMode ? guestSession : session,
     loading,
-    profile: isMockPreview ? guestProfile : profile,
+    profile: isGuestMode ? guestProfile : profile,
     isInstitutional,
     isStudent,
     isTeacher,
     isAdmin,
     signOut,
-    isMockPreview,
-    setMockRole,
-    mockRole,
+    isGuestMode,
+    setGuestRole,
+    guestRole,
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
