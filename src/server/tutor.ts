@@ -30,6 +30,7 @@ function getGoogleGenAIClient() {
 
   return new GoogleGenAI({
     apiKey,
+    baseURL: "https://generativelanguage.googleapis.com",
     httpOptions: {
       headers: {
         "User-Agent": "aistudio-build",
@@ -161,8 +162,8 @@ Your task is to provide personalized, Socratic guidance based on this specific s
     : currentMessage;
 
   const responseStreamPromise = aiClient.models.generateContentStream({
-    model: "gemini-3.5-flash",
-    contents: finalPrompt,
+    model: "gemini-1.5-flash",
+    contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
     config: {
       systemInstruction: systemPrompt,
     },

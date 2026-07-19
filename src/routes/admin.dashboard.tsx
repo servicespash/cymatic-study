@@ -87,11 +87,13 @@ function AdminDashboard() {
   useEffect(() => {
     if (!user?.id) return;
     (async () => {
-      const { data, error } = await supabase.rpc("has_role", {
-        uid: user.id,
-        requested_role: "org_admin",
-      });
-      if (error || !data) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!profile || (profile.role !== "org_admin" && profile.role !== "admin")) {
         setAuthorized(false);
         window.location.replace("/admin/login");
         return;

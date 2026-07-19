@@ -34,6 +34,7 @@ export async function handleDynamicNotesRequest(request: Request) {
 
     const ai = new GoogleGenAI({
       apiKey,
+      baseURL: "https://generativelanguage.googleapis.com",
       httpOptions: {
         headers: {
           "User-Agent": "aistudio-build",
@@ -56,8 +57,8 @@ Example format:
 ]`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: prompt,
+      model: "gemini-1.5-flash",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         responseMimeType: "application/json",
       },

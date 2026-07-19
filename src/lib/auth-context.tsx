@@ -76,6 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
+        setIsGuestMode(false);
+        localStorage.removeItem("guest_session_active");
         fetchProfile(s.user.id);
       } else {
         setProfile(null);
@@ -90,6 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(initialSession?.user ?? null);
 
       if (initialSession?.user) {
+        setIsGuestMode(false);
+        localStorage.removeItem("guest_session_active");
         fetchProfile(initialSession.user.id);
       } else {
         console.log("AuthProvider: No initial session, setting loading false");
@@ -215,8 +219,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const finalRole = isGuestMode ? guestRole : profile?.role || "";
   const isInstitutional = isGuestMode ? guestRole === "admin" : !!profile?.org_id;
   const isStudent = finalRole === "student" || (!finalRole && isInstitutional);
-  const isTeacher = finalRole === "teacher" || finalRole === "independent_teacher";
-  const isAdmin = finalRole === "admin" || finalRole === "school_admin";
+  const isTeacher = finalRole === "teacher" || finalRole === "independent_teacher" || finalRole === "instructor";
+  const isAdmin = finalRole === "admin" || finalRole === "school_admin" || finalRole === "org_admin" || finalRole === "administrator";
 
   const guestUser: User = {
     id: "guest-user",

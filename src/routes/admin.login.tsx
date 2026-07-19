@@ -70,16 +70,11 @@ function AdminLogin() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("org_id")
+        .select("org_id, role")
         .eq("user_id", user.id)
         .single();
 
-      const { data: hasRole } = await supabase.rpc("has_role", {
-        uid: user.id,
-        requested_role: "org_admin",
-      });
-
-      if (profile?.org_id !== org.id || !hasRole) {
+      if (profile?.org_id !== org.id || (profile?.role !== "org_admin" && profile?.role !== "admin")) {
         toast.error("Access Denied", {
           description: "You are not authorized to manage this institution.",
         });

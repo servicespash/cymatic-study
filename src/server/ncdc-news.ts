@@ -177,6 +177,7 @@ export async function handleNcdcNewsRequest(request: Request) {
   if (apiKey) {
     const ai = new GoogleGenAI({
       apiKey,
+      baseURL: "https://generativelanguage.googleapis.com",
       httpOptions: {
         headers: {
           "User-Agent": "aistudio-build",
@@ -185,11 +186,19 @@ export async function handleNcdcNewsRequest(request: Request) {
     });
 
     try {
-      console.log("Fetching live news from Gemini 3.5 Flash search grounding...");
+      console.log("Fetching live news from Gemini 1.5 Flash search grounding...");
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
-        contents:
-          "Provide exactly 3 distinct, highly professional real-time news items about the National Curriculum Development Centre (NCDC) or Uganda National Examinations Board (UNEB) regarding Ugandan secondary school curriculum updates, syllabus rollouts, or mocks schedules for Advanced/Ordinary Level science subjects (Mathematics, Physics, Chemistry, Biology). Return the result in JSON format as an array of objects with 'title' and 'body' fields. Keep the body text clear, descriptive, and academic. Do not include markdown formatting like ```json.",
+        model: "gemini-1.5-flash",
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text: "Provide exactly 3 distinct, highly professional real-time news items about the National Curriculum Development Centre (NCDC) or Uganda National Examinations Board (UNEB) regarding Ugandan secondary school curriculum updates, syllabus rollouts, or mocks schedules for Advanced/Ordinary Level science subjects (Mathematics, Physics, Chemistry, Biology). Return the result in JSON format as an array of objects with 'title' and 'body' fields. Keep the body text clear, descriptive, and academic. Do not include markdown formatting like ```json.",
+              },
+            ],
+          },
+        ],
         tools: [{ googleSearch: {} }],
         config: {
           responseMimeType: "application/json",

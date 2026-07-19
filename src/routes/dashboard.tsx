@@ -3,7 +3,6 @@ import { useEffect, useState, useTransition } from "react";
 import {
   LogOut,
   Settings,
-  ShieldCheck,
   User,
   Trophy,
   BookOpen,
@@ -208,7 +207,7 @@ function DashboardPage() {
   // Latty's Logic: Track points and school name
   const [points, setPoints] = useState(0);
   const [dailyPoints, setDailyPoints] = useState(0);
-  const schoolName = profile?.school_name || user?.user_metadata?.school_name;
+  const schoolName = profile?.school_name || user?.user_metadata?.school_name || "Uganda Secondary School";
   const [activeTab, setActiveTab] = useState<"missions" | "quizzes" | "tutor" | "projects">(
     "missions",
   );
