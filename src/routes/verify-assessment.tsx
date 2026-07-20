@@ -10,7 +10,6 @@ import {
   getProjectSubmissionForMarking,
   verifyProjectSubmission,
 } from "@/lib/project-submissions.functions";
-import { exportProjectReport } from "@/lib/project-pdf";
 import { gradeLabel, scoreToGrade, type Project } from "@/lib/projects-store";
 
 export const Route = createFileRoute("/verify-assessment")({
@@ -102,6 +101,7 @@ function VerifyAssessmentPage() {
       return;
     }
     try {
+      const { exportProjectReport } = await import("@/lib/project-pdf");
       await exportProjectReport(project, "Teacher-Verified");
       toast.success("PDF downloaded");
     } catch (err) {

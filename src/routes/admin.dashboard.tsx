@@ -93,7 +93,7 @@ function AdminDashboard() {
         .eq("user_id", user.id)
         .single();
 
-      if (!profile || (profile.role !== "org_admin" && profile.role !== "admin")) {
+      if (!profile || (profile.role !== "org_admin" && profile.role !== "admin" && profile.role !== "institution_admin")) {
         setAuthorized(false);
         window.location.replace("/admin/login");
         return;

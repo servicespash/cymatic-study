@@ -186,9 +186,9 @@ export async function handleNcdcNewsRequest(request: Request) {
     });
 
     try {
-      console.log("Fetching live news from Gemini 1.5 Flash search grounding...");
+      console.log("Fetching live news from Gemini 3.5 Flash search grounding...");
       const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
+        model: "gemini-3.5-flash",
         contents: [
           {
             role: "user",

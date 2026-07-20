@@ -40,7 +40,6 @@ import { useProjects, type Project } from "@/lib/projects-store";
 import { SubmissionModal } from "@/components/SubmissionModal";
 import { ProjectActions } from "@/components/ProjectActions";
 import { NCDCScorecard } from "@/components/NCDCScorecard";
-import { exportProjectReport } from "@/lib/project-pdf";
 
 export const Route = createFileRoute("/projects")({
   head: () => ({
@@ -295,6 +294,7 @@ function ProjectsPage() {
       return;
     }
     try {
+      const { exportProjectReport } = await import("@/lib/project-pdf");
       await exportProjectReport(state);
       toast.success("PDF Exported Successfully!");
     } catch (err) {

@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "supabase-hyperdrive-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-02-04",
+  "observability": {
+    "enabled": true
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "1afe639009974087bf6c8b4f8deb4c4a",
+      "localConnectionString": "postgresql://postgres:your-local-password@localhost:5432/postgres"
+    }
+  ]
+}

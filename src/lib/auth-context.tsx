@@ -220,7 +220,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isInstitutional = isGuestMode ? guestRole === "admin" : !!profile?.org_id;
   const isStudent = finalRole === "student" || (!finalRole && isInstitutional);
   const isTeacher = finalRole === "teacher" || finalRole === "independent_teacher" || finalRole === "instructor";
-  const isAdmin = finalRole === "admin" || finalRole === "school_admin" || finalRole === "org_admin" || finalRole === "administrator";
+  const isAdmin = finalRole === "admin" || finalRole === "school_admin" || finalRole === "org_admin" || finalRole === "administrator" || finalRole === "institution_admin";
 
   const guestUser: User = {
     id: "guest-user",
