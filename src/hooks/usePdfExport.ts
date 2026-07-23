@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { exportToBrandedPdf } from "@/lib/branded-pdf-export";
-import { useAuth } from "./useAuth";
+import { useAuth } from "@/lib/auth-context";
 
 interface PdfContent {
   sectionTitle: string;

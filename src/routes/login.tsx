@@ -16,6 +16,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth-context";
+import { useRoleRedirect } from "@/hooks/useRoleRedirect";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
@@ -33,7 +34,8 @@ const ROLES = {
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { user, loading, startGuestSession } = useAuth();
+  const { user, loading, profile } = useAuth();
+  useRoleRedirect();
 
   const [mode, setMode] = useState<LoginMode>("init");
   const [role, setRole] = useState<Role | null>(null);
@@ -45,9 +47,7 @@ function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard" });
-  }, [user, loading, navigate]);
+  // Redirection is now handled by useRoleRedirect hook
 
   const saveToSession = () => {
     sessionStorage.setItem("login_mode", mode);
@@ -124,7 +124,7 @@ function LoginPage() {
       }
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({
       email: emailToUse,
       password: password.trim(),
     });
@@ -141,8 +141,24 @@ function LoginPage() {
       } else {
         setError(error.message);
       }
-    } else {
-      navigate({ to: "/dashboard" });
+    } else if (signInData.user) {
+      // Role-based redirect logic
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("user_id", signInData.user.id)
+        .single();
+
+      const role = profileData?.role || "";
+
+      if (role === "admin" || role === "org_admin") {
+        navigate({ to: "/admin/dashboard" });
+      } else if (role === "teacher" || role === "independent_teacher") {
+        // Teachers stay on main dashboard for now but we can guide them
+        navigate({ to: "/dashboard" });
+      } else {
+        navigate({ to: "/dashboard" });
+      }
     }
   };
 
@@ -158,19 +174,6 @@ function LoginPage() {
     }
     if (result.redirected) return;
     navigate({ to: "/dashboard" });
-  };
-
-  const handleTriggerMockSigning = () => {
-    if (startGuestSession) {
-      startGuestSession("student");
-    }
-    toast.success("🔑 5-Minute Guest Session Initiated!", {
-      description: "Enjoy full app functionality, dashboards, and quizzes as a guest.",
-      duration: 5000,
-    });
-    setTimeout(() => {
-      navigate({ to: "/dashboard" });
-    }, 500);
   };
 
   if (mode === "init") {
@@ -211,38 +214,6 @@ function LoginPage() {
               <h3 className="font-bold text-white text-sm">Independent / Solo Mode</h3>
               <p className="text-xs text-zinc-400 mt-1">
                 For self-directed scholars and single-user study environments.
-              </p>
-            </button>
-
-            <div className="relative py-2">
-              <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                <div className="w-full border-t border-zinc-850" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-zinc-950 px-2 text-zinc-500 font-bold tracking-wider font-mono">
-                  Instant Preview
-                </span>
-              </div>
-            </div>
-
-            {/* Mock sign-in button */}
-            <button
-              onClick={handleTriggerMockSigning}
-              className="p-5 rounded-2xl border-2 border-dashed border-cyan-500/30 hover:border-cyan-500 bg-cyan-950/20 hover:bg-cyan-950/40 text-left transition-all group shadow-lg"
-            >
-              <div className="flex items-center justify-between">
-                <Sparkles className="h-6 w-6 text-yellow-400 mb-2 animate-pulse" />
-                <span className="text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                  Free Pass
-                </span>
-              </div>
-              <h3 className="font-extrabold text-white text-sm flex items-center gap-1.5">
-                <span>5-Minute Guest Session</span>
-                <ArrowRight className="h-3.5 w-3.5 text-cyan-400 group-hover:translate-x-1 transition-transform" />
-              </h3>
-              <p className="text-xs text-cyan-200/70 mt-1">
-                Access full features instantly without password setup. Re-routes to registration
-                screen after 5 minutes.
               </p>
             </button>
           </div>

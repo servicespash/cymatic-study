@@ -27,6 +27,10 @@ export const subjectLabels: Record<string, string> = {
   agriculture: "Agriculture",
   art: "Fine Art",
   cre: "Christian Religious Education",
+  ire: "Islamic Religious Education",
+  commerce: "Commerce",
+  submath: "Subsidiary Mathematics",
+  gp: "General Paper",
 };
 
 export const subjectGradients: Record<string, any> = {
@@ -47,6 +51,10 @@ export const subjectGradients: Record<string, any> = {
   agriculture: "biology",
   art: "chemistry",
   cre: "geography",
+  ire: "geography",
+  commerce: "math",
+  submath: "math",
+  gp: "physics",
 };
 
 export const classLevels = [

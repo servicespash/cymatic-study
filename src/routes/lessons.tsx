@@ -8,7 +8,7 @@ import { QuizRepository } from "@/repositories/quiz.repository";
 import { subjectLabels, classLevels } from "@/lib/constants";
 import { downloadText } from "@/lib/download";
 import { ExportPdfModal } from "@/components/ExportPdfModal";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/lib/auth-context";
 import { useSubjectProgress } from "@/hooks/useSubjectProgress";
 import { toast } from "sonner";
 

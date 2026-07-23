@@ -147,24 +147,36 @@ const StatisticsCalculator: React.FC = () => {
       {stats && (
         <div className="mt-4 space-y-3 rounded-lg bg-math/5 border border-math/10 p-4 animate-in fade-in slide-in-from-top-2 text-sm">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Sorted Data:</span>
-            <p className="font-mono text-xs text-foreground font-semibold bg-muted/30 p-2 rounded-md mt-1">{stats.sorted}</p>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Sorted Data:
+            </span>
+            <p className="font-mono text-xs text-foreground font-semibold bg-muted/30 p-2 rounded-md mt-1">
+              {stats.sorted}
+            </p>
           </div>
           <div className="grid grid-cols-2 gap-2 mt-2">
             <div className="p-2 bg-math/10 border border-math/20 rounded-md">
-              <p className="text-[10px] text-muted-foreground font-mono uppercase">Mean (Average)</p>
+              <p className="text-[10px] text-muted-foreground font-mono uppercase">
+                Mean (Average)
+              </p>
               <p className="font-bold text-math font-mono text-base">{stats.mean}</p>
             </div>
             <div className="p-2 bg-math/10 border border-math/20 rounded-md">
-              <p className="text-[10px] text-muted-foreground font-mono uppercase">Median (Middle)</p>
+              <p className="text-[10px] text-muted-foreground font-mono uppercase">
+                Median (Middle)
+              </p>
               <p className="font-bold text-math font-mono text-base">{stats.median}</p>
             </div>
             <div className="p-2 bg-math/10 border border-math/20 rounded-md col-span-2">
-              <p className="text-[10px] text-muted-foreground font-mono uppercase">Mode (Most Frequent)</p>
+              <p className="text-[10px] text-muted-foreground font-mono uppercase">
+                Mode (Most Frequent)
+              </p>
               <p className="font-bold text-math font-mono text-base">{stats.mode}</p>
             </div>
             <div className="p-2 bg-math/10 border border-math/20 rounded-md">
-              <p className="text-[10px] text-muted-foreground font-mono uppercase">Range (Max - Min)</p>
+              <p className="text-[10px] text-muted-foreground font-mono uppercase">
+                Range (Max - Min)
+              </p>
               <p className="font-bold text-math font-mono text-base">{stats.range}</p>
             </div>
             <div className="p-2 bg-math/10 border border-math/20 rounded-md">

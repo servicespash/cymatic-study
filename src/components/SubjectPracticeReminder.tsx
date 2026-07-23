@@ -2,14 +2,7 @@ import { useEffect, useState } from "react";
 import { useSubjectProgress } from "@/hooks/useSubjectProgress";
 import { useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import {
-  AlertTriangle,
-  ArrowRight,
-  Bell,
-  Sparkles,
-  Clock,
-  RefreshCw,
-} from "lucide-react";
+import { AlertTriangle, ArrowRight, Bell, Sparkles, Clock, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { db } from "@/lib/offline-db";
 

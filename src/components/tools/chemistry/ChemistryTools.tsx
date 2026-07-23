@@ -816,8 +816,11 @@ export const GasLawsCalc = () => {
 
   const calc = () => {
     if (law === "boyle") {
-      const p1n = parseFloat(p1), v1n = parseFloat(v1), p2n = parseFloat(p2), v2n = parseFloat(v2);
-      const filled = [p1, v1, p2, v2].filter(x => x !== "").length;
+      const p1n = parseFloat(p1),
+        v1n = parseFloat(v1),
+        p2n = parseFloat(p2),
+        v2n = parseFloat(v2);
+      const filled = [p1, v1, p2, v2].filter((x) => x !== "").length;
       if (filled < 3) {
         setResult("Fill in any 3 values to solve for the 4th.");
         return;
@@ -827,8 +830,11 @@ export const GasLawsCalc = () => {
       else if (p1 && v1 && !p2 && v2) setResult(`P₂ = ${((p1n * v1n) / v2n).toFixed(2)} Pa/atm`);
       else if (p1 && v1 && p2 && !v2) setResult(`V₂ = ${((p1n * v1n) / p2n).toFixed(2)} L/m³`);
     } else {
-      const v1n = parseFloat(v1), t1n = parseFloat(t1), v2n = parseFloat(v2), t2n = parseFloat(t2);
-      const filled = [v1, t1, v2, t2].filter(x => x !== "").length;
+      const v1n = parseFloat(v1),
+        t1n = parseFloat(t1),
+        v2n = parseFloat(v2),
+        t2n = parseFloat(t2);
+      const filled = [v1, t1, v2, t2].filter((x) => x !== "").length;
       if (filled < 3) {
         setResult("Fill in any 3 values to solve for the 4th.");
         return;
@@ -850,13 +856,19 @@ export const GasLawsCalc = () => {
       </div>
       <div className="flex gap-2 mb-3">
         <button
-          onClick={() => { setLaw("boyle"); setResult(null); }}
+          onClick={() => {
+            setLaw("boyle");
+            setResult(null);
+          }}
           className={`rounded-md px-3 py-1 text-[11px] font-bold ${law === "boyle" ? "bg-chemistry text-white" : "bg-muted text-muted-foreground"}`}
         >
           Boyle's (P₁V₁ = P₂V₂)
         </button>
         <button
-          onClick={() => { setLaw("charles"); setResult(null); }}
+          onClick={() => {
+            setLaw("charles");
+            setResult(null);
+          }}
           className={`rounded-md px-3 py-1 text-[11px] font-bold ${law === "charles" ? "bg-chemistry text-white" : "bg-muted text-muted-foreground"}`}
         >
           Charles' (V₁/T₁ = V₂/T₂)
@@ -865,46 +877,113 @@ export const GasLawsCalc = () => {
       {law === "boyle" ? (
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div>
-            <label className="text-[10px] font-bold text-muted-foreground">P₁ (Initial Pressure)</label>
-            <input type="number" value={p1} onChange={e => setP1(e.target.value)} placeholder="e.g. 1.0" className="w-full bg-background border border-input rounded-md px-2 py-1 text-sm outline-none text-foreground focus:ring-2 focus:ring-chemistry/50" />
+            <label className="text-[10px] font-bold text-muted-foreground">
+              P₁ (Initial Pressure)
+            </label>
+            <input
+              type="number"
+              value={p1}
+              onChange={(e) => setP1(e.target.value)}
+              placeholder="e.g. 1.0"
+              className="w-full bg-background border border-input rounded-md px-2 py-1 text-sm outline-none text-foreground focus:ring-2 focus:ring-chemistry/50"
+            />
           </div>
           <div>
-            <label className="text-[10px] font-bold text-muted-foreground">V₁ (Initial Volume)</label>
-            <input type="number" value={v1} onChange={e => setV1(e.target.value)} placeholder="e.g. 2.0" className="w-full bg-background border border-input rounded-md px-2 py-1 text-sm outline-none text-foreground focus:ring-2 focus:ring-chemistry/50" />
+            <label className="text-[10px] font-bold text-muted-foreground">
+              V₁ (Initial Volume)
+            </label>
+            <input
+              type="number"
+              value={v1}
+              onChange={(e) => setV1(e.target.value)}
+              placeholder="e.g. 2.0"
+              className="w-full bg-background border border-input rounded-md px-2 py-1 text-sm outline-none text-foreground focus:ring-2 focus:ring-chemistry/50"
+            />
           </div>
           <div>
-            <label className="text-[10px] font-bold text-muted-foreground">P₂ (Final Pressure)</label>
-            <input type="number" value={p2} onChange={e => setP2(e.target.value)} placeholder="e.g. 2.0" className="w-full bg-background border border-input rounded-md px-2 py-1 text-sm outline-none text-foreground focus:ring-2 focus:ring-chemistry/50" />
+            <label className="text-[10px] font-bold text-muted-foreground">
+              P₂ (Final Pressure)
+            </label>
+            <input
+              type="number"
+              value={p2}
+              onChange={(e) => setP2(e.target.value)}
+              placeholder="e.g. 2.0"
+              className="w-full bg-background border border-input rounded-md px-2 py-1 text-sm outline-none text-foreground focus:ring-2 focus:ring-chemistry/50"
+            />
           </div>
           <div>
             <label className="text-[10px] font-bold text-muted-foreground">V₂ (Final Volume)</label>
-            <input type="number" value={v2} onChange={e => setV2(e.target.value)} placeholder="e.g. 1.0" className="w-full bg-background border border-input rounded-md px-2 py-1 text-sm outline-none text-foreground focus:ring-2 focus:ring-chemistry/50" />
+            <input
+              type="number"
+              value={v2}
+              onChange={(e) => setV2(e.target.value)}
+              placeholder="e.g. 1.0"
+              className="w-full bg-background border border-input rounded-md px-2 py-1 text-sm outline-none text-foreground focus:ring-2 focus:ring-chemistry/50"
+            />
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div>
-            <label className="text-[10px] font-bold text-muted-foreground">V₁ (Initial Volume)</label>
-            <input type="number" value={v1} onChange={e => setV1(e.target.value)} placeholder="e.g. 10" className="w-full bg-background border border-input rounded-md px-2 py-1 text-sm outline-none text-foreground focus:ring-2 focus:ring-chemistry/50" />
+            <label className="text-[10px] font-bold text-muted-foreground">
+              V₁ (Initial Volume)
+            </label>
+            <input
+              type="number"
+              value={v1}
+              onChange={(e) => setV1(e.target.value)}
+              placeholder="e.g. 10"
+              className="w-full bg-background border border-input rounded-md px-2 py-1 text-sm outline-none text-foreground focus:ring-2 focus:ring-chemistry/50"
+            />
           </div>
           <div>
-            <label className="text-[10px] font-bold text-muted-foreground">T₁ (Initial Temp in K)</label>
-            <input type="number" value={t1} onChange={e => setT1(e.target.value)} placeholder="e.g. 273" className="w-full bg-background border border-input rounded-md px-2 py-1 text-sm outline-none text-foreground focus:ring-2 focus:ring-chemistry/50" />
+            <label className="text-[10px] font-bold text-muted-foreground">
+              T₁ (Initial Temp in K)
+            </label>
+            <input
+              type="number"
+              value={t1}
+              onChange={(e) => setT1(e.target.value)}
+              placeholder="e.g. 273"
+              className="w-full bg-background border border-input rounded-md px-2 py-1 text-sm outline-none text-foreground focus:ring-2 focus:ring-chemistry/50"
+            />
           </div>
           <div>
             <label className="text-[10px] font-bold text-muted-foreground">V₂ (Final Volume)</label>
-            <input type="number" value={v2} onChange={e => setV2(e.target.value)} placeholder="e.g. 20" className="w-full bg-background border border-input rounded-md px-2 py-1 text-sm outline-none text-foreground focus:ring-2 focus:ring-chemistry/50" />
+            <input
+              type="number"
+              value={v2}
+              onChange={(e) => setV2(e.target.value)}
+              placeholder="e.g. 20"
+              className="w-full bg-background border border-input rounded-md px-2 py-1 text-sm outline-none text-foreground focus:ring-2 focus:ring-chemistry/50"
+            />
           </div>
           <div>
-            <label className="text-[10px] font-bold text-muted-foreground">T₂ (Final Temp in K)</label>
-            <input type="number" value={t2} onChange={e => setT2(e.target.value)} placeholder="e.g. 546" className="w-full bg-background border border-input rounded-md px-2 py-1 text-sm outline-none text-foreground focus:ring-2 focus:ring-chemistry/50" />
+            <label className="text-[10px] font-bold text-muted-foreground">
+              T₂ (Final Temp in K)
+            </label>
+            <input
+              type="number"
+              value={t2}
+              onChange={(e) => setT2(e.target.value)}
+              placeholder="e.g. 546"
+              className="w-full bg-background border border-input rounded-md px-2 py-1 text-sm outline-none text-foreground focus:ring-2 focus:ring-chemistry/50"
+            />
           </div>
         </div>
       )}
-      <button onClick={calc} className="mt-4 w-full rounded-xl bg-chemistry py-2.5 text-sm font-bold text-primary-foreground hover:opacity-90 active:scale-95 transition-all">Solve Gas Law</button>
+      <button
+        onClick={calc}
+        className="mt-4 w-full rounded-xl bg-chemistry py-2.5 text-sm font-bold text-primary-foreground hover:opacity-90 active:scale-95 transition-all"
+      >
+        Solve Gas Law
+      </button>
       {result && (
         <div className="mt-4 rounded-lg bg-chemistry/10 border border-chemistry/20 p-3">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-chemistry mb-1">Solved Variable</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-chemistry mb-1">
+            Solved Variable
+          </p>
           <p className="text-lg font-black text-chemistry font-mono">{result}</p>
         </div>
       )}

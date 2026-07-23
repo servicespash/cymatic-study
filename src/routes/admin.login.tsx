@@ -74,7 +74,12 @@ function AdminLogin() {
         .eq("user_id", user.id)
         .single();
 
-      if (profile?.org_id !== org.id || (profile?.role !== "org_admin" && profile?.role !== "admin" && profile?.role !== "institution_admin")) {
+      if (
+        profile?.org_id !== org.id ||
+        (profile?.role !== "org_admin" &&
+          profile?.role !== "admin" &&
+          profile?.role !== "institution_admin")
+      ) {
         toast.error("Access Denied", {
           description: "You are not authorized to manage this institution.",
         });

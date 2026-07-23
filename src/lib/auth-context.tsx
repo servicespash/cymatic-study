@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Ctx, type AuthCtx, type UserProfile } from "./auth-context-core";
-import { toast } from "sonner";
 
 const REFERRAL_STORAGE_KEY = "cymatic_signup_referral_code";
 
@@ -14,58 +13,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Guest Session Mode States
-  const [isGuestMode, setIsGuestMode] = useState(false);
-  const [guestRole, setGuestRoleState] = useState<"student" | "teacher" | "admin">("student");
-
-  const endGuestSession = useCallback(() => {
-    localStorage.removeItem("guest_session_active");
-    localStorage.removeItem("guest_session_role");
-    localStorage.removeItem("guest_session_start");
-    setIsGuestMode(false);
-    setSession(null);
-    setUser(null);
-    setProfile(null);
-    window.dispatchEvent(new Event("storage"));
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
   }, []);
 
-  const signOut = useCallback(async () => {
-    if (isGuestMode) {
-      endGuestSession();
-      toast.info("Signed out of Guest Session mode.");
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 500);
-    } else {
-      await supabase.auth.signOut();
-    }
-  }, [isGuestMode, endGuestSession]);
-
   useEffect(() => {
-    // Check if guest session is currently active
-    const isGuestActive = localStorage.getItem("guest_session_active") === "true";
-    const savedRole =
-      (localStorage.getItem("guest_session_role") as "student" | "teacher" | "admin") || "student";
-    const startTimeStr = localStorage.getItem("guest_session_start");
-
-    if (isGuestActive && startTimeStr) {
-      const startTime = parseInt(startTimeStr, 10);
-      const elapsed = Date.now() - startTime;
-      const fiveMinutesMs = 5 * 60 * 1000;
-
-      if (elapsed < fiveMinutesMs) {
-        setIsGuestMode(true);
-        setGuestRoleState(savedRole);
-        setLoading(false);
-        return;
-      } else {
-        // Expired
-        localStorage.removeItem("guest_session_active");
-        localStorage.removeItem("guest_session_role");
-        localStorage.removeItem("guest_session_start");
-      }
-    }
-
     console.log("AuthProvider: Initializing standard flow...");
 
     // 1. Set up listener FIRST
@@ -76,8 +28,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        setIsGuestMode(false);
-        localStorage.removeItem("guest_session_active");
         fetchProfile(s.user.id);
       } else {
         setProfile(null);
@@ -92,8 +42,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(initialSession?.user ?? null);
 
       if (initialSession?.user) {
-        setIsGuestMode(false);
-        localStorage.removeItem("guest_session_active");
         fetchProfile(initialSession.user.id);
       } else {
         console.log("AuthProvider: No initial session, setting loading false");
@@ -107,55 +55,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Listen to changes in localStorage from other tabs or actions
   useEffect(() => {
-    const checkGuest = () => {
-      const isGuestActive = localStorage.getItem("guest_session_active") === "true";
-      const savedRole =
-        (localStorage.getItem("guest_session_role") as "student" | "teacher" | "admin") ||
-        "student";
-      if (isGuestActive && !isGuestMode) {
-        setIsGuestMode(true);
-        setGuestRoleState(savedRole);
-        setLoading(false);
-      }
-    };
-
-    window.addEventListener("storage", checkGuest);
-    const interval = setInterval(checkGuest, 1500);
-    return () => {
-      window.removeEventListener("storage", checkGuest);
-      clearInterval(interval);
-    };
-  }, [isGuestMode]);
-
-  // Handle Guest Countdown
-  useEffect(() => {
-    if (!isGuestMode) return;
-
-    const timer = setInterval(() => {
-      const startTimeStr = localStorage.getItem("guest_session_start");
-      if (!startTimeStr) return;
-      const startTime = parseInt(startTimeStr, 10);
-      const elapsed = Date.now() - startTime;
-      const fiveMinutesMs = 5 * 60 * 1000;
-
-      if (elapsed >= fiveMinutesMs) {
-        clearInterval(timer);
-        signOut();
-        toast.error("⏱️ Guest Session Expired", {
-          description:
-            "Your 5-minute guest session has ended. Please sign in or register an account to keep your progress!",
-          duration: 8000,
-        });
-      }
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [isGuestMode, signOut]);
-
-  useEffect(() => {
-    if (!user || typeof window === "undefined" || isGuestMode) return;
+    if (!user || typeof window === "undefined") return;
     const pendingReferralCode = window.localStorage.getItem(REFERRAL_STORAGE_KEY);
     if (!pendingReferralCode?.trim()) return;
 
@@ -172,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     void applyPendingReferral();
-  }, [user, isGuestMode]);
+  }, [user]);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -199,75 +100,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const startGuestSession = (role: "student" | "teacher" | "admin" = "student") => {
-    localStorage.setItem("guest_session_active", "true");
-    localStorage.setItem("guest_session_role", role);
-    localStorage.setItem("guest_session_start", Date.now().toString());
-    setIsGuestMode(true);
-    setGuestRoleState(role);
-    setLoading(false);
-    window.dispatchEvent(new Event("storage"));
-  };
-
-  const setGuestRole = (role: "student" | "teacher" | "admin") => {
-    setGuestRoleState(role);
-    localStorage.setItem("guest_session_role", role);
-    toast.success(`Switched role to ${role.toUpperCase()} (Guest Session)`);
-  };
-
-  // Determine actual roles based on either guest session state or actual DB profile
-  const finalRole = isGuestMode ? guestRole : profile?.role || "";
-  const isInstitutional = isGuestMode ? guestRole === "admin" : !!profile?.org_id;
+  // Determine actual roles based on actual DB profile
+  const finalRole = profile?.role || "";
+  const isInstitutional = !!profile?.org_id;
   const isStudent = finalRole === "student" || (!finalRole && isInstitutional);
-  const isTeacher = finalRole === "teacher" || finalRole === "independent_teacher" || finalRole === "instructor";
-  const isAdmin = finalRole === "admin" || finalRole === "school_admin" || finalRole === "org_admin" || finalRole === "administrator" || finalRole === "institution_admin";
+  const isTeacher =
+    finalRole === "teacher" || finalRole === "independent_teacher" || finalRole === "instructor";
+  const isAdmin =
+    finalRole === "admin" ||
+    finalRole === "school_admin" ||
+    finalRole === "org_admin" ||
+    finalRole === "administrator" ||
+    finalRole === "institution_admin";
 
-  const guestUser: User = {
-    id: "guest-user",
-    app_metadata: {},
-    aud: "authenticated",
-    created_at: new Date().toISOString(),
-    email: "guest@cymatichub.xyz",
-    user_metadata: { display_name: "Guest Scholar" },
-    confirmed_at: new Date().toISOString(),
-    phone: "",
-    role: "authenticated",
-    updated_at: new Date().toISOString(),
-  };
-
-  const guestSession: Session = {
-    access_token: "guest-jwt-token",
-    token_type: "bearer",
-    expires_in: 3600,
-    refresh_token: "guest-refresh-token",
-    user: guestUser,
-  };
-
-  const guestProfile: UserProfile = {
-    user_id: "guest-user",
-    display_name: "Guest Scholar",
-    avatar_url: null,
-    role: guestRole,
-    org_id: guestRole === "admin" ? "guest-org-1" : null,
-    teacher_license_id: null,
-    full_name: "Guest Scholar",
-  };
+  const isGuestMode = !loading && !user;
 
   const value: AuthCtx = {
-    user: isGuestMode ? guestUser : user,
-    session: isGuestMode ? guestSession : session,
+    user,
+    session,
     loading,
-    profile: isGuestMode ? guestProfile : profile,
+    profile,
     isInstitutional,
     isStudent,
     isTeacher,
     isAdmin,
-    signOut,
     isGuestMode,
-    setGuestRole,
-    guestRole,
-    startGuestSession,
-    endGuestSession,
+    signOut,
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

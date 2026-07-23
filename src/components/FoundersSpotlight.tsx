@@ -137,7 +137,7 @@ export function FoundersSpotlight() {
               </p>
             </div>
             <a
-              href="https://cymatichubmanifesto.latifisabirye.com"
+              href="https://cymatichub.xyz/manifesto"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary/10 border border-primary/20 px-4 py-2.5 text-xs font-bold text-primary hover:bg-primary/20 active:scale-95 transition-all duration-200 self-start sm:self-auto"

@@ -76,7 +76,10 @@ export function useNewsFeed() {
           setItems((currentItems) => {
             if (payload.eventType === "INSERT") {
               const newItem = payload.new as NewsItem;
-              // Add and resort
+              // Prevent duplicates if already exists
+              if (currentItems.some((item) => item.id === newItem.id)) {
+                return currentItems;
+              }
               const updated = [newItem, ...currentItems];
               return updated.sort(
                 (a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime(),

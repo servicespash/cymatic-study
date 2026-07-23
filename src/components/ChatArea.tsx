@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/lib/auth-context";
 import { Message, useTutorStore } from "@/store/useTutorStore";
 import { Download, Volume2, VolumeX } from "lucide-react";
 import { useState } from "react";

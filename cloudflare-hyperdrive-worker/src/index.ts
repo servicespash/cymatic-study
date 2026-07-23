@@ -40,12 +40,12 @@ export default {
         await client.end();
         return Response.json(
           { status: "ok", timestamp: res.rows[0].now },
-          { headers: corsHeaders }
+          { headers: corsHeaders },
         );
       } catch (err) {
         return Response.json(
           { status: "error", message: err instanceof Error ? err.message : String(err) },
-          { status: 500, headers: corsHeaders }
+          { status: 500, headers: corsHeaders },
         );
       }
     }
@@ -57,11 +57,11 @@ export default {
         const apiKeyHeader = request.headers.get("x-api-key");
         const authHeader = request.headers.get("Authorization");
         const token = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
-        
+
         if (apiKeyHeader !== env.PROXY_API_KEY && token !== env.PROXY_API_KEY) {
           return Response.json(
             { error: "Unauthorized: Invalid x-api-key or Bearer token." },
-            { status: 401, headers: corsHeaders }
+            { status: 401, headers: corsHeaders },
           );
         }
       }
@@ -69,11 +69,11 @@ export default {
       // 2. Parse request body
       let body: { query?: string; params?: any[] };
       try {
-        body = await request.json() as { query?: string; params?: any[] };
+        body = (await request.json()) as { query?: string; params?: any[] };
       } catch (err) {
         return Response.json(
           { error: "Invalid JSON payload" },
-          { status: 400, headers: corsHeaders }
+          { status: 400, headers: corsHeaders },
         );
       }
 
@@ -81,7 +81,7 @@ export default {
       if (!query || typeof query !== "string") {
         return Response.json(
           { error: "Missing required 'query' string parameter in request body." },
-          { status: 400, headers: corsHeaders }
+          { status: 400, headers: corsHeaders },
         );
       }
 
@@ -99,17 +99,19 @@ export default {
             rowCount: result.rowCount,
             command: result.command,
           },
-          { headers: corsHeaders }
+          { headers: corsHeaders },
         );
       } catch (e) {
         // Ensure connection is closed even on failure
-        try { await client.end(); } catch {}
+        try {
+          await client.end();
+        } catch {}
         return Response.json(
           {
             success: false,
             error: e instanceof Error ? e.message : String(e),
           },
-          { status: 500, headers: corsHeaders }
+          { status: 500, headers: corsHeaders },
         );
       }
     }
@@ -122,15 +124,14 @@ export default {
       const result = await client.query("SELECT * FROM pg_tables");
       await client.end();
 
-      return Response.json(
-        { result: result.rows },
-        { headers: corsHeaders }
-      );
+      return Response.json({ result: result.rows }, { headers: corsHeaders });
     } catch (e) {
-      try { await client.end(); } catch {}
+      try {
+        await client.end();
+      } catch {}
       return Response.json(
         { error: e instanceof Error ? e.message : String(e) },
-        { status: 500, headers: corsHeaders }
+        { status: 500, headers: corsHeaders },
       );
     }
   },

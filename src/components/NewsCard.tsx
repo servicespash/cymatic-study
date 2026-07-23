@@ -6,6 +6,7 @@ import {
   Share2,
   Clock,
   Play,
+  Radio,
   AlertCircle,
   BookOpen,
   Bell,
@@ -15,6 +16,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { CommentSection } from "./CommentSection";
 import { MiniAudioPlayer } from "./MiniAudioPlayer";
+import { LiveBadge } from "./LiveBadge";
+import { useLiveSession } from "@/hooks/useLiveSession";
 import { cn } from "@/lib/utils";
 
 interface NewsCardProps {
@@ -37,10 +40,13 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
-  const isPodcast = item.media_type === "audio" || item.category?.toLowerCase() === "podcast";
-  const isVideo = item.media_type?.startsWith("video");
+  const isPodcast = item.media_type === "audio" || item.media_type === "podcast" || item.category?.toLowerCase() === "podcast";
+  const isVideo = item.media_type?.startsWith("video") || item.media_type === "video_podcast";
+  const detectedLive = useLiveSession(item.media_url);
+  const isLive = item.media_type === "live_session" || item.category?.toLowerCase() === "live" || detectedLive;
 
   const getCategoryIcon = (category: string | null) => {
+    if (isLive) return <Radio className="h-3 w-3 animate-pulse text-red-500" />;
     switch (category?.toLowerCase()) {
       case "exams":
         return <AlertCircle className="h-3 w-3" />;
@@ -52,6 +58,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
   };
 
   const renderBody = (text: string) => {
+    if (!text) return null;
     const urlRe = /(https?:\/\/[^\s]+)/g;
     return text.split(urlRe).map((part, i) =>
       urlRe.test(part) ? (
@@ -73,14 +80,17 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
   return (
     <motion.div
       layout
-      className="bg-card dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group"
+      className="bg-card dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group h-full"
     >
       {item.media_url && !isPodcast && (
-        <div className="relative aspect-video overflow-hidden">
+        <div className="relative aspect-video overflow-hidden bg-black">
           {isVideo ? (
-            <div className="w-full h-full bg-black flex items-center justify-center">
-              <Play className="h-12 w-12 text-white/50 group-hover:text-white transition-colors" />
-            </div>
+            <video
+              src={item.media_url}
+              controls
+              className="w-full h-full object-contain"
+              poster={item.media_url.replace(/\.[^/.]+$/, ".jpg")}
+            />
           ) : (
             <img
               src={item.media_url}
@@ -89,20 +99,26 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
               loading="lazy"
             />
           )}
+          {isLive && (
+            <LiveBadge className="absolute top-3 left-3 shadow-xl" />
+          )}
         </div>
       )}
 
       {isPodcast && item.media_url && <MiniAudioPlayer src={item.media_url} title={item.title} />}
 
-      <div className="p-5 flex-1 flex flex-col gap-3">
+      <div className="p-5 flex-1 flex flex-col gap-3 min-h-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge
               variant="outline"
-              className="text-[10px] uppercase font-bold tracking-tight gap-1.5 px-2 py-0.5"
+              className={cn(
+                "text-[10px] uppercase font-bold tracking-tight gap-1.5 px-2 py-0.5",
+                isLive ? "border-red-500/50 text-red-500 bg-red-500/5" : ""
+              )}
             >
               {getCategoryIcon(item.category)}
-              {item.category || "General"}
+              {isLive ? "Live Session" : (item.category || "General")}
             </Badge>
           </div>
           <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-medium">
@@ -111,15 +127,15 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
           </div>
         </div>
 
-        <h3 className="text-xl font-bold leading-tight group-hover:text-primary transition-colors line-clamp-2">
+        <h3 className="text-lg font-black leading-tight group-hover:text-primary transition-colors line-clamp-2">
           {item.title}
         </h3>
 
-        <p className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-3 leading-relaxed whitespace-pre-wrap">
+        <div className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-3 leading-relaxed whitespace-pre-wrap flex-1 overflow-hidden">
           {renderBody(item.body)}
-        </p>
+        </div>
 
-        <div className="mt-auto pt-4 flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800">
+        <div className="mt-4 pt-4 flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsLiked(!isLiked)}

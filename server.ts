@@ -139,14 +139,20 @@ async function startServer() {
   });
 
   // Vite middleware for development
+  console.log("[Boot] NODE_ENV is:", process.env.NODE_ENV);
   if (process.env.NODE_ENV !== "production") {
+    console.log("[Boot] Loading Vite in middlewareMode...");
     const { createServer } = await import("vite");
+    console.log("[Boot] Importing vite succeeded. Creating server...");
     const vite = await createServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
+    console.log("[Boot] Vite server created. Applying middlewares...");
     app.use(vite.middlewares);
+    console.log("[Boot] Vite middlewares applied.");
   } else {
+    console.log("[Boot] Serving production static files...");
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
@@ -154,6 +160,7 @@ async function startServer() {
     });
   }
 
+  console.log("[Boot] Starting to listen on port:", PORT);
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });

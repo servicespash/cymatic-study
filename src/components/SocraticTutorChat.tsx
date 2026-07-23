@@ -20,7 +20,7 @@ import { useTutorStore } from "@/store/useTutorStore";
 import type { Message as ChatMessage } from "@/store/useTutorStore";
 import { ChatSidebar } from "./ChatSidebar";
 import { ExportPdfModal } from "./ExportPdfModal";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 
 interface TopicConfig {

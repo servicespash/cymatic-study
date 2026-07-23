@@ -21,11 +21,11 @@ function getSupabaseRouteClient() {
 function getGoogleGenAIClient() {
   const apiKey =
     process.env.GEMINI_API_KEY ||
-    process.env.GOOGLE_GENERATIVE_AI_KEY ||
-    process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+    process.env.GOOGLE_GENERATIVE_AI_KEY;
 
   if (!apiKey) {
-    throw new Error("Missing Gemini API Key");
+    throw new Error("Missing Gemini API Key. Please configure GEMINI_API_KEY in the environment.");
   }
 
   return new GoogleGenAI({
@@ -162,7 +162,7 @@ Your task is to provide personalized, Socratic guidance based on this specific s
     : currentMessage;
 
   const responseStreamPromise = aiClient.models.generateContentStream({
-    model: "gemini-3.5-flash",
+    model: "gemini-3.1-flash-lite",
     contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
     config: {
       systemInstruction: systemPrompt,

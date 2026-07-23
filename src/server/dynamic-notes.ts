@@ -22,7 +22,7 @@ export async function handleDynamicNotesRequest(request: Request) {
 
     const apiKey =
       process.env.GEMINI_API_KEY ||
-      process.env.VITE_GOOGLE_GENERATIVE_AI_KEY ||
+      process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
       process.env.GOOGLE_GENERATIVE_AI_KEY;
 
     if (!apiKey) {
@@ -57,7 +57,7 @@ Example format:
 ]`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-3.1-flash-lite",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         responseMimeType: "application/json",

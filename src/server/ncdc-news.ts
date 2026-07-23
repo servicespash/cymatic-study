@@ -163,7 +163,7 @@ export async function handleNcdcNewsRequest(request: Request) {
 
   const apiKey =
     process.env.GEMINI_API_KEY ||
-    process.env.VITE_GOOGLE_GENERATIVE_AI_KEY ||
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
     process.env.GOOGLE_GENERATIVE_AI_KEY;
 
   if (apiKey) {
@@ -186,9 +186,9 @@ export async function handleNcdcNewsRequest(request: Request) {
     });
 
     try {
-      console.log("Fetching live news from Gemini 3.5 Flash search grounding...");
+      console.log("Fetching live news from Gemini 3.1 Flash-lite search grounding...");
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-3.1-flash-lite",
         contents: [
           {
             role: "user",

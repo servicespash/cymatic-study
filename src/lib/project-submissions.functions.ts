@@ -66,19 +66,30 @@ export async function submitProjectForMarking(data: {
     }
   }
 
-  const { data: created, error } = await supabase
-    .from("project_submissions")
-    .insert({
-      project_id: project.id,
-      student_user_id: user.id,
-      student_email: email,
-      project_payload: project,
-    })
-    .select("id,teacher_token")
-    .single();
+  try {
+    const { data: created, error } = await supabase
+      .from("project_submissions")
+      .insert({
+        project_id: project.id,
+        student_user_id: user.id,
+        student_email: email,
+        project_payload: project,
+      })
+      .select("id,teacher_token")
+      .single();
 
-  if (error) throw new Error(error.message);
-  return { token: created.teacher_token, submissionId: created.id, verified: false };
+    if (error) {
+      if (error.code === "PGRST205") {
+        throw new Error(
+          "Database Table Missing: The 'project_submissions' table does not exist in your Supabase project. Please run the migrations in the SQL Editor.",
+        );
+      }
+      throw new Error(error.message);
+    }
+    return { token: created.teacher_token, submissionId: created.id, verified: false };
+  } catch (err: any) {
+    throw err;
+  }
 }
 
 export async function getProjectSubmissionForMarking(data: { token: string }) {
@@ -105,56 +116,67 @@ export async function verifyProjectSubmission(data: any) {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  const { data: existing } = await supabase
-    .from("project_submissions")
-    .select("id,student_user_id,is_verified")
-    .eq("teacher_token", data.token)
-    .maybeSingle();
+  try {
+    const { data: existing } = await supabase
+      .from("project_submissions")
+      .select("id,student_user_id,is_verified")
+      .eq("teacher_token", data.token)
+      .maybeSingle();
 
-  if (!existing) throw new Error("This assessment token was not found.");
-  if (existing.student_user_id === user.id) {
-    throw new Error("Forbidden: a student cannot verify their own submission.");
+    if (!existing) throw new Error("This assessment token was not found.");
+    if (existing.student_user_id === user.id) {
+      throw new Error("Forbidden: a student cannot verify their own submission.");
+    }
+    if (existing.is_verified) throw new Error("This submission has already been verified.");
+
+    const { data: roleRow } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const role = roleRow?.role ?? "";
+    if (!["teacher", "independent_teacher", "school_admin", "admin"].includes(role)) {
+      throw new Error("Forbidden: only teachers or admins can verify submissions.");
+    }
+
+    const grade = scoreToGrade(data.score);
+    const { data: row, error } = await supabase
+      .from("project_submissions")
+      .update({
+        is_verified: true,
+        status: "verified",
+        teacher_id: user.id,
+        awarded_score: data.score,
+        awarded_grade: grade,
+        remarks: data.comment,
+        marked_by: data.teacherName?.trim() || null,
+        teacher_title: data.teacherTitle?.trim() || null,
+        teacher_license_id: data.teacherLicenseId?.trim() || null,
+        school_reference_key: data.schoolReferenceKey?.trim() || null,
+        verified_at: new Date().toISOString(),
+      })
+      .eq("id", existing.id)
+      .select("*")
+      .maybeSingle();
+
+    if (error) {
+      if (error.code === "PGRST205") {
+        throw new Error(
+          "Database Table Missing: The 'project_submissions' table does not exist in your Supabase project. Please run the migrations in the SQL Editor.",
+        );
+      }
+      throw new Error(error.message);
+    }
+    return {
+      submissionId: row.id,
+      token: row.teacher_token,
+      project: attachMark(row.project_payload, row),
+      isVerified: row.is_verified,
+    };
+  } catch (err: any) {
+    throw err;
   }
-  if (existing.is_verified) throw new Error("This submission has already been verified.");
-
-  const { data: roleRow } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  const role = roleRow?.role ?? "";
-  if (!["teacher", "independent_teacher", "school_admin", "admin"].includes(role)) {
-    throw new Error("Forbidden: only teachers or admins can verify submissions.");
-  }
-
-  const grade = scoreToGrade(data.score);
-  const { data: row, error } = await supabase
-    .from("project_submissions")
-    .update({
-      is_verified: true,
-      status: "verified",
-      teacher_id: user.id,
-      awarded_score: data.score,
-      awarded_grade: grade,
-      remarks: data.comment,
-      marked_by: data.teacherName?.trim() || null,
-      teacher_title: data.teacherTitle?.trim() || null,
-      teacher_license_id: data.teacherLicenseId?.trim() || null,
-      school_reference_key: data.schoolReferenceKey?.trim() || null,
-      verified_at: new Date().toISOString(),
-    })
-    .eq("id", existing.id)
-    .select("*")
-    .maybeSingle();
-
-  if (error) throw new Error(error.message);
-  return {
-    submissionId: row.id,
-    token: row.teacher_token,
-    project: attachMark(row.project_payload, row),
-    isVerified: row.is_verified,
-  };
 }
 
 export async function submitTeacherEvaluation(data: any) {
@@ -163,48 +185,62 @@ export async function submitTeacherEvaluation(data: any) {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  const { data: roleRow } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  try {
+    const { data: roleRow } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("user_id", user.id)
+      .maybeSingle();
 
-  if (!["teacher", "independent_teacher", "school_admin", "admin"].includes(roleRow?.role ?? "")) {
-    throw new Error("Forbidden: only teachers or admins can submit evaluations.");
+    if (
+      !["teacher", "independent_teacher", "school_admin", "admin"].includes(roleRow?.role ?? "")
+    ) {
+      throw new Error("Forbidden: only teachers or admins can submit evaluations.");
+    }
+
+    const { data: existing } = await supabase
+      .from("project_submissions")
+      .select("id,student_user_id,status")
+      .eq("id", data.submissionId)
+      .maybeSingle();
+
+    if (!existing) throw new Error("Submission not found.");
+    if (existing.student_user_id === user.id)
+      throw new Error("Forbidden: cannot evaluate your own.");
+    if (existing.status === "verified") throw new Error("Already verified.");
+
+    const total = data.phase1 + data.phase2 + data.phase3 + data.phase4;
+    const { error } = await supabase
+      .from("project_submissions")
+      .update({
+        status: "verified",
+        is_verified: true,
+        teacher_id: user.id,
+        teacher_name: data.teacherName,
+        teacher_license: data.license,
+        school_key: data.schoolKey,
+        teacher_comments: data.comments,
+        phase1_score: data.phase1,
+        phase2_score: data.phase2,
+        phase3_score: data.phase3,
+        phase4_score: data.phase4,
+        total_competency_score: total,
+        verified_at: new Date().toISOString(),
+      })
+      .eq("id", data.submissionId);
+
+    if (error) {
+      if (error.code === "PGRST205") {
+        throw new Error(
+          "Database Table Missing: The 'project_submissions' table does not exist in your Supabase project. Please run the migrations in the SQL Editor.",
+        );
+      }
+      throw new Error(error.message);
+    }
+    return { ok: true };
+  } catch (err: any) {
+    throw err;
   }
-
-  const { data: existing } = await supabase
-    .from("project_submissions")
-    .select("id,student_user_id,status")
-    .eq("id", data.submissionId)
-    .maybeSingle();
-
-  if (!existing) throw new Error("Submission not found.");
-  if (existing.student_user_id === user.id) throw new Error("Forbidden: cannot evaluate your own.");
-  if (existing.status === "verified") throw new Error("Already verified.");
-
-  const total = data.phase1 + data.phase2 + data.phase3 + data.phase4;
-  const { error } = await supabase
-    .from("project_submissions")
-    .update({
-      status: "verified",
-      is_verified: true,
-      teacher_id: user.id,
-      teacher_name: data.teacherName,
-      teacher_license: data.license,
-      school_key: data.schoolKey,
-      teacher_comments: data.comments,
-      phase1_score: data.phase1,
-      phase2_score: data.phase2,
-      phase3_score: data.phase3,
-      phase4_score: data.phase4,
-      total_competency_score: total,
-      verified_at: new Date().toISOString(),
-    })
-    .eq("id", data.submissionId);
-
-  if (error) throw new Error(error.message);
-  return { ok: true };
 }
 
 export async function loadMyDraftSubmission() {
@@ -213,18 +249,29 @@ export async function loadMyDraftSubmission() {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  const { data, error } = await supabase
-    .from("project_submissions")
-    .select(
-      "id,status,project_data,phase1_score,phase2_score,phase3_score,phase4_score,total_competency_score,teacher_name,teacher_comments,verified_at,is_verified",
-    )
-    .eq("student_user_id", user.id)
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  try {
+    const { data, error } = await supabase
+      .from("project_submissions")
+      .select(
+        "id,status,project_data,phase1_score,phase2_score,phase3_score,phase4_score,total_competency_score,teacher_name,teacher_comments,verified_at,is_verified",
+      )
+      .eq("student_user_id", user.id)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-  if (error) throw new Error(error.message);
-  return data;
+    if (error) {
+      if (error.code === "PGRST205" || error.message?.includes("cache")) {
+        console.warn("[Submissions] Table missing or cache stale, falling back to local state");
+        return null;
+      }
+      throw new Error(error.message);
+    }
+    return data;
+  } catch (err) {
+    console.error("[Submissions] Failed to load from DB:", err);
+    return null;
+  }
 }
 
 export async function syncMyDraftSubmission(data: { projectData: any }) {
@@ -249,34 +296,45 @@ export async function syncMyDraftSubmission(data: { projectData: any }) {
 
   if (existing?.is_verified) throw new Error("Submission already verified.");
 
-  if (existing) {
-    const { data: updated, error } = await supabase
+  try {
+    if (existing) {
+      const { data: updated, error } = await supabase
+        .from("project_submissions")
+        .update({
+          project_data: data.projectData,
+          status: existing.status === "draft" ? "pending" : existing.status,
+          org_id: profile?.org_id ?? null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existing.id)
+        .select("id,status")
+        .single();
+      if (error) throw new Error(error.message);
+      return updated;
+    }
+
+    const { data: created, error } = await supabase
       .from("project_submissions")
-      .update({
-        project_data: data.projectData,
-        status: existing.status === "draft" ? "pending" : existing.status,
+      .insert({
+        student_user_id: user.id,
+        student_id: user.id,
         org_id: profile?.org_id ?? null,
-        updated_at: new Date().toISOString(),
+        project_data: data.projectData,
+        status: "pending",
       })
-      .eq("id", existing.id)
       .select("id,status")
       .single();
-    if (error) throw new Error(error.message);
-    return updated;
+
+    if (error) {
+      if (error.code === "PGRST205") {
+        throw new Error(
+          "Database Table Missing: The 'project_submissions' table does not exist in your Supabase project. Please run the migrations in the SQL Editor.",
+        );
+      }
+      throw new Error(error.message);
+    }
+    return created;
+  } catch (err: any) {
+    throw err;
   }
-
-  const { data: created, error } = await supabase
-    .from("project_submissions")
-    .insert({
-      student_user_id: user.id,
-      student_id: user.id,
-      org_id: profile?.org_id ?? null,
-      project_data: data.projectData,
-      status: "pending",
-    })
-    .select("id,status")
-    .single();
-
-  if (error) throw new Error(error.message);
-  return created;
 }

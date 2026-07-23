@@ -4,6 +4,7 @@ import { Loader2, Sparkles, UserPlus, Copy, Check, Eye, EyeOff } from "lucide-re
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Database } from "@/integrations/supabase/types";
+import { useRoleRedirect } from "@/hooks/useRoleRedirect";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Join the Hub — Cymatic Study" }] }),
@@ -18,6 +19,7 @@ const REFERRAL_STORAGE_KEY = "cymatic_signup_referral_code";
 
 function SignupPage() {
   const navigate = useNavigate();
+  useRoleRedirect();
   const [mode, setMode] = useState<Mode>("student-teacher");
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -142,7 +144,19 @@ function SignupPage() {
       }
 
       if (data.session) {
-        navigate({ to: "/dashboard" });
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("user_id", data.user.id)
+          .single();
+
+        const role = profileData?.role || "";
+
+        if (role === "admin" || role === "org_admin") {
+          navigate({ to: "/admin/dashboard" });
+        } else {
+          navigate({ to: "/dashboard" });
+        }
       } else {
         setInfo(
           afterSignupInfo ?? "Success! Check your email to confirm your account and join the hub.",
@@ -446,7 +460,7 @@ function ModeButton({
   );
 }
 
-function Field({ label, value, onChange, ...rest }: any) {
+function Field({ label, value, onChange, ...rest }: { label: string; value: string; onChange: (v: string) => void; [key: string]: any }) {
   return (
     <div>
       <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">

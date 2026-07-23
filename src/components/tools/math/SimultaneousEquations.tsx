@@ -22,14 +22,7 @@ const SimultaneousEquations: React.FC = () => {
     const eVal = parseFloat(e);
     const fVal = parseFloat(f);
 
-    if (
-      isNaN(aVal) ||
-      isNaN(bVal) ||
-      isNaN(cVal) ||
-      isNaN(dVal) ||
-      isNaN(eVal) ||
-      isNaN(fVal)
-    ) {
+    if (isNaN(aVal) || isNaN(bVal) || isNaN(cVal) || isNaN(dVal) || isNaN(eVal) || isNaN(fVal)) {
       setError("Please fill in all coefficients.");
       return;
     }
@@ -38,7 +31,9 @@ const SimultaneousEquations: React.FC = () => {
     const D = aVal * eVal - bVal * dVal;
 
     if (D === 0) {
-      setError("No unique solution exists (Determinant is 0). Equations are parallel or coincident.");
+      setError(
+        "No unique solution exists (Determinant is 0). Equations are parallel or coincident.",
+      );
       return;
     }
 

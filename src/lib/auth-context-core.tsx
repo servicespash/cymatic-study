@@ -20,12 +20,8 @@ export type AuthCtx = {
   isStudent: boolean;
   isTeacher: boolean;
   isAdmin: boolean;
+  isGuestMode: boolean;
   signOut: () => Promise<void>;
-  isGuestMode?: boolean;
-  setGuestRole?: (role: "student" | "teacher" | "admin") => void;
-  guestRole?: "student" | "teacher" | "admin";
-  startGuestSession?: (role?: "student" | "teacher" | "admin") => void;
-  endGuestSession?: () => void;
 };
 
 export const Ctx = createContext<AuthCtx>({
@@ -37,12 +33,8 @@ export const Ctx = createContext<AuthCtx>({
   isStudent: false,
   isTeacher: false,
   isAdmin: false,
-  signOut: async () => {},
   isGuestMode: false,
-  setGuestRole: () => {},
-  guestRole: "student",
-  startGuestSession: () => {},
-  endGuestSession: () => {},
+  signOut: async () => {},
 });
 
 export const useAuth = () => useContext(Ctx);

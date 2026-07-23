@@ -19,6 +19,7 @@ import {
   ChevronRight,
   Trophy,
   Activity,
+  Target,
 } from "lucide-react";
 import { SubjectCard } from "@/components/SubjectCard";
 import { TermGoalGauge } from "@/components/TermGoalGauge";
@@ -31,6 +32,7 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/lib/offline-db";
 import { markGreeted, shouldGreet } from "@/lib/tutor-context";
+import { ProgressVisualization } from "@/components/ProgressVisualization";
 import {
   Accordion,
   AccordionItem,
@@ -106,7 +108,7 @@ type GoalPeriod = "daily" | "weekly" | "term";
 
 export function HomePage() {
   const { persona, speak } = useTutor();
-  const { user } = useAuth();
+  const { user, isAdmin, isTeacher } = useAuth();
 
   // Points logic
   const [todayPoints, setTodayPoints] = useState(0);
@@ -355,6 +357,22 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* Personalized Performance Dashboard (Only for logged-in students) */}
+      {user && !isTeacher && !isAdmin && (
+        <section className="mx-auto max-w-6xl px-4 animate-fade-in-up">
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+              <Target className="h-3 w-3 text-cyan-400" />
+              Your Live Syllabus Coverage
+            </h2>
+            <Link to="/dashboard" className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">
+              View Analytics
+            </Link>
+          </div>
+          <ProgressVisualization />
+        </section>
+      )}
+
       {/* Upgraded NCDC Subjects Section with Perfect Adaptive Contrast */}
       <section
         className="mx-auto max-w-6xl px-4 animate-fade-in-up"
@@ -551,7 +569,13 @@ export function HomePage() {
                 className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-xs font-bold text-primary py-2.5 transition-all"
               >
                 <Activity className="h-3.5 w-3.5" />
-                Go to Student Dashboard
+                {user
+                  ? isAdmin
+                    ? "Institutional Command"
+                    : isTeacher
+                      ? "Teacher Dashboard"
+                      : "Student Dashboard"
+                  : "Go to Student Dashboard"}
                 <ArrowRight className="h-3 w-3" />
               </Link>
             </div>

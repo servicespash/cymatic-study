@@ -178,7 +178,29 @@ export async function getSubjectProgress(subject: string): Promise<number> {
 
 export async function getAllSubjectProgress(): Promise<SubjectProgress[]> {
   const records = await db.userProgress.toArray();
-  const subjects = ["Math", "Physics", "Chemistry", "Biology"];
+  const subjects = [
+    "Math",
+    "Physics",
+    "Chemistry",
+    "Biology",
+    "Geography",
+    "History",
+    "English",
+    "Entrepreneurship",
+    "Economics",
+    "ICT",
+    "Divinity",
+    "Swahili",
+    "Luganda",
+    "Literature",
+    "Agriculture",
+    "Art",
+    "CRE",
+    "IRE",
+    "Commerce",
+    "SubMath",
+    "GP",
+  ];
   const finalProgress: SubjectProgress[] = [];
 
   for (const sub of subjects) {
@@ -186,16 +208,10 @@ export async function getAllSubjectProgress(): Promise<SubjectProgress[]> {
     if (existing) {
       finalProgress.push(existing);
     } else {
-      let daysAgo = 0;
-      if (sub === "Chemistry") daysAgo = 2.3; // ~55 hours (neglected)
-      if (sub === "Biology") daysAgo = 3.2; // ~76 hours (neglected)
-      if (sub === "Physics") daysAgo = 0.5; // ~12 hours
-      const lastInteracted = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
-
       const defaultRecord = {
         subject: sub,
-        completedPercentage: 15,
-        lastInteracted,
+        completedPercentage: 0, // Initialize at zero as requested
+        lastInteracted: new Date().toISOString(),
       };
       await db.userProgress.put(defaultRecord);
       finalProgress.push(defaultRecord);

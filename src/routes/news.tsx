@@ -4,6 +4,9 @@ import { FoundersSpotlight } from "@/components/FoundersSpotlight";
 import { toast } from "sonner";
 import { NewsFeed } from "@/components/NewsFeed";
 import { useNewsFeed, NewsItem } from "@/lib/supabase-service";
+import { cn } from "@/lib/utils";
+import { LiveBadge } from "@/components/LiveBadge";
+import { useLiveSession } from "@/hooks/useLiveSession";
 import {
   Play,
   Pause,
@@ -46,7 +49,7 @@ function NewsPage() {
     await refreshFeed();
     toast.success("Content feed updated successfully!");
   };
-
+  
   // Podcast Player State
   const [currentPodIndex, setCurrentPodIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -59,7 +62,7 @@ function NewsPage() {
 
   // Extract podcasts from items
   const podcastEpisodes = items
-    .filter((item) => item.media_type === "podcast")
+    .filter((item) => ["podcast", "audio", "audiobook", "video_podcast"].includes(item.media_type || ""))
     .map((item) => {
       let parsed: ParsedBody = {};
       try {
@@ -73,12 +76,15 @@ function NewsPage() {
         subject: parsed.subject || "General",
         description: parsed.description || "",
         audioUrl: item.media_url || "",
+        mediaType: item.media_type,
         duration: parsed.duration || "0:00",
         speaker: parsed.speaker || "Unknown",
+        category: item.category,
       };
     });
 
   const activePodcast = podcastEpisodes[currentPodIndex] || null;
+  const isLiveActive = useLiveSession(activePodcast?.audioUrl) || activePodcast?.category === "live";
 
   // Audio Side Effects
   useEffect(() => {
@@ -171,15 +177,11 @@ function NewsPage() {
   const curriculumItems = formatItemsForFeed(
     items.filter((i) => i.media_type === "curriculum_update"),
   );
-  const shoutoutItems = formatItemsForFeed(
-    items.filter((i) => i.media_type === "student_shoutout"),
-  );
   const liveSessionItems = formatItemsForFeed(items.filter((i) => i.media_type === "live_session"));
 
   const categorizedFeeds = [
     { name: "Curriculum Updates", items: curriculumItems },
     { name: "Live Sessions", items: liveSessionItems },
-    { name: "Student Shoutouts", items: shoutoutItems },
   ];
 
   return (
@@ -217,10 +219,10 @@ function NewsPage() {
         {/* Dual-column Grid: News on Left, Custom Podcasts Console on Right */}
         <div className="grid gap-8 lg:grid-cols-3 mt-8">
           {/* Left Column: News Feed */}
-          <div className="lg:col-span-2 space-y-8">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <h2 className="text-lg font-bold uppercase tracking-widest text-zinc-400 text-xs">
+          <div className="lg:col-span-2 space-y-12">
+            <div className="flex items-center gap-3 mb-2 px-1">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
                 NCDC Broadcast News &amp; Updates
               </h2>
             </div>
@@ -258,10 +260,12 @@ function NewsPage() {
           </div>
 
           {/* Right Column: Custom Interactive Podcasts Console */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-2">
-              <Radio className="h-4 w-4 text-cyan-400 animate-pulse" />
-              <h2 className="text-lg font-bold uppercase tracking-widest text-zinc-400 text-xs">
+          <div className="space-y-8 lg:sticky lg:top-24 h-fit">
+            <div className="flex items-center gap-3 px-1">
+              <div className="p-2 bg-cyan-500/10 rounded-lg">
+                <Radio className="h-4 w-4 text-cyan-400 animate-pulse" />
+              </div>
+              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
                 Podium Podcasts
               </h2>
             </div>
@@ -274,16 +278,50 @@ function NewsPage() {
 
                   {/* Title & Cover */}
                   <div className="flex items-start gap-4">
-                    <div className="relative h-16 w-16 shrink-0 rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-600 flex items-center justify-center shadow-md">
-                      <Radio className="h-8 w-8 text-white" />
-                      {isPlaying && (
-                        <div className="absolute inset-0 flex items-end justify-center gap-0.5 pb-2 pointer-events-none bg-black/40 rounded-2xl">
-                          <span className="h-3 w-1 bg-cyan-400 animate-[bounce_0.6s_infinite]" />
-                          <span className="h-5 w-1 bg-cyan-400 animate-[bounce_0.6s_infinite_0.15s]" />
-                          <span className="h-4 w-1 bg-cyan-400 animate-[bounce_0.6s_infinite_0.3s]" />
-                        </div>
-                      )}
-                    </div>
+                    {activePodcast.mediaType === "video_podcast" ? (
+                      <div className="relative h-24 w-full shrink-0 rounded-2xl bg-black overflow-hidden shadow-md">
+                        <video
+                          src={activePodcast.audioUrl}
+                          className="h-full w-full object-cover"
+                          onPlay={() => setIsPlaying(true)}
+                          onPause={() => setIsPlaying(false)}
+                          controls
+                        />
+                        {isLiveActive && (
+                          <LiveBadge className="absolute top-2 left-2 z-10" />
+                        )}
+                      </div>
+                    ) : (
+                      <div className="relative h-16 w-16 shrink-0 rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-600 flex items-center justify-center shadow-md">
+                        <Radio className="h-8 w-8 text-white" />
+                        {isLiveActive && (
+                          <LiveBadge className="absolute -top-2 -left-2 z-10 scale-75" />
+                        )}
+                        {isPlaying && (
+                          <div className="absolute inset-0 flex items-end justify-center gap-0.5 pb-2 pointer-events-none bg-black/40 rounded-2xl">
+                            <span className="h-3 w-1 bg-cyan-400 animate-[bounce_0.6s_infinite]" />
+                            <span className="h-5 w-1 bg-cyan-400 animate-[bounce_0.6s_infinite_0.15s]" />
+                            <span className="h-4 w-1 bg-cyan-400 animate-[bounce_0.6s_infinite_0.3s]" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {activePodcast.mediaType !== "video_podcast" && (
+                      <div className="min-w-0">
+                        <span className="inline-block rounded-full bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
+                          {activePodcast.subject}
+                        </span>
+                        <h3 className="text-base font-black text-white truncate mt-1">
+                          {activePodcast.title}
+                        </h3>
+                        <p className="text-xs text-zinc-400 truncate">
+                          Hosted by {activePodcast.speaker}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {activePodcast.mediaType === "video_podcast" && (
                     <div className="min-w-0">
                       <span className="inline-block rounded-full bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
                         {activePodcast.subject}
@@ -295,7 +333,7 @@ function NewsPage() {
                         Hosted by {activePodcast.speaker}
                       </p>
                     </div>
-                  </div>
+                  )}
 
                   {/* Description */}
                   <p className="text-xs text-zinc-400 leading-relaxed bg-black/20 rounded-xl p-3 border border-white/5">
@@ -303,36 +341,40 @@ function NewsPage() {
                   </p>
 
                   {/* Timeline controls */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-[10px] text-zinc-500 font-bold">
-                      <span>{formatTime(currentTime)}</span>
-                      <span>{activePodcast.duration}</span>
+                  {activePodcast.mediaType !== "video_podcast" && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-[10px] text-zinc-500 font-bold">
+                        <span>{formatTime(currentTime)}</span>
+                        <span>{activePodcast.duration}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max={duration || 100}
+                        value={currentTime}
+                        onChange={handleSeekChange}
+                        className="w-full accent-cyan-400 cursor-pointer h-1 rounded-lg bg-zinc-800"
+                      />
                     </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max={duration || 100}
-                      value={currentTime}
-                      onChange={handleSeekChange}
-                      className="w-full accent-cyan-400 cursor-pointer h-1 rounded-lg bg-zinc-800"
-                    />
-                  </div>
+                  )}
 
                   {/* Interactive buttons */}
                   <div className="flex items-center justify-between px-2">
-                    <button
-                      onClick={() => setIsMuted(!isMuted)}
-                      className="text-zinc-400 hover:text-white transition-colors"
-                      title={isMuted ? "Unmute" : "Mute"}
-                    >
-                      {isMuted ? (
-                        <VolumeX className="h-5 w-5 text-red-400" />
-                      ) : (
-                        <Volume2 className="h-5 w-5" />
-                      )}
-                    </button>
+                    {activePodcast.mediaType !== "video_podcast" && (
+                      <button
+                        onClick={() => setIsMuted(!isMuted)}
+                        className="text-zinc-400 hover:text-white transition-colors"
+                        title={isMuted ? "Unmute" : "Mute"}
+                      >
+                        {isMuted ? (
+                          <VolumeX className="h-5 w-5 text-red-400" />
+                        ) : (
+                          <Volume2 className="h-5 w-5" />
+                        )}
+                      </button>
+                    )}
 
-                    <div className="flex items-center gap-4">
+                    <div className={cn("flex items-center gap-4", activePodcast.mediaType === "video_podcast" && "mx-auto")}>
                       <button
                         onClick={handlePrev}
                         className="text-zinc-400 hover:text-white transition-colors"
@@ -341,17 +383,19 @@ function NewsPage() {
                         <SkipBack className="h-5 w-5" />
                       </button>
 
-                      <button
-                        onClick={handlePlayPause}
-                        className="h-12 w-12 flex items-center justify-center rounded-full bg-cyan-500 text-black hover:scale-105 hover:bg-cyan-400 transition-all shadow-lg"
-                        title={isPlaying ? "Pause" : "Play"}
-                      >
-                        {isPlaying ? (
-                          <Pause className="h-6 w-6" />
-                        ) : (
-                          <Play className="h-6 w-6 ml-0.5" />
-                        )}
-                      </button>
+                      {activePodcast.mediaType !== "video_podcast" && (
+                        <button
+                          onClick={handlePlayPause}
+                          className="h-12 w-12 flex items-center justify-center rounded-full bg-cyan-500 text-black hover:scale-105 hover:bg-cyan-400 transition-all shadow-lg"
+                          title={isPlaying ? "Pause" : "Play"}
+                        >
+                          {isPlaying ? (
+                            <Pause className="h-6 w-6" />
+                          ) : (
+                            <Play className="h-6 w-6 ml-0.5" />
+                          )}
+                        </button>
+                      )}
 
                       <button
                         onClick={handleNext}
@@ -366,6 +410,7 @@ function NewsPage() {
                       EP {currentPodIndex + 1}/{podcastEpisodes.length}
                     </span>
                   </div>
+
                 </div>
 
                 {/* Playlist Queue */}
@@ -378,7 +423,7 @@ function NewsPage() {
                       const isActive = index === currentPodIndex;
                       return (
                         <button
-                          key={pod.id}
+                          key={`${pod.id}-${index}`}
                           onClick={() => {
                             setCurrentPodIndex(index);
                             setIsPlaying(true);

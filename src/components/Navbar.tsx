@@ -46,7 +46,7 @@ const links: readonly NavLink[] = [
 ] as const;
 
 export function Navbar() {
-  const { user, isGuestMode, guestRole, profile } = useAuth();
+  const { user, profile } = useAuth();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -76,11 +76,6 @@ export function Navbar() {
         return;
       }
 
-      if (isGuestMode) {
-        setIsAdmin(guestRole === "admin");
-        return;
-      }
-
       try {
         // Explicitly type the RPC response
         const { data, error } = await supabase.rpc("has_role", {
@@ -102,7 +97,7 @@ export function Navbar() {
       }
     };
     checkAdmin();
-  }, [user, isGuestMode, guestRole, profile]);
+  }, [user, profile]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/75 backdrop-blur-xl">

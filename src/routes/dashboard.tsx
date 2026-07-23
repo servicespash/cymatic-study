@@ -22,11 +22,26 @@ import {
   CheckCircle,
   Clock,
   EyeOff,
+  Target,
+  Users,
+  LayoutDashboard,
+  TrendingUp,
+  X,
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { motion, AnimatePresence } from "motion/react";
+import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Share } from "@capacitor/share";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { TermGoalGauge } from "@/components/TermGoalGauge";
 import { SearchEngine } from "@/components/SearchEngine";
 import { CurriculumToggle } from "@/components/CurriculumToggle";
@@ -43,29 +58,42 @@ import { TermGoalChallengeCard } from "@/components/TermGoalChallengeCard";
 import { TermProgressChart } from "@/components/TermProgressChart";
 
 // New components & hooks imports
-import { RoleTogglePanel } from "@/components/RoleTogglePanel";
 import { MilestoneBadges } from "@/components/MilestoneBadges";
 import { TermSummaryPanel } from "@/components/TermSummaryPanel";
 import { QuickQuizButton } from "@/components/QuickQuizButton";
 import { TaskContextMenu } from "@/components/TaskContextMenu";
-import { useGuestSession } from "@/hooks/useGuestSession";
 import { useTermProgress } from "@/hooks/useTermProgress";
 import { QuizEngine, type DynamicDailyTask } from "@/lib/quiz-engine";
-import { motion, AnimatePresence } from "framer-motion";
+import { MarkingDesk } from "@/components/MarkingDesk";
 import { StudentActivityDashboard } from "@/components/StudentActivityDashboard";
 import { SocraticTutorChat } from "@/components/SocraticTutorChat";
 import { SubjectPracticeReminder } from "@/components/SubjectPracticeReminder";
+import { ProgressVisualization } from "@/components/ProgressVisualization";
+
+import { RoleGuard } from "@/components/RoleGuard";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "My Hub — Cymatic Study" }] }),
-  component: DashboardPage,
+  component: () => (
+    <RoleGuard allowedRoles={["student", "teacher", "independent_teacher", "instructor"]}>
+      <DashboardPage />
+    </RoleGuard>
+  ),
 });
 
+interface DashboardStudent {
+  id: string;
+  name: string;
+  class: string;
+  status: string;
+  score: string;
+  points: number;
+}
+
 function DashboardPage() {
-  const { user, loading, signOut, profile, isGuestMode, guestRole, isTeacher, isAdmin } = useAuth();
+  const { user, loading, signOut, profile, isTeacher, isAdmin, isGuestMode } = useAuth();
 
   const navigate = useNavigate();
-  const { timeLeft, showLoginModal } = useGuestSession();
   const { completeTaskAndSync } = useTermProgress();
   const [isPending, startTransition] = useTransition();
 
@@ -75,7 +103,7 @@ function DashboardPage() {
   const [selectedExplTask, setSelectedExplTask] = useState<DynamicDailyTask | null>(null);
 
   // Real institutional students data states
-  const [realStudents, setRealStudents] = useState<any[]>([]);
+  const [realStudents, setRealStudents] = useState<DashboardStudent[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [totalOrgProfiles, setTotalOrgProfiles] = useState<number | null>(null);
 
@@ -100,14 +128,17 @@ function DashboardPage() {
     return () => window.removeEventListener("storage", loadTasks);
   }, []);
 
-  // Fetch real institutional student data when not in guest mode
+  // Fetch real institutional student data
   useEffect(() => {
-    if (isGuestMode || (!isTeacher && !isAdmin) || !user?.id) return;
+    if ((!isTeacher && !isAdmin) || !user?.id) return;
 
     const fetchRealData = async () => {
       setLoadingStudents(true);
       try {
-        console.log("[Dashboard] Fetching real institutional data for role check...", { isTeacher, isAdmin });
+        console.log("[Dashboard] Fetching real institutional data for role check...", {
+          isTeacher,
+          isAdmin,
+        });
         let query = supabase.from("profiles").select("*");
         if (profile?.org_id) {
           query = query.eq("org_id", profile.org_id);
@@ -123,7 +154,7 @@ function DashboardPage() {
 
           // Filter for student accounts (or empty roles which are default students)
           const studentProfiles = profilesData.filter(
-            (p) => p.role === "student" || !p.role || p.role === ""
+            (p) => p.role === "student" || !p.role || p.role === "",
           );
 
           const studentIds = studentProfiles.map((p) => p.user_id).filter(Boolean);
@@ -171,7 +202,7 @@ function DashboardPage() {
     };
 
     void fetchRealData();
-  }, [user, isGuestMode, isTeacher, isAdmin, profile]);
+  }, [user, isTeacher, isAdmin, profile, isGuestMode]);
 
   const handleTeacherCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -207,7 +238,8 @@ function DashboardPage() {
   // Latty's Logic: Track points and school name
   const [points, setPoints] = useState(0);
   const [dailyPoints, setDailyPoints] = useState(0);
-  const schoolName = profile?.school_name || user?.user_metadata?.school_name || "Uganda Secondary School";
+  const schoolName =
+    profile?.school_name || user?.user_metadata?.school_name || "Uganda Secondary School";
   const [activeTab, setActiveTab] = useState<"missions" | "quizzes" | "tutor" | "projects">(
     "missions",
   );
@@ -235,14 +267,8 @@ function DashboardPage() {
   };
 
   useEffect(() => {
-    if (!loading && !user) {
-      startTransition(() => {
-        navigate({ to: "/login" });
-      });
-    }
-
     const fetchDailyPoints = async () => {
-      if (user && !isGuestMode) {
+      if (user) {
         const today = new Date().toISOString().split("T")[0];
         const { data, error } = await supabase
           .from("user_points")
@@ -254,9 +280,6 @@ function DashboardPage() {
           const total = data.reduce((acc, curr) => acc + (curr.points || 0), 0);
           setDailyPoints(total);
         }
-      } else if (isGuestMode) {
-        // Mock points display
-        setDailyPoints(45);
       }
     };
     fetchDailyPoints();
@@ -268,278 +291,347 @@ function DashboardPage() {
       const timer = setTimeout(() => setPoints((prev) => Math.min(prev + step, dailyPoints)), 30);
       return () => clearTimeout(timer);
     }
-  }, [user, loading, navigate, points, isGuestMode, dailyPoints]);
+  }, [user, points, dailyPoints]);
 
-  if (loading || !user) {
+  if (loading) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-16 text-center text-sm text-muted-foreground">
+      <div className="mx-auto max-w-3xl px-4 py-16 text-center text-sm text-muted-foreground animate-pulse">
         Gathering your study materials...
       </div>
     );
   }
 
-  const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m}:${s < 10 ? "0" : ""}${s}`;
-  };
-
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 space-y-8">
-      {/* 5-MINUTE PREVIEW HEADS-UP TIMER */}
-      {isGuestMode && timeLeft !== null && (
-        <div className="flex items-center justify-between px-5 py-3 bg-zinc-950 border border-yellow-500/20 rounded-xl text-xs">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-yellow-500 animate-pulse" />
-            <span className="text-zinc-300 font-medium">Guest Session Duration:</span>
-          </div>
-          <span className="font-mono text-yellow-400 font-bold bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/20">
-            {formatTime(timeLeft)}
-          </span>
-        </div>
-      )}
-
-      {/* INTERACTIVE ROLE SIMULATOR BOARD */}
-      {isGuestMode && <RoleTogglePanel />}
-
       {/* RENDER ACTIVE DASHBOARD ACCORDING TO ROLE */}
       {isTeacher ? (
-        <div className="space-y-6">
-          <div className="p-6 bg-gradient-to-r from-zinc-900 to-zinc-950 rounded-2xl border border-zinc-800 shadow-xl">
-            <h2 className="text-xl font-bold text-white tracking-tight">
-              Teacher Administration Panel
-            </h2>
-            <p className="text-xs text-zinc-400 mt-1">
-              {schoolName || "Uganda Secondary School"} Teacher Companion (NCDC Aligned)
-            </p>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
-              <span className="text-zinc-500 text-xs font-medium">Monitored Students</span>
-              <p className="text-2xl font-bold text-white mt-1">
-                {realStudents.length > 0 ? `${realStudents.length} Active` : "14 Active"}
+        <div className="space-y-8 animate-in fade-in duration-700">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-black tracking-tight text-white uppercase">
+                Teacher Hub
+              </h2>
+              <p className="text-zinc-500 text-sm">
+                Managing curriculum progress for {profile?.school_name || "Institutional Stream"}.
               </p>
             </div>
-            <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
-              <span className="text-zinc-500 text-xs font-medium">Average Competency</span>
-              <p className="text-2xl font-bold text-cyan-400 mt-1">
-                {realStudents.length > 0 
-                  ? `${(realStudents.reduce((acc, s) => acc + parseInt(s.score), 0) / realStudents.length).toFixed(1)}%` 
-                  : "84.5%"}
-              </p>
-            </div>
-            <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
-              <span className="text-zinc-500 text-xs font-medium">Syllabus Coverage</span>
-              <p className="text-2xl font-bold text-indigo-400 mt-1">
-                {realStudents.length > 0
-                  ? `${Math.min(100, Math.round(realStudents.reduce((acc, s) => acc + (s.points || 0), 0) / (realStudents.length * 10)) + 40)}% Complete`
-                  : "68% Complete"}
-              </p>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => navigate({ to: "/marking" })}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
+              >
+                <CheckCircle className="mr-2 h-4 w-4" /> Open Marking Desk
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate({ to: "/chat" })}
+                className="border-zinc-800 bg-zinc-900/50 text-zinc-300"
+              >
+                <MessageSquare className="mr-2 h-4 w-4" /> Class Discussions
+              </Button>
             </div>
           </div>
 
-          {/* TEACHER ASSIGNMENT PUBLISHER FORM */}
-          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl space-y-4">
-            <div className="flex items-center gap-2">
-              <Plus className="h-5 w-5 text-cyan-400" />
-              <h3 className="text-white font-bold text-base">Publish S1-S4 Daily Assignment</h3>
-            </div>
-            <p className="text-xs text-zinc-400">
-              Instantly create a curriculum challenge that populates in the Student dashboard daily
-              mission lists.
-            </p>
-
-            <form onSubmit={handleTeacherCreateTask} className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-1.5 col-span-2">
-                <label className="text-[10px] uppercase font-bold text-zinc-400">Task Title</label>
-                <input
-                  type="text"
-                  placeholder="e.g., Balancing Alkane Combustion Equations"
-                  value={manualTitle}
-                  onChange={(e) => setManualTitle(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs outline-none text-white focus:border-cyan-500"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold text-zinc-400">
-                  Curriculum Subject
-                </label>
-                <select
-                  value={manualSubject}
-                  onChange={(e: any) => setManualSubject(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs outline-none text-white focus:border-cyan-500"
-                >
-                  <option value="Math">Mathematics</option>
-                  <option value="Physics">Physics</option>
-                  <option value="Chemistry">Chemistry</option>
-                  <option value="Biology">Biology</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold text-zinc-400">
-                  Evaluation Type
-                </label>
-                <select
-                  value={manualType}
-                  onChange={(e: any) => setManualType(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs outline-none text-white focus:border-cyan-500"
-                >
-                  <option value="quiz">Interactive Quiz</option>
-                  <option value="project">Project Work (PBL)</option>
-                  <option value="interactive_question">Student Demonstration Question</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5 col-span-2">
-                <label className="text-[10px] uppercase font-bold text-zinc-400">
-                  Task Instructions & Description
-                </label>
-                <textarea
-                  placeholder="Detail the materials, clear steps, and goals of this assignment..."
-                  rows={3}
-                  value={manualDesc}
-                  onChange={(e) => setManualDesc(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs outline-none text-white focus:border-cyan-500"
-                />
-              </div>
-
-              <div className="space-y-1.5 col-span-2">
-                <label className="text-[10px] uppercase font-bold text-zinc-400">
-                  AI Tutor Explanation (Pre-packaged solution)
-                </label>
-                <textarea
-                  placeholder="Explain the correct scientific concepts behind this task to assist tutoring..."
-                  rows={2}
-                  value={manualExplanation}
-                  onChange={(e) => setManualExplanation(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs outline-none text-white focus:border-cyan-500"
-                />
-              </div>
-
-              <div className="col-span-2 pt-2">
-                <button
-                  type="submit"
-                  className="w-full bg-cyan-500 hover:bg-cyan-600 text-black font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all"
-                >
-                  Publish Assignment to Dashboard
-                </button>
-              </div>
-            </form>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="border-zinc-800 bg-zinc-950/50 backdrop-blur-xl">
+              <CardHeader className="p-4">
+                <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">
+                  Student Roll
+                </CardTitle>
+                <CardDescription className="text-[10px]">
+                  Total learners in your assigned streams.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 pt-0">
+                <p className="text-3xl font-black text-white">{realStudents.length}</p>
+              </CardContent>
+            </Card>
+            <Card className="border-zinc-800 bg-zinc-950/50 backdrop-blur-xl">
+              <CardHeader className="p-4">
+                <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">
+                  Avg Competency
+                </CardTitle>
+                <CardDescription className="text-[10px]">
+                  Mean score across all assessments.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 pt-0">
+                <p className="text-3xl font-black text-amber-500">
+                  {realStudents.length > 0
+                    ? `${(realStudents.reduce((acc, s) => acc + parseInt(s.score), 0) / realStudents.length).toFixed(1)}%`
+                    : "84.5%"}
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="border-zinc-800 bg-zinc-950/50 backdrop-blur-xl">
+              <CardHeader className="p-4">
+                <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">
+                  Syllabus Coverage
+                </CardTitle>
+                <CardDescription className="text-[10px]">
+                  Completed curriculum milestones.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 pt-0">
+                <p className="text-3xl font-black text-emerald-500">
+                  {realStudents.length > 0
+                    ? `${Math.min(100, Math.round(realStudents.reduce((acc, s) => acc + (s.points || 0), 0) / (realStudents.length * 10)) + 40)}%`
+                    : "68%"}
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
-          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
-            <h3 className="text-white font-bold mb-4">Student Progress Roll</h3>
-            <div className="divide-y divide-zinc-800">
+          <div className="space-y-6">
+            <h3 className="text-sm font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2">
+              <Users className="h-4 w-4 text-blue-500" />
+              Active Student Stream
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {loadingStudents ? (
-                <div className="py-8 text-center text-xs text-zinc-500 animate-pulse">
-                  Loading real-time institutional records...
+                <div className="col-span-2 py-12 text-center text-zinc-500 text-sm animate-pulse">
+                  Querying institutional database...
                 </div>
-              ) : (realStudents.length > 0 ? realStudents : [
-                {
-                  name: "Ssewankambo Isaac",
-                  class: "Senior 3",
-                  status: "All Completed",
-                  score: "92%",
-                },
-                { name: "Nsubuga Derrick", class: "Senior 4", status: "3 Completed", score: "81%" },
-                {
-                  name: "Ainomugisha Grace",
-                  class: "Senior 3",
-                  status: "Behind Pace",
-                  score: "64%",
-                },
-                {
-                  name: "Babirye Sandra",
-                  class: "Senior 4",
-                  status: "All Completed",
-                  score: "95%",
-                },
-              ]).map((student, idx) => (
-                <div key={idx} className="flex justify-between items-center py-3">
-                  <div>
-                    <p className="text-sm font-semibold text-white">{student.name}</p>
-                    <p className="text-xs text-zinc-500">{student.class}</p>
-                  </div>
-                  <div className="text-right">
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded ${
-                        student.status === "All Completed"
-                          ? "bg-emerald-500/15 text-emerald-400"
-                          : student.status === "3 Completed" || student.status === "Ahead of Pace" || student.status === "On Track"
-                            ? "bg-amber-500/15 text-amber-400"
-                            : "bg-red-500/15 text-red-400"
-                      }`}
-                    >
-                      {student.status}
-                    </span>
-                    <p className="text-xs text-zinc-400 mt-1">Avg Score: {student.score}</p>
-                  </div>
+              ) : realStudents.length === 0 ? (
+                <div className="col-span-2 py-12 text-center border-2 border-dashed border-zinc-900 rounded-3xl text-zinc-600 italic">
+                  No students have linked to your school ID yet.
                 </div>
-              ))}
+              ) : (
+                realStudents.map((s, idx) => (
+                  <Card
+                    key={s.id || `student-${idx}`}
+                    className="border-zinc-900 bg-zinc-950/40 hover:border-zinc-700 transition-colors"
+                  >
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center font-bold text-xs uppercase text-zinc-400">
+                          {s.name?.substring(0, 2) || "??"}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-zinc-100">{s.name}</p>
+                          <p className="text-[10px] text-zinc-500 font-mono uppercase">
+                            {s.class || "No Level"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className="text-[9px] border-zinc-800 text-zinc-500"
+                        >
+                          {s.score}
+                        </Badge>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => navigate({ to: `/chat` })}
+                          className="text-zinc-500 hover:text-white h-8 w-8 p-0"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="pt-8 border-t border-zinc-900">
+            <h3 className="text-sm font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2 mb-6">
+              <Plus className="h-4 w-4 text-cyan-500" />
+              Publish S1-S4 Daily Assignment
+            </h3>
+            <div className="bg-zinc-900/30 border border-zinc-800 p-6 rounded-2xl">
+              <form onSubmit={handleTeacherCreateTask} className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-1.5 col-span-2">
+                  <label className="text-[10px] uppercase font-bold text-zinc-400">
+                    Task Title
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Balancing Alkane Combustion Equations"
+                    value={manualTitle}
+                    onChange={(e) => setManualTitle(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs outline-none text-white focus:border-cyan-500"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-bold text-zinc-400">
+                    Curriculum Subject
+                  </label>
+                  <select
+                    value={manualSubject}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                      setManualSubject(e.target.value as any)
+                    }
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs outline-none text-white focus:border-cyan-500"
+                  >
+                    <option value="Math">Mathematics</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Biology">Biology</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-bold text-zinc-400">
+                    Evaluation Type
+                  </label>
+                  <select
+                    value={manualType}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                      setManualType(e.target.value as any)
+                    }
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs outline-none text-white focus:border-cyan-500"
+                  >
+                    <option value="quiz">Interactive Quiz</option>
+                    <option value="project">Project Work (PBL)</option>
+                    <option value="interactive_question">Student Demonstration Question</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5 col-span-2">
+                  <label className="text-[10px] uppercase font-bold text-zinc-400">
+                    Task Instructions & Description
+                  </label>
+                  <textarea
+                    placeholder="Detail the materials, clear steps, and goals of this assignment..."
+                    rows={3}
+                    value={manualDesc}
+                    onChange={(e) => setManualDesc(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs outline-none text-white focus:border-cyan-500"
+                  />
+                </div>
+
+                <div className="space-y-1.5 col-span-2">
+                  <label className="text-[10px] uppercase font-bold text-zinc-400">
+                    AI Tutor Explanation (Pre-packaged solution)
+                  </label>
+                  <textarea
+                    placeholder="Explain the correct scientific concepts behind this task to assist tutoring..."
+                    rows={2}
+                    value={manualExplanation}
+                    onChange={(e) => setManualExplanation(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs outline-none text-white focus:border-cyan-500"
+                  />
+                </div>
+
+                <div className="col-span-2 pt-2">
+                  <Button
+                    type="submit"
+                    className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold h-11"
+                  >
+                    Publish Assignment to Dashboard
+                  </Button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
       ) : isAdmin ? (
-        <div className="space-y-6">
-          <div className="p-6 bg-gradient-to-r from-zinc-900 to-zinc-950 rounded-2xl border border-zinc-800 shadow-xl">
-            <h2 className="text-xl font-bold text-white tracking-tight">
-              Super Admin Command Center
-            </h2>
-            <p className="text-xs text-zinc-400 mt-1">
-              {schoolName || "Cymatic"} System Health, Stream Toggles & Security Audit Logs
-            </p>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-4">
-            <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
-              <span className="text-zinc-500 text-xs font-medium">Active Live Streams</span>
-              <p className="text-lg font-bold text-white mt-1">2 Live Now</p>
-            </div>
-            <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
-              <span className="text-zinc-500 text-xs font-medium">Database Node</span>
-              <p className="text-lg font-bold text-green-400 mt-1">Healthy</p>
-            </div>
-            <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
-              <span className="text-zinc-500 text-xs font-medium">Daily Active Users</span>
-              <p className="text-lg font-bold text-cyan-400 mt-1">
-                {totalOrgProfiles !== null ? `${totalOrgProfiles} Registered` : "1,242 Users"}
+        <div className="space-y-8 animate-in fade-in duration-700">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-black tracking-tight text-white uppercase">
+                Institutional Command
+              </h2>
+              <p className="text-zinc-500 text-sm">
+                Monitoring overall performance for {profile?.school_name || "Campus Network"}.
               </p>
             </div>
-            <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
-              <span className="text-zinc-500 text-xs font-medium">System Load</span>
-              <p className="text-lg font-bold text-white mt-1">12.4%</p>
-            </div>
+            <Button
+              onClick={() => navigate({ to: "/admin/dashboard" })}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
+            >
+              <LayoutDashboard className="mr-2 h-4 w-4" /> Go to Control Center
+            </Button>
           </div>
 
-          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
-            <h3 className="text-white font-bold mb-4">Command Toggles & Seeding</h3>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <button
-                onClick={() => toast.success("Successfully seeded 90 daily tasks!")}
-                className="p-4 bg-zinc-950 hover:bg-zinc-800 text-left rounded-xl border border-zinc-800 transition-all"
-              >
-                <h4 className="text-sm font-semibold text-white">Seed 90-Day Task Database</h4>
-                <p className="text-xs text-zinc-500 mt-1">
-                  Pre-populate all curriculum subject challenges
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card
+              className="border-zinc-800 bg-zinc-950/50 backdrop-blur-xl p-8 text-center space-y-4 hover:border-indigo-500/50 transition-all cursor-pointer group"
+              onClick={() => navigate({ to: "/admin/dashboard" })}
+            >
+              <div className="mx-auto h-16 w-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <TrendingUp className="h-8 w-8 text-indigo-500" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-black text-white uppercase">Institutional Analytics</h3>
+                <p className="text-xs text-zinc-500 leading-relaxed">
+                  View grade distributions, syllabus mastery rates, and teacher performance metrics
+                  across all departments.
                 </p>
-              </button>
-              <button
-                onClick={() => toast.success("Cleared audit log queue")}
-                className="p-4 bg-zinc-950 hover:bg-zinc-800 text-left rounded-xl border border-zinc-800 transition-all"
+              </div>
+              <Button
+                variant="outline"
+                className="w-full border-zinc-800 bg-zinc-900/50 text-zinc-300"
               >
-                <h4 className="text-sm font-semibold text-white">Reset Safety Audit Queue</h4>
-                <p className="text-xs text-zinc-500 mt-1">
-                  Clean and refresh the automated audit stream
+                View Macro Metrics
+              </Button>
+            </Card>
+
+            <Card
+              className="border-zinc-800 bg-zinc-950/50 backdrop-blur-xl p-8 text-center space-y-4 hover:border-emerald-500/50 transition-all cursor-pointer group"
+              onClick={() => navigate({ to: "/admin/dashboard" })}
+            >
+              <div className="mx-auto h-16 w-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Users className="h-8 w-8 text-emerald-500" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-black text-white uppercase">Faculty Management</h3>
+                <p className="text-xs text-zinc-500 leading-relaxed">
+                  Manage instructor access, verify licensing credentials, and identify grading
+                  bottlenecks in real-time.
                 </p>
-              </button>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full border-zinc-800 bg-zinc-900/50 text-zinc-300"
+              >
+                Manage Staff Hub
+              </Button>
+            </Card>
+          </div>
+
+          <div className="bg-zinc-900/30 border border-zinc-800 p-8 rounded-3xl text-center space-y-4">
+            <h3 className="text-xl font-black text-white uppercase tracking-tighter">
+              System Health & Operations
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800">
+                <p className="text-[10px] font-bold text-zinc-500 uppercase">Latency</p>
+                <p className="text-lg font-black text-emerald-500">24ms</p>
+              </div>
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800">
+                <p className="text-[10px] font-bold text-zinc-500 uppercase">Traffic</p>
+                <p className="text-lg font-black text-blue-500">Normal</p>
+              </div>
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800">
+                <p className="text-[10px] font-bold text-zinc-500 uppercase">Uptime</p>
+                <p className="text-lg font-black text-white">99.9%</p>
+              </div>
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800">
+                <p className="text-[10px] font-bold text-zinc-500 uppercase">Security</p>
+                <p className="text-lg font-black text-amber-500">Active</p>
+              </div>
             </div>
           </div>
         </div>
       ) : (
         <>
+          {/* Progress Visualization (Tracked via localStorage) */}
+          <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+            <div className="flex items-center justify-between mb-4 px-1">
+              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2">
+                <Target className="h-3 w-3 text-cyan-400" />
+                Live Syllabus Coverage
+              </h2>
+            </div>
+            <ProgressVisualization />
+          </section>
+
           {/* ROW 1: PERSISTENT METRICS & TIMING GOALS (The main, consistent widgets) */}
           <div className="space-y-6">
             <SubjectPracticeReminder />
@@ -659,9 +751,9 @@ function DashboardPage() {
                         </div>
                       ) : (
                         <div className="grid gap-4 sm:grid-cols-2">
-                          {visibleTasks.map((task) => (
+                          {visibleTasks.map((task, idx) => (
                             <TaskContextMenu
-                              key={task.id}
+                              key={task.id || `task-${idx}`}
                               task={task}
                               onUpdate={loadTasks}
                               onRequestExplanation={setSelectedExplTask}
@@ -830,44 +922,6 @@ function DashboardPage() {
       {/* FLOATING ACTION ACTION BUTTON */}
       <QuickQuizButton />
 
-      {/* 5-MINUTE PREVIEW EXPIRATION MODAL */}
-      <AnimatePresence>
-        {showLoginModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md rounded-3xl border border-zinc-800 bg-zinc-950 p-8 text-center shadow-glow shadow-cyan-500/10 space-y-6"
-            >
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
-                <Trophy className="h-8 w-8 animate-pulse" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-black text-white">Guest Preview Expired!</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  Your 5-minute guest session has completed. To save your points, badges, and
-                  learning history, please create a registered account or sign in.
-                </p>
-              </div>
-              <div className="space-y-3 pt-2">
-                <button
-                  onClick={() => {
-                    localStorage.removeItem("guest_session_active");
-                    localStorage.removeItem("guest_session_role");
-                    localStorage.removeItem("guest_session_start");
-                    window.location.href = "/login";
-                  }}
-                  className="w-full rounded-xl bg-cyan-500 hover:bg-cyan-600 py-3.5 text-xs font-bold uppercase tracking-wider text-black shadow-glow shadow-cyan-500/10 transition-all"
-                >
-                  Register / Sign In
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
       {/* AI TUTOR EXPLANATION DIALOG MODAL */}
       <AnimatePresence>
         {selectedExplTask && (
@@ -922,26 +976,5 @@ function DashboardPage() {
         )}
       </AnimatePresence>
     </div>
-  );
-}
-
-// Inline simple X component to prevent missing imports
-function X(props: any) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
   );
 }

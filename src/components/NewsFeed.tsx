@@ -12,8 +12,8 @@ export function NewsFeed({ items }: { items: NewsItem[] }) {
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {items.map((item) => (
-        <NewsCard key={item.id} item={item as any} />
+      {items.map((item, idx) => (
+        <NewsCard key={`${item.id}-${idx}`} item={item as any} />
       ))}
     </div>
   );

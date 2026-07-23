@@ -34,10 +34,11 @@ export function useStudyProgress() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const cacheKey = user ? `study_progress_${user.id}` : "study_progress_guest";
+  const cacheKey = user ? `study_progress_${user.id}` : "study_progress_anonymous";
 
   // Helper to load cache synchronously
   const loadCache = useCallback(() => {
+    if (!user) return false;
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       try {
@@ -57,8 +58,6 @@ export function useStudyProgress() {
       setError(null);
 
       if (!user) {
-        // Fallback for guest mode: load from cache and exit
-        loadCache();
         setLoading(false);
         return;
       }
@@ -115,7 +114,7 @@ export function useStudyProgress() {
         );
         const updated = [...prev];
         const newItem: StudyProgress = {
-          user_id: user?.id || "guest",
+          user_id: user?.id || "anonymous",
           subject,
           completed_percentage: clampedPercentage,
           last_studied_at: now,
