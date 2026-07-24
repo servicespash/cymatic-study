@@ -161,8 +161,8 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ contentId }) => 
                     </span>
                     <span className="text-[10px] text-zinc-400 font-bold">
                       {new Date(comment.created_at).toLocaleDateString(undefined, {
-                        month: 'short',
-                        day: 'numeric'
+                        month: "short",
+                        day: "numeric",
                       })}
                     </span>
                   </div>
@@ -189,10 +189,12 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ contentId }) => 
                 className="min-h-[100px] w-full resize-none bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 focus:ring-primary/20 rounded-2xl p-4 text-sm transition-all"
               />
               <div className="absolute bottom-3 right-3 flex items-center gap-3">
-                <span className={cn(
-                  "text-[10px] font-black transition-colors",
-                  newComment.length > 400 ? "text-red-500" : "text-zinc-400"
-                )}>
+                <span
+                  className={cn(
+                    "text-[10px] font-black transition-colors",
+                    newComment.length > 400 ? "text-red-500" : "text-zinc-400",
+                  )}
+                >
                   {newComment.length}/500
                 </span>
                 <Button

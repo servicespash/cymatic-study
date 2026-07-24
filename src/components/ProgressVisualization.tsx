@@ -59,7 +59,7 @@ export function ProgressVisualization() {
             </div>
 
             <Progress value={percentage} className="h-2 bg-zinc-800" />
-            
+
             <div className="mt-3 flex items-center justify-between text-[10px] uppercase tracking-wider text-zinc-500 font-black">
               <span>{item.completed} Topics Done</span>
               <span>{item.total} Total</span>

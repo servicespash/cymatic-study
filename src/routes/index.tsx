@@ -32,7 +32,7 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/lib/offline-db";
 import { markGreeted, shouldGreet } from "@/lib/tutor-context";
-import { ProgressVisualization } from "@/components/ProgressVisualization";
+
 import {
   Accordion,
   AccordionItem,
@@ -47,6 +47,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { curriculumSubjects, CurriculumSubject } from "@/data/curriculumSubjects";
+import { SubjectQuickNav } from "@/components/SubjectQuickNav";
+import { AmbientSoundscapePlayer } from "@/components/AmbientSoundscapePlayer";
 
 export const Route = createFileRoute("/")({
   head: () => {
@@ -357,21 +359,13 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Personalized Performance Dashboard (Only for logged-in students) */}
-      {user && !isTeacher && !isAdmin && (
-        <section className="mx-auto max-w-6xl px-4 animate-fade-in-up">
-          <div className="flex items-center justify-between mb-4 px-1">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-              <Target className="h-3 w-3 text-cyan-400" />
-              Your Live Syllabus Coverage
-            </h2>
-            <Link to="/dashboard" className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">
-              View Analytics
-            </Link>
-          </div>
-          <ProgressVisualization />
-        </section>
-      )}
+      {/* Quick Subject Navigation & Search dropdown / slide-out to prevent long mobile scrolling */}
+      <SubjectQuickNav />
+
+      {/* Ambient Soundscape & Cymatic Focus Player */}
+      <div className="max-w-4xl mx-auto px-4">
+        <AmbientSoundscapePlayer />
+      </div>
 
       {/* Upgraded NCDC Subjects Section with Perfect Adaptive Contrast */}
       <section

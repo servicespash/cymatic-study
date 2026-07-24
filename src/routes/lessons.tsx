@@ -1,6 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
-import { ChevronDown, Download, Search, RefreshCw, Loader2 } from "lucide-react";
+import {
+  ChevronDown,
+  Download,
+  Search,
+  RefreshCw,
+  Loader2,
+  Brain,
+  BookOpenText,
+} from "lucide-react";
 import { topics } from "@/data/topics";
 import { topicNotes as initialTopicNotes } from "@/data/notes";
 import { quizQuestions } from "@/data/quizzes";
@@ -10,6 +18,8 @@ import { downloadText } from "@/lib/download";
 import { ExportPdfModal } from "@/components/ExportPdfModal";
 import { useAuth } from "@/lib/auth-context";
 import { useSubjectProgress } from "@/hooks/useSubjectProgress";
+import { SpacedRepetitionModule } from "@/components/SpacedRepetitionModule";
+import { PageFlipBook } from "@/components/PageFlipBook";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/lessons")({
@@ -24,6 +34,7 @@ function LessonsPage() {
   const [level, setLevel] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [open, setOpen] = useState<string | null>(null);
+  const [mode, setMode] = useState<"lessons" | "sm2" | "tactile">("lessons");
 
   const [dynamicNotes, setDynamicNotes] = useState<Record<string, any>>({});
   const [isGenerating, setIsGenerating] = useState<Record<string, boolean>>({});
@@ -114,224 +125,267 @@ function LessonsPage() {
         />
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        {Object.entries(subjectLabels).map(([k, l]) => (
-          <button
-            key={k}
-            onClick={() => {
-              setSubject(k);
-              setOpen(null);
-            }}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-smooth ${
-              subject === k
-                ? "bg-primary text-primary-foreground shadow-glow"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            }`}
-          >
-            {l}
-          </button>
-        ))}
-      </div>
-      <div className="mb-6 flex flex-wrap gap-2">
-        {classLevels.map((c) => (
-          <button
-            key={c.level}
-            onClick={() => {
-              setLevel(c.level);
-              setOpen(null);
-            }}
-            className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-smooth ${
-              level === c.level
-                ? "border-primary bg-primary/10 text-primary"
-                : "border-border text-muted-foreground hover:bg-muted"
-            }`}
-          >
-            {c.label}
-          </button>
-        ))}
+      {/* MODE SELECTOR */}
+      <div className="mb-6 flex flex-wrap gap-2 p-1.5 rounded-2xl bg-muted/60 border border-border">
+        <button
+          onClick={() => setMode("lessons")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition ${
+            mode === "lessons" ? "bg-background text-primary shadow-sm" : "text-muted-foreground"
+          }`}
+        >
+          <BookOpenText className="h-4 w-4" />
+          <span>Curriculum Notes</span>
+        </button>
+        <button
+          onClick={() => setMode("sm2")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition ${
+            mode === "sm2" ? "bg-background text-primary shadow-sm" : "text-muted-foreground"
+          }`}
+        >
+          <Brain className="h-4 w-4" />
+          <span>Spaced Repetition (SM-2)</span>
+        </button>
+        <button
+          onClick={() => setMode("tactile")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition ${
+            mode === "tactile" ? "bg-background text-primary shadow-sm" : "text-muted-foreground"
+          }`}
+        >
+          <BookOpenText className="h-4 w-4" />
+          <span>Tactile Reader (Page Flip)</span>
+        </button>
       </div>
 
-      <div className="space-y-3">
-        {filtered.length === 0 && (
-          <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            No topics yet for this selection.
-          </p>
-        )}
-        {filtered.map((t) => {
-          const note = dynamicNotes[t.id] || initialTopicNotes.find((n) => n.topicId === t.id);
-          const isOpen = open === t.id;
-          return (
-            <div key={t.id} className="overflow-hidden rounded-xl border border-border bg-card">
+      {mode === "sm2" ? (
+        <SpacedRepetitionModule />
+      ) : mode === "tactile" ? (
+        <PageFlipBook />
+      ) : (
+        <>
+          <div className="mb-4 flex flex-wrap gap-2">
+            {Object.entries(subjectLabels).map(([k, l]) => (
               <button
-                onClick={() => setOpen(isOpen ? null : t.id)}
-                className="flex w-full items-center justify-between gap-3 p-4 text-left transition-smooth hover:bg-muted/40"
+                key={k}
+                onClick={() => {
+                  setSubject(k);
+                  setOpen(null);
+                }}
+                className={`rounded-lg px-4 py-2 text-sm font-semibold transition-smooth ${
+                  subject === k
+                    ? "bg-primary text-primary-foreground shadow-glow"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
               >
-                <div>
-                  <h3 className="font-bold text-foreground">{t.title}</h3>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{t.description}</p>
-                </div>
-                <ChevronDown
-                  className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}
-                />
+                {l}
               </button>
-              {isOpen && (
-                <div className="border-t border-border bg-background/40 p-5 prose-paper">
-                  {t.formulas && t.formulas.length > 0 && (
-                    <div className="mb-4 rounded-lg bg-primary/10 p-3">
-                      <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-primary">
-                        Key formulas
-                      </p>
-                      {t.formulas.map((f, i) => (
-                        <code key={i} className="block text-sm text-foreground">
-                          {f}
-                        </code>
-                      ))}
+            ))}
+          </div>
+          <div className="mb-6 flex flex-wrap gap-2">
+            {classLevels.map((c) => (
+              <button
+                key={c.level}
+                onClick={() => {
+                  setLevel(c.level);
+                  setOpen(null);
+                }}
+                className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-smooth ${
+                  level === c.level
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-3">
+            {filtered.length === 0 && (
+              <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                No topics yet for this selection.
+              </p>
+            )}
+            {filtered.map((t) => {
+              const note = dynamicNotes[t.id] || initialTopicNotes.find((n) => n.topicId === t.id);
+              const isOpen = open === t.id;
+              return (
+                <div key={t.id} className="overflow-hidden rounded-xl border border-border bg-card">
+                  <button
+                    onClick={() => setOpen(isOpen ? null : t.id)}
+                    className="flex w-full items-center justify-between gap-3 p-4 text-left transition-smooth hover:bg-muted/40"
+                  >
+                    <div>
+                      <h3 className="font-bold text-foreground">{t.title}</h3>
+                      <p className="mt-0.5 text-xs text-muted-foreground">{t.description}</p>
                     </div>
-                  )}
-                  {note?.sections ? (
-                    <>
-                      <div className="flex justify-end mb-4">
-                        <button
-                          onClick={() => generateDynamicNotes(t)}
-                          disabled={isGenerating[t.id]}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-smooth hover:bg-primary/20 disabled:opacity-50"
+                    <ChevronDown
+                      className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {isOpen && (
+                    <div className="border-t border-border bg-background/40 p-5 prose-paper">
+                      {t.formulas && t.formulas.length > 0 && (
+                        <div className="mb-4 rounded-lg bg-primary/10 p-3">
+                          <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-primary">
+                            Key formulas
+                          </p>
+                          {t.formulas.map((f, i) => (
+                            <code key={i} className="block text-sm text-foreground">
+                              {f}
+                            </code>
+                          ))}
+                        </div>
+                      )}
+                      {note?.sections ? (
+                        <>
+                          <div className="flex justify-end mb-4">
+                            <button
+                              onClick={() => generateDynamicNotes(t)}
+                              disabled={isGenerating[t.id]}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-smooth hover:bg-primary/20 disabled:opacity-50"
+                            >
+                              {isGenerating[t.id] ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <RefreshCw className="h-3 w-3" />
+                              )}
+                              Update with Latest Research
+                            </button>
+                          </div>
+                          {note.sections.map((s: any, i: number) => (
+                            <div key={i} className="mb-4">
+                              <h4 className="mb-1 font-semibold text-foreground">{s.heading}</h4>
+                              <p className="text-sm leading-relaxed text-foreground/85">
+                                {s.content}
+                              </p>
+                            </div>
+                          ))}
+                        </>
+                      ) : (
+                        <div className="text-center py-6">
+                          <p className="text-sm text-muted-foreground mb-4">
+                            No static notes available for this topic.
+                          </p>
+                          <button
+                            onClick={() => generateDynamicNotes(t)}
+                            disabled={isGenerating[t.id]}
+                            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-smooth hover:bg-primary/90 disabled:opacity-50"
+                          >
+                            {isGenerating[t.id] ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <RefreshCw className="h-4 w-4" />
+                            )}
+                            Generate Dynamic AI Notes
+                          </button>
+                        </div>
+                      )}
+                      {note?.examples && note.examples.length > 0 && (
+                        <div className="mt-4 rounded-lg border border-success/30 bg-success/5 p-3">
+                          <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-success">
+                            Worked examples
+                          </p>
+                          {note.examples.map((ex, i) => (
+                            <div key={i} className="mb-3 last:mb-0">
+                              <p className="text-sm font-semibold">Q: {ex.problem}</p>
+                              <p className="text-sm text-muted-foreground">A: {ex.solution}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <Link
+                          to="/tutor"
+                          search={{
+                            prefill: `I am studying "${t.title}" in ${subjectLabels[t.subject]}. Specifically, I have a question about this part: ${t.description}. Can you guide me through it Socratic-style?`,
+                          }}
+                          className="rounded-lg bg-primary/15 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/25"
                         >
-                          {isGenerating[t.id] ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            <RefreshCw className="h-3 w-3" />
-                          )}
-                          Update with Latest Research
+                          Ask the tutor →
+                        </Link>
+                        <Link
+                          to="/quizzes"
+                          search={{ subject: t.subject, topicId: t.id }}
+                          className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted"
+                        >
+                          Quiz this topic →
+                        </Link>
+                        <button
+                          onClick={() => {
+                            if (!canExportCurrentSubject) {
+                              toast.error("Access Restricted", {
+                                description:
+                                  "Students can only download notes for subjects they have started in the hub.",
+                              });
+                              return;
+                            }
+
+                            const pdfContent: { sectionTitle: string; body: any }[] = [
+                              {
+                                sectionTitle: "Introduction & Overview",
+                                body: t.description || "Study notes for this curriculum topic.",
+                              },
+                            ];
+
+                            if (t.formulas && t.formulas.length > 0) {
+                              pdfContent.push({
+                                sectionTitle: "Essential Academic Formulas",
+                                body: t.formulas,
+                              });
+                            }
+
+                            if (note?.sections && note.sections.length > 0) {
+                              note.sections.forEach((s) => {
+                                pdfContent.push({
+                                  sectionTitle: s.heading,
+                                  body: s.content,
+                                });
+                              });
+                            }
+
+                            if (note?.examples && note.examples.length > 0) {
+                              pdfContent.push({
+                                sectionTitle: "Worked Classroom Examples",
+                                body: note.examples.map(
+                                  (ex) => `Q: ${ex.problem}\nA: ${ex.solution}`,
+                                ),
+                              });
+                            }
+
+                            const exs = quizQuestions.filter((qz) => qz.topicId === t.id);
+                            if (exs.length > 0) {
+                              pdfContent.push({
+                                sectionTitle: "Self-Assessment Practice Exercises",
+                                body: exs.map((qz) => ({
+                                  q: qz.question,
+                                  options: qz.options,
+                                  a: String.fromCharCode(65 + qz.correctIndex),
+                                })),
+                              });
+                            }
+
+                            setPdfModal({
+                              isOpen: true,
+                              title: t.title,
+                              subject: t.subject.toUpperCase(),
+                              docType: "lesson_notes",
+                              showAnswers: isTeacher || isAdmin,
+                              content: pdfContent,
+                            });
+                          }}
+                          className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted"
+                        >
+                          <Download className="h-3.5 w-3.5" /> Export branded PDF
                         </button>
                       </div>
-                      {note.sections.map((s: any, i: number) => (
-                        <div key={i} className="mb-4">
-                          <h4 className="mb-1 font-semibold text-foreground">{s.heading}</h4>
-                          <p className="text-sm leading-relaxed text-foreground/85">{s.content}</p>
-                        </div>
-                      ))}
-                    </>
-                  ) : (
-                    <div className="text-center py-6">
-                      <p className="text-sm text-muted-foreground mb-4">
-                        No static notes available for this topic.
-                      </p>
-                      <button
-                        onClick={() => generateDynamicNotes(t)}
-                        disabled={isGenerating[t.id]}
-                        className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-smooth hover:bg-primary/90 disabled:opacity-50"
-                      >
-                        {isGenerating[t.id] ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <RefreshCw className="h-4 w-4" />
-                        )}
-                        Generate Dynamic AI Notes
-                      </button>
                     </div>
                   )}
-                  {note?.examples && note.examples.length > 0 && (
-                    <div className="mt-4 rounded-lg border border-success/30 bg-success/5 p-3">
-                      <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-success">
-                        Worked examples
-                      </p>
-                      {note.examples.map((ex, i) => (
-                        <div key={i} className="mb-3 last:mb-0">
-                          <p className="text-sm font-semibold">Q: {ex.problem}</p>
-                          <p className="text-sm text-muted-foreground">A: {ex.solution}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Link
-                      to="/tutor"
-                      search={{
-                        prefill: `I am studying "${t.title}" in ${subjectLabels[t.subject]}. Specifically, I have a question about this part: ${t.description}. Can you guide me through it Socratic-style?`,
-                      }}
-                      className="rounded-lg bg-primary/15 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/25"
-                    >
-                      Ask the tutor →
-                    </Link>
-                    <Link
-                      to="/quizzes"
-                      search={{ subject: t.subject, topicId: t.id }}
-                      className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted"
-                    >
-                      Quiz this topic →
-                    </Link>
-                    <button
-                      onClick={() => {
-                        if (!canExportCurrentSubject) {
-                          toast.error("Access Restricted", {
-                            description:
-                              "Students can only download notes for subjects they have started in the hub.",
-                          });
-                          return;
-                        }
-
-                        const pdfContent: { sectionTitle: string; body: any }[] = [
-                          {
-                            sectionTitle: "Introduction & Overview",
-                            body: t.description || "Study notes for this curriculum topic.",
-                          },
-                        ];
-
-                        if (t.formulas && t.formulas.length > 0) {
-                          pdfContent.push({
-                            sectionTitle: "Essential Academic Formulas",
-                            body: t.formulas,
-                          });
-                        }
-
-                        if (note?.sections && note.sections.length > 0) {
-                          note.sections.forEach((s) => {
-                            pdfContent.push({
-                              sectionTitle: s.heading,
-                              body: s.content,
-                            });
-                          });
-                        }
-
-                        if (note?.examples && note.examples.length > 0) {
-                          pdfContent.push({
-                            sectionTitle: "Worked Classroom Examples",
-                            body: note.examples.map((ex) => `Q: ${ex.problem}\nA: ${ex.solution}`),
-                          });
-                        }
-
-                        const exs = quizQuestions.filter((qz) => qz.topicId === t.id);
-                        if (exs.length > 0) {
-                          pdfContent.push({
-                            sectionTitle: "Self-Assessment Practice Exercises",
-                            body: exs.map((qz) => ({
-                              q: qz.question,
-                              options: qz.options,
-                              a: String.fromCharCode(65 + qz.correctIndex),
-                            })),
-                          });
-                        }
-
-                        setPdfModal({
-                          isOpen: true,
-                          title: t.title,
-                          subject: t.subject.toUpperCase(),
-                          docType: "lesson_notes",
-                          showAnswers: isTeacher || isAdmin,
-                          content: pdfContent,
-                        });
-                      }}
-                      className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted"
-                    >
-                      <Download className="h-3.5 w-3.5" /> Export branded PDF
-                    </button>
-                  </div>
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {pdfModal.isOpen && (
         <ExportPdfModal

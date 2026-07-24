@@ -15,7 +15,7 @@ export function useLiveSession(url: string | null | undefined) {
     // Heuristics for live sessions
     const liveKeywords = ["/live", "youtube.com/live", "twitch.tv/", "zoom.us/j/"];
     const isLiveUrl = liveKeywords.some((keyword) => url.toLowerCase().includes(keyword));
-    
+
     // Check for specific live indicators in query params if needed
     try {
       const urlObj = new URL(url);

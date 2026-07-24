@@ -36,6 +36,7 @@ import { getOrganizationSchema, getPersonSchema } from "@/lib/seo";
 import { MobileInstallPrompt } from "@/components/MobileInstallPrompt";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { CymaticBackground } from "@/components/CymaticBackground";
+import { BadgeToastNotification } from "@/components/BadgeToastNotification";
 
 function NotFoundComponent() {
   return (
@@ -137,6 +138,7 @@ function RootComponent() {
                 <CurriculumProvider>
                   <MediaProvider>
                     <MoodOverlay />
+                    <BadgeToastNotification />
                     <MobileInstallPrompt />
                     <PWAInstallPrompt />
                     <div className="flex min-h-screen flex-col">

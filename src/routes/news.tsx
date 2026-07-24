@@ -49,7 +49,7 @@ function NewsPage() {
     await refreshFeed();
     toast.success("Content feed updated successfully!");
   };
-  
+
   // Podcast Player State
   const [currentPodIndex, setCurrentPodIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -62,7 +62,9 @@ function NewsPage() {
 
   // Extract podcasts from items
   const podcastEpisodes = items
-    .filter((item) => ["podcast", "audio", "audiobook", "video_podcast"].includes(item.media_type || ""))
+    .filter((item) =>
+      ["podcast", "audio", "audiobook", "video_podcast"].includes(item.media_type || ""),
+    )
     .map((item) => {
       let parsed: ParsedBody = {};
       try {
@@ -84,7 +86,8 @@ function NewsPage() {
     });
 
   const activePodcast = podcastEpisodes[currentPodIndex] || null;
-  const isLiveActive = useLiveSession(activePodcast?.audioUrl) || activePodcast?.category === "live";
+  const isLiveActive =
+    useLiveSession(activePodcast?.audioUrl) || activePodcast?.category === "live";
 
   // Audio Side Effects
   useEffect(() => {
@@ -287,9 +290,7 @@ function NewsPage() {
                           onPause={() => setIsPlaying(false)}
                           controls
                         />
-                        {isLiveActive && (
-                          <LiveBadge className="absolute top-2 left-2 z-10" />
-                        )}
+                        {isLiveActive && <LiveBadge className="absolute top-2 left-2 z-10" />}
                       </div>
                     ) : (
                       <div className="relative h-16 w-16 shrink-0 rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-600 flex items-center justify-center shadow-md">
@@ -374,7 +375,12 @@ function NewsPage() {
                       </button>
                     )}
 
-                    <div className={cn("flex items-center gap-4", activePodcast.mediaType === "video_podcast" && "mx-auto")}>
+                    <div
+                      className={cn(
+                        "flex items-center gap-4",
+                        activePodcast.mediaType === "video_podcast" && "mx-auto",
+                      )}
+                    >
                       <button
                         onClick={handlePrev}
                         className="text-zinc-400 hover:text-white transition-colors"
@@ -410,7 +416,6 @@ function NewsPage() {
                       EP {currentPodIndex + 1}/{podcastEpisodes.length}
                     </span>
                   </div>
-
                 </div>
 
                 {/* Playlist Queue */}

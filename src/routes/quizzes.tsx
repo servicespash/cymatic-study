@@ -1,6 +1,6 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CheckCircle2, RotateCcw, Trophy, XCircle, Search, Sparkles } from "lucide-react";
+import { CheckCircle2, RotateCcw, Trophy, XCircle, Search, Sparkles, Sliders } from "lucide-react";
 import { topics } from "@/data/topics";
 import { QuizRepository } from "@/repositories/quiz.repository";
 import { type QuizQuestion, quizQuestions } from "@/data/quizzes";
@@ -12,6 +12,7 @@ import { useTutor } from "@/lib/TutorService";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportPdfModal } from "@/components/ExportPdfModal";
 import { useSubjectProgress } from "@/hooks/useSubjectProgress";
+import { WaveInterferenceQuiz } from "@/components/WaveInterferenceQuiz";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
 
@@ -48,6 +49,7 @@ export function QuizzesPage() {
   const recordedRef = useRef<string | null>(null);
   const [dailyTask, setDailyTask] = useState<any>(null);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [showWaveLab, setShowWaveLab] = useState(false);
 
   const [pdfModal, setPdfModal] = useState<{
     isOpen: boolean;
@@ -363,91 +365,107 @@ export function QuizzesPage() {
           </button>
         ))}
       </div>
-      <div className="mb-6 flex flex-wrap gap-2">
-        {classLevels.map((c) => (
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          {classLevels.map((c) => (
+            <button
+              key={c.level}
+              onClick={() => setLevel(c.level)}
+              className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-smooth ${level === c.level ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+
+        {subject === "physics" && (
           <button
-            key={c.level}
-            onClick={() => setLevel(c.level)}
-            className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-smooth ${level === c.level ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
+            onClick={() => setShowWaveLab(!showWaveLab)}
+            className="inline-flex items-center gap-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 px-4 py-2 text-xs font-bold text-cyan-400 hover:bg-cyan-500/20 transition-all shadow-sm"
           >
-            {c.label}
+            <Sliders className="h-4 w-4" />
+            {showWaveLab ? "Back to Quiz List" : "Interactive Wave Interference Lab"}
           </button>
-        ))}
+        )}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        {availableTopics.map((t) => {
-          const qs = quizQuestions.filter((q) => q.topicId === t.id);
-          const count = qs.length;
-          return (
-            <div
-              key={t.id}
-              className="group flex flex-col justify-between rounded-xl border border-border bg-card p-4 transition-smooth hover:-translate-y-0.5 hover:shadow-glow"
-            >
-              <button onClick={() => start(t.id)} className="text-left">
-                <h3 className="font-bold text-foreground">{t.title}</h3>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {count} question{count === 1 ? "" : "s"}
-                </p>
-              </button>
+      {showWaveLab && subject === "physics" ? (
+        <WaveInterferenceQuiz />
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {availableTopics.map((t) => {
+            const qs = quizQuestions.filter((q) => q.topicId === t.id);
+            const count = qs.length;
+            return (
+              <div
+                key={t.id}
+                className="group flex flex-col justify-between rounded-xl border border-border bg-card p-4 transition-smooth hover:-translate-y-0.5 hover:shadow-glow"
+              >
+                <button onClick={() => start(t.id)} className="text-left">
+                  <h3 className="font-bold text-foreground">{t.title}</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {count} question{count === 1 ? "" : "s"}
+                  </p>
+                </button>
 
-              <div className="mt-4 flex justify-end">
-                <button
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    if (!canExportCurrentSubject) {
-                      toast.error("Access Restricted", {
-                        description:
-                          "Complete some study in this subject first to unlock downloads.",
-                      });
-                      return;
-                    }
-
-                    try {
-                      const questionsToExport = await QuizRepository.getQuestionsByTopic(t.id);
-                      if (questionsToExport.length === 0) {
-                        toast.error("No questions available for this topic.");
+                <div className="mt-4 flex justify-end">
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (!canExportCurrentSubject) {
+                        toast.error("Access Restricted", {
+                          description:
+                            "Complete some study in this subject first to unlock downloads.",
+                        });
                         return;
                       }
 
-                      const pdfContent = [
-                        {
-                          sectionTitle: "Instructions",
-                          body: "Answer all questions to the best of your ability. This assessment is based on the Uganda NCDC Secondary Curriculum.",
-                        },
-                        {
-                          sectionTitle: "Assessment Questions",
-                          body: questionsToExport.map((qz) => ({
-                            q: qz.question,
-                            options: qz.options,
-                            a: String.fromCharCode(65 + qz.correctIndex),
-                          })),
-                        },
-                      ];
+                      try {
+                        const questionsToExport = await QuizRepository.getQuestionsByTopic(t.id);
+                        if (questionsToExport.length === 0) {
+                          toast.error("No questions available for this topic.");
+                          return;
+                        }
 
-                      setPdfModal({
-                        isOpen: true,
-                        title: `${t.title} Assessment`,
-                        subject: t.subject.toUpperCase(),
-                        docType: "quiz",
-                        showAnswers: isTeacher || isAdmin,
-                        content: pdfContent,
-                      });
-                    } catch (err) {
-                      console.error("PDF Export error:", err);
-                      toast.error("Failed to prepare PDF for export.");
-                    }
-                  }}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition-smooth hover:bg-muted"
-                >
-                  <Download className="h-3 w-3" />
-                  PDF Pack
-                </button>
+                        const pdfContent = [
+                          {
+                            sectionTitle: "Instructions",
+                            body: "Answer all questions to the best of your ability. This assessment is based on the Uganda NCDC Secondary Curriculum.",
+                          },
+                          {
+                            sectionTitle: "Assessment Questions",
+                            body: questionsToExport.map((qz) => ({
+                              q: qz.question,
+                              options: qz.options,
+                              a: String.fromCharCode(65 + qz.correctIndex),
+                            })),
+                          },
+                        ];
+
+                        setPdfModal({
+                          isOpen: true,
+                          title: `${t.title} Assessment`,
+                          subject: t.subject.toUpperCase(),
+                          docType: "quiz",
+                          showAnswers: isTeacher || isAdmin,
+                          content: pdfContent,
+                        });
+                      } catch (err) {
+                        console.error("PDF Export error:", err);
+                        toast.error("Failed to prepare PDF for export.");
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition-smooth hover:bg-muted"
+                  >
+                    <Download className="h-3 w-3" />
+                    PDF Pack
+                  </button>
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {pdfModal.isOpen && (
         <ExportPdfModal

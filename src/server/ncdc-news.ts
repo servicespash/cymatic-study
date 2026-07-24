@@ -210,6 +210,10 @@ export async function handleNcdcNewsRequest(request: Request) {
           .replace(/```json/gi, "")
           .replace(/```/g, "")
           .trim();
+        const jsonMatch = text.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          text = jsonMatch[0];
+        }
         const parsed = JSON.parse(text);
         if (Array.isArray(parsed)) {
           generatedNews = parsed;

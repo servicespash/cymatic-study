@@ -31,77 +31,6 @@ interface TopicConfig {
   defaultReplies: string[];
 }
 
-const TOPICS_CONFIG = {
-  unresolved_forces: {
-    name: "Newton's Laws & Forces (Physics)",
-    subject: "Physics",
-    starter:
-      "Hello! I am your Socratic Physics Guide. Let's explore forces together. Imagine a block of mass 5kg resting on a flat table. If we push it horizontally with a force of 20N, and there is no friction, how do we find its acceleration? What formula connects these three values?",
-    responses: [
-      {
-        keywords: [
-          "f=ma",
-          "f = ma",
-          "force equals mass",
-          "f equals ma",
-          "newton's second",
-          "second law",
-        ],
-        reply:
-          "Excellent! F = ma is the exact mathematical relation. Now, what does each letter stand for in our specific scenario? Try substituting the numbers we have into that equation.",
-      },
-      {
-        keywords: ["20", "5", "divide", "20/5", "20 / 5", "four", "4"],
-        reply:
-          "You've got the correct arithmetic! 4 m/s² is indeed the acceleration. But why are the units m/s²? What physical quantity changes by 4 meters per second every single second?",
-      },
-      {
-        keywords: ["velocity", "speed", "acceleration", "change in velocity", "movement"],
-        reply:
-          "Exactly! Velocity increases by 4 m/s every second. Now, what if we suddenly add friction of 5N opposing the push? What is the *net* force acting on the block now?",
-      },
-      {
-        keywords: ["15", "15n", "subtract", "20-5", "20 - 5"],
-        reply:
-          "Perfect. Net force is 15N. So, using our relation F = ma, what will the new acceleration be with friction opposing the push?",
-      },
-    ],
-    defaultReplies: [
-      "That is an interesting perspective! Let's think back: what is the total horizontal force acting on the object?",
-      "To help you see the connection, can you state Newton's Second Law of Motion for me?",
-      "Let's break it down. What mass are we dealing with, and what forces are pushing or pulling on it?",
-    ],
-  },
-  quadratic_equations: {
-    name: "Solving Quadratics (Mathematics)",
-    subject: "Math",
-    starter:
-      "Welcome to Socratic Math! Let's look at the quadratic equation: x² - 5x + 6 = 0. Instead of jumping straight to the quadratic formula, can we find two numbers that multiply to positive 6, and add up to negative 5? What numbers come to mind?",
-    responses: [
-      {
-        keywords: ["-2", "-3", "minus 2", "minus 3", "-2 and -3", "-3 and -2", "2 and 3"],
-        reply:
-          "Spot on! -2 and -3 multiply to +6, and sum to -5. So how can we write the equation in factored form, using these two numbers?",
-      },
-      {
-        keywords: ["(x-2)", "(x-3)", "(x-2)(x-3)", "factor", "factored"],
-        reply:
-          "Superb! (x - 2)(x - 3) = 0 is the factored expression. Now, if the product of two factors is zero, what must be true about the individual factors themselves?",
-      },
-      {
-        keywords: ["zero", "equals zero", "either is zero", "x=2", "x=3", "2 and 3", "x equals"],
-        reply:
-          "Correct! If either factor is zero, the whole product is zero. So we solve x - 2 = 0 and x - 3 = 0. What are our final values for x?",
-      },
-    ],
-    defaultReplies: [
-      "Let's reflect on that. If we need numbers that multiply to 6, what are all the factor pairs of 6? Let's write them down.",
-      "How would you factor this quadratic expression? Think about brackets: (x + a)(x + b).",
-      "Let's look at the coefficients. The constant is +6 and the x-coefficient is -5. What does that tell us about the signs of our factors?",
-    ],
-  },
-};
-
 export function SocraticTutorChat() {
   const { user, isTeacher, isAdmin } = useAuth();
   const [displayName, setDisplayName] = useState("Learner");
@@ -120,11 +49,8 @@ export function SocraticTutorChat() {
     fetchProfile();
   }, [user?.id]);
 
-  const [activeTopicKey, setActiveTopicKey] = useState<"unresolved_forces" | "quadratic_equations">(
-    "unresolved_forces",
-  );
-  const config = TOPICS_CONFIG[activeTopicKey];
-  const { messages, setMessages, addMessage } = useTutorStore();
+  const [activeSubject, setActiveSubject] = useState("Mathematics");
+  const { messages, setMessages } = useTutorStore();
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -135,9 +61,20 @@ export function SocraticTutorChat() {
   const { incrementProgress } = useSubjectProgress();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const subjects = [
+    "Mathematics",
+    "Physics",
+    "Chemistry",
+    "Biology",
+    "Geography",
+    "History",
+    "English",
+    "Economics",
+  ];
+
   const pdfContent = [
     {
-      sectionTitle: `Socratic Dialogue: ${config.name}`,
+      sectionTitle: `Socratic Dialogue: ${activeSubject}`,
       body: messages
         .map((m) => `[${m.timestamp}] ${m.sender === "student" ? "Learner" : "Tutor"}: ${m.text}`)
         .join("\n\n"),
@@ -147,16 +84,15 @@ export function SocraticTutorChat() {
   // Fetch dynamic welcome message
   useEffect(() => {
     if (messages.length === 0) {
-      // Fetch from backend in a real app.
       const greeting: ChatMessage = {
         id: crypto.randomUUID(),
         sender: "tutor",
-        text: `Hello! Ready to dive into ${config.name}? What do you want to explore today?`,
+        text: `Hello ${displayName}! I'm your Socratic mentor. I'm here to help you explore the NCDC curriculum with curiosity and wisdom. Which subject or topic would you like to dive into today?`,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
       setMessages([greeting]);
     }
-  }, [config.name, messages.length, setMessages]);
+  }, [displayName, messages.length, setMessages]);
 
   useEffect(() => {
     const SpeechRecognition =
@@ -233,7 +169,7 @@ export function SocraticTutorChat() {
             content: m.text,
           })),
           userName: displayName,
-          subject: config.subject,
+          subject: activeSubject,
         }),
       });
 
@@ -278,26 +214,23 @@ export function SocraticTutorChat() {
         }
       }
 
-      await incrementProgress(config.subject, 8, `Engaged Socratic Tutor on ${config.name}.`);
+      await incrementProgress(
+        activeSubject,
+        8,
+        `Engaged Socratic Tutor on ${activeSubject} topics.`,
+      );
     } catch (error) {
       console.error("[Socratic Coach] API communication error:", error);
 
-      // Fallback to hardcoded/logic-based replies if offline/AI fails
-      const lowerText = studentText.toLowerCase();
-      const matched = config.responses.find((res) =>
-        res.keywords.some((kw) => lowerText.includes(kw)),
-      );
-
-      const replyText = matched
-        ? matched.reply
-        : config.defaultReplies[Math.floor(Math.random() * config.defaultReplies.length)];
+      const replyText =
+        "I'm having a little trouble connecting to my thoughts right now, but let's keep thinking. What do you understand about this topic so far?";
 
       setMessages((prev) =>
         prev.map((msg) => (msg.id === tutorMsgId ? { ...msg, text: replyText } : msg)),
       );
     } finally {
       setIsTyping(false);
-      await logRecentActivity("chat", `Submitted answers to Socratic Coach in ${config.subject}.`);
+      await logRecentActivity("chat", `Submitted answers to Socratic Coach in ${activeSubject}.`);
     }
   };
 
@@ -306,7 +239,7 @@ export function SocraticTutorChat() {
       {
         id: "starter",
         sender: "socratic_tutor",
-        text: config.starter,
+        text: `Hello ${displayName}! I'm ready to explore ${activeSubject} with you. What part of the curriculum should we start with?`,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       },
     ]);
@@ -322,7 +255,25 @@ export function SocraticTutorChat() {
             <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)}>
               <Menu className="w-6 h-6" />
             </Button>
-            <h1 className="text-xl font-bold">{config.name}</h1>
+            <div className="flex flex-col">
+              <h1 className="text-xl font-bold">Socratic Mentor</h1>
+              <div className="flex gap-2 mt-1">
+                {subjects.slice(0, 4).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setActiveSubject(s)}
+                    className={cn(
+                      "text-[10px] px-2 py-0.5 rounded-full border transition-colors",
+                      activeSubject === s
+                        ? "bg-cyan-500/20 border-cyan-500 text-cyan-400"
+                        : "border-zinc-800 text-zinc-500 hover:border-zinc-700",
+                    )}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
           <div className="relative">
             <Button variant="ghost" size="icon" onClick={() => setIsSettingsOpen(!isSettingsOpen)}>
@@ -452,8 +403,8 @@ export function SocraticTutorChat() {
             <ExportPdfModal
               isOpen={isExportModalOpen}
               onClose={() => setIsExportModalOpen(false)}
-              title={`Chat History - ${config.name}`}
-              subject={config.subject}
+              title={`Chat History - ${activeSubject}`}
+              subject={activeSubject}
               docType="lesson_notes"
               showAnswers={isTeacher || isAdmin}
               content={pdfContent}

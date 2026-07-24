@@ -35,13 +35,7 @@ import { Share } from "@capacitor/share";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { TermGoalGauge } from "@/components/TermGoalGauge";
 import { SearchEngine } from "@/components/SearchEngine";
 import { CurriculumToggle } from "@/components/CurriculumToggle";
@@ -68,7 +62,6 @@ import { MarkingDesk } from "@/components/MarkingDesk";
 import { StudentActivityDashboard } from "@/components/StudentActivityDashboard";
 import { SocraticTutorChat } from "@/components/SocraticTutorChat";
 import { SubjectPracticeReminder } from "@/components/SubjectPracticeReminder";
-import { ProgressVisualization } from "@/components/ProgressVisualization";
 
 import { RoleGuard } from "@/components/RoleGuard";
 
@@ -621,17 +614,6 @@ function DashboardPage() {
         </div>
       ) : (
         <>
-          {/* Progress Visualization (Tracked via localStorage) */}
-          <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
-            <div className="flex items-center justify-between mb-4 px-1">
-              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2">
-                <Target className="h-3 w-3 text-cyan-400" />
-                Live Syllabus Coverage
-              </h2>
-            </div>
-            <ProgressVisualization />
-          </section>
-
           {/* ROW 1: PERSISTENT METRICS & TIMING GOALS (The main, consistent widgets) */}
           <div className="space-y-6">
             <SubjectPracticeReminder />

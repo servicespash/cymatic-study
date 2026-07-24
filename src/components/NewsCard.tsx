@@ -40,10 +40,14 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
-  const isPodcast = item.media_type === "audio" || item.media_type === "podcast" || item.category?.toLowerCase() === "podcast";
+  const isPodcast =
+    item.media_type === "audio" ||
+    item.media_type === "podcast" ||
+    item.category?.toLowerCase() === "podcast";
   const isVideo = item.media_type?.startsWith("video") || item.media_type === "video_podcast";
   const detectedLive = useLiveSession(item.media_url);
-  const isLive = item.media_type === "live_session" || item.category?.toLowerCase() === "live" || detectedLive;
+  const isLive =
+    item.media_type === "live_session" || item.category?.toLowerCase() === "live" || detectedLive;
 
   const getCategoryIcon = (category: string | null) => {
     if (isLive) return <Radio className="h-3 w-3 animate-pulse text-red-500" />;
@@ -99,9 +103,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
               loading="lazy"
             />
           )}
-          {isLive && (
-            <LiveBadge className="absolute top-3 left-3 shadow-xl" />
-          )}
+          {isLive && <LiveBadge className="absolute top-3 left-3 shadow-xl" />}
         </div>
       )}
 
@@ -114,11 +116,11 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
               variant="outline"
               className={cn(
                 "text-[10px] uppercase font-bold tracking-tight gap-1.5 px-2 py-0.5",
-                isLive ? "border-red-500/50 text-red-500 bg-red-500/5" : ""
+                isLive ? "border-red-500/50 text-red-500 bg-red-500/5" : "",
               )}
             >
               {getCategoryIcon(item.category)}
-              {isLive ? "Live Session" : (item.category || "General")}
+              {isLive ? "Live Session" : item.category || "General"}
             </Badge>
           </div>
           <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-medium">
