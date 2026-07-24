@@ -22,6 +22,41 @@ interface DBStudyProgress {
   updated_at?: string;
 }
 
+export const DEFAULT_CURRICULUM_SUBJECTS = [
+  "Math",
+  "Physics",
+  "Chemistry",
+  "Biology",
+  "Geography",
+  "History",
+  "English",
+  "Entrepreneurship",
+  "Economics",
+  "ICT",
+  "Divinity",
+  "Swahili",
+  "Luganda",
+  "Literature",
+  "Agriculture",
+  "Art",
+  "CRE",
+  "IRE",
+  "Commerce",
+  "SubMath",
+  "GP",
+];
+
+export function getDefaultSubjectProgress(userId = "guest"): StudyProgress[] {
+  const now = new Date().toISOString();
+  return DEFAULT_CURRICULUM_SUBJECTS.map((sub) => ({
+    user_id: userId,
+    subject: sub,
+    completed_percentage: 0,
+    last_studied_at: now,
+    updated_at: now,
+  }));
+}
+
 /**
  * useStudyProgress Custom Hook
  * Fetches user learning progress from the Supabase "curriculum_progress" table.
@@ -30,7 +65,9 @@ interface DBStudyProgress {
  */
 export function useStudyProgress() {
   const { user } = useAuth();
-  const [progress, setProgress] = useState<StudyProgress[]>([]);
+  const [progress, setProgress] = useState<StudyProgress[]>(() =>
+    getDefaultSubjectProgress(user?.id || "guest"),
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -38,19 +75,42 @@ export function useStudyProgress() {
 
   // Helper to load cache synchronously
   const loadCache = useCallback(() => {
-    if (!user) return false;
     const cached = localStorage.getItem(cacheKey);
+    const now = new Date().toISOString();
+    const effectiveUserId = user?.id || "guest";
+
     if (cached) {
       try {
         const parsed = JSON.parse(cached) as StudyProgress[];
-        setProgress(parsed);
-        return true;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const existingMap = new Map(
+            parsed.map((p) => [p.subject.toLowerCase(), p.completed_percentage]),
+          );
+
+          const merged: StudyProgress[] = DEFAULT_CURRICULUM_SUBJECTS.map((sub) => {
+            const foundPct = existingMap.get(sub.toLowerCase());
+            return {
+              user_id: effectiveUserId,
+              subject: sub,
+              completed_percentage: foundPct !== undefined ? Number(foundPct) : 0,
+              last_studied_at: now,
+              updated_at: now,
+            };
+          });
+
+          setProgress(merged);
+          return true;
+        }
       } catch (e) {
         console.error("Failed to parse cached study progress:", e);
       }
     }
+
+    // Default fallback: populate all subject progress maps with default zero-value metrics immediately
+    const defaultProgress = getDefaultSubjectProgress(effectiveUserId);
+    setProgress(defaultProgress);
     return false;
-  }, [cacheKey]);
+  }, [cacheKey, user?.id]);
 
   const fetchProgress = useCallback(async () => {
     try {
@@ -58,6 +118,7 @@ export function useStudyProgress() {
       setError(null);
 
       if (!user) {
+        loadCache();
         setLoading(false);
         return;
       }
@@ -73,23 +134,32 @@ export function useStudyProgress() {
       }
 
       if (data) {
-        const mappedData: StudyProgress[] = (data as DBStudyProgress[]).map((item) => ({
-          id: item.id,
-          user_id: item.user_id || user.id,
-          subject: item.subject || "",
-          completed_percentage: Number(item.completed_percentage ?? item.completedPercentage ?? 0),
-          last_studied_at: item.last_studied_at ?? item.lastInteracted ?? item.updated_at,
-          updated_at: item.updated_at,
-        }));
+        const fetchedMap = new Map(
+          (data as DBStudyProgress[]).map((item) => [
+            (item.subject || "").toLowerCase(),
+            Number(item.completed_percentage ?? item.completedPercentage ?? 0),
+          ]),
+        );
+
+        const now = new Date().toISOString();
+        const mappedData: StudyProgress[] = DEFAULT_CURRICULUM_SUBJECTS.map((sub) => {
+          const val = fetchedMap.get(sub.toLowerCase());
+          return {
+            user_id: user.id,
+            subject: sub,
+            completed_percentage: val !== undefined ? val : 0,
+            last_studied_at: now,
+            updated_at: now,
+          };
+        });
 
         setProgress(mappedData);
-        // Cache the latest synced progress
         localStorage.setItem(cacheKey, JSON.stringify(mappedData));
       }
     } catch (err: unknown) {
       console.error("Error fetching study progress from Supabase:", err);
       setError(err instanceof Error ? err : new Error(String(err)));
-      // Fall back to local cache if offline or on error
+      // Fall back to local cache or defaults if offline or on error
       loadCache();
     } finally {
       setLoading(false);

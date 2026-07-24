@@ -90,38 +90,38 @@ export function FoundersSpotlight() {
           </div>
         </summary>
 
-        <div className="border-t border-border/70 bg-background/35 px-5 pb-6 pt-5 sm:px-6 sm:pb-7">
-          <div className="relative space-y-4 text-[15px] leading-relaxed text-foreground/85">
-            <Quote className="absolute -left-1 -top-2 h-9 w-9 text-primary/25" aria-hidden />
+        <div className="border-t border-border/70 bg-background/35 px-4 pb-6 pt-5 sm:px-6 sm:pb-7 min-w-0 overflow-hidden">
+          <div className="relative space-y-4 text-sm sm:text-[15px] leading-relaxed text-foreground/85 break-words min-w-0">
+            <Quote className="absolute -left-1 -top-2 h-7 w-7 sm:h-9 sm:w-9 text-primary/25" aria-hidden />
 
             {/* New Empathetic Narrative */}
-            <p className="pl-8">
+            <p className="pl-3 sm:pl-8">
               I know the weight of an impersonal system—the feeling of being just a number in a
               crowded hall, fighting for a future that feels out of reach. I built Cymatic Study
               because I refuse to let that be your story. Every student in this country carries a
               spark of genius that the traditional walls of education often fail to protect.
             </p>
-            <p className="pl-8">
+            <p className="pl-3 sm:pl-8">
               This is not just an 'app'; it is an Evolution. We are moving from silent textbooks to
               an empathetic partnership where technology finally understands your struggle, your
               pace, and your potential.
             </p>
 
             {/* Original "Academic Destiny" Logic */}
-            <p className="pl-8">
+            <p className="pl-3 sm:pl-8">
               Driven by faith, purpose, and a deep love for our community, I envisioned a space
               where education meets innovation. My mission is to walk hand-in-hand with the youth of
               Uganda, providing them with the ultimate interactive companion to navigate and conquer
               the New Lower Secondary Curriculum.
             </p>
-            <p className="pl-8">
+            <p className="pl-3 sm:pl-8">
               I believe deeply in the infinite potential of every young mind inside this chat room.
               By aligning cutting-edge technology with high-yield NCDC curriculum standards, we have
               built a sanctuary for interactive learning—complete with smart tools, real-time
               assessment rewards, and empathetic AI guidance.
             </p>
 
-            <p className="pl-8 font-medium italic text-primary/80">
+            <p className="pl-3 sm:pl-8 font-medium italic text-primary/80">
               Push past the limits, stay resilient, and let this platform be the catalyst that
               unlocks your academic destiny. Believe in your journey, embrace the challenge, and
               remember that we are with you every single step of the way. Your success is our

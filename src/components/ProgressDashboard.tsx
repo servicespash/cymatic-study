@@ -241,11 +241,11 @@ export function ProgressDashboard() {
         <div className="bg-zinc-950/40 border border-zinc-800/50 p-4 rounded-xl flex flex-col justify-between">
           <span className="text-zinc-500 text-xs font-medium">Primary Focus</span>
           <span className="text-md font-bold text-white mt-1 truncate">
-            {
-              chartData.reduce((prev, current) =>
-                prev.Progress > current.Progress ? prev : current,
-              ).subject
-            }
+            {chartData.length > 0
+              ? chartData.reduce((prev, current) =>
+                  prev.Progress > current.Progress ? prev : current,
+                ).subject
+              : "Math"}
           </span>
         </div>
         <div className="bg-zinc-950/40 border border-zinc-800/50 p-4 rounded-xl flex flex-col justify-between">

@@ -124,41 +124,56 @@ function LoginPage() {
       }
     }
 
-    const { data: signInData, error } = await supabase.auth.signInWithPassword({
-      email: emailToUse,
-      password: password.trim(),
-    });
+    try {
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({
+        email: emailToUse,
+        password: password.trim(),
+      });
 
-    setSubmitting(false);
+      setSubmitting(false);
 
-    if (error) {
-      if (error.message.includes("Invalid login credentials")) {
-        setError(
-          "Invalid email, username or password. Please check your credentials and try again.",
-        );
-      } else if (error.message.includes("Email not confirmed")) {
-        setError("Your email address has not been confirmed yet. Please check your inbox.");
-      } else {
-        setError(error.message);
+      if (error) {
+        if (
+          error.message?.toLowerCase().includes("failed to fetch") ||
+          error.message?.toLowerCase().includes("fetch failed") ||
+          error.message?.toLowerCase().includes("networkerror")
+        ) {
+          setError(
+            "Authentication server unreachable (Failed to fetch). If you are running in Cloudflare preview, ensure VITE_SUPABASE_URL & VITE_SUPABASE_ANON_KEY environment variables are set, or continue as Guest below.",
+          );
+        } else if (error.message.includes("Invalid login credentials")) {
+          setError(
+            "Invalid email, username or password. Please check your credentials and try again.",
+          );
+        } else if (error.message.includes("Email not confirmed")) {
+          setError("Your email address has not been confirmed yet. Please check your inbox.");
+        } else {
+          setError(error.message);
+        }
+      } else if (signInData.user) {
+        // Role-based redirect logic
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("user_id", signInData.user.id)
+          .single();
+
+        const role = profileData?.role || "";
+
+        if (role === "admin" || role === "org_admin") {
+          navigate({ to: "/admin/dashboard" });
+        } else if (role === "teacher" || role === "independent_teacher") {
+          navigate({ to: "/dashboard" });
+        } else {
+          navigate({ to: "/dashboard" });
+        }
       }
-    } else if (signInData.user) {
-      // Role-based redirect logic
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("user_id", signInData.user.id)
-        .single();
-
-      const role = profileData?.role || "";
-
-      if (role === "admin" || role === "org_admin") {
-        navigate({ to: "/admin/dashboard" });
-      } else if (role === "teacher" || role === "independent_teacher") {
-        // Teachers stay on main dashboard for now but we can guide them
-        navigate({ to: "/dashboard" });
-      } else {
-        navigate({ to: "/dashboard" });
-      }
+    } catch (err: any) {
+      setSubmitting(false);
+      console.error("Sign-in exception:", err);
+      setError(
+        "Network or authentication error (Failed to fetch). You can continue to explore as Guest.",
+      );
     }
   };
 
@@ -322,6 +337,13 @@ function LoginPage() {
             className="w-full bg-primary text-primary-foreground p-3 rounded-lg font-bold"
           >
             Sign in
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/dashboard" })}
+            className="w-full bg-muted hover:bg-muted/80 text-foreground p-3 rounded-lg font-semibold text-xs border border-border transition-colors mt-2"
+          >
+            Continue as Guest (Offline Mode)
           </button>
         </form>
         <p className="mt-6 text-center text-xs text-muted-foreground">

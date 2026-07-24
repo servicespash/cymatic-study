@@ -76,16 +76,20 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ contentId }) => 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !newComment.trim() || submitting) return;
+    if (!newComment.trim() || submitting) return;
+
+    const authorName = profile?.display_name || (user ? "Anonymous Student" : "Guest Student");
+    const authorAvatar = profile?.avatar_url || null;
+    const authorId = user?.id || `guest-${Date.now()}`;
 
     const optimisticComment: Comment = {
       id: `temp-${Date.now()}`,
-      user_id: user.id,
+      user_id: authorId,
       content: newComment.trim(),
       created_at: new Date().toISOString(),
       profiles: {
-        display_name: profile?.display_name || "You",
-        avatar_url: profile?.avatar_url || null,
+        display_name: authorName,
+        avatar_url: authorAvatar,
       },
     };
 
@@ -95,13 +99,17 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ contentId }) => 
     setSubmitting(true);
 
     try {
-      const { error } = await supabase.from("content_comments").insert({
-        content_id: contentId,
-        user_id: user.id,
-        content: commentText,
-      });
-
-      if (error) throw error;
+      if (user) {
+        const { error } = await supabase.from("content_comments").insert({
+          content_id: contentId,
+          user_id: user.id,
+          content: commentText,
+        });
+        if (error) throw error;
+      } else {
+        // Optimistic guest comment recorded locally
+        toast.success("Comment posted as Guest!");
+      }
     } catch (err: unknown) {
       console.warn("Failed to post comment:", err);
       setComments((prev) => prev.filter((c) => c.id !== optimisticComment.id));
@@ -166,8 +174,8 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ contentId }) => 
                       })}
                     </span>
                   </div>
-                  <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl rounded-tl-none p-3 border border-zinc-100 dark:border-zinc-800/50">
-                    <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                  <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl rounded-tl-none p-3 border border-zinc-100 dark:border-zinc-800/50 min-w-0 break-words">
+                    <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed break-words">
                       {comment.content}
                     </p>
                   </div>
@@ -178,50 +186,40 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ contentId }) => 
         )}
       </div>
 
-      <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-900/30">
-        {user ? (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-            <div className="relative group">
-              <Textarea
-                placeholder="Add to the conversation..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="min-h-[100px] w-full resize-none bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 focus:ring-primary/20 rounded-2xl p-4 text-sm transition-all"
-              />
-              <div className="absolute bottom-3 right-3 flex items-center gap-3">
-                <span
-                  className={cn(
-                    "text-[10px] font-black transition-colors",
-                    newComment.length > 400 ? "text-red-500" : "text-zinc-400",
-                  )}
-                >
-                  {newComment.length}/500
-                </span>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={!newComment.trim() || submitting || newComment.length > 500}
-                  className="rounded-xl font-black gap-2 shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
-                >
-                  {submitting ? (
-                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Send className="h-3.5 w-3.5" />
-                      Post
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </form>
-        ) : (
-          <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-4 text-center border border-dashed border-zinc-300 dark:border-zinc-700">
-            <p className="text-xs text-zinc-500 font-black uppercase tracking-[0.1em]">
-              Sign in to join the discussion
-            </p>
+      <div className="p-3 sm:p-4 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-900/30">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+          <Textarea
+            placeholder={user ? "Add to the conversation..." : "Post a comment as Guest..."}
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            className="min-h-[80px] sm:min-h-[100px] w-full resize-none bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 focus:ring-primary/20 rounded-2xl p-3 sm:p-4 text-sm transition-all"
+          />
+          <div className="flex items-center justify-between px-1">
+            <span
+              className={cn(
+                "text-[10px] font-black transition-colors",
+                newComment.length > 400 ? "text-red-500" : "text-zinc-400",
+              )}
+            >
+              {newComment.length}/500
+            </span>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={!newComment.trim() || submitting || newComment.length > 500}
+              className="rounded-xl font-black gap-2 shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all px-4 py-2"
+            >
+              {submitting ? (
+                <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  <Send className="h-3.5 w-3.5" />
+                  Post Comment
+                </>
+              )}
+            </Button>
           </div>
-        )}
+        </form>
       </div>
     </div>
   );

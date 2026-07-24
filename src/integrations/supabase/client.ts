@@ -3,17 +3,21 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 
 function getEnv(name: string): string | undefined {
-  if (typeof import.meta !== "undefined" && import.meta.env) {
+  if (typeof import.meta !== "undefined" && import.meta.env && import.meta.env[name]) {
     return import.meta.env[name];
   }
-  if (typeof process !== "undefined" && process.env) {
+  if (typeof process !== "undefined" && process.env && process.env[name]) {
     return process.env[name];
+  }
+  if (typeof window !== "undefined" && (window as any)[name]) {
+    return (window as any)[name];
   }
   return undefined;
 }
 
 function createSupabaseClient() {
-  const SUPABASE_URL = getEnv("VITE_SUPABASE_URL");
+  const SUPABASE_URL =
+    getEnv("VITE_SUPABASE_URL") || getEnv("SUPABASE_URL") || getEnv("PUBLIC_SUPABASE_URL");
 
   // Filter out invalid URL-like strings that are mistakenly populated as key
   const keys = [
@@ -21,6 +25,8 @@ function createSupabaseClient() {
     getEnv("VITE_SUPABASE_KEY"),
     getEnv("VITE_SUPABASE_PUBLISHABLE_KEY"),
     getEnv("SUPABASE_ANON_KEY"),
+    getEnv("SUPABASE_KEY"),
+    getEnv("PUBLIC_SUPABASE_ANON_KEY"),
   ];
 
   const SUPABASE_PUBLISHABLE_KEY = keys.find(

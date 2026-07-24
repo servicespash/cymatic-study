@@ -188,7 +188,7 @@ function NewsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-4 pb-24 text-zinc-100">
+    <div className="min-h-screen bg-zinc-950 p-3 sm:p-4 pb-24 text-zinc-100 overflow-x-hidden w-full max-w-full">
       <audio
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}
@@ -196,21 +196,21 @@ function NewsPage() {
         onEnded={handleNext}
       />
 
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-7xl w-full min-w-0">
         {/* Header */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="mb-6 sm:mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-white md:text-4xl">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white break-words">
               Cymatic Spotlight &amp; Podium Podcasts
             </h1>
-            <p className="text-sm text-zinc-400 mt-1">
+            <p className="text-xs sm:text-sm text-zinc-400 mt-1 leading-relaxed">
               Stay ahead with real-time NCDC curriculum news and premium audio masterclasses.
             </p>
           </div>
           <button
             onClick={handleRefresh}
             disabled={refreshing || loading}
-            className="flex items-center gap-2 rounded-xl bg-cyan-500/10 px-4 py-2 text-sm font-bold text-cyan-400 hover:bg-cyan-500/20 transition-colors border border-cyan-500/20 disabled:opacity-50"
+            className="flex items-center justify-center gap-2 rounded-xl bg-cyan-500/10 px-4 py-2.5 text-xs sm:text-sm font-bold text-cyan-400 hover:bg-cyan-500/20 transition-colors border border-cyan-500/20 disabled:opacity-50 shrink-0 self-start md:self-auto"
           >
             <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
             {refreshing ? "Refreshing Feed..." : "Refresh Feed"}
@@ -220,9 +220,9 @@ function NewsPage() {
         <FoundersSpotlight />
 
         {/* Dual-column Grid: News on Left, Custom Podcasts Console on Right */}
-        <div className="grid gap-8 lg:grid-cols-3 mt-8">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-3 mt-6 sm:mt-8 min-w-0">
           {/* Left Column: News Feed */}
-          <div className="lg:col-span-2 space-y-12">
+          <div className="lg:col-span-2 space-y-8 sm:space-y-12 min-w-0">
             <div className="flex items-center gap-3 mb-2 px-1">
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
               <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">

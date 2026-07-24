@@ -84,7 +84,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
   return (
     <motion.div
       layout
-      className="bg-card dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group h-full"
+      className="bg-card dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group h-full max-w-full min-w-0"
     >
       {item.media_url && !isPodcast && (
         <div className="relative aspect-video overflow-hidden bg-black">
@@ -109,13 +109,13 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
 
       {isPodcast && item.media_url && <MiniAudioPlayer src={item.media_url} title={item.title} />}
 
-      <div className="p-5 flex-1 flex flex-col gap-3 min-h-0">
-        <div className="flex items-center justify-between">
+      <div className="p-4 sm:p-5 flex-1 flex flex-col gap-3 min-h-0 min-w-0 break-words">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Badge
               variant="outline"
               className={cn(
-                "text-[10px] uppercase font-bold tracking-tight gap-1.5 px-2 py-0.5",
+                "text-[10px] uppercase font-bold tracking-tight gap-1.5 px-2 py-0.5 max-w-full truncate",
                 isLive ? "border-red-500/50 text-red-500 bg-red-500/5" : "",
               )}
             >
@@ -124,21 +124,21 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
             </Badge>
           </div>
           <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-medium">
-            <Clock className="h-3 w-3" />
+            <Clock className="h-3 w-3 shrink-0" />
             {new Date(item.published_at).toLocaleDateString()}
           </div>
         </div>
 
-        <h3 className="text-lg font-black leading-tight group-hover:text-primary transition-colors line-clamp-2">
+        <h3 className="text-base sm:text-lg font-black leading-snug group-hover:text-primary transition-colors line-clamp-2 break-words">
           {item.title}
         </h3>
 
-        <div className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-3 leading-relaxed whitespace-pre-wrap flex-1 overflow-hidden">
+        <div className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 line-clamp-3 leading-relaxed whitespace-pre-wrap flex-1 overflow-hidden break-words">
           {renderBody(item.body)}
         </div>
 
-        <div className="mt-4 pt-4 flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800">
-          <div className="flex items-center gap-4">
+        <div className="mt-3 pt-3 flex flex-wrap items-center justify-between gap-2 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
             <button
               onClick={() => setIsLiked(!isLiked)}
               className={cn(

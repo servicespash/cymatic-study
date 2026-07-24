@@ -319,6 +319,7 @@ function TutorPageContent() {
         displayName,
         persona === "Adams" ? "male" : "female",
       );
+
       useTutorStore
         .getState()
         .setMessages(
