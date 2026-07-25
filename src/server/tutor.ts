@@ -164,7 +164,7 @@ Your task is to provide personalized, Socratic guidance based on this specific s
     : currentMessage;
 
   const responseStreamPromise = aiClient.models.generateContentStream({
-    model: "gemini-3.1-flash-lite",
+    model: "gemini-3.6-flash",
     contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
     config: {
       systemInstruction: systemPrompt,

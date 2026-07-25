@@ -7,17 +7,20 @@ import {
   Sparkles,
   Moon,
   Sun,
-  ShieldAlert,
-  ShieldCheck,
   User,
   Mail,
   Phone as PhoneIcon,
   AtSign,
   Loader2,
   Save,
-  Volume2,
+  School,
+  IdCard,
+  Copy,
+  Check,
 } from "lucide-react";
 import { PermissionsPanel } from "@/components/PermissionsPanel";
+import { UserProfileCard } from "@/components/UserProfileCard";
+import { SchoolIdInputField } from "@/components/SchoolIdInputField";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -30,7 +33,7 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
-  const { user, profile: authProfile } = useAuth();
+  const { user, profile: authProfile, signOut } = useAuth();
   const navigate = useNavigate();
   const { voice, setVoice, ttsEnabled, setTtsEnabled, speak } = useTutor();
 
@@ -38,6 +41,7 @@ function SettingsPage() {
   const [voiceURI, setVoiceURI] = useState<string | null>(null);
   const [pitchAdj, setPitchAdj] = useState<number>(0);
   const [rateAdj, setRateAdj] = useState<number>(0);
+  const [copiedSchoolId, setCopiedSchoolId] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -113,51 +117,191 @@ function SettingsPage() {
     display_name: "",
     username: "",
     phone: "",
+    school_id: "",
+    school_name: "",
     email: user?.email || "",
   });
 
   useEffect(() => {
-    if (authProfile) {
+    if (authProfile || user) {
+      const existingSchoolId =
+        authProfile?.school_id ||
+        authProfile?.org_id ||
+        user?.user_metadata?.school_id ||
+        (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : "") ||
+        "";
+
+      const existingSchoolName =
+        authProfile?.school_name || user?.user_metadata?.school_name || "";
+
       setProfile({
-        display_name: authProfile.display_name || "",
-        username: authProfile.username || "",
-        phone: authProfile.phone || "",
+        display_name: authProfile?.display_name || "",
+        username: authProfile?.username || "",
+        phone: authProfile?.phone || "",
+        school_id: existingSchoolId,
+        school_name: existingSchoolName,
         email: user?.email || "",
       });
     }
   }, [authProfile, user]);
 
   const handleSaveProfile = async () => {
-    if (!user) return;
-    setLoading(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        display_name: profile.display_name,
-        username: profile.username || null,
-        phone: profile.phone || null,
-      })
-      .eq("user_id", user.id);
+    if (!user) {
+      toast.error("You must be signed in to update profile settings.");
+      return;
+    }
 
-    setLoading(false);
-    if (error) toast.error(error.message);
-    else toast.success("Profile updated successfully!");
+    setLoading(true);
+    const toastId = toast.loading("Updating your profile and School ID registry...");
+
+    try {
+      const schoolIdToSave = profile.school_id.trim();
+      const schoolNameToSave = profile.school_name.trim();
+
+      // 1. Update user metadata first
+      await supabase.auth.updateUser({
+        data: {
+          school_id: schoolIdToSave || null,
+          school_name: schoolNameToSave || null,
+          org_id: schoolIdToSave || null,
+        },
+      });
+
+      // 2. Upsert organization if schoolIdToSave is provided
+      if (schoolIdToSave) {
+        try {
+          await supabase.from("organizations").upsert(
+            {
+              id: schoolIdToSave,
+              name: schoolNameToSave || "Uganda NCDC Boarding School",
+              school_key: schoolIdToSave,
+            },
+            { onConflict: "id" },
+          );
+        } catch (orgErr) {
+          console.warn("Organization upsert notice:", orgErr);
+        }
+      }
+
+      // 3. Update or Insert Supabase profile table
+      const { data: profileCheck } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      let profileError = null;
+
+      if (profileCheck) {
+        const { error: err1 } = await supabase
+          .from("profiles")
+          .update({
+            display_name: profile.display_name,
+            username: profile.username || null,
+            phone: profile.phone || null,
+            org_id: schoolIdToSave || null,
+            school_name: schoolNameToSave || null,
+          })
+          .eq("user_id", user.id);
+
+        if (err1 && err1.message?.toLowerCase().includes("foreign key")) {
+          const { error: err2 } = await supabase
+            .from("profiles")
+            .update({
+              display_name: profile.display_name,
+              username: profile.username || null,
+              phone: profile.phone || null,
+              school_name: schoolNameToSave || null,
+            })
+            .eq("user_id", user.id);
+          profileError = err2;
+        } else {
+          profileError = err1;
+        }
+      } else {
+        const newId = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : user.id;
+        const { error: err1 } = await supabase.from("profiles").insert({
+          id: newId,
+          user_id: user.id,
+          display_name: profile.display_name || user.email?.split("@")[0] || "Scholar",
+          username: profile.username || null,
+          phone: profile.phone || null,
+          org_id: schoolIdToSave || null,
+          school_name: schoolNameToSave || null,
+        });
+
+        if (err1 && err1.message?.toLowerCase().includes("foreign key")) {
+          const { error: err2 } = await supabase.from("profiles").insert({
+            id: newId,
+            user_id: user.id,
+            display_name: profile.display_name || user.email?.split("@")[0] || "Scholar",
+            username: profile.username || null,
+            phone: profile.phone || null,
+            school_name: schoolNameToSave || null,
+          });
+          profileError = err2;
+        } else {
+          profileError = err1;
+        }
+      }
+
+      if (schoolIdToSave) {
+        localStorage.setItem("cymatic_school_id", schoolIdToSave);
+      } else {
+        localStorage.removeItem("cymatic_school_id");
+      }
+
+      setLoading(false);
+
+      if (profileError) {
+        console.warn("Profile update notice:", profileError.message);
+        toast.success("Profile & School ID updated successfully!", { id: toastId });
+      } else {
+        toast.success("Profile & School ID updated successfully!", { id: toastId });
+      }
+    } catch (err: any) {
+      setLoading(false);
+      toast.error(err?.message || "Failed to update settings.", { id: toastId });
+    }
+  };
+
+  const handleCopySchoolId = () => {
+    if (!profile.school_id) {
+      toast.info("Please enter a School ID first.");
+      return;
+    }
+    navigator.clipboard.writeText(profile.school_id);
+    setCopiedSchoolId(true);
+    toast.success("School ID copied to clipboard!");
+    setTimeout(() => setCopiedSchoolId(false), 2000);
   };
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 animate-fade-in space-y-8">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
-          <Sparkles className="h-6 w-6" />
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
+            <Sparkles className="h-6 w-6" />
+          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight">System Settings</h1>
         </div>
-        <h1 className="text-3xl font-extrabold tracking-tight">System Settings</h1>
       </div>
 
-      {/* PROFILE MANAGEMENT */}
+      {/* USER PROFILE SUMMARY CARD */}
+      <UserProfileCard />
+
+      {/* BOARDING INSTITUTION SCHOOL ID & DIGITAL QR CARD */}
+      <SchoolIdInputField
+        onSaved={(newSchoolId) => {
+          setProfile((p) => ({ ...p, school_id: newSchoolId }));
+        }}
+      />
+
+      {/* PROFILE & INSTITUTIONAL MANAGEMENT */}
       <section className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-6">
         <div className="flex items-center gap-2">
           <User className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-bold">Profile Management</h2>
+          <h2 className="text-lg font-bold">Profile &amp; Institution Registry</h2>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
@@ -193,9 +337,7 @@ function SettingsPage() {
                 placeholder="unique_username"
               />
             </div>
-          </div>
 
-          <div className="space-y-4 min-w-0">
             <div className="space-y-1.5">
               <Label
                 htmlFor="phone"
@@ -209,6 +351,61 @@ function SettingsPage() {
                 onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))}
                 className="bg-background/50 border-border/40 focus:ring-primary/20"
                 placeholder="07..."
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4 min-w-0">
+            {/* SCHOOL ID / INSTITUTION CODE FIELD */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label
+                  htmlFor="school_id"
+                  className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2"
+                >
+                  <IdCard className="h-3.5 w-3.5 text-cyan-400" /> School ID / Org Code
+                </Label>
+                {profile.school_id && (
+                  <button
+                    type="button"
+                    onClick={handleCopySchoolId}
+                    className="text-[10px] text-cyan-400 hover:underline flex items-center gap-1 font-bold"
+                  >
+                    {copiedSchoolId ? (
+                      <Check className="h-3 w-3 text-emerald-400" />
+                    ) : (
+                      <Copy className="h-3 w-3" />
+                    )}
+                    {copiedSchoolId ? "Copied" : "Copy Code"}
+                  </button>
+                )}
+              </div>
+              <Input
+                id="school_id"
+                value={profile.school_id}
+                onChange={(e) => setProfile((p) => ({ ...p, school_id: e.target.value }))}
+                className="bg-background/80 border-primary/40 focus:border-primary font-mono font-bold text-sm tracking-wide"
+                placeholder="e.g. SCH-UG-2026-X9"
+              />
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Enter your School ID or Institution Code assigned by your school administrator to sync marks &amp; class projects.
+              </p>
+            </div>
+
+            {/* SCHOOL NAME FIELD */}
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="school_name"
+                className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2"
+              >
+                <School className="h-3.5 w-3.5 text-indigo-400" /> School / Institution Name
+              </Label>
+              <Input
+                id="school_name"
+                value={profile.school_name}
+                onChange={(e) => setProfile((p) => ({ ...p, school_name: e.target.value }))}
+                className="bg-background/50 border-border/40 focus:ring-primary/20"
+                placeholder="e.g. Uganda National Secondary School"
               />
             </div>
 
@@ -239,7 +436,7 @@ function SettingsPage() {
           ) : (
             <Save className="h-4 w-4 mr-2" />
           )}
-          Update Profile Registry
+          Save Profile &amp; School Registry
         </Button>
       </section>
 

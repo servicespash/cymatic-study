@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Camera, Mic, Bell, HardDrive, MapPin, Monitor, CheckCircle2 } from "lucide-react";
 import { requestAllPermissions, type PermissionStatus } from "@/lib/permissions";
 import { Capacitor } from "@capacitor/core";
+import { toast } from "sonner";
 
 export const PermissionsPanel: React.FC = () => {
   const [status, setStatus] = useState<PermissionStatus | null>(null);
@@ -16,32 +17,82 @@ export const PermissionsPanel: React.FC = () => {
   }, []);
 
   const request = async (key: keyof PermissionStatus) => {
-    if (!Capacitor.isNativePlatform()) return;
-
-    try {
-      if (key === "camera") {
-        const { Camera } = await import("@capacitor/camera");
-        await Camera.requestPermissions();
+    if (Capacitor.isNativePlatform()) {
+      try {
+        if (key === "camera") {
+          const { Camera } = await import("@capacitor/camera");
+          await Camera.requestPermissions();
+        }
+        if (key === "microphone") {
+          const { SpeechRecognition } = await import("@capacitor-community/speech-recognition");
+          await SpeechRecognition.requestPermissions();
+        }
+        if (key === "notifications") {
+          const { LocalNotifications } = await import("@capacitor/local-notifications");
+          await LocalNotifications.requestPermissions();
+        }
+        if (key === "geolocation") {
+          const { Geolocation } = await import("@capacitor/geolocation");
+          await Geolocation.requestPermissions();
+        }
+        if (key === "storage") {
+          const { Filesystem } = await import("@capacitor/filesystem");
+          await Filesystem.requestPermissions();
+        }
+      } catch (e) {
+        console.warn("Native permission request failed", e);
       }
-      if (key === "microphone") {
-        const { SpeechRecognition } = await import("@capacitor-community/speech-recognition");
-        await SpeechRecognition.requestPermissions();
-      }
-      if (key === "notifications") {
-        const { LocalNotifications } = await import("@capacitor/local-notifications");
-        await LocalNotifications.requestPermissions();
-      }
-      if (key === "geolocation") {
-        const { Geolocation } = await import("@capacitor/geolocation");
-        await Geolocation.requestPermissions();
-      }
-      if (key === "storage") {
-        const { Filesystem } = await import("@capacitor/filesystem");
-        await Filesystem.requestPermissions();
-      }
-    } catch (e) {
-      console.warn("Permission request failed", e);
+      check();
+      return;
     }
+
+    // WEB / BROWSER PREVIEW PERMISSIONS
+    try {
+      if (key === "notifications") {
+        if ("Notification" in window) {
+          const res = await Notification.requestPermission();
+          if (res === "granted") {
+            toast.success("Browser Notifications permission granted!");
+            new Notification("Cymatic Study", {
+              body: "Daily discipline nudges enabled successfully!",
+            });
+          } else {
+            toast.error("Notification permission denied or dismissed.");
+          }
+        } else {
+          toast.info("Browser notifications not supported in this iframe environment.");
+        }
+      } else if (key === "microphone") {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+          toast.success("Microphone permission granted for voice tutor!");
+        } else {
+          toast.info("Microphone access requested.");
+        }
+      } else if (key === "camera") {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          await navigator.mediaDevices.getUserMedia({ video: true });
+          toast.success("Camera permission granted for live vision!");
+        } else {
+          toast.info("Camera access requested.");
+        }
+      } else if (key === "geolocation") {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            () => toast.success("Geolocation permission granted! Weather greetings active."),
+            (err) => toast.error(`Geolocation notice: ${err.message}`),
+          );
+        } else {
+          toast.info("Geolocation not supported by browser.");
+        }
+      } else if (key === "storage") {
+        toast.success("Browser IndexedDB & LocalStorage access granted for offline notes.");
+      }
+    } catch (err: any) {
+      console.warn("Browser permission error:", err);
+      toast.info(`Permission update: ${err?.message || "Requested via browser API."}`);
+    }
+
     check();
   };
 

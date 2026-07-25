@@ -7,8 +7,12 @@ export interface UserProfile {
   avatar_url: string | null;
   role: string | null;
   org_id: string | null;
+  school_name: string | null;
+  school_id: string | null;
   teacher_license_id: string | null;
   full_name: string | null;
+  username: string | null;
+  phone: string | null;
 }
 
 export type AuthCtx = {

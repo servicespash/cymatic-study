@@ -43,6 +43,7 @@ import StudentProjectsDashboard from "@/components/StudentProjectsDashboard";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import { KnowledgeGaps } from "@/components/KnowledgeGaps";
 import { BadgesDashboard } from "@/components/BadgesDashboard";
+import { TeacherGradingStation } from "@/components/TeacherGradingStation";
 import { BadgesView } from "@/components/BadgesView";
 import { StudyGoalsCard } from "@/components/StudyGoalsCard";
 import { PastSessionsList } from "@/components/PastSessionsList";
@@ -62,13 +63,14 @@ import { MarkingDesk } from "@/components/MarkingDesk";
 import { StudentActivityDashboard } from "@/components/StudentActivityDashboard";
 import { SocraticTutorChat } from "@/components/SocraticTutorChat";
 import { SubjectPracticeReminder } from "@/components/SubjectPracticeReminder";
+import { UserProfileCard } from "@/components/UserProfileCard";
 
 import { RoleGuard } from "@/components/RoleGuard";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "My Hub — Cymatic Study" }] }),
   component: () => (
-    <RoleGuard allowedRoles={["student", "teacher", "independent_teacher", "instructor"]}>
+    <RoleGuard allowedRoles={["student", "teacher", "independent_teacher", "instructor", "admin", "org_admin"]}>
       <DashboardPage />
     </RoleGuard>
   ),
@@ -296,6 +298,39 @@ function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 space-y-8">
+      {/* USER PROFILE & SCHOOL ID BANNER */}
+      <UserProfileCard />
+
+      {/* ADMIN QUICK NAV BANNER */}
+      {isAdmin && (
+        <Card className="border-blue-600/30 bg-gradient-to-r from-blue-950/40 via-indigo-950/20 to-black p-6 text-white shadow-xl animate-in fade-in">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-blue-600 text-white font-bold text-[10px] uppercase">
+                  Institutional Admin Authority
+                </Badge>
+                <span className="text-xs text-blue-400 font-mono font-bold">
+                  {profile?.school_id || profile?.org_id || "SCH-UG-2026"}
+                </span>
+              </div>
+              <h3 className="text-xl font-black text-white uppercase tracking-tight">
+                Institutional Command Node Available
+              </h3>
+              <p className="text-xs text-zinc-400">
+                Manage teachers, oversee student cohorts across Senior 1 to Senior 6, monitor performance analytics, and issue official School IDs.
+              </p>
+            </div>
+            <Button
+              onClick={() => navigate({ to: "/admin/dashboard" })}
+              className="bg-blue-600 hover:bg-blue-500 text-white font-black shadow-lg shadow-blue-600/30 shrink-0"
+            >
+              Open Command Console →
+            </Button>
+          </div>
+        </Card>
+      )}
+
       {/* RENDER ACTIVE DASHBOARD ACCORDING TO ROLE */}
       {isTeacher ? (
         <div className="space-y-8 animate-in fade-in duration-700">
@@ -374,6 +409,9 @@ function DashboardPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* TEACHER EVALUATION & MARKING WORKSTATION */}
+          <TeacherGradingStation />
 
           <div className="space-y-6">
             <h3 className="text-sm font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2">

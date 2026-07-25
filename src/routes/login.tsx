@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth-context";
 import { useRoleRedirect } from "@/hooks/useRoleRedirect";
+import { determineUserDashboardRoute } from "@/lib/auth-router";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
@@ -59,10 +60,12 @@ function LoginPage() {
     e.preventDefault();
     if (mode === "institutional" && !role) {
       setError("Please select a role.");
+      toast.error("Please select a role before proceeding.");
       return;
     }
     if (mode === "independent" && !role) {
       setError("Please select a role.");
+      toast.error("Please select a role before proceeding.");
       return;
     }
 
@@ -70,8 +73,15 @@ function LoginPage() {
     setSubmitting(true);
     saveToSession();
 
+    const toastId = toast.loading("Authenticating and verifying session...");
+
     const cleanIdentifier = identifier.trim();
     let emailToUse = cleanIdentifier;
+
+    // Save School ID to local storage immediately if provided in institutional mode
+    if (schoolId.trim()) {
+      localStorage.setItem("cymatic_school_id", schoolId.trim());
+    }
 
     // Resolve identifier if it's not an email
     if (!cleanIdentifier.includes("@")) {
@@ -82,19 +92,19 @@ function LoginPage() {
 
         if (resolveError) {
           console.error("Resolution RPC error:", resolveError);
-          if (resolveError.message?.includes("not found")) {
-            setError(
-              "Auth System Error: Resolution function missing. Please apply SQL migrations in Supabase Dashboard.",
-            );
-          } else {
-            setError(`Account resolution failed: ${resolveError.message}`);
-          }
+          const msg = resolveError.message?.includes("not found")
+            ? "Auth System Error: Resolution function missing. Please apply SQL migrations in Supabase Dashboard."
+            : `Account resolution failed: ${resolveError.message}`;
+          setError(msg);
+          toast.error(msg, { id: toastId });
           setSubmitting(false);
           return;
         }
 
         if (!resolution) {
-          setError("No account found with that username or phone. Use your email to sign in.");
+          const msg = "No account found with that username or phone. Use your email to sign in.";
+          setError(msg);
+          toast.error(msg, { id: toastId });
           setSubmitting(false);
           return;
         }
@@ -106,19 +116,23 @@ function LoginPage() {
         } else if (res.type === "email") {
           emailToUse = res.email || "";
         } else if (res.type === "organization") {
-          setError(
-            "That looks like a School ID, not a login username. Please sign in with the associated email address.",
-          );
+          const msg = "That looks like a School ID, not a login username. Please sign in with the associated email address.";
+          setError(msg);
+          toast.error(msg, { id: toastId });
           setSubmitting(false);
           return;
         } else {
-          setError("No account found with that username or phone. Use your email to sign in.");
+          const msg = "No account found with that username or phone. Use your email to sign in.";
+          setError(msg);
+          toast.error(msg, { id: toastId });
           setSubmitting(false);
           return;
         }
       } catch (err: any) {
         console.error("Resolution unexpected error:", err);
-        setError("An unexpected error occurred. Please use your email to sign in directly.");
+        const msg = "An unexpected error occurred. Please use your email to sign in directly.";
+        setError(msg);
+        toast.error(msg, { id: toastId });
         setSubmitting(false);
         return;
       }
@@ -133,47 +147,86 @@ function LoginPage() {
       setSubmitting(false);
 
       if (error) {
+        let errMsg = error.message;
         if (
           error.message?.toLowerCase().includes("failed to fetch") ||
           error.message?.toLowerCase().includes("fetch failed") ||
           error.message?.toLowerCase().includes("networkerror")
         ) {
-          setError(
-            "Authentication server unreachable (Failed to fetch). If you are running in Cloudflare preview, ensure VITE_SUPABASE_URL & VITE_SUPABASE_ANON_KEY environment variables are set, or continue as Guest below.",
-          );
+          errMsg = "Authentication server unreachable (Failed to fetch). Check your Supabase environment variables or continue as Guest.";
         } else if (error.message.includes("Invalid login credentials")) {
-          setError(
-            "Invalid email, username or password. Please check your credentials and try again.",
-          );
+          errMsg = "Invalid email, username or password. Please check your credentials and try again.";
         } else if (error.message.includes("Email not confirmed")) {
-          setError("Your email address has not been confirmed yet. Please check your inbox.");
-        } else {
-          setError(error.message);
+          errMsg = "Your email address has not been confirmed yet. Please check your inbox for the confirmation link.";
         }
+        setError(errMsg);
+        toast.error(errMsg, { id: toastId });
       } else if (signInData.user) {
-        // Role-based redirect logic
+        toast.success("Successfully authenticated! Verifying metadata & role...", { id: toastId });
+
+        // Normalize selected role if provided in UI or session
+        const selectedRoleStr = role || sessionStorage.getItem("login_role");
+        let metaRole = signInData.user.user_metadata?.role;
+
+        if (selectedRoleStr) {
+          const rLower = selectedRoleStr.toLowerCase();
+          if (rLower.includes("admin") || rLower.includes("org")) {
+            metaRole = "admin";
+          } else if (rLower.includes("teacher") || rLower.includes("tutor")) {
+            metaRole = "teacher";
+          } else {
+            metaRole = "student";
+          }
+        }
+
+        // Sync school ID & role to user metadata and profiles table immediately
+        try {
+          const updateData: Record<string, any> = {};
+          if (schoolId.trim()) {
+            updateData.school_id = schoolId.trim();
+            updateData.org_id = schoolId.trim();
+          }
+          if (metaRole) {
+            updateData.role = metaRole;
+          }
+
+          if (Object.keys(updateData).length > 0) {
+            await supabase.auth.updateUser({ data: updateData });
+            await supabase
+              .from("profiles")
+              .update({
+                org_id: schoolId.trim() || undefined,
+                role: metaRole || undefined,
+              })
+              .eq("user_id", signInData.user.id);
+          }
+        } catch (e) {
+          console.warn("Notice syncing metadata role after login:", e);
+        }
+
+        // Fetch latest profile & compute destination route
         const { data: profileData } = await supabase
           .from("profiles")
-          .select("role")
+          .select("*")
           .eq("user_id", signInData.user.id)
-          .single();
+          .maybeSingle();
 
-        const role = profileData?.role || "";
+        const mergedMeta = { ...signInData.user.user_metadata, role: metaRole || signInData.user.user_metadata?.role };
+        const decision = determineUserDashboardRoute(profileData, mergedMeta);
 
-        if (role === "admin" || role === "org_admin") {
-          navigate({ to: "/admin/dashboard" });
-        } else if (role === "teacher" || role === "independent_teacher") {
-          navigate({ to: "/dashboard" });
-        } else {
-          navigate({ to: "/dashboard" });
+        if (decision.schoolId) {
+          localStorage.setItem("cymatic_school_id", decision.schoolId);
         }
+
+        toast.info(`Welcome, ${decision.roleLabel}! Redirecting to ${decision.dashboardTitle}...`);
+        navigate({ to: decision.targetPath });
       }
     } catch (err: any) {
       setSubmitting(false);
       console.error("Sign-in exception:", err);
-      setError(
-        "Network or authentication error (Failed to fetch). You can continue to explore as Guest.",
-      );
+      const msg = "Network or authentication error (Failed to fetch). You can continue to explore as Guest.";
+      setError(msg);
+      toast.error(msg, { id: toastId });
     }
   };
 
