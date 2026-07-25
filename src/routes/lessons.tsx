@@ -8,6 +8,8 @@ import {
   Loader2,
   Brain,
   BookOpenText,
+  Sparkles,
+  Eye,
 } from "lucide-react";
 import { topics } from "@/data/topics";
 import { topicNotes as initialTopicNotes } from "@/data/notes";
@@ -20,6 +22,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useSubjectProgress } from "@/hooks/useSubjectProgress";
 import { SpacedRepetitionModule } from "@/components/SpacedRepetitionModule";
 import { PageFlipBook } from "@/components/PageFlipBook";
+import { ScienceConceptIllustrator } from "@/components/ScienceConceptIllustrator";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/lessons")({
@@ -34,7 +37,8 @@ function LessonsPage() {
   const [level, setLevel] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [open, setOpen] = useState<string | null>(null);
-  const [mode, setMode] = useState<"lessons" | "sm2" | "tactile">("lessons");
+  const [mode, setMode] = useState<"lessons" | "sm2" | "tactile" | "illustrator">("lessons");
+  const [selectedConceptForIllustrator, setSelectedConceptForIllustrator] = useState<string | undefined>(undefined);
 
   const [dynamicNotes, setDynamicNotes] = useState<Record<string, any>>({});
   const [isGenerating, setIsGenerating] = useState<Record<string, boolean>>({});
@@ -137,6 +141,15 @@ function LessonsPage() {
           <span>Curriculum Notes</span>
         </button>
         <button
+          onClick={() => setMode("illustrator")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition ${
+            mode === "illustrator" ? "bg-background text-primary shadow-sm" : "text-muted-foreground"
+          }`}
+        >
+          <Sparkles className="h-4 w-4 text-primary" />
+          <span>Science Diagrams</span>
+        </button>
+        <button
           onClick={() => setMode("sm2")}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition ${
             mode === "sm2" ? "bg-background text-primary shadow-sm" : "text-muted-foreground"
@@ -152,11 +165,19 @@ function LessonsPage() {
           }`}
         >
           <BookOpenText className="h-4 w-4" />
-          <span>Tactile Reader (Page Flip)</span>
+          <span>Tactile Reader</span>
         </button>
       </div>
 
-      {mode === "sm2" ? (
+      {mode === "illustrator" ? (
+        <ScienceConceptIllustrator
+          initialConceptTitle={selectedConceptForIllustrator}
+          onClose={() => {
+            setMode("lessons");
+            setSelectedConceptForIllustrator(undefined);
+          }}
+        />
+      ) : mode === "sm2" ? (
         <SpacedRepetitionModule />
       ) : mode === "tactile" ? (
         <PageFlipBook />
@@ -294,6 +315,15 @@ function LessonsPage() {
                         </div>
                       )}
                       <div className="mt-4 flex flex-wrap gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedConceptForIllustrator(t.title);
+                            setMode("illustrator");
+                          }}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
+                        >
+                          <Sparkles className="h-3.5 w-3.5" /> Concept Diagram
+                        </button>
                         <Link
                           to="/tutor"
                           search={{

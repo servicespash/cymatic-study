@@ -131,8 +131,7 @@ function SettingsPage() {
         (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : "") ||
         "";
 
-      const existingSchoolName =
-        authProfile?.school_name || user?.user_metadata?.school_name || "";
+      const existingSchoolName = authProfile?.school_name || user?.user_metadata?.school_name || "";
 
       setProfile({
         display_name: authProfile?.display_name || "",
@@ -219,7 +218,8 @@ function SettingsPage() {
           profileError = err1;
         }
       } else {
-        const newId = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : user.id;
+        const newId =
+          typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : user.id;
         const { error: err1 } = await supabase.from("profiles").insert({
           id: newId,
           user_id: user.id,
@@ -388,7 +388,8 @@ function SettingsPage() {
                 placeholder="e.g. SCH-UG-2026-X9"
               />
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Enter your School ID or Institution Code assigned by your school administrator to sync marks &amp; class projects.
+                Enter your School ID or Institution Code assigned by your school administrator to
+                sync marks &amp; class projects.
               </p>
             </div>
 
