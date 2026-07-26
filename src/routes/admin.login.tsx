@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ShieldCheck, School, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { ShieldCheck, School, Lock, ArrowRight, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,11 +33,15 @@ function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (e?: React.FormEvent) => {
+    if (e && e.preventDefault) e.preventDefault();
     setLoading(true);
+    setError(null);
+
+    const toastId = toast.loading("Connecting to Institutional Gateway...");
 
     try {
       const { data: org, error: orgError } = await supabase
@@ -47,8 +51,20 @@ function AdminLogin() {
         .single();
 
       if (orgError || !org) {
-        toast.error("Invalid School Key", {
-          description: "Please enter a valid institutional identifier.",
+        let msg = "Invalid School Key. Please enter a valid institutional identifier.";
+        if (orgError?.message?.toLowerCase().includes("failed to fetch")) {
+          msg = "Network Error: Could not connect to institutional database (Failed to fetch).";
+        }
+        setError(msg);
+        toast.error("Connection Failed", {
+          id: toastId,
+          description: msg,
+          action: {
+            label: "Retry",
+            onClick: () => {
+              handleLogin();
+            }
+          }
         });
         setLoading(false);
         return;
@@ -63,7 +79,21 @@ function AdminLogin() {
       });
 
       if (authError || !user) {
-        toast.error("Login Failed", { description: authError?.message || "Invalid credentials." });
+        let msg = authError?.message || "Invalid credentials.";
+        if (authError?.message?.toLowerCase().includes("failed to fetch")) {
+          msg = "Network Error: Authentication server unreachable (Failed to fetch).";
+        }
+        setError(msg);
+        toast.error("Login Failed", {
+          id: toastId,
+          description: msg,
+          action: {
+            label: "Retry",
+            onClick: () => {
+              handleLogin();
+            }
+          }
+        });
         setLoading(false);
         return;
       }
@@ -81,6 +111,7 @@ function AdminLogin() {
           profile?.role !== "institution_admin")
       ) {
         toast.error("Access Denied", {
+          id: toastId,
           description: "You are not authorized to manage this institution.",
         });
         await supabase.auth.signOut();
@@ -88,10 +119,21 @@ function AdminLogin() {
         return;
       }
 
-      toast.success(`Welcome back, Admin of ${org.name}`);
+      toast.success(`Welcome back, Admin of ${org.name}`, { id: toastId });
       navigate({ to: "/admin/dashboard" });
     } catch (err: any) {
-      toast.error("An unexpected error occurred.");
+      const msg = err?.message || "An unexpected error occurred.";
+      setError(msg);
+      toast.error("Unexpected Error", {
+        id: toastId,
+        description: msg,
+        action: {
+          label: "Retry",
+          onClick: () => {
+            handleLogin();
+          }
+        }
+      });
     } finally {
       setLoading(false);
     }
@@ -176,6 +218,24 @@ function AdminLogin() {
               </div>
             </div>
           </CardContent>
+
+          {error && (
+            <div className="mx-6 mb-4 rounded-xl border border-destructive/30 bg-destructive/5 p-4 space-y-3 animate-fade-in text-left">
+              <p className="text-xs font-medium text-destructive leading-relaxed">{error}</p>
+              {(error.toLowerCase().includes("failed to fetch") ||
+                error.toLowerCase().includes("unreachable") ||
+                error.toLowerCase().includes("network")) && (
+                <button
+                  type="button"
+                  onClick={() => handleLogin()}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-destructive/15 hover:bg-destructive/25 border border-destructive/20 px-3 py-1.5 text-xs font-bold text-destructive transition-colors text-white"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  Retry Connection
+                </button>
+              )}
+            </div>
+          )}
 
           <CardFooter className="pt-4">
             <Button

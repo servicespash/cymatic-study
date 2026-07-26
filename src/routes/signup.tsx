@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { Loader2, Sparkles, UserPlus, Copy, Check, Eye, EyeOff } from "lucide-react";
+import { Loader2, Sparkles, UserPlus, Copy, Check, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Database } from "@/integrations/supabase/types";
 import { useRoleRedirect } from "@/hooks/useRoleRedirect";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Join the Hub — Cymatic Study" }] }),
@@ -47,11 +48,13 @@ function SignupPage() {
     }
   }, []);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: FormEvent) => {
+    if (e && e.preventDefault) e.preventDefault();
     setError(null);
     setInfo(null);
     setSubmitting(true);
+
+    const toastId = toast.loading("Creating your account on the Hub...");
 
     const cleanEmail = email.trim();
     const cleanUsername = username.trim();
@@ -140,6 +143,7 @@ function SignupPage() {
         void sendInstitutionWelcomeEmail(cleanSchoolName, issuedSchoolId, cleanName, cleanEmail);
         setGeneratedSchoolId(issuedSchoolId);
         setSubmitting(false);
+        toast.success("School registered successfully!", { id: toastId });
         return; // Block navigation so admin can copy the ID
       }
 
@@ -152,18 +156,36 @@ function SignupPage() {
 
         const role = profileData?.role || "";
 
+        toast.success("Account created successfully!", { id: toastId });
         if (role === "admin" || role === "org_admin") {
           navigate({ to: "/admin/dashboard" });
         } else {
           navigate({ to: "/dashboard" });
         }
       } else {
-        setInfo(
-          afterSignupInfo ?? "Success! Check your email to confirm your account and join the hub.",
-        );
+        const msg = afterSignupInfo ?? "Success! Check your email to confirm your account and join the hub.";
+        setInfo(msg);
+        toast.success(msg, { id: toastId });
       }
     } catch (err: any) {
-      setError(err?.message ?? "Something went wrong. Please try again.");
+      let errMsg = err?.message ?? "Something went wrong. Please try again.";
+      if (
+        errMsg.toLowerCase().includes("failed to fetch") ||
+        errMsg.toLowerCase().includes("networkerror") ||
+        errMsg.toLowerCase().includes("fetch failed")
+      ) {
+        errMsg = "Server unreachable (Failed to fetch). Check your network connection and retry, or login as Guest.";
+      }
+      setError(errMsg);
+      toast.error(errMsg, {
+        id: toastId,
+        action: {
+          label: "Retry",
+          onClick: () => {
+            handleSubmit();
+          }
+        }
+      });
     } finally {
       setSubmitting(false);
     }
@@ -363,9 +385,21 @@ function SignupPage() {
           )}
 
           {error && (
-            <p className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-              {error}
-            </p>
+            <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 space-y-3 animate-fade-in text-left">
+              <p className="text-xs font-medium text-destructive leading-relaxed">{error}</p>
+              {(error.toLowerCase().includes("failed to fetch") ||
+                error.toLowerCase().includes("unreachable") ||
+                error.toLowerCase().includes("network")) && (
+                <button
+                  type="button"
+                  onClick={() => handleSubmit()}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-destructive/15 hover:bg-destructive/25 border border-destructive/20 px-3 py-1.5 text-xs font-bold text-destructive transition-colors"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  Retry Registration
+                </button>
+              )}
+            </div>
           )}
           {info && (
             <p className="rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-primary">

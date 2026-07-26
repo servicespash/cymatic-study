@@ -4,6 +4,79 @@ import tailwindcss from "@tailwindcss/vite";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { VitePWA } from "vite-plugin-pwa";
+import fs from "fs";
+import path from "path";
+
+function loadWranglerVars(): Record<string, string> {
+  const vars: Record<string, string> = {};
+
+  try {
+    const jsonPath = path.resolve(process.cwd(), "wrangler.json");
+    if (fs.existsSync(jsonPath)) {
+      const content = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+      if (content.vars) {
+        Object.assign(vars, content.vars);
+      }
+    }
+  } catch (error) {
+    console.debug("No wrangler.json found or readable:", error);
+  }
+
+  try {
+    const jsoncPath = path.resolve(process.cwd(), "wrangler.jsonc");
+    if (fs.existsSync(jsoncPath)) {
+      const raw = fs.readFileSync(jsoncPath, "utf-8");
+      const cleaned = raw.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, "$1");
+      const content = JSON.parse(cleaned);
+      if (content.vars) {
+        Object.assign(vars, content.vars);
+      }
+    }
+  } catch (error) {
+    console.debug("No wrangler.jsonc found or readable:", error);
+  }
+
+  try {
+    const tomlPath = path.resolve(process.cwd(), "wrangler.toml");
+    if (fs.existsSync(tomlPath)) {
+      const lines = fs.readFileSync(tomlPath, "utf-8").split("\n");
+      let inVars = false;
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith("[vars]")) {
+          inVars = true;
+          continue;
+        } else if (trimmed.startsWith("[")) {
+          inVars = false;
+        }
+        if (inVars && trimmed && !trimmed.startsWith("#")) {
+          const parts = trimmed.split("=");
+          if (parts.length >= 2) {
+            const key = parts[0].trim();
+            let value = parts.slice(1).join("=").trim();
+            if (value.startsWith('"') && value.endsWith('"')) {
+              value = value.substring(1, value.length - 1);
+            } else if (value.startsWith("'") && value.endsWith("'")) {
+              value = value.substring(1, value.length - 1);
+            }
+            vars[key] = value;
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.debug("No wrangler.toml found or readable:", error);
+  }
+
+  return vars;
+}
+
+const wranglerVars = loadWranglerVars();
+for (const [k, v] of Object.entries(wranglerVars)) {
+  if (k.startsWith("VITE_") && !process.env[k]) {
+    process.env[k] = v;
+  }
+}
 
 export default defineConfig({
   plugins: [

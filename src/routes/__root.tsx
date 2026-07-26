@@ -37,6 +37,7 @@ import { MobileInstallPrompt } from "@/components/MobileInstallPrompt";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { CymaticBackground } from "@/components/CymaticBackground";
 import { BadgeToastNotification } from "@/components/BadgeToastNotification";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -120,6 +121,7 @@ function RootComponent() {
         <ThemeProvider>
           <div className="min-h-screen bg-background">
             <Outlet />
+            <Toaster />
           </div>
         </ThemeProvider>
       </QueryClientProvider>
@@ -161,6 +163,7 @@ function RootComponent() {
               </UserMoodProvider>
             </TutorServiceProvider>
           </LiveBroadcastProvider>
+          <Toaster />
         </QueryClientProvider>
       </AuthProvider>
     </ThemeProvider>

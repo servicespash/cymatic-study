@@ -1,4 +1,5 @@
 import { MessageSquare, Plus, Settings, Menu, X, History, Phone, Smile } from "lucide-react";
+import { DeploymentStatus } from "./DeploymentStatus";
 
 export function Sidebar({
   isOpen,
@@ -68,7 +69,8 @@ export function Sidebar({
           </button>
         </div>
 
-        <div className="p-4 border-t border-zinc-800">
+        <div className="p-4 border-t border-zinc-800 space-y-4">
+          <DeploymentStatus />
           <button
             onClick={onSettingsClick}
             className="flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-200 w-full p-2 hover:bg-zinc-800 rounded-lg"

@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { exportChatToPDF } from "@/lib/chat-pdf-export";
+import { DeploymentStatus } from "./DeploymentStatus";
 
 export function ChatSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { sessions, sessionId, loadSession, createNewSession, deleteSession, messages } =
@@ -71,6 +72,9 @@ export function ChatSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
             </div>
           ))}
         </ScrollArea>
+        <div className="p-4 border-t border-zinc-800 bg-zinc-950">
+          <DeploymentStatus />
+        </div>
       </div>
     </div>
   );

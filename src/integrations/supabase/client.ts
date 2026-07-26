@@ -3,6 +3,14 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 
 function getEnv(name: string): string | undefined {
+  // Statically check keys so Vite can replace them at build time
+  if (name === "VITE_SUPABASE_URL") return import.meta.env.VITE_SUPABASE_URL;
+  if (name === "VITE_SUPABASE_ANON_KEY") return import.meta.env.VITE_SUPABASE_ANON_KEY;
+  if (name === "VITE_SUPABASE_KEY") return import.meta.env.VITE_SUPABASE_KEY;
+  if (name === "VITE_SUPABASE_PUBLISHABLE_KEY") return import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  if (name === "SUPABASE_URL") return import.meta.env.SUPABASE_URL || (typeof process !== "undefined" ? process.env.SUPABASE_URL : undefined);
+  if (name === "SUPABASE_ANON_KEY") return import.meta.env.SUPABASE_ANON_KEY || (typeof process !== "undefined" ? process.env.SUPABASE_ANON_KEY : undefined);
+
   if (typeof import.meta !== "undefined" && import.meta.env && import.meta.env[name]) {
     return import.meta.env[name];
   }
@@ -16,8 +24,11 @@ function getEnv(name: string): string | undefined {
 }
 
 function createSupabaseClient() {
+  const DEFAULT_URL = "https://tffffvbaiccqndydsobg.supabase.co";
+  const DEFAULT_KEY = "sb_publishable_Q6c0ZU7hu-Ow6bdzbK5-ig_S74FsIK0";
+
   const SUPABASE_URL =
-    getEnv("VITE_SUPABASE_URL") || getEnv("SUPABASE_URL") || getEnv("PUBLIC_SUPABASE_URL");
+    getEnv("VITE_SUPABASE_URL") || getEnv("SUPABASE_URL") || getEnv("PUBLIC_SUPABASE_URL") || DEFAULT_URL;
 
   // Filter out invalid URL-like strings that are mistakenly populated as key
   const keys = [
@@ -31,16 +42,10 @@ function createSupabaseClient() {
 
   const SUPABASE_PUBLISHABLE_KEY = keys.find(
     (k) => k && typeof k === "string" && !k.startsWith("http://") && !k.startsWith("https://"),
-  );
+  ) || DEFAULT_KEY;
 
-  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-    console.error("[Supabase] Missing environment variables:", {
-      URL_PRESENT: !!SUPABASE_URL,
-      KEY_PRESENT: !!SUPABASE_PUBLISHABLE_KEY,
-    });
-    // Return a dummy client to prevent app crash if environment is missing,
-    // though auth calls will fail as expected.
-    return createClient("https://placeholder.supabase.co", "placeholder-key");
+  if (SUPABASE_URL === DEFAULT_URL || SUPABASE_PUBLISHABLE_KEY === DEFAULT_KEY) {
+    console.log("[Supabase] Using production fallback environment variables.");
   }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {

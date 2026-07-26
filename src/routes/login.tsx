@@ -12,6 +12,7 @@ import {
   EyeOff,
   Gauge,
   ArrowRight,
+  RefreshCw,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -56,8 +57,8 @@ function LoginPage() {
     if (schoolId) sessionStorage.setItem("login_school_id", schoolId);
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: FormEvent) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (mode === "institutional" && !role) {
       setError("Please select a role.");
       toast.error("Please select a role before proceeding.");
@@ -96,7 +97,15 @@ function LoginPage() {
             ? "Auth System Error: Resolution function missing. Please apply SQL migrations in Supabase Dashboard."
             : `Account resolution failed: ${resolveError.message}`;
           setError(msg);
-          toast.error(msg, { id: toastId });
+          toast.error(msg, {
+            id: toastId,
+            action: {
+              label: "Retry",
+              onClick: () => {
+                handleSubmit();
+              }
+            }
+          });
           setSubmitting(false);
           return;
         }
@@ -132,7 +141,15 @@ function LoginPage() {
         console.error("Resolution unexpected error:", err);
         const msg = "An unexpected error occurred. Please use your email to sign in directly.";
         setError(msg);
-        toast.error(msg, { id: toastId });
+        toast.error(msg, {
+          id: toastId,
+          action: {
+            label: "Retry",
+            onClick: () => {
+              handleSubmit();
+            }
+          }
+        });
         setSubmitting(false);
         return;
       }
@@ -160,7 +177,15 @@ function LoginPage() {
           errMsg = "Your email address has not been confirmed yet. Please check your inbox for the confirmation link.";
         }
         setError(errMsg);
-        toast.error(errMsg, { id: toastId });
+        toast.error(errMsg, {
+          id: toastId,
+          action: {
+            label: "Retry",
+            onClick: () => {
+              handleSubmit();
+            }
+          }
+        });
       } else if (signInData.user) {
         toast.success("Successfully authenticated! Verifying metadata & role...", { id: toastId });
 
@@ -226,7 +251,15 @@ function LoginPage() {
       console.error("Sign-in exception:", err);
       const msg = "Network or authentication error (Failed to fetch). You can continue to explore as Guest.";
       setError(msg);
-      toast.error(msg, { id: toastId });
+      toast.error(msg, {
+        id: toastId,
+        action: {
+          label: "Retry",
+          onClick: () => {
+            handleSubmit();
+          }
+        }
+      });
     }
   };
 
@@ -383,7 +416,23 @@ function LoginPage() {
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          {error && <p className="text-xs text-destructive">{error}</p>}
+          {error && (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 space-y-3 animate-fade-in text-left">
+              <p className="text-xs font-medium text-destructive leading-relaxed">{error}</p>
+              {(error.toLowerCase().includes("failed to fetch") ||
+                error.toLowerCase().includes("unreachable") ||
+                error.toLowerCase().includes("network")) && (
+                <button
+                  type="button"
+                  onClick={() => handleSubmit()}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-destructive/15 hover:bg-destructive/25 border border-destructive/20 px-3 py-1.5 text-xs font-bold text-destructive transition-colors"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  Retry Connection
+                </button>
+              )}
+            </div>
+          )}
           <button
             type="submit"
             disabled={submitting}

@@ -65,6 +65,8 @@ import { SchoolIdQRCode } from "@/components/SchoolIdQRCode";
 import { InstitutionalRegistryModule } from "@/components/InstitutionalRegistryModule";
 import { AdminPerformanceReportsModule } from "@/components/AdminPerformanceReportsModule";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ReleaseDashboard } from "@/components/ReleaseDashboard";
+import { DeploymentStatus } from "@/components/DeploymentStatus";
 
 export const Route = createFileRoute("/admin/dashboard")({
   head: () => ({
@@ -497,7 +499,8 @@ function AdminDashboard() {
           </nav>
         </div>
 
-        <div className="mt-auto p-6 border-t border-white/5">
+        <div className="mt-auto p-6 border-t border-white/5 space-y-4">
+          <DeploymentStatus />
           <div className="flex items-center gap-3 p-2 rounded-xl bg-white/5">
             <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xs uppercase">
               SA
@@ -1240,6 +1243,14 @@ function AdminDashboard() {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+
+            <div className="pt-4">
+              <h3 className="text-xl font-black uppercase tracking-tight mb-4 flex items-center gap-2">
+                <CloudLightning className="h-5 w-5 text-amber-500" />
+                Edge CDN Webhook & Release Console
+              </h3>
+              <ReleaseDashboard />
             </div>
           </div>
         )}
