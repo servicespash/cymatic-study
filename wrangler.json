@@ -4,6 +4,10 @@
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "pages_build_output_dir": "dist",
+  "vars": {
+    "VITE_SUPABASE_URL": "https://tffffvbaiccqndydsobg.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "sb_publishable_Q6c0ZU7hu-Ow6bdzbK5-ig_S74FsIK0"
+  },
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",
