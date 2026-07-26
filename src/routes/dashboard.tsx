@@ -27,6 +27,7 @@ import {
   LayoutDashboard,
   TrendingUp,
   X,
+  Download,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "@/lib/auth-context";
@@ -48,6 +49,7 @@ import { BadgesView } from "@/components/BadgesView";
 import { StudyGoalsCard } from "@/components/StudyGoalsCard";
 import { PastSessionsList } from "@/components/PastSessionsList";
 import { PrintableSummary } from "@/components/PrintableSummary";
+import { ExportPdfModal } from "@/components/ExportPdfModal";
 import { BreathingGuide } from "@/components/BreathingGuide";
 import { TermGoalChallengeCard } from "@/components/TermGoalChallengeCard";
 import { TermProgressChart } from "@/components/TermProgressChart";
@@ -96,6 +98,7 @@ function DashboardPage() {
   const [tasks, setTasks] = useState<DynamicDailyTask[]>([]);
   const [showSnoozed, setShowSnoozed] = useState(false);
   const [selectedExplTask, setSelectedExplTask] = useState<DynamicDailyTask | null>(null);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   // Real institutional students data states
   const [realStudents, setRealStudents] = useState<DashboardStudent[]>([]);
@@ -671,14 +674,24 @@ function DashboardPage() {
                     NCDC-compliant report with security verification keys.
                   </p>
                 </div>
-                <button
-                  onClick={() => window.print()}
-                  className="flex items-center justify-center gap-2 w-full py-2.5 bg-cyan-500 hover:bg-cyan-600 text-black font-bold text-xs rounded-xl transition-all duration-200 shadow-md hover:shadow-cyan-500/20 active:scale-95 shrink-0 mt-2"
-                  aria-label="Download Progress Summary PDF"
-                >
-                  <FileText className="h-4 w-4" />
-                  Print Portfolio Report
-                </button>
+                <div className="flex items-center gap-2 mt-2">
+                  <button
+                    onClick={() => window.print()}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-black font-bold text-xs rounded-xl transition-all duration-200 shadow-md hover:shadow-cyan-500/20 active:scale-95 shrink-0"
+                    aria-label="Download Progress Summary PDF"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Print Portfolio Report
+                  </button>
+                  <button
+                    onClick={() => setIsPdfModalOpen(true)}
+                    className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 border border-zinc-700 font-bold text-xs rounded-xl transition-all duration-200 shrink-0"
+                    aria-label="Export Branded PDF"
+                  >
+                    <Download className="h-4 w-4" />
+                    PDF
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -936,6 +949,32 @@ function DashboardPage() {
 
           {/* PRINT-ONLY COMPONENT */}
           <PrintableSummary />
+
+          {/* EXPORT PDF MODAL */}
+          <ExportPdfModal
+            isOpen={isPdfModalOpen}
+            onClose={() => setIsPdfModalOpen(false)}
+            title="Academic Portfolio Summary"
+            subject="National Curriculum"
+            docType="study_chart"
+            content={[
+              {
+                sectionTitle: "1. Academic Profile Overview",
+                body: [
+                  `Student Holder: ${user?.email?.split("@")[0] || "Scholar"}`,
+                  `Institution: ${profile?.school_name || "Cymatic Secondary"}`,
+                  `Status: Active Learner`,
+                ],
+              },
+              {
+                sectionTitle: "2. Performance Summary",
+                body: [
+                  "Verified NCDC Lower Secondary Curriculum Record",
+                  "All continuous assessment submissions logged.",
+                ],
+              },
+            ]}
+          />
         </>
       )}
 

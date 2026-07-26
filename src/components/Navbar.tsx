@@ -33,9 +33,10 @@ interface NavLink {
 
 const links: readonly NavLink[] = [
   { to: "/", label: "Home", icon: Sparkles },
-  { to: "/news", label: "News", icon: Newspaper },
+  { to: "/student", label: "Student", icon: GraduationCap },
+  { to: "/teacher", label: "Teacher", icon: BookOpen },
   { to: "/lessons", label: "Lessons", icon: BookOpen },
-  { to: "/quizzes", label: "Lightbulb", icon: Lightbulb },
+  { to: "/quizzes", label: "Quizzes", icon: Lightbulb },
   { to: "/chat", label: "Chat", icon: MessagesSquare },
   { to: "/tools", label: "Tools", icon: Calculator },
   { to: "/curriculum", label: "Curriculum", icon: GraduationCap },
