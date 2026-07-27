@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { MOCK_CONTENT_DATA } from "./mock-content-data";
 
 export type NewsItem = {
   id: string;
@@ -14,11 +15,14 @@ export type NewsItem = {
   is_active?: boolean;
 };
 
+
 export function useNewsFeed() {
   const [items, setItems] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [diagnosticError, setDiagnosticError] = useState<string | null>(null);
+  const [isUsingMock, setIsUsingMock] = useState(false);
 
   const fetchItems = useCallback(async (forceRefresh = false) => {
     if (forceRefresh) {
@@ -28,6 +32,7 @@ export function useNewsFeed() {
     }
 
     setError(null);
+    setDiagnosticError(null);
 
     try {
       // If we want to trigger a backend sync, we can optionally call the API route
@@ -39,17 +44,37 @@ export function useNewsFeed() {
         }).catch((err) => console.error("Sync API failed", err));
       }
 
+      // Try to query the actual 'content' table as requested
       const { data, error: sbError } = await supabase
-        .from("news_broadcasts")
+        .from("content")
         .select("*")
         .order("published_at", { ascending: false });
 
       if (sbError) throw sbError;
 
       setItems(data || []);
-    } catch (err) {
-      console.error("Fetch Error:", err);
-      setError(err instanceof Error ? err : new Error("Failed to fetch news"));
+      setIsUsingMock(false);
+      setDiagnosticError(null);
+    } catch (err: any) {
+      console.warn("Supabase fetch from 'content' table failed, activating mock fallback:", err);
+      
+      // Capture the exact error details
+      let errorMsg = "Unknown error";
+      if (err && typeof err === "object") {
+        errorMsg = err.message || err.details || JSON.stringify(err);
+        if (err.code) {
+          errorMsg = `[SQL State ${err.code}] ${errorMsg}`;
+        }
+      } else if (err instanceof Error) {
+        errorMsg = err.message;
+      }
+
+      setDiagnosticError(errorMsg);
+      setError(err instanceof Error ? err : new Error(errorMsg));
+      setIsUsingMock(true);
+      
+      // Load fallback items from Mock Content Data Service
+      setItems(MOCK_CONTENT_DATA);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -60,23 +85,23 @@ export function useNewsFeed() {
     // Initial fetch
     fetchItems();
 
-    // Set up real-time subscription for reactive updates
+    // Set up real-time subscription for reactive updates on 'content' table
     const channel = supabase
-      .channel("news_broadcasts_changes")
+      .channel("content_changes")
       .on(
         "postgres_changes",
         {
           event: "*", // Listen to INSERT, UPDATE, DELETE
           schema: "public",
-          table: "news_broadcasts",
+          table: "content",
         },
         (payload) => {
-          console.log("Real-time update received!", payload);
+          console.log("Real-time update received for 'content'!", payload);
+          if (isUsingMock) return; // Ignore if we are using the mock fallback
 
           setItems((currentItems) => {
             if (payload.eventType === "INSERT") {
               const newItem = payload.new as NewsItem;
-              // Prevent duplicates if already exists
               if (currentItems.some((item) => item.id === newItem.id)) {
                 return currentItems;
               }
@@ -105,13 +130,15 @@ export function useNewsFeed() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchItems]);
+  }, [fetchItems, isUsingMock]);
 
   return {
     items,
     loading,
     refreshing,
     error,
+    diagnosticError,
+    isUsingMock,
     refreshFeed: () => fetchItems(true),
   };
 }

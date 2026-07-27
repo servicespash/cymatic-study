@@ -16,6 +16,7 @@ import {
   VolumeX,
   Radio,
   RefreshCw,
+  Database,
 } from "lucide-react";
 
 export const Route = createFileRoute("/news")({
@@ -36,7 +37,7 @@ type ParsedBody = {
 };
 
 function NewsPage() {
-  const { items, loading, refreshing, error, refreshFeed } = useNewsFeed();
+  const { items, loading, refreshing, error, diagnosticError, isUsingMock, refreshFeed } = useNewsFeed();
 
   // Show error toast if real-time or fetch fails
   useEffect(() => {
@@ -231,6 +232,93 @@ function NewsPage() {
         </div>
 
         <FoundersSpotlight />
+
+        {/* Supabase Connection Status & Query Diagnostic */}
+        <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg backdrop-blur-md relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-2 h-full bg-amber-500" />
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2.5 bg-amber-500/10 rounded-xl mt-1">
+                <Database className="h-5 w-5 text-amber-400" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-sm font-black text-white uppercase tracking-wider">
+                    Supabase 'content' Query Diagnostic
+                  </h2>
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                    isUsingMock 
+                      ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                      : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  }`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${isUsingMock ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
+                    {isUsingMock ? "Simulated Fallback Active" : "Supabase Connected"}
+                  </span>
+                </div>
+                <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+                  {isUsingMock 
+                    ? "The application attempted to query the 'content' table in Supabase, but encountered a table resolution error. A fallback mock content service has taken over instantly to prevent application failure." 
+                    : "Successfully streaming production content directly from your public.content database table."}
+                </p>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => {
+                refreshFeed();
+                toast.info("Re-testing Supabase connectivity...");
+              }}
+              className="px-4 py-2 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-xl text-xs font-bold text-zinc-300 transition-colors shrink-0"
+            >
+              Test Query Connectivity
+            </button>
+          </div>
+
+          {isUsingMock && diagnosticError && (
+            <div className="mt-4 border-t border-white/5 pt-4">
+              <div className="bg-black/60 border border-red-500/20 rounded-xl p-4 font-mono text-xs">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] uppercase font-black text-red-400 tracking-wider">
+                    Database Query Failure Logs (Captured)
+                  </span>
+                  <span className="text-[9px] text-zinc-500">
+                    Timestamp: {new Date().toLocaleTimeString()}
+                  </span>
+                </div>
+                <div className="space-y-1.5 text-zinc-300">
+                  <p><span className="text-zinc-500">Query Target:</span> <span className="text-cyan-400">supabase.from("content").select("*")</span></p>
+                  <p><span className="text-zinc-500">Status Detail:</span> <span className="text-red-400 font-bold">{diagnosticError}</span></p>
+                  <p className="text-[11px] text-zinc-400 leading-relaxed pt-2 border-t border-white/5 mt-2">
+                    <strong className="text-zinc-300">💡 Developer Guidance:</strong> To resolve this connection failure, execute the SQL script below in your Supabase SQL Editor to provision the <code className="text-cyan-300 bg-white/5 px-1 py-0.5 rounded">content</code> table and populate initial syllabus updates, live masterclasses, and audio podcasts.
+                  </p>
+                  
+                  {/* SQL Schema helper copy-paste */}
+                  <div className="mt-3 relative bg-zinc-950/80 border border-white/5 rounded-lg p-3 text-[11px] leading-relaxed max-h-[160px] overflow-y-auto">
+                    <pre className="text-emerald-400 whitespace-pre-wrap select-all">
+{`-- SQL to create the missing 'content' table and enable row level security (RLS)
+CREATE TABLE IF NOT EXISTS public.content (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  media_url TEXT,
+  media_type TEXT,
+  category TEXT,
+  published_at TIMESTAMPTZ DEFAULT NOW(),
+  is_ad BOOLEAN DEFAULT FALSE,
+  priority TEXT,
+  is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Enable RLS and insert initial test content
+ALTER TABLE public.content ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read access" ON public.content FOR SELECT USING (true);`}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Dual-column Grid: News on Left, Custom Podcasts Console on Right */}
         <div className="grid gap-6 sm:gap-8 lg:grid-cols-3 mt-6 sm:mt-8 min-w-0">
