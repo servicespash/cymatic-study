@@ -17,12 +17,17 @@ import {
   IdCard,
   Copy,
   Check,
+  CheckCircle2,
+  XCircle,
+  Database as DatabaseIcon,
+  RefreshCw,
 } from "lucide-react";
 import { PermissionsPanel } from "@/components/PermissionsPanel";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { SchoolIdInputField } from "@/components/SchoolIdInputField";
 import QuickFeedbackButton from "@/components/QuickFeedbackButton";
-import { supabase } from "@/integrations/supabase/client";
+import { SupabaseSetupGuide } from "@/components/SupabaseSetupGuide";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,6 +49,23 @@ function SettingsPage() {
   const [pitchAdj, setPitchAdj] = useState<number>(0);
   const [rateAdj, setRateAdj] = useState<number>(0);
   const [copiedSchoolId, setCopiedSchoolId] = useState(false);
+  const [dbStatus, setDbStatus] = useState<"connected" | "error" | "checking">("checking");
+
+  const checkConnection = useCallback(async () => {
+    setDbStatus("checking");
+    try {
+      const { error } = await supabase.from("profiles").select("id").limit(1);
+      if (error) throw error;
+      setDbStatus("connected");
+    } catch (e) {
+      console.error("Connection check failed:", e);
+      setDbStatus("error");
+    }
+  }, []);
+
+  useEffect(() => {
+    checkConnection();
+  }, [checkConnection]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -555,6 +577,77 @@ function SettingsPage() {
 
       {/* DEVICE PERMISSIONS */}
       <PermissionsPanel />
+
+      {/* DATABASE CONNECTION STATUS & SETUP PROMPT */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-2">
+            <DatabaseIcon className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-bold">Infrastructural Systems</h2>
+          </div>
+          <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-xl border ${
+            dbStatus === "connected" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
+            dbStatus === "error" ? "bg-red-500/10 text-red-500 border-red-500/20" :
+            "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"
+          }`}>
+            <div className={`h-1.5 w-1.5 rounded-full ${
+              dbStatus === "connected" ? "bg-emerald-500 animate-pulse" :
+              dbStatus === "error" ? "bg-red-500" :
+              "bg-zinc-500 animate-pulse"
+            }`} />
+            {dbStatus === "connected" ? "Database Online" : dbStatus === "error" ? "System Offline" : "Checking..."}
+          </div>
+        </div>
+
+        {dbStatus !== "connected" && <SupabaseSetupGuide />}
+
+        <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <RefreshCw className={`h-4 w-4 text-primary ${dbStatus === "checking" ? "animate-spin" : ""}`} />
+              <h3 className="text-sm font-bold uppercase tracking-tight">Active Connection Diagnostics</h3>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={checkConnection} 
+              disabled={dbStatus === "checking"}
+              className="h-8 text-[10px] font-bold uppercase tracking-widest hover:bg-primary/10"
+            >
+              Force Re-sync
+            </Button>
+          </div>
+          
+          <div className="flex items-center gap-3 rounded-xl bg-muted/30 p-4 border border-white/5">
+            {dbStatus === "connected" ? (
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-emerald-500">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span className="text-sm font-bold">Successfully Verified</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  The application is currently communicating with the Supabase cluster. All study data and teacher submissions are synchronized.
+                </p>
+              </div>
+            ) : dbStatus === "error" ? (
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-red-500">
+                  <XCircle className="h-4 w-4" />
+                  <span className="text-sm font-bold">Protocol Failure</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  Unable to reach the database. This usually indicates invalid credentials or missing environment variables. Review the configuration guide above.
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                <span className="text-sm font-medium">Running diagnostics...</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* FEEDBACK & SUPPORT */}
       <section className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-4">

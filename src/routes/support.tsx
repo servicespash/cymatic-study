@@ -10,10 +10,12 @@ import {
   ShieldCheck,
   Wallet,
   Phone,
+  MessageSquarePlus,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { BRAND } from "@/lib/constants";
 import { useAuth } from "@/lib/auth-context"; // Import useAuth
+import QuickFeedbackButton from "@/components/QuickFeedbackButton";
 
 export const Route = createFileRoute("/support")({
   component: SupportPage,
@@ -138,6 +140,24 @@ function SupportPage() {
         </div>
 
         <div className="grid gap-6">
+          {/* Feedback & Suggestions */}
+          <div className="rounded-3xl border border-blue-500/20 bg-blue-500/5 p-6 shadow-sm">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/20 text-blue-500">
+                <MessageSquarePlus className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-bold">Quick Feedback</h3>
+                <p className="text-xs text-muted-foreground">Spotted a bug or have an idea?</p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+              Help us improve Cymatic Study! Whether it's a content error, a technical issue, or a 
+              suggestion for a new feature, we want to hear from you.
+            </p>
+            <QuickFeedbackButton />
+          </div>
+
           {/* Supportive Plan Header */}
           <div className="rounded-3xl bg-gradient-to-br from-primary/20 via-primary/5 to-transparent p-6 border border-primary/20 shadow-glow-sm">
             <div className="flex items-start justify-between">

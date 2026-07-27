@@ -493,6 +493,10 @@
   :root {
     --background: white !important;
     --foreground: black !important;
+    --border: #e2e8f0 !important;
+    --card: white !important;
+    --muted: #f8fafc !important;
+    --muted-foreground: #64748b !important;
   }
 
   body {
@@ -500,6 +504,7 @@
     color: black !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+    font-family: "Inter", "Georgia", serif !important;
   }
 
   /* Hide all application shells and interactive artifacts */
@@ -514,6 +519,8 @@
   .sticky,
   .lucide,
   .floating-mesh,
+  .scanlines,
+  .glass::after,
   [role="navigation"],
   [role="banner"],
   [role="complementary"] {
@@ -534,28 +541,76 @@
     box-shadow: none !important;
   }
 
+  /* Remove all background gradients and patterns */
+  body::before,
+  body::after,
+  .bg-gradient-to-br,
+  .bg-gradient-to-tr,
+  .bg-gradient-to-r,
+  .bg-gradient-hero {
+    background: none !important;
+    background-image: none !important;
+  }
+
+  /* Card styling for print */
+  .card, 
+  [class*="Card"],
+  .rounded-2xl,
+  .rounded-3xl {
+    border: 1px solid var(--border) !important;
+    background: white !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    margin-bottom: 1rem;
+    border-radius: 8px !important;
+  }
+
   /* Ensure text is black and high-contrast */
-  h1,
-  h2,
-  h3,
-  h4,
-  p,
-  span,
-  td,
-  th {
+  h1, h2, h3, h4, p, span, td, th, li {
     color: black !important;
     text-shadow: none !important;
   }
 
+  h1 { font-size: 24pt !important; margin-bottom: 24pt !important; border-bottom: 2px solid black; padding-bottom: 8pt; }
+  h2 { font-size: 18pt !important; margin-top: 18pt !important; margin-bottom: 12pt !important; border-bottom: 1px solid #ddd; padding-bottom: 4pt; }
+  h3 { font-size: 14pt !important; margin-top: 14pt !important; margin-bottom: 8pt !important; }
+
+  /* Table improvements */
+  table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 1.5rem !important; }
+  th { background-color: #f1f5f9 !important; border: 1px solid #cbd5e1 !important; padding: 8pt !important; font-weight: bold !important; }
+  td { border: 1px solid #e2e8f0 !important; padding: 6pt !important; }
+
+  /* Page breaks */
+  .page-break,
+  .report-section,
+  .portfolio-item,
+  h1, h2 {
+    break-before: page;
+  }
+
+  h1:first-of-type,
+  h2:first-of-type {
+    break-before: avoid;
+  }
+
+  .no-break {
+    break-inside: avoid;
+  }
+
   /* Page margins */
   @page {
-    margin: 18mm;
-    size: auto;
+    margin: 20mm;
+    size: A4;
   }
 
   /* Force display of report content */
   .print-report,
-  .print-chat {
+  .print-chat,
+  .report-content {
     display: block !important;
   }
+
+  /* Links */
+  a { text-decoration: underline !important; color: black !important; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.8rem; color: #666; }
 }

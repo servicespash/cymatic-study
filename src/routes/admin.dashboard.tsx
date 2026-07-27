@@ -139,9 +139,9 @@ function AdminDashboard() {
   const [teacherBottlenecks, setTeacherBottlenecks] = useState<TeacherBottleneck[]>([]);
   const [isOnboardingNeeded, setIsOnboardingNeeded] = useState(false);
   
-  // Navigation tabs: Overview, Class Students (S1-S6), Submissions, Faculty, Analytics, Summary Reports, Campus Controls
+  // Navigation tabs: Overview, Class Students (S1-S6), Submissions, Faculty, Analytics, Summary Reports, Campus Controls, Feedback
   const [activeTab, setActiveTab] = useState<
-    "overview" | "students" | "submissions" | "faculty" | "analytics" | "reports" | "settings"
+    "overview" | "students" | "submissions" | "faculty" | "analytics" | "reports" | "settings" | "feedback"
   >("overview");
 
   // Class filtering states
@@ -153,6 +153,10 @@ function AdminDashboard() {
 
   // Drilldown Inspector Modal
   const [inspectedStudent, setInspectedStudent] = useState<StudentRecord | null>(null);
+
+  // Feedback State
+  const [feedbackList, setFeedbackList] = useState<any[]>([]);
+  const [loadingFeedback, setLoadingFeedback] = useState(false);
 
   const currentOrgId =
     profile?.org_id ||
@@ -196,6 +200,42 @@ function AdminDashboard() {
       }
       loadDashboardStats(activeSchoolId);
       loadClassStudentsAndSubmissions(activeSchoolId);
+      loadFeedback();
+    }
+  };
+
+  const loadFeedback = async () => {
+    setLoadingFeedback(true);
+    try {
+      const { data, error } = await supabase
+        .from("user_feedback")
+        .select(`
+          *,
+          profiles:user_id (display_name, level)
+        `)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setFeedbackList(data || []);
+    } catch (e) {
+      console.error("Error loading feedback:", e);
+    } finally {
+      setLoadingFeedback(false);
+    }
+  };
+
+  const updateFeedbackStatus = async (id: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from("user_feedback")
+        .update({ status })
+        .eq("id", id);
+      
+      if (error) throw error;
+      toast.success(`Feedback marked as ${status}`);
+      loadFeedback();
+    } catch (e) {
+      toast.error("Failed to update status");
     }
   };
 
@@ -514,6 +554,12 @@ function AdminDashboard() {
               label="School ID & Controls"
               active={activeTab === "settings"}
               onClick={() => setActiveTab("settings")}
+            />
+            <NavButton
+              icon={MessageSquare}
+              label="User Feedback"
+              active={activeTab === "feedback"}
+              onClick={() => setActiveTab("feedback")}
             />
           </nav>
         </div>
@@ -1116,6 +1162,125 @@ function AdminDashboard() {
                 </CardContent>
               </Card>
             </div>
+          </div>
+        )}
+
+        {activeTab === "feedback" && (
+          <div className="space-y-6 animate-in fade-in duration-500">
+            <header className="flex justify-between items-end">
+              <div>
+                <h2 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-2">
+                  <MessageSquare className="h-6 w-6 text-blue-500" />
+                  Student Feedback Management
+                </h2>
+                <p className="text-zinc-500 text-sm">
+                  Review student suggestions, bug reports, and general feedback.
+                </p>
+              </div>
+            </header>
+
+            <Card className="border-white/5 bg-black/40 backdrop-blur-xl">
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader className="border-white/5 bg-white/5">
+                    <TableRow className="hover:bg-transparent border-white/5 text-zinc-500 uppercase text-[10px] font-bold">
+                      <TableHead>Type</TableHead>
+                      <TableHead>User</TableHead>
+                      <TableHead>Section</TableHead>
+                      <TableHead className="max-w-md">Message</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loadingFeedback ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-12">
+                          <div className="flex flex-col items-center gap-2">
+                            <Activity className="h-6 w-6 animate-spin text-blue-500" />
+                            <p className="text-sm text-zinc-500">Synchronizing feedback logs...</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : feedbackList.map((f) => (
+                      <TableRow key={f.id} className="border-white/5 hover:bg-white/[0.02]">
+                        <TableCell>
+                          <Badge 
+                            variant="outline" 
+                            className={`uppercase text-[10px] border-none ${
+                              f.type === "bug" ? "bg-red-500/10 text-red-500" : 
+                              f.type === "suggestion" ? "bg-blue-500/10 text-blue-500" : 
+                              "bg-zinc-500/10 text-zinc-500"
+                            }`}
+                          >
+                            {f.type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="text-xs font-bold text-white">{f.profiles?.display_name || "User"}</p>
+                            <p className="text-[10px] text-zinc-500">{f.profiles?.level || "N/A"}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-[10px] font-mono text-zinc-500 truncate block max-w-[100px]">
+                            {f.section}
+                          </span>
+                        </TableCell>
+                        <TableCell className="max-w-md">
+                          <p className="text-xs text-zinc-300 line-clamp-2 leading-relaxed">
+                            {f.message}
+                          </p>
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            className={`text-[10px] font-black uppercase ${
+                              f.status === "open" ? "bg-amber-500/10 text-amber-500" :
+                              f.status === "resolved" ? "bg-emerald-500/10 text-emerald-500" :
+                              "bg-zinc-500/10 text-zinc-500"
+                            }`}
+                          >
+                            {f.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            {f.status === "open" && (
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-8 text-[10px] text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10"
+                                onClick={() => updateFeedbackStatus(f.id, "resolved")}
+                              >
+                                Resolve
+                              </Button>
+                            )}
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              className="h-8 w-8 text-zinc-500"
+                              onClick={() => {
+                                // Potentially delete or archive
+                                toast.info("Detailed view coming soon");
+                              }}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {feedbackList.length === 0 && !loadingFeedback && (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-12 text-zinc-500 italic">
+                          No feedback entries recorded yet.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
           </div>
         )}
 
