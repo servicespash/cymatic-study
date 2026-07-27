@@ -4,11 +4,17 @@ import { createResendAdapter } from "@resend/chat-sdk-adapter";
 const fromAddress = "support@cymatichub.xyz";
 const fromName = "Cymatic Study Support";
 
-// Initialize Adapter
-const resendAdapter = createResendAdapter({
-  fromAddress,
-  fromName,
-});
+let _resendAdapter: any = null;
+
+function getResendAdapter() {
+  if (!_resendAdapter) {
+    _resendAdapter = createResendAdapter({
+      fromAddress,
+      fromName,
+    });
+  }
+  return _resendAdapter;
+}
 
 // HTML Template Generator
 function renderCardEmail(ui: any): string {
@@ -34,7 +40,7 @@ const Chat = {
   openDM: async (to: string, message: any) => {
     // Post message to a thread, assuming thread ID format from to address
     // In a real application, you'd resolve the thread ID properly.
-    return resendAdapter.postMessage(`resend:${to}`, {
+    return getResendAdapter().postMessage(`resend:${to}`, {
       markdown: message.subject + "\n\n" + renderCardEmail(message.ui),
     });
   },

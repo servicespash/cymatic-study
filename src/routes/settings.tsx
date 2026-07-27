@@ -21,11 +21,13 @@ import {
 import { PermissionsPanel } from "@/components/PermissionsPanel";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { SchoolIdInputField } from "@/components/SchoolIdInputField";
+import QuickFeedbackButton from "@/components/QuickFeedbackButton";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { MessageSquare } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings — Cymatic Study" }] }),
@@ -553,6 +555,24 @@ function SettingsPage() {
 
       {/* DEVICE PERMISSIONS */}
       <PermissionsPanel />
+
+      {/* FEEDBACK & SUPPORT */}
+      <section className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-4">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="h-5 w-5 text-primary" />
+          <h2 className="text-lg font-bold">Feedback & Support</h2>
+        </div>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Spotted an issue? Have a feature request? Let us know how we can improve your study
+          experience.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <QuickFeedbackButton />
+          <Button variant="ghost" onClick={() => navigate({ to: "/support" })} className="text-xs">
+            Visit Support Center
+          </Button>
+        </div>
+      </section>
 
       {/* THEME SELECTOR */}
       <section className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm">

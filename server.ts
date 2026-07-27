@@ -139,8 +139,10 @@ async function startServer() {
   });
 
   // Vite middleware for development
-  console.log("[Boot] NODE_ENV is:", process.env.NODE_ENV);
-  if (process.env.NODE_ENV !== "production") {
+  const isDev = process.env.NODE_ENV === "development" || (!process.env.NODE_ENV && process.env.DISABLE_HMR !== "true");
+  console.log("[Boot] Mode:", isDev ? "development" : "production");
+  
+  if (isDev) {
     console.log("[Boot] Loading Vite in middlewareMode...");
     const { createServer } = await import("vite");
     console.log("[Boot] Importing vite succeeded. Creating server...");

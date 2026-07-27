@@ -123,6 +123,11 @@ export function DisciplineNudges() {
         };
         playTone(587.33, 0, 0.35); // D5
         playTone(880, 0.05, 0.5); // A5
+        
+        // Cleanup context after sounds finish
+        setTimeout(() => {
+          ctx.close().catch(console.error);
+        }, 1000);
       }
     } catch (e) {
       console.warn("Audio Context playback failed", e);

@@ -21,39 +21,42 @@ export function RoleGuard({
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loading) return;
+    if (!loading) {
+      const currentPath = window.location.pathname;
 
-    if (!user) {
-      navigate({ to: fallbackPath });
-      return;
-    }
-
-    if (profile) {
-      let isAllowed = true;
-
-      if (requireAdmin && !isAdmin) {
-        isAllowed = false;
+      if (!user) {
+        if (currentPath !== fallbackPath) {
+          navigate({ to: fallbackPath as any });
+        }
+        return;
       }
 
-      if (requireTeacher && !isTeacher && !isAdmin) {
-        isAllowed = false;
-      }
+      if (profile) {
+        let isAllowed = true;
 
-      if (allowedRoles && allowedRoles.length > 0) {
-        const userRole = profile.role || "student";
-        if (!allowedRoles.includes(userRole)) {
+        if (requireAdmin && !isAdmin) {
           isAllowed = false;
         }
-      }
 
-      if (!isAllowed) {
-        // Redirect based on what they ARE allowed to see
-        if (isAdmin) {
-          navigate({ to: "/admin/dashboard" });
-        } else if (isTeacher) {
-          navigate({ to: "/dashboard" });
-        } else {
-          navigate({ to: "/dashboard" });
+        if (requireTeacher && !isTeacher && !isAdmin) {
+          isAllowed = false;
+        }
+
+        if (allowedRoles && allowedRoles.length > 0) {
+          const userRole = profile.role || "student";
+          if (!allowedRoles.includes(userRole)) {
+            isAllowed = false;
+          }
+        }
+
+        if (!isAllowed) {
+          let target = "/dashboard";
+          if (isAdmin) target = "/admin/dashboard";
+          else if (isTeacher) target = "/dashboard";
+
+          if (currentPath !== target) {
+            navigate({ to: target as any });
+          }
         }
       }
     }

@@ -3,23 +3,32 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 
 function getEnv(name: string): string | undefined {
-  // Statically check keys so Vite can replace them at build time
-  if (name === "VITE_SUPABASE_URL") return import.meta.env.VITE_SUPABASE_URL;
-  if (name === "VITE_SUPABASE_ANON_KEY") return import.meta.env.VITE_SUPABASE_ANON_KEY;
-  if (name === "VITE_SUPABASE_KEY") return import.meta.env.VITE_SUPABASE_KEY;
-  if (name === "VITE_SUPABASE_PUBLISHABLE_KEY") return import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  if (name === "SUPABASE_URL") return import.meta.env.SUPABASE_URL || (typeof process !== "undefined" ? process.env.SUPABASE_URL : undefined);
-  if (name === "SUPABASE_ANON_KEY") return import.meta.env.SUPABASE_ANON_KEY || (typeof process !== "undefined" ? process.env.SUPABASE_ANON_KEY : undefined);
+  // Use a safe way to access environment variables that works in both Vite (import.meta.env)
+  // and Node (process.env), and is safe for CommonJS bundling.
+  
+  // 1. Try process.env first (Node / Server-side)
+  if (typeof process !== "undefined" && process.env) {
+    if (process.env[name]) return process.env[name];
+    // Also check VITE_ prefixed version if we're looking for a non-prefixed one
+    if (!name.startsWith("VITE_") && process.env[`VITE_${name}`]) return process.env[`VITE_${name}`];
+  }
 
-  if (typeof import.meta !== "undefined" && import.meta.env && import.meta.env[name]) {
-    return import.meta.env[name];
+  // 2. Try import.meta.env (Vite / Client-side)
+  // We use a safe check to avoid syntax errors in CJS environments
+  try {
+    const meta = import.meta as any;
+    if (meta && meta.env && meta.env[name]) {
+      return meta.env[name];
+    }
+  } catch (e) {
+    // Ignore syntax errors or reference errors for import.meta
   }
-  if (typeof process !== "undefined" && process.env && process.env[name]) {
-    return process.env[name];
-  }
+
+  // 3. Fallback to window for certain environments
   if (typeof window !== "undefined" && (window as any)[name]) {
     return (window as any)[name];
   }
+  
   return undefined;
 }
 

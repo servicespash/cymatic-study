@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, type ReactNode } from "react";
+import { useEffect, useState, useCallback, useMemo, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Ctx, type AuthCtx, type UserProfile } from "./auth-context-core";
@@ -218,7 +218,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isGuestMode = !loading && !user;
 
-  const value: AuthCtx = {
+  const value: AuthCtx = useMemo(() => ({
     user,
     session,
     loading,
@@ -229,7 +229,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAdmin,
     isGuestMode,
     signOut,
-  };
+  }), [user, session, loading, profile, isInstitutional, isStudent, isTeacher, isAdmin, isGuestMode, signOut]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
