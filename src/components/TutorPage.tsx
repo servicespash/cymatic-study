@@ -247,23 +247,46 @@ function TutorPageContent() {
         content: finalPrompt,
       });
 
-      const url = "/api/tutor";
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          messages: historyToSend,
-          userName: displayName,
-          subject: "general",
-        }),
-      });
+      let res;
+      try {
+        const url = "/api/tutor";
+        res = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            messages: historyToSend,
+            userName: displayName,
+            subject: "general",
+          }),
+        });
+        if (!res.ok) {
+          throw new Error("Local API failed status: " + res.status);
+        }
+      } catch (err) {
+        console.warn("[Tutor Chat] Local API failed, trying Supabase Edge Function directly:", err);
+        const edgeUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tutor-chat`;
+        res = await fetch(edgeUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
+          },
+          body: JSON.stringify({
+            messages: historyToSend,
+            persona: persona === "Adams" ? "male" : "female",
+            userName: displayName,
+            subject: "general",
+          }),
+        });
+      }
 
       if (!res.ok) {
         const errText = await res.text().catch(() => "Unknown error");
-        throw new Error(`Local Tutor API failed (${res.status}): ${errText}`);
+        throw new Error(`Tutor APIs failed (${res.status}): ${errText}`);
       }
 
       const reader = res.body?.getReader();

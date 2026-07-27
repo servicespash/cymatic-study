@@ -6,7 +6,7 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const MODEL = "gemini-1.5-flash";
+const MODEL = "gemini-3.6-flash";
 const GOOGLE_OPENAI_ENDPOINT =
   "https://generativelanguage.googleapis.com/v1beta/openai/v1/chat/completions";
 

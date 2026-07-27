@@ -156,26 +156,52 @@ export function SocraticTutorChat() {
       const { data: sess } = await supabase.auth.getSession();
       const token = sess.session?.access_token;
 
-      const url = "/api/tutor";
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          messages: [...messages, studentMsg].map((m) => ({
-            role: m.sender === "student" ? "user" : "assistant",
-            content: m.text,
-          })),
-          userName: displayName,
-          subject: activeSubject,
-        }),
-      });
+      let res;
+      try {
+        const url = "/api/tutor";
+        res = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            messages: [...messages, studentMsg].map((m) => ({
+              role: m.sender === "student" ? "user" : "assistant",
+              content: m.text,
+            })),
+            userName: displayName,
+            subject: activeSubject,
+          }),
+        });
+        if (!res.ok) {
+          throw new Error("Local API failed status: " + res.status);
+        }
+      } catch (err) {
+        console.warn("[Socratic Coach] Local API failed, trying Supabase Edge Function directly:", err);
+        const edgeUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tutor-chat`;
+        res = await fetch(edgeUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
+          },
+          body: JSON.stringify({
+            messages: [...messages, studentMsg].map((m) => ({
+              role: m.sender === "student" ? "user" : "assistant",
+              content: m.text,
+            })),
+            persona: activeSubject === "physics" || activeSubject === "mathematics" ? "male" : "female",
+            userName: displayName,
+            subject: activeSubject,
+          }),
+        });
+      }
 
       if (!res.ok) {
         const errText = await res.text().catch(() => "Unknown error");
-        throw new Error(`Local Socratic API failed (${res.status}): ${errText}`);
+        throw new Error(`Tutor APIs failed (${res.status}): ${errText}`);
       }
 
       const reader = res.body?.getReader();

@@ -150,7 +150,18 @@ Your task is to provide personalized, Socratic guidance based on this specific s
 
   const systemPrompt = SYSTEM_PROMPT + "\n" + dynamicContext + (groundingPrompt || "");
 
-  const aiClient = getGoogleGenAIClient();
+  let aiClient;
+  let useFallback = false;
+  try {
+    aiClient = getGoogleGenAIClient();
+  } catch (err) {
+    console.warn(
+      "[Tutor Server] Could not initialize GoogleGenAI client, falling back to Supabase Edge Function:",
+      err,
+    );
+    useFallback = true;
+  }
+
   // Format previous messages for context
   const historyText = sanitizedMessages
     .slice(0, -1)
@@ -163,13 +174,69 @@ Your task is to provide personalized, Socratic guidance based on this specific s
     ? `Below is the conversation history so far. Review it carefully, then respond to the Student's latest query at the end.\n\n=== CONVERSATION HISTORY ===\n${historyText}\n============================\n\nStudent's latest query: ${currentMessage}`
     : currentMessage;
 
-  const responseStreamPromise = aiClient.models.generateContentStream({
-    model: "gemini-3.6-flash",
-    contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
-    config: {
-      systemInstruction: systemPrompt,
-    },
-  });
+  let responseStreamPromise: any = null;
+  if (!useFallback && aiClient) {
+    try {
+      responseStreamPromise = aiClient.models.generateContentStream({
+        model: "gemini-3.6-flash",
+        contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
+        config: {
+          systemInstruction: systemPrompt,
+        },
+      });
+    } catch (genErr) {
+      console.warn(
+        "[Tutor Server] generateContentStream failed, attempting Supabase Edge Function fallback:",
+        genErr,
+      );
+      useFallback = true;
+    }
+  }
+
+  if (useFallback) {
+    try {
+      const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+      const supabaseKey =
+        process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+        process.env.VITE_SUPABASE_ANON_KEY ||
+        process.env.VITE_SUPABASE_KEY ||
+        process.env.SUPABASE_ANON_KEY;
+
+      if (supabaseUrl && supabaseKey) {
+        const edgeUrl = `${supabaseUrl}/functions/v1/tutor-chat`;
+        const token = request.headers.get("Authorization")?.split(" ")[1] || "";
+        const res = await fetch(edgeUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            apikey: supabaseKey,
+          },
+          body: JSON.stringify({
+            messages: sanitizedMessages.map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+            persona: subject === "physics" || subject === "mathematics" ? "male" : "female",
+            userName,
+            subject,
+          }),
+        });
+
+        if (res.ok && res.body) {
+          return new Response(res.body, {
+            headers: {
+              "Content-Type": "text/event-stream",
+              "Cache-Control": "no-cache",
+              Connection: "keep-alive",
+            },
+          });
+        }
+      }
+    } catch (fallbackErr) {
+      console.error("[Tutor Server] Fallback to Supabase Edge Function failed:", fallbackErr);
+    }
+  }
 
   return new Response(
     (async function* () {

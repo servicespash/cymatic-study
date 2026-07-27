@@ -181,10 +181,23 @@ function NewsPage() {
     items.filter((i) => i.media_type === "curriculum_update"),
   );
   const liveSessionItems = formatItemsForFeed(items.filter((i) => i.media_type === "live_session"));
+  const studentShoutoutItems = formatItemsForFeed(
+    items.filter((i) => i.media_type === "student_shoutout"),
+  );
+  const generalNewsItems = formatItemsForFeed(
+    items.filter(
+      (i) =>
+        !["curriculum_update", "live_session", "student_shoutout", "podcast", "audio", "audiobook", "video_podcast"].includes(
+          i.media_type || "",
+        ),
+    ),
+  );
 
   const categorizedFeeds = [
+    { name: "General Announcements", items: generalNewsItems },
     { name: "Curriculum Updates", items: curriculumItems },
     { name: "Live Sessions", items: liveSessionItems },
+    { name: "Student Spotlights", items: studentShoutoutItems },
   ];
 
   return (
