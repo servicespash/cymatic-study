@@ -7,6 +7,7 @@ import { useNewsFeed, NewsItem } from "@/lib/supabase-service";
 import { cn } from "@/lib/utils";
 import { LiveBadge } from "@/components/LiveBadge";
 import { useLiveSession } from "@/hooks/useLiveSession";
+import { RoleGuard } from "@/components/RoleGuard";
 import {
   Play,
   Pause,
@@ -21,7 +22,11 @@ import {
 
 export const Route = createFileRoute("/news")({
   head: () => ({ meta: [{ title: "News & Podcasts — Latty's Cymatic Study" }] }),
-  component: NewsPage,
+  component: () => (
+    <RoleGuard>
+      <NewsPage />
+    </RoleGuard>
+  ),
 });
 
 // Represents the parsed JSON body for rich media types

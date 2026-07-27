@@ -15,6 +15,8 @@ import {
   ShieldCheck,
   UserCheck,
   Sparkles,
+  Share2,
+  QrCode,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,6 +24,7 @@ import { Label } from "@/components/ui/label";
 import { validateNcdcSchoolId, generateNcdcBoardingSchoolId } from "@/lib/school-id-validator";
 import { SchoolIdQRCode } from "@/components/SchoolIdQRCode";
 import { generateStudentRegistryCode } from "@/lib/auth-router";
+import { QRScannerModal } from "@/components/QRScannerModal";
 
 interface SchoolIdInputFieldProps {
   onSaved?: (newSchoolId: string) => void;
@@ -47,6 +50,7 @@ export function SchoolIdInputField({ onSaved, className = "" }: SchoolIdInputFie
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isFormatValid, setIsFormatValid] = useState<boolean>(true);
   const [copied, setCopied] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   useEffect(() => {
     setInputVal(currentSchoolId);
@@ -234,6 +238,36 @@ export function SchoolIdInputField({ onSaved, className = "" }: SchoolIdInputFie
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleShareInvite = async () => {
+    if (!inputVal) return;
+    const shareUrl = `${window.location.origin}/signup?schoolId=${inputVal}`;
+    const shareText = `Join ${schoolNameVal} on Cymatic Study!\n\nUse our School ID: ${inputVal} to register.\nRegister and link your account here: ${shareUrl}`;
+
+    try {
+      await navigator.clipboard.writeText(shareText);
+    } catch (err) {
+      console.warn("Clipboard copy failed:", err);
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Join ${schoolNameVal}`,
+          text: `Join ${schoolNameVal} on Cymatic Study using School ID: ${inputVal}`,
+          url: shareUrl,
+        });
+        toast.success("Invite copied & native share opened!");
+      } catch (err) {
+        console.log("Web Share action:", err);
+        toast.success("Invite message copied to clipboard!");
+      }
+    } else {
+      toast.success("Invite message copied to clipboard!", {
+        description: "Your device does not support native sharing, so we copied the formatted message for you to paste.",
+      });
+    }
+  };
+
   return (
     <div className={`space-y-4 rounded-3xl border border-primary/20 bg-card/80 p-6 backdrop-blur shadow-sm ${className}`}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -280,11 +314,23 @@ export function SchoolIdInputField({ onSaved, className = "" }: SchoolIdInputFie
               <IdCard className="h-3.5 w-3.5 text-cyan-400" />
               {isAdmin ? "Official Institution Registry Code" : "Enter Admin-Provided School ID"}
             </Label>
-            {inputVal && isFormatValid && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400">
-                <CheckCircle2 className="h-3 w-3" /> Official NCDC Registry Verified
-              </span>
-            )}
+            <div className="flex items-center gap-3">
+              {!isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setIsScannerOpen(true)}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+                >
+                  <QrCode className="h-3.5 w-3.5" />
+                  Scan QR to Join
+                </button>
+              )}
+              {inputVal && isFormatValid && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400">
+                  <CheckCircle2 className="h-3 w-3" /> Official NCDC Registry Verified
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="relative">
@@ -365,8 +411,38 @@ export function SchoolIdInputField({ onSaved, className = "" }: SchoolIdInputFie
             studentName={profile?.display_name || user?.email?.split("@")[0] || "NCDC Scholar"}
             role={profile?.role || (isAdmin ? "School Administrator" : "Boarding Scholar")}
           />
+          <div className="mt-4 pt-3 border-t border-white/5 flex flex-col sm:flex-row gap-3 items-center justify-between">
+            <p className="text-[10px] text-muted-foreground max-w-xs leading-normal">
+              Copy a pre-formatted invite containing the school registry code or share directly with teachers & students.
+            </p>
+            <Button
+              type="button"
+              onClick={handleShareInvite}
+              className="w-full sm:w-auto rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md flex items-center justify-center gap-1.5 px-4 h-9 shrink-0 transition-all"
+            >
+              <Share2 className="h-4 w-4" />
+              Share School ID & Invite
+            </Button>
+          </div>
         </div>
       )}
+
+      <QRScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScanSuccess={(id) => {
+          setInputVal(id);
+          const valResult = validateNcdcSchoolId(id);
+          if (!valResult.isValid) {
+            setValidationError(valResult.error || "Invalid School ID format.");
+            setIsFormatValid(false);
+          } else {
+            setValidationError(null);
+            setIsFormatValid(true);
+            toast.info(`School ID prefilled from scan. Click 'Bind Profile' below to save.`);
+          }
+        }}
+      />
     </div>
   );
 }

@@ -35,6 +35,7 @@ const links: readonly NavLink[] = [
   { to: "/", label: "Home", icon: Sparkles },
   { to: "/student", label: "Student", icon: GraduationCap },
   { to: "/teacher", label: "Teacher", icon: BookOpen },
+  { to: "/news", label: "News", icon: Newspaper },
   { to: "/lessons", label: "Lessons", icon: BookOpen },
   { to: "/quizzes", label: "Quizzes", icon: Lightbulb },
   { to: "/chat", label: "Chat", icon: MessagesSquare },
@@ -100,6 +101,19 @@ export function Navbar() {
     checkAdmin();
   }, [user, profile]);
 
+  const filteredLinks = links.filter(({ to }) => {
+    const userRole = profile?.role || "student";
+    if (to === "/teacher") {
+      // Only show teacher link to teachers and admins
+      return userRole === "teacher" || userRole === "admin" || userRole === "org_admin" || !!profile?.teacher_license_id;
+    }
+    if (to === "/student") {
+      // Only show student link to students and admins
+      return userRole === "student" || userRole === "admin" || userRole === "org_admin";
+    }
+    return true;
+  });
+
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/75 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
@@ -118,7 +132,7 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
-          {links.map(({ to, label, icon: Icon }) => {
+          {filteredLinks.map(({ to, label, icon: Icon }) => {
             const active = pathname === to;
             return (
               <Link
@@ -230,7 +244,7 @@ export function Navbar() {
               </Link>
             )}
 
-            {links.map(({ to, label, icon: Icon }) => (
+            {filteredLinks.map(({ to, label, icon: Icon }) => (
               <Link
                 key={to}
                 to={to}

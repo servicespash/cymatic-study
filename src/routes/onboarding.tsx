@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent, useEffect } from "react";
-import { Loader2, Sparkles, School, Phone, Trophy, GraduationCap } from "lucide-react";
+import { Loader2, Sparkles, School, Phone, Trophy, GraduationCap, QrCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { QRScannerModal } from "@/components/QRScannerModal";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "Complete Your Profile — Cymatic Study" }] }),
@@ -17,6 +18,7 @@ function OnboardingPage() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
@@ -82,9 +84,19 @@ function OnboardingPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {isInstitutional && (
             <div className="relative">
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                School ID
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  School ID
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsScannerOpen(true)}
+                  className="flex items-center gap-1 text-[11px] font-bold text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  <QrCode className="h-3.5 w-3.5" />
+                  Scan QR to Join
+                </button>
+              </div>
               <input
                 value={schoolKey}
                 onChange={(e) => setSchoolKey(e.target.value.toUpperCase())}
@@ -151,6 +163,12 @@ function OnboardingPage() {
           </button>
         </form>
       </div>
+
+      <QRScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScanSuccess={(id) => setSchoolKey(id)}
+      />
     </div>
   );
 }

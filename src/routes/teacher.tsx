@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { RoleGuard } from "@/components/RoleGuard";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -35,7 +36,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/teacher")({
-  component: TeacherWorkflowPage,
+  component: () => (
+    <RoleGuard allowedRoles={["teacher", "independent_teacher", "instructor", "admin", "org_admin"]}>
+      <TeacherWorkflowPage />
+    </RoleGuard>
+  ),
 });
 
 export interface StudentSubmission {

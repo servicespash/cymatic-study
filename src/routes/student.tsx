@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { RoleGuard } from "@/components/RoleGuard";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useGamificationStore } from "@/store/useGamificationStore";
@@ -27,7 +28,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/student")({
-  component: StudentDashboardPage,
+  component: () => (
+    <RoleGuard allowedRoles={["student", "admin", "org_admin"]}>
+      <StudentDashboardPage />
+    </RoleGuard>
+  ),
 });
 
 function StudentDashboardPage() {

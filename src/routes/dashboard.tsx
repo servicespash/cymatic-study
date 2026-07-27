@@ -66,6 +66,7 @@ import { StudentActivityDashboard } from "@/components/StudentActivityDashboard"
 import { SocraticTutorChat } from "@/components/SocraticTutorChat";
 import { SubjectPracticeReminder } from "@/components/SubjectPracticeReminder";
 import { UserProfileCard } from "@/components/UserProfileCard";
+import { DisciplineNudges } from "@/components/DisciplineNudges";
 
 import { RoleGuard } from "@/components/RoleGuard";
 
@@ -138,7 +139,9 @@ function DashboardPage() {
           isAdmin,
         });
         let query = supabase.from("profiles").select("*");
-        if (profile?.org_id) {
+        if (profile?.school_id) {
+          query = query.eq("school_id", profile.school_id);
+        } else if (profile?.org_id) {
           query = query.eq("org_id", profile.org_id);
         } else if (profile?.school_name) {
           query = query.eq("school_name", profile.school_name);
@@ -200,7 +203,15 @@ function DashboardPage() {
     };
 
     void fetchRealData();
-  }, [user, isTeacher, isAdmin, profile, isGuestMode]);
+  }, [
+    user?.id,
+    isTeacher,
+    isAdmin,
+    profile?.school_id,
+    profile?.org_id,
+    profile?.school_name,
+    isGuestMode
+  ]);
 
   const handleTeacherCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -264,6 +275,7 @@ function DashboardPage() {
     }
   };
 
+  // Fetch daily points on mount or when user changes
   useEffect(() => {
     const fetchDailyPoints = async () => {
       if (user) {
@@ -281,15 +293,17 @@ function DashboardPage() {
       }
     };
     fetchDailyPoints();
+  }, [user?.id]);
 
-    // Logic to "animate" points rising from 0 to current count
+  // Points rising animation logic
+  useEffect(() => {
     if (points < dailyPoints) {
       const diff = dailyPoints - points;
       const step = Math.max(1, Math.floor(diff / 10));
       const timer = setTimeout(() => setPoints((prev) => Math.min(prev + step, dailyPoints)), 30);
       return () => clearTimeout(timer);
     }
-  }, [user, points, dailyPoints]);
+  }, [points, dailyPoints]);
 
   if (loading) {
     return (
@@ -858,6 +872,7 @@ function DashboardPage() {
                     </div>
 
                     <StudyGoalsCard />
+                    <DisciplineNudges />
                   </div>
                 )}
 

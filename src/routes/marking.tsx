@@ -3,6 +3,7 @@ import { useAuth } from "@/lib/auth-context";
 import { MarkingDesk } from "@/components/MarkingDesk";
 import { ShieldAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { RoleGuard } from "@/components/RoleGuard";
 
 export const Route = createFileRoute("/marking")({
   head: () => ({
@@ -11,7 +12,11 @@ export const Route = createFileRoute("/marking")({
       { name: "description", content: "Review and verify student project work." },
     ],
   }),
-  component: MarkingPage,
+  component: () => (
+    <RoleGuard allowedRoles={["teacher", "independent_teacher", "school_admin", "admin", "institution_admin", "org_admin"]}>
+      <MarkingPage />
+    </RoleGuard>
+  ),
 });
 
 function MarkingPage() {

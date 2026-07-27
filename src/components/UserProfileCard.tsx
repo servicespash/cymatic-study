@@ -178,6 +178,48 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
           )}
         </div>
       </div>
+      {/* Admin/Teacher sharing tools */}
+      {schoolId && (isAdmin || isTeacher) && (
+        <div className="mt-4 pt-4 border-t border-border/40 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1">
+              <Sparkles className="h-3 w-3 text-primary animate-pulse" />
+              Invite Scholars & Teachers
+            </span>
+            <span className="text-[9px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded">
+              School ID: {schoolId}
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              onClick={() => {
+                const inviteMsg = `Salaam! Join "${schoolName}" on Cymatic Study.\n\nSchool ID: ${schoolId}\n\nClick the link to join and link your account automatically: ${window.location.origin}/signup?school_id=${schoolId}`;
+                navigator.clipboard.writeText(inviteMsg);
+                toast.success("Complete invitation message copied to clipboard!");
+              }}
+              className="inline-flex items-center justify-center gap-1.5 h-9 rounded-xl bg-muted hover:bg-muted/80 text-xs font-bold text-foreground transition-colors border border-border/60"
+            >
+              <Copy className="h-3.5 w-3.5" />
+              Copy Msg
+            </button>
+            <a
+              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Salaam! Join our school "${schoolName}" on Lattys Cymatic Study.\n\nUse School ID: ${schoolId}\n\nClick here to register and link your account automatically: ${window.location.origin}/signup?school_id=${schoolId}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 h-9 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors shadow-sm"
+            >
+              WhatsApp
+            </a>
+            <a
+              href={`mailto:?subject=${encodeURIComponent(`Invitation to join ${schoolName} on Cymatic Study`)}&body=${encodeURIComponent(`Hello,\n\nYou are invited to join "${schoolName}" on Cymatic Study. \n\nUse School ID: ${schoolId}\n\nClick the link below to register and link your account automatically:\n${window.location.origin}/signup?school_id=${schoolId}\n\nBest regards.`)}`}
+              className="inline-flex items-center justify-center gap-1.5 h-9 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-colors shadow-sm"
+            >
+              Email Invite
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* Digital QR Code Identity Strip (if School ID is set) */}
       {schoolId && (
         <div className="mt-4 pt-4 border-t border-border/40">

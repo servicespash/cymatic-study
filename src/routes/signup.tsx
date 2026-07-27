@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { Loader2, Sparkles, UserPlus, Copy, Check, Eye, EyeOff, RefreshCw } from "lucide-react";
+import { Loader2, Sparkles, UserPlus, Copy, Check, Eye, EyeOff, RefreshCw, QrCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Database } from "@/integrations/supabase/types";
 import { useRoleRedirect } from "@/hooks/useRoleRedirect";
 import { toast } from "sonner";
+import { QRScannerModal } from "@/components/QRScannerModal";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Join the Hub — Cymatic Study" }] }),
@@ -36,6 +37,7 @@ function SignupPage() {
   const [info, setInfo] = useState<string | null>(null);
   const [generatedSchoolId, setGeneratedSchoolId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -45,6 +47,17 @@ function SignupPage() {
       const trimmed = code.trim();
       setReferralCode(trimmed);
       window.localStorage.setItem(REFERRAL_STORAGE_KEY, trimmed);
+    }
+
+    const schoolIdParam = params.get("school_id") ?? params.get("schoolId") ?? params.get("school");
+    if (schoolIdParam) {
+      const cleanedId = schoolIdParam.trim();
+      setSchoolId(cleanedId);
+      setMode("student-teacher");
+      
+      // Also save to localStorage as a fallback
+      window.localStorage.setItem("cymatic_school_id", cleanedId);
+      toast.info(`Pre-filled School ID: ${cleanedId}`);
     }
   }, []);
 
@@ -341,12 +354,25 @@ function SignupPage() {
 
           {mode === "student-teacher" && (
             <div>
-              <Field
-                label="School ID (Optional)"
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  School ID (Optional)
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsScannerOpen(true)}
+                  className="flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  <QrCode className="h-3.5 w-3.5" />
+                  Scan QR to Join
+                </button>
+              </div>
+              <input
                 value={schoolId}
-                onChange={(v: string) => setSchoolId(v.toUpperCase())}
+                onChange={(e) => setSchoolId(e.target.value.toUpperCase())}
                 type="text"
                 placeholder="e.g. LCSS-4821"
+                className="w-full rounded-lg border border-input bg-background/60 px-3.5 py-2.5 text-sm text-foreground outline-none transition-smooth focus:border-primary focus:ring-2 focus:ring-primary/30"
               />
               <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
                 Ask your school administrator for this ID to link your account to your institution.
@@ -468,6 +494,12 @@ function SignupPage() {
           </Link>
         </p>
       </div>
+
+      <QRScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScanSuccess={(scannedId) => setSchoolId(scannedId)}
+      />
     </div>
   );
 }

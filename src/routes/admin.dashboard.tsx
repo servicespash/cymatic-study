@@ -30,6 +30,7 @@ import {
   Sparkles,
   BookOpen,
   X,
+  CloudLightning,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,10 @@ import { AdminPerformanceReportsModule } from "@/components/AdminPerformanceRepo
 import { Skeleton } from "@/components/ui/skeleton";
 import { ReleaseDashboard } from "@/components/ReleaseDashboard";
 import { DeploymentStatus } from "@/components/DeploymentStatus";
+import { AdminOnboardingWorkflow } from "@/components/AdminOnboardingWorkflow";
+import { UnifiedInstitutionalDirectory } from "@/components/UnifiedInstitutionalDirectory";
+import { BulkQRGenerator } from "@/components/BulkQRGenerator";
+import { DisciplineNudges } from "@/components/DisciplineNudges";
 
 export const Route = createFileRoute("/admin/dashboard")({
   head: () => ({
@@ -132,6 +137,7 @@ function AdminDashboard() {
   });
   const [velocityData, setVelocityData] = useState<VelocityData[]>([]);
   const [teacherBottlenecks, setTeacherBottlenecks] = useState<TeacherBottleneck[]>([]);
+  const [isOnboardingNeeded, setIsOnboardingNeeded] = useState(false);
   
   // Navigation tabs: Overview, Class Students (S1-S6), Submissions, Faculty, Analytics, Summary Reports, Campus Controls
   const [activeTab, setActiveTab] = useState<
@@ -158,7 +164,7 @@ function AdminDashboard() {
   useEffect(() => {
     if (!user?.id) return;
     fetchOrgData();
-  }, [user, profile]);
+  }, [user?.id, profile?.org_id, profile?.school_id]);
 
   if (!user) return null;
 
@@ -174,18 +180,20 @@ function AdminDashboard() {
 
     const activeSchoolId = prof?.school_id || prof?.org_id || user?.user_metadata?.school_id || "";
 
-    if (prof?.organizations) {
-      setOrg(prof.organizations);
-    } else if (activeSchoolId) {
-      setOrg({
-        id: activeSchoolId,
-        name: prof?.school_name || "Uganda NCDC Boarding School",
-        school_key: activeSchoolId,
-        created_at: new Date().toISOString(),
-      });
-    }
-
-    if (activeSchoolId) {
+    if (!activeSchoolId) {
+      setIsOnboardingNeeded(true);
+    } else {
+      setIsOnboardingNeeded(false);
+      if (prof?.organizations) {
+        setOrg(prof.organizations);
+      } else {
+        setOrg({
+          id: activeSchoolId,
+          name: prof?.school_name || "Uganda NCDC Boarding School",
+          school_key: activeSchoolId,
+          created_at: new Date().toISOString(),
+        });
+      }
       loadDashboardStats(activeSchoolId);
       loadClassStudentsAndSubmissions(activeSchoolId);
     }
@@ -440,6 +448,17 @@ function AdminDashboard() {
       (s.stream && s.stream.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesLevel && matchesQuery;
   });
+
+  if (isOnboardingNeeded) {
+    return (
+      <AdminOnboardingWorkflow
+        onComplete={(schoolId, schoolName) => {
+          setIsOnboardingNeeded(false);
+          fetchOrgData();
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-blue-600/30">
@@ -1243,6 +1262,15 @@ function AdminDashboard() {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+
+            <div className="pt-4">
+              <UnifiedInstitutionalDirectory schoolId={currentOrgId} />
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-4">
+              <BulkQRGenerator />
+              <DisciplineNudges />
             </div>
 
             <div className="pt-4">

@@ -109,8 +109,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data) {
-        const schoolIdToUse = data.org_id || metaSchoolId || null;
-        const schoolNameToUse = data.school_name || metaSchoolName || null;
+        let schoolIdToUse = data.org_id || data.school_id || metaSchoolId || null;
+        let schoolNameToUse = data.school_name || metaSchoolName || null;
+        const role = data.role || "student";
+
+        // Auto-generate for admin/org_admin if missing
+        if ((role === "admin" || role === "org_admin") && !schoolIdToUse) {
+          schoolIdToUse = `SCH-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+          if (!schoolNameToUse) {
+            schoolNameToUse = `${data.display_name || "Admin"}'s Academy`;
+          }
+          // Persist back to profiles table
+          supabase
+            .from("profiles")
+            .update({
+              school_id: schoolIdToUse,
+              org_id: schoolIdToUse,
+              school_name: schoolNameToUse,
+            })
+            .eq("user_id", userId)
+            .then(({ error }) => {
+              if (error) console.error("Error auto-updating admin school ID:", error);
+            });
+        }
 
         if (schoolIdToUse && typeof window !== "undefined") {
           localStorage.setItem("cymatic_school_id", schoolIdToUse);
@@ -120,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           user_id: data.user_id,
           display_name: data.display_name || activeUser?.email?.split("@")[0] || "Scholar",
           avatar_url: data.avatar_url,
-          role: data.role || "student",
+          role: role,
           org_id: schoolIdToUse,
           school_name: schoolNameToUse,
           school_id: schoolIdToUse,
@@ -131,7 +152,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
         setProfile(constructedProfile);
       } else {
-        const schoolIdToUse = metaSchoolId || null;
+        let schoolIdToUse = metaSchoolId || null;
+        let schoolNameToUse = metaSchoolName || null;
+        const role = activeUser?.user_metadata?.role || "student";
+
+        // Auto-generate profile and school ID for missing admin profiles
+        if ((role === "admin" || role === "org_admin") && !schoolIdToUse) {
+          schoolIdToUse = `SCH-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+          schoolNameToUse = `${activeUser?.user_metadata?.full_name || "Admin"}'s Academy`;
+          
+          supabase
+            .from("profiles")
+            .upsert({
+              user_id: userId,
+              school_id: schoolIdToUse,
+              org_id: schoolIdToUse,
+              school_name: schoolNameToUse,
+              role: role,
+              display_name: activeUser?.user_metadata?.full_name || activeUser?.email?.split("@")[0] || "Scholar",
+            })
+            .then(({ error }) => {
+              if (error) console.error("Error upserting admin profile with generated school ID:", error);
+            });
+        }
+
         if (schoolIdToUse && typeof window !== "undefined") {
           localStorage.setItem("cymatic_school_id", schoolIdToUse);
         }
@@ -140,9 +184,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           user_id: userId,
           display_name: activeUser?.user_metadata?.full_name || activeUser?.email?.split("@")[0] || "Scholar",
           avatar_url: activeUser?.user_metadata?.avatar_url || null,
-          role: activeUser?.user_metadata?.role || "student",
+          role: role,
           org_id: schoolIdToUse,
-          school_name: metaSchoolName || null,
+          school_name: schoolNameToUse,
           school_id: schoolIdToUse,
           teacher_license_id: null,
           full_name: activeUser?.user_metadata?.full_name || null,
