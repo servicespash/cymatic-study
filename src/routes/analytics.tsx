@@ -54,7 +54,7 @@ function AnalyticsPage() {
     setSubjects((arr) => arr.map((s) => (s.id === id ? { ...s, ...patch } : s)));
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 md:px-8 py-8">
       <header className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent text-primary-foreground">

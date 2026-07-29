@@ -143,9 +143,9 @@ function RootComponent() {
                     <BadgeToastNotification />
                     <MobileInstallPrompt />
                     <PWAInstallPrompt />
-                    <div className="flex min-h-screen flex-col">
+                    <div className="min-h-screen grid grid-rows-[auto_1fr_auto] grid-cols-1 max-w-[1920px] mx-auto w-full bg-background shadow-2xl">
                       <Navbar />
-                      <main className="flex-1">
+                      <main className="flex-1 w-full max-w-7xl lg:max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
                         <Outlet />
                       </main>
                       <footer className="border-t border-border/60 px-4 py-8 text-center text-xs text-muted-foreground pb-24">

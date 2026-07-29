@@ -295,7 +295,7 @@ export function QuizzesPage() {
 
   // PHASE: SETUP (Selection Screen)
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 md:px-8 py-8">
       <h1 className="mb-2 text-3xl font-extrabold">Take Quizzes</h1>
       <p className="mb-6 text-sm text-muted-foreground">
         Pick a subject, class and topic to start.

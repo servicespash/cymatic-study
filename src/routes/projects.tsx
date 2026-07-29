@@ -324,10 +324,10 @@ function ProjectsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 print:max-w-none print:py-0">
+    <div className="mx-auto max-w-7xl px-4 md:px-8 py-8 print:max-w-none print:py-0">
       {/* Persistent Top Bar with Curriculum Toggle */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b mb-6 pb-4 pt-2 -mx-4 px-4 print:hidden">
-        <div className="flex items-center justify-between gap-4 max-w-4xl mx-auto">
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b mb-6 pb-4 pt-2 -mx-4 md:-mx-8 px-4 md:px-8 print:hidden">
+        <div className="flex items-center justify-between gap-4 max-w-7xl mx-auto">
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-black tracking-tight hidden sm:block">
               NCDC PBL Workspace
