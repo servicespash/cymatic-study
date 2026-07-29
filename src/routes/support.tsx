@@ -152,7 +152,7 @@ function SupportPage() {
               </div>
             </div>
             <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-              Help us improve Cymatic Study! Whether it's a content error, a technical issue, or a 
+              Help us improve Cymatic Study! Whether it's a content error, a technical issue, or a
               suggestion for a new feature, we want to hear from you.
             </p>
             <QuickFeedbackButton />

@@ -101,8 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : null);
 
       const metaSchoolName =
-        activeUser?.user_metadata?.school_name ||
-        activeUser?.user_metadata?.school;
+        activeUser?.user_metadata?.school_name || activeUser?.user_metadata?.school;
 
       if (error) {
         console.error("Profile fetch error:", error);
@@ -160,7 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if ((role === "admin" || role === "org_admin") && !schoolIdToUse) {
           schoolIdToUse = `SCH-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
           schoolNameToUse = `${activeUser?.user_metadata?.full_name || "Admin"}'s Academy`;
-          
+
           supabase
             .from("profiles")
             .upsert({
@@ -169,10 +168,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               org_id: schoolIdToUse,
               school_name: schoolNameToUse,
               role: role,
-              display_name: activeUser?.user_metadata?.full_name || activeUser?.email?.split("@")[0] || "Scholar",
+              display_name:
+                activeUser?.user_metadata?.full_name ||
+                activeUser?.email?.split("@")[0] ||
+                "Scholar",
             })
             .then(({ error }) => {
-              if (error) console.error("Error upserting admin profile with generated school ID:", error);
+              if (error)
+                console.error("Error upserting admin profile with generated school ID:", error);
             });
         }
 
@@ -182,7 +185,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const fallbackProfile: UserProfile = {
           user_id: userId,
-          display_name: activeUser?.user_metadata?.full_name || activeUser?.email?.split("@")[0] || "Scholar",
+          display_name:
+            activeUser?.user_metadata?.full_name || activeUser?.email?.split("@")[0] || "Scholar",
           avatar_url: activeUser?.user_metadata?.avatar_url || null,
           role: role,
           org_id: schoolIdToUse,
@@ -218,18 +222,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isGuestMode = !loading && !user;
 
-  const value: AuthCtx = useMemo(() => ({
-    user,
-    session,
-    loading,
-    profile,
-    isInstitutional,
-    isStudent,
-    isTeacher,
-    isAdmin,
-    isGuestMode,
-    signOut,
-  }), [user, session, loading, profile, isInstitutional, isStudent, isTeacher, isAdmin, isGuestMode, signOut]);
+  const value: AuthCtx = useMemo(
+    () => ({
+      user,
+      session,
+      loading,
+      profile,
+      isInstitutional,
+      isStudent,
+      isTeacher,
+      isAdmin,
+      isGuestMode,
+      signOut,
+    }),
+    [
+      user,
+      session,
+      loading,
+      profile,
+      isInstitutional,
+      isStudent,
+      isTeacher,
+      isAdmin,
+      isGuestMode,
+      signOut,
+    ],
+  );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

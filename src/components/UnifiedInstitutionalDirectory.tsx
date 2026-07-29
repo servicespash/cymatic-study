@@ -12,7 +12,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Search, GraduationCap, Users, Shield, RefreshCw, Mail, Calendar, Sparkles } from "lucide-react";
+import {
+  Search,
+  GraduationCap,
+  Users,
+  Shield,
+  RefreshCw,
+  Mail,
+  Calendar,
+  Sparkles,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface DirectoryMember {
@@ -61,9 +70,11 @@ export function UnifiedInstitutionalDirectory({ schoolId }: UnifiedInstitutional
 
   // Filter roster based on search and role filters
   const filteredMembers = members.filter((m) => {
-    const nameMatch = (m.display_name || "Scholar").toLowerCase().includes(searchTerm.toLowerCase());
+    const nameMatch = (m.display_name || "Scholar")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
     const idMatch = (m.user_id || m.id || "").toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     let roleType = "STUDENT";
     const rawRole = (m.role || "").toUpperCase();
     if (rawRole.includes("ADMIN")) {
@@ -86,7 +97,11 @@ export function UnifiedInstitutionalDirectory({ schoolId }: UnifiedInstitutional
         </Badge>
       );
     }
-    if (rawRole.includes("TEACHER") || rawRole.includes("INSTRUCTOR") || rawRole.includes("FACULTY")) {
+    if (
+      rawRole.includes("TEACHER") ||
+      rawRole.includes("INSTRUCTOR") ||
+      rawRole.includes("FACULTY")
+    ) {
       return (
         <Badge className="bg-indigo-500/10 hover:bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold uppercase text-[9px] tracking-wider px-2.5 py-0.5 rounded-full flex items-center gap-1 w-fit">
           <Users className="h-3 w-3" />
@@ -111,7 +126,8 @@ export function UnifiedInstitutionalDirectory({ schoolId }: UnifiedInstitutional
             Official School Directory
           </CardTitle>
           <CardDescription className="text-zinc-500 text-xs mt-0.5">
-            Synchronized directory roster of all active profiles associated with School ID: <span className="font-mono text-blue-400 font-bold">{schoolId}</span>
+            Synchronized directory roster of all active profiles associated with School ID:{" "}
+            <span className="font-mono text-blue-400 font-bold">{schoolId}</span>
           </CardDescription>
         </div>
 
@@ -123,7 +139,11 @@ export function UnifiedInstitutionalDirectory({ schoolId }: UnifiedInstitutional
             disabled={loading}
             className="h-9 border-white/10 bg-white/5 text-zinc-400 hover:text-white rounded-xl"
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-3.5 w-3.5" />
+            )}
           </Button>
         </div>
       </CardHeader>
@@ -165,11 +185,21 @@ export function UnifiedInstitutionalDirectory({ schoolId }: UnifiedInstitutional
           <Table>
             <TableHeader className="bg-white/5 border-b border-white/5">
               <TableRow className="border-b border-white/5">
-                <TableHead className="text-zinc-400 font-black uppercase tracking-wider text-[10px] py-4 px-6">Name</TableHead>
-                <TableHead className="text-zinc-400 font-black uppercase tracking-wider text-[10px] py-4 px-6">Role / Classification</TableHead>
-                <TableHead className="text-zinc-400 font-black uppercase tracking-wider text-[10px] py-4 px-6">Cohort / Class</TableHead>
-                <TableHead className="text-zinc-400 font-black uppercase tracking-wider text-[10px] py-4 px-6">Registry ID</TableHead>
-                <TableHead className="text-zinc-400 font-black uppercase tracking-wider text-[10px] py-4 px-6">Joined Date</TableHead>
+                <TableHead className="text-zinc-400 font-black uppercase tracking-wider text-[10px] py-4 px-6">
+                  Name
+                </TableHead>
+                <TableHead className="text-zinc-400 font-black uppercase tracking-wider text-[10px] py-4 px-6">
+                  Role / Classification
+                </TableHead>
+                <TableHead className="text-zinc-400 font-black uppercase tracking-wider text-[10px] py-4 px-6">
+                  Cohort / Class
+                </TableHead>
+                <TableHead className="text-zinc-400 font-black uppercase tracking-wider text-[10px] py-4 px-6">
+                  Registry ID
+                </TableHead>
+                <TableHead className="text-zinc-400 font-black uppercase tracking-wider text-[10px] py-4 px-6">
+                  Joined Date
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -178,7 +208,9 @@ export function UnifiedInstitutionalDirectory({ schoolId }: UnifiedInstitutional
                   <TableCell colSpan={5} className="text-center py-12 text-zinc-600">
                     <div className="flex flex-col items-center gap-3">
                       <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-                      <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">Querying registry database...</p>
+                      <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">
+                        Querying registry database...
+                      </p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -188,20 +220,22 @@ export function UnifiedInstitutionalDirectory({ schoolId }: UnifiedInstitutional
                     <div className="max-w-md mx-auto space-y-2">
                       <p className="text-sm font-bold text-white">No active members found</p>
                       <p className="text-xs text-zinc-500">
-                        Ask teachers and student cohorts to register using your unique School ID to link them dynamically to this dashboard.
+                        Ask teachers and student cohorts to register using your unique School ID to
+                        link them dynamically to this dashboard.
                       </p>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredMembers.map((member) => (
-                  <TableRow key={member.id} className="border-b border-white/5 hover:bg-white/5 transition-all">
+                  <TableRow
+                    key={member.id}
+                    className="border-b border-white/5 hover:bg-white/5 transition-all"
+                  >
                     <TableCell className="py-4 px-6 font-bold text-white text-xs">
                       {member.display_name || "Scholar"}
                     </TableCell>
-                    <TableCell className="py-4 px-6">
-                      {getRoleBadge(member.role)}
-                    </TableCell>
+                    <TableCell className="py-4 px-6">{getRoleBadge(member.role)}</TableCell>
                     <TableCell className="py-4 px-6 text-zinc-400 text-xs">
                       {member.level ? (
                         <span className="font-bold text-blue-400">
@@ -215,7 +249,9 @@ export function UnifiedInstitutionalDirectory({ schoolId }: UnifiedInstitutional
                       {member.user_id || member.id}
                     </TableCell>
                     <TableCell className="py-4 px-6 text-zinc-500 text-xs">
-                      {member.created_at ? new Date(member.created_at).toLocaleDateString() : "Just now"}
+                      {member.created_at
+                        ? new Date(member.created_at).toLocaleDateString()
+                        : "Just now"}
                     </TableCell>
                   </TableRow>
                 ))

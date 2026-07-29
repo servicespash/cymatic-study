@@ -38,7 +38,9 @@ function LessonsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const [mode, setMode] = useState<"lessons" | "sm2" | "tactile" | "illustrator">("lessons");
-  const [selectedConceptForIllustrator, setSelectedConceptForIllustrator] = useState<string | undefined>(undefined);
+  const [selectedConceptForIllustrator, setSelectedConceptForIllustrator] = useState<
+    string | undefined
+  >(undefined);
 
   const [dynamicNotes, setDynamicNotes] = useState<Record<string, any>>({});
   const [isGenerating, setIsGenerating] = useState<Record<string, boolean>>({});
@@ -143,7 +145,9 @@ function LessonsPage() {
         <button
           onClick={() => setMode("illustrator")}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition ${
-            mode === "illustrator" ? "bg-background text-primary shadow-sm" : "text-muted-foreground"
+            mode === "illustrator"
+              ? "bg-background text-primary shadow-sm"
+              : "text-muted-foreground"
           }`}
         >
           <Sparkles className="h-4 w-4 text-primary" />

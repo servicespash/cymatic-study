@@ -15,7 +15,6 @@ export type NewsItem = {
   is_active?: boolean;
 };
 
-
 export function useNewsFeed() {
   const [items, setItems] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +56,7 @@ export function useNewsFeed() {
       setDiagnosticError(null);
     } catch (err: any) {
       console.warn("Supabase fetch from 'content' table failed, activating mock fallback:", err);
-      
+
       // Capture the exact error details
       let errorMsg = "Unknown error";
       if (err && typeof err === "object") {
@@ -72,7 +71,7 @@ export function useNewsFeed() {
       setDiagnosticError(errorMsg);
       setError(err instanceof Error ? err : new Error(errorMsg));
       setIsUsingMock(true);
-      
+
       // Load fallback items from Mock Content Data Service
       setItems(MOCK_CONTENT_DATA);
     } finally {

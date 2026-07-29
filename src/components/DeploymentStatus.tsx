@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 import { CloudLightning, Check, RefreshCw, WifiOff, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 
-const DEPLOY_HOOK_URL = "https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/106aca1a-02ae-46d7-88cf-fbb1642671db";
+const DEPLOY_HOOK_URL =
+  "https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/106aca1a-02ae-46d7-88cf-fbb1642671db";
 
 export function DeploymentStatus() {
-  const [status, setStatus] = useState<"synchronized" | "building" | "offline" | "idle">("synchronized");
+  const [status, setStatus] = useState<"synchronized" | "building" | "offline" | "idle">(
+    "synchronized",
+  );
   const [lastCheck, setLastCheck] = useState<string | null>(null);
   const [pingTime, setPingTime] = useState<number | null>(null);
 
@@ -21,7 +24,7 @@ export function DeploymentStatus() {
     try {
       // 2. Perform lightweight network probe to verify Cloudflare Edge CDN endpoint reachability
       // We use HEAD method or a standard GET to avoid triggering POST build action.
-      // Even if Cloudflare returns 405 (Method Not Allowed) or throws a CORS error, 
+      // Even if Cloudflare returns 405 (Method Not Allowed) or throws a CORS error,
       // the network resolution succeeding indicates the Edge endpoint is reachable and alive.
       await fetch(DEPLOY_HOOK_URL, {
         method: "HEAD",
@@ -31,7 +34,7 @@ export function DeploymentStatus() {
 
       const endTime = performance.now();
       setPingTime(Math.round(endTime - startTime));
-      
+
       // If we previously had "building" stored but it finished, or if default is active
       if (savedStatus === "synchronized") {
         setStatus("synchronized");
@@ -62,7 +65,7 @@ export function DeploymentStatus() {
       }
     };
     window.addEventListener("storage", handleStorageChange);
-    
+
     // Custom event to synchronize between tabs and state changes in the same window
     const handleLocalStatusUpdate = () => {
       handleStorageChange();
@@ -81,9 +84,13 @@ export function DeploymentStatus() {
     checkStatus().then(() => {
       const savedStatus = sessionStorage.getItem("cf-last-deploy-status") || "synchronized";
       if (savedStatus === "building") {
-        toast.info("Build in progress: Cloudflare compiler is actively baking assets.", { id: toastId });
+        toast.info("Build in progress: Cloudflare compiler is actively baking assets.", {
+          id: toastId,
+        });
       } else {
-        toast.success(`CDN Reachable! Ping: ${pingTime || 45}ms. Build is fully synchronized.`, { id: toastId });
+        toast.success(`CDN Reachable! Ping: ${pingTime || 45}ms. Build is fully synchronized.`, {
+          id: toastId,
+        });
       }
     });
   };
@@ -97,26 +104,28 @@ export function DeploymentStatus() {
             CDN Status
           </span>
         </div>
-        
+
         {/* Pulsing indicator dot */}
         <div className="flex items-center gap-1.5">
           <span className={`relative flex h-2 w-2`}>
             {status !== "offline" && (
-              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                status === "building" ? "bg-amber-400" : "bg-emerald-400"
-              }`} />
+              <span
+                className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                  status === "building" ? "bg-amber-400" : "bg-emerald-400"
+                }`}
+              />
             )}
-            <span className={`relative inline-flex rounded-full h-2 w-2 ${
-              status === "offline"
-                ? "bg-red-500"
-                : status === "building"
-                  ? "bg-amber-400"
-                  : "bg-emerald-500"
-            }`} />
+            <span
+              className={`relative inline-flex rounded-full h-2 w-2 ${
+                status === "offline"
+                  ? "bg-red-500"
+                  : status === "building"
+                    ? "bg-amber-400"
+                    : "bg-emerald-500"
+              }`}
+            />
           </span>
-          <span className="text-[10px] font-mono text-zinc-500 uppercase">
-            {status}
-          </span>
+          <span className="text-[10px] font-mono text-zinc-500 uppercase">{status}</span>
         </div>
       </div>
 

@@ -40,14 +40,17 @@ function StudentDashboardPage() {
   const { xp, level, badges, completedGaps, completedTasks } = useGamificationStore();
 
   const studentName = profile?.display_name || user?.email?.split("@")[0] || "Scholar Learner";
-  const schoolName = user?.user_metadata?.school_name || profile?.school_id || "Cymatic Secondary Academy";
+  const schoolName =
+    user?.user_metadata?.school_name || profile?.school_id || "Cymatic Secondary Academy";
   const className = "Senior 3 (S3 - West Stream)";
   const unebIndex = "U2026/089/STD";
 
   const [markedReports, setMarkedReports] = useState<MarkedReportItem[]>([]);
   const [loadingReports, setLoadingReports] = useState(true);
   const [isExportPdfOpen, setIsExportPdfOpen] = useState(false);
-  const [selectedReportForExport, setSelectedReportForExport] = useState<MarkedReportItem | null>(null);
+  const [selectedReportForExport, setSelectedReportForExport] = useState<MarkedReportItem | null>(
+    null,
+  );
 
   // Load marked project submissions for this student from Supabase or local storage fallback
   useEffect(() => {
@@ -88,7 +91,8 @@ function StudentDashboardPage() {
               subject: "Physics",
               score: 88,
               rubricScores: { planning: 27, execution: 36, conclusion: 25 },
-              feedback: "Exemplary thermal insulation design. Excellent understanding of solar radiation principles.",
+              feedback:
+                "Exemplary thermal insulation design. Excellent understanding of solar radiation principles.",
               teacherName: "Mr. Okello David",
               teacherTitle: "Head of Physics Department",
               teacherSignature: "Signed by Mr. Okello (Seal 0x88F)",
@@ -123,7 +127,9 @@ function StudentDashboardPage() {
   }, []);
 
   // Calculate study time points
-  const totalHours = ((completedTasks.length * 20 + markedReports.length * 45 + 120) / 60).toFixed(1);
+  const totalHours = ((completedTasks.length * 20 + markedReports.length * 45 + 120) / 60).toFixed(
+    1,
+  );
 
   const handlePrintPortfolio = () => {
     window.print();
@@ -143,7 +149,8 @@ function StudentDashboardPage() {
               {studentName}'s Study Workflow
             </h1>
             <p className="text-xs md:text-sm text-zinc-400 max-w-2xl leading-relaxed">
-              Track your study time points, award points (XP), marked project reports, and official NCDC study progress. Print or export verified portfolio reports directly to PDF.
+              Track your study time points, award points (XP), marked project reports, and official
+              NCDC study progress. Print or export verified portfolio reports directly to PDF.
             </p>
           </div>
 
@@ -178,9 +185,13 @@ function StudentDashboardPage() {
               <Clock className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Study Time Points</p>
+              <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">
+                Study Time Points
+              </p>
               <p className="text-2xl font-black text-white mt-0.5">{totalHours} Hours</p>
-              <p className="text-[10px] text-zinc-500 mt-0.5">Logged in Socratic chat &amp; tasks</p>
+              <p className="text-[10px] text-zinc-500 mt-0.5">
+                Logged in Socratic chat &amp; tasks
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -191,7 +202,9 @@ function StudentDashboardPage() {
               <Award className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Award Points (XP)</p>
+              <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">
+                Award Points (XP)
+              </p>
               <p className="text-2xl font-black text-white mt-0.5">{xp} XP</p>
               <p className="text-[10px] text-zinc-500 mt-0.5">Tier {level} Academic Scholar</p>
             </div>
@@ -204,8 +217,12 @@ function StudentDashboardPage() {
               <CheckCircle2 className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Marked Reports</p>
-              <p className="text-2xl font-black text-white mt-0.5">{markedReports.length} Projects</p>
+              <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">
+                Marked Reports
+              </p>
+              <p className="text-2xl font-black text-white mt-0.5">
+                {markedReports.length} Projects
+              </p>
               <p className="text-[10px] text-zinc-500 mt-0.5">Evaluated with rubric scores</p>
             </div>
           </CardContent>
@@ -217,8 +234,12 @@ function StudentDashboardPage() {
               <Sparkles className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Remediated Gaps</p>
-              <p className="text-2xl font-black text-white mt-0.5">{completedGaps.length} Mastered</p>
+              <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">
+                Remediated Gaps
+              </p>
+              <p className="text-2xl font-black text-white mt-0.5">
+                {completedGaps.length} Mastered
+              </p>
               <p className="text-[10px] text-zinc-500 mt-0.5">Diagnostic checkpoints clear</p>
             </div>
           </CardContent>
@@ -235,7 +256,8 @@ function StudentDashboardPage() {
                 Marked Study Reports &amp; Faculty Evaluations
               </CardTitle>
               <CardDescription className="text-xs text-zinc-400 mt-1">
-                Your graded project submissions, rubric breakdown, time points earned, and teacher signatures.
+                Your graded project submissions, rubric breakdown, time points earned, and teacher
+                signatures.
               </CardDescription>
             </div>
             <Button
@@ -253,7 +275,8 @@ function StudentDashboardPage() {
         <CardContent className="p-6 space-y-4">
           {markedReports.length === 0 ? (
             <div className="text-center py-12 text-zinc-500 text-sm">
-              No marked reports available yet. Submit project workflows in the Project Sandbox to receive teacher evaluations.
+              No marked reports available yet. Submit project workflows in the Project Sandbox to
+              receive teacher evaluations.
             </div>
           ) : (
             markedReports.map((report) => (
@@ -292,16 +315,28 @@ function StudentDashboardPage() {
                 {report.rubricScores && (
                   <div className="grid grid-cols-3 gap-2 bg-zinc-900/60 p-3 rounded-xl border border-zinc-800/50 text-xs">
                     <div>
-                      <span className="text-zinc-500 text-[10px] uppercase block">Planning &amp; Design</span>
-                      <span className="font-bold text-zinc-200">{report.rubricScores.planning} / 30</span>
+                      <span className="text-zinc-500 text-[10px] uppercase block">
+                        Planning &amp; Design
+                      </span>
+                      <span className="font-bold text-zinc-200">
+                        {report.rubricScores.planning} / 30
+                      </span>
                     </div>
                     <div>
-                      <span className="text-zinc-500 text-[10px] uppercase block">Practical Execution</span>
-                      <span className="font-bold text-zinc-200">{report.rubricScores.execution} / 40</span>
+                      <span className="text-zinc-500 text-[10px] uppercase block">
+                        Practical Execution
+                      </span>
+                      <span className="font-bold text-zinc-200">
+                        {report.rubricScores.execution} / 40
+                      </span>
                     </div>
                     <div>
-                      <span className="text-zinc-500 text-[10px] uppercase block">Conclusion &amp; Output</span>
-                      <span className="font-bold text-zinc-200">{report.rubricScores.conclusion} / 30</span>
+                      <span className="text-zinc-500 text-[10px] uppercase block">
+                        Conclusion &amp; Output
+                      </span>
+                      <span className="font-bold text-zinc-200">
+                        {report.rubricScores.conclusion} / 30
+                      </span>
                     </div>
                   </div>
                 )}
@@ -316,11 +351,17 @@ function StudentDashboardPage() {
                 <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-zinc-400 pt-1">
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>Evaluated by: <strong className="text-white">{report.teacherName}</strong></span>
+                    <span>
+                      Evaluated by: <strong className="text-white">{report.teacherName}</strong>
+                    </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-amber-400 font-semibold">+{report.awardPointsEarned || 50} Award XP</span>
-                    <span className="text-teal-400 font-semibold">+{report.timePointsEarned || 5} Study Hours Credited</span>
+                    <span className="text-amber-400 font-semibold">
+                      +{report.awardPointsEarned || 50} Award XP
+                    </span>
+                    <span className="text-teal-400 font-semibold">
+                      +{report.timePointsEarned || 5} Study Hours Credited
+                    </span>
                   </div>
                 </div>
               </div>
@@ -342,7 +383,11 @@ function StudentDashboardPage() {
       <ExportPdfModal
         isOpen={isExportPdfOpen}
         onClose={() => setIsExportPdfOpen(false)}
-        title={selectedReportForExport ? selectedReportForExport.projectTitle : "Student Academic Portfolio"}
+        title={
+          selectedReportForExport
+            ? selectedReportForExport.projectTitle
+            : "Student Academic Portfolio"
+        }
         subject={selectedReportForExport ? selectedReportForExport.subject : "Comprehensive"}
         docType="study_chart"
         content={[
@@ -359,14 +404,19 @@ function StudentDashboardPage() {
           },
           {
             sectionTitle: "2. Marked Study Reports & Rubric Assessments",
-            body: (selectedReportForExport ? [selectedReportForExport] : markedReports).map((r) => ({
-              key: `${r.projectTitle} (${r.subject})`,
-              value: `Score: ${r.score}% | Evaluator: ${r.teacherName} | Feedback: ${r.feedback}`,
-            })),
+            body: (selectedReportForExport ? [selectedReportForExport] : markedReports).map(
+              (r) => ({
+                key: `${r.projectTitle} (${r.subject})`,
+                value: `Score: ${r.score}% | Evaluator: ${r.teacherName} | Feedback: ${r.feedback}`,
+              }),
+            ),
           },
           {
             sectionTitle: "3. Remediated Knowledge Gaps",
-            body: completedGaps.length > 0 ? completedGaps.map((g) => `Mastered Concept: ${g}`) : ["All foundational diagnostic checks complete."],
+            body:
+              completedGaps.length > 0
+                ? completedGaps.map((g) => `Mastered Concept: ${g}`)
+                : ["All foundational diagnostic checks complete."],
           },
         ]}
       />

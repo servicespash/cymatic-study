@@ -45,7 +45,7 @@ export function AdminOnboardingWorkflow({ onComplete }: AdminOnboardingWorkflowP
       toast.error("Please enter a School Name first!");
       return;
     }
-    
+
     // Generate standard NCDC formatted ID
     const standardId = generateNcdcBoardingSchoolId();
     setGeneratedId(standardId);
@@ -88,7 +88,7 @@ export function AdminOnboardingWorkflow({ onComplete }: AdminOnboardingWorkflowP
           email: schoolEmail.trim() || user.email || null,
           phone: schoolPhone.trim() || null,
         },
-        { onConflict: "id" }
+        { onConflict: "id" },
       );
 
       if (orgError) {
@@ -121,7 +121,9 @@ export function AdminOnboardingWorkflow({ onComplete }: AdminOnboardingWorkflowP
     } catch (err: any) {
       setIsSaving(false);
       console.error("Onboarding failed:", err);
-      toast.error(err?.message || "Failed to complete onboarding. Please try again.", { id: toastId });
+      toast.error(err?.message || "Failed to complete onboarding. Please try again.", {
+        id: toastId,
+      });
     }
   };
 
@@ -139,9 +141,15 @@ export function AdminOnboardingWorkflow({ onComplete }: AdminOnboardingWorkflowP
         {/* Progress bar */}
         <div className="mb-8 flex items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <span className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${step >= 1 ? "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" : "bg-zinc-800"}`} />
-            <span className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${step >= 2 ? "bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" : "bg-zinc-800"}`} />
-            <span className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${step >= 3 ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-zinc-800"}`} />
+            <span
+              className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${step >= 1 ? "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" : "bg-zinc-800"}`}
+            />
+            <span
+              className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${step >= 2 ? "bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" : "bg-zinc-800"}`}
+            />
+            <span
+              className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${step >= 3 ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-zinc-800"}`}
+            />
           </div>
           <span className="text-xs uppercase font-black tracking-widest text-zinc-500">
             Step {step} of 3 • Onboarding Workflow
@@ -163,13 +171,17 @@ export function AdminOnboardingWorkflow({ onComplete }: AdminOnboardingWorkflowP
                   Onboard Your Institution
                 </h1>
                 <p className="text-zinc-400 text-sm leading-relaxed">
-                  Welcome, Administrator. Please input your school's details to register your institution and generate your unique School ID.
+                  Welcome, Administrator. Please input your school's details to register your
+                  institution and generate your unique School ID.
                 </p>
               </header>
 
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="school-name" className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                  <Label
+                    htmlFor="school-name"
+                    className="text-xs font-bold text-zinc-400 uppercase tracking-wider"
+                  >
                     School / Boarding Institution Name
                   </Label>
                   <Input
@@ -183,7 +195,10 @@ export function AdminOnboardingWorkflow({ onComplete }: AdminOnboardingWorkflowP
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="school-email" className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Label
+                      htmlFor="school-email"
+                      className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5"
+                    >
                       <Mail className="h-3.5 w-3.5 text-zinc-500" /> School Contact Email
                     </Label>
                     <Input
@@ -196,7 +211,10 @@ export function AdminOnboardingWorkflow({ onComplete }: AdminOnboardingWorkflowP
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="school-phone" className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Label
+                      htmlFor="school-phone"
+                      className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5"
+                    >
                       <Phone className="h-3.5 w-3.5 text-zinc-500" /> School Phone Number
                     </Label>
                     <Input
@@ -234,20 +252,27 @@ export function AdminOnboardingWorkflow({ onComplete }: AdminOnboardingWorkflowP
                   Verify Official School ID
                 </h1>
                 <p className="text-zinc-400 text-sm leading-relaxed">
-                  Your official NCDC Boarding Institution registry ID has been provisioned. Review your registry key and click "Activate" to publish this ID to the remote directory.
+                  Your official NCDC Boarding Institution registry ID has been provisioned. Review
+                  your registry key and click "Activate" to publish this ID to the remote directory.
                 </p>
               </header>
 
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Registered Institution</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                    Registered Institution
+                  </p>
                   <p className="text-base font-black text-white mt-1">{schoolName}</p>
                 </div>
-                
+
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Official School ID Registry Code</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                    Official School ID Registry Code
+                  </p>
                   <div className="flex items-center justify-between bg-black/40 border border-white/5 px-4 py-3 rounded-xl mt-1.5">
-                    <span className="font-mono text-lg font-black text-blue-400 tracking-wider">{generatedId}</span>
+                    <span className="font-mono text-lg font-black text-blue-400 tracking-wider">
+                      {generatedId}
+                    </span>
                     <span className="text-[10px] uppercase font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">
                       Format Verified
                     </span>
@@ -291,13 +316,14 @@ export function AdminOnboardingWorkflow({ onComplete }: AdminOnboardingWorkflowP
               <div className="mx-auto h-16 w-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-2 animate-bounce">
                 <Trophy className="h-8 w-8 text-emerald-400" />
               </div>
-              
+
               <div className="space-y-2">
                 <h1 className="text-2xl font-black uppercase tracking-tight text-white leading-none">
                   Registry Activated!
                 </h1>
                 <p className="text-zinc-400 text-sm max-w-md mx-auto">
-                  Your school registry has been successfully synchronized. Your official QR Badge is ready below. Share this School ID with your faculty and student bodies.
+                  Your school registry has been successfully synchronized. Your official QR Badge is
+                  ready below. Share this School ID with your faculty and student bodies.
                 </p>
               </div>
 
@@ -309,7 +335,9 @@ export function AdminOnboardingWorkflow({ onComplete }: AdminOnboardingWorkflowP
                 <SchoolIdQRCode
                   schoolId={generatedId}
                   schoolName={schoolName}
-                  studentName={profile?.display_name || user?.email?.split("@")[0] || "Administrator"}
+                  studentName={
+                    profile?.display_name || user?.email?.split("@")[0] || "Administrator"
+                  }
                   role="School Administrator"
                 />
               </div>

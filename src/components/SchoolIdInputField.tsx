@@ -142,7 +142,7 @@ export function SchoolIdInputField({ onSaved, className = "" }: SchoolIdInputFie
               name: schoolNameVal.trim() || "Uganda NCDC Boarding School",
               school_key: finalId,
             },
-            { onConflict: "id" }
+            { onConflict: "id" },
           );
         } catch (orgErr) {
           console.warn("Organization upsert notice:", orgErr);
@@ -179,7 +179,8 @@ export function SchoolIdInputField({ onSaved, className = "" }: SchoolIdInputFie
           profileError = err1;
         }
       } else {
-        const newId = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : user.id;
+        const newId =
+          typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : user.id;
         const { error: err1 } = await supabase.from("profiles").insert({
           id: newId,
           user_id: user.id,
@@ -217,7 +218,7 @@ export function SchoolIdInputField({ onSaved, className = "" }: SchoolIdInputFie
         {
           id: toastId,
           description: `Active School ID: ${finalId}. Your official QR Badge is ready.`,
-        }
+        },
       );
 
       if (onSaved) {
@@ -263,13 +264,16 @@ export function SchoolIdInputField({ onSaved, className = "" }: SchoolIdInputFie
       }
     } else {
       toast.success("Invite message copied to clipboard!", {
-        description: "Your device does not support native sharing, so we copied the formatted message for you to paste.",
+        description:
+          "Your device does not support native sharing, so we copied the formatted message for you to paste.",
       });
     }
   };
 
   return (
-    <div className={`space-y-4 rounded-3xl border border-primary/20 bg-card/80 p-6 backdrop-blur shadow-sm ${className}`}>
+    <div
+      className={`space-y-4 rounded-3xl border border-primary/20 bg-card/80 p-6 backdrop-blur shadow-sm ${className}`}
+    >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
@@ -310,7 +314,10 @@ export function SchoolIdInputField({ onSaved, className = "" }: SchoolIdInputFie
         {/* Input Field with Format Validation Badge */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <Label htmlFor="ncdc-school-id" className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            <Label
+              htmlFor="ncdc-school-id"
+              className="text-xs font-bold text-foreground flex items-center gap-1.5"
+            >
               <IdCard className="h-3.5 w-3.5 text-cyan-400" />
               {isAdmin ? "Official Institution Registry Code" : "Enter Admin-Provided School ID"}
             </Label>
@@ -352,7 +359,11 @@ export function SchoolIdInputField({ onSaved, className = "" }: SchoolIdInputFie
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground rounded-md transition-colors"
                 title="Copy School ID"
               >
-                {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-400" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
               </button>
             )}
           </div>
@@ -373,7 +384,10 @@ export function SchoolIdInputField({ onSaved, className = "" }: SchoolIdInputFie
 
         {/* Institution Name Field */}
         <div className="space-y-1.5">
-          <Label htmlFor="ncdc-school-name" className="text-xs font-bold text-foreground flex items-center gap-1.5">
+          <Label
+            htmlFor="ncdc-school-name"
+            className="text-xs font-bold text-foreground flex items-center gap-1.5"
+          >
             <School className="h-3.5 w-3.5 text-indigo-400" /> School / Boarding Institution Name
           </Label>
           <Input
@@ -392,7 +406,11 @@ export function SchoolIdInputField({ onSaved, className = "" }: SchoolIdInputFie
             disabled={saving || !isFormatValid || !inputVal.trim()}
             className="rounded-xl text-xs font-bold bg-primary text-primary-foreground shadow-glow hover:bg-primary/90"
           >
-            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
+            {saving ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+            ) : (
+              <Save className="h-3.5 w-3.5 mr-1.5" />
+            )}
             {isAdmin ? "Save Official School Registry" : "Bind Profile to School ID"}
           </Button>
         </div>
@@ -413,7 +431,8 @@ export function SchoolIdInputField({ onSaved, className = "" }: SchoolIdInputFie
           />
           <div className="mt-4 pt-3 border-t border-white/5 flex flex-col sm:flex-row gap-3 items-center justify-between">
             <p className="text-[10px] text-muted-foreground max-w-xs leading-normal">
-              Copy a pre-formatted invite containing the school registry code or share directly with teachers & students.
+              Copy a pre-formatted invite containing the school registry code or share directly with
+              teachers & students.
             </p>
             <Button
               type="button"
@@ -446,4 +465,3 @@ export function SchoolIdInputField({ onSaved, className = "" }: SchoolIdInputFie
     </div>
   );
 }
-

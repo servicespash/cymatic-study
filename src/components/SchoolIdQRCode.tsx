@@ -1,6 +1,17 @@
 import React, { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { QrCode, Download, Copy, Check, ShieldCheck, Sparkles, X, Palette, Image as ImageIcon, Sliders } from "lucide-react";
+import {
+  QrCode,
+  Download,
+  Copy,
+  Check,
+  ShieldCheck,
+  Sparkles,
+  X,
+  Palette,
+  Image as ImageIcon,
+  Sliders,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
@@ -22,10 +33,30 @@ interface ColorPreset {
 
 const COLOR_PRESETS: ColorPreset[] = [
   { name: "Royal Blue", value: "#1E40AF", bgClass: "bg-blue-600", borderClass: "border-blue-400" },
-  { name: "Kampala Teal", value: "#0D9488", bgClass: "bg-teal-600", borderClass: "border-teal-400" },
-  { name: "Nile Green", value: "#15803D", bgClass: "bg-emerald-700", borderClass: "border-emerald-400" },
-  { name: "Equator Gold", value: "#D97706", bgClass: "bg-amber-600", borderClass: "border-amber-400" },
-  { name: "Volcanic Ruby", value: "#BE123C", bgClass: "bg-rose-700", borderClass: "border-rose-400" },
+  {
+    name: "Kampala Teal",
+    value: "#0D9488",
+    bgClass: "bg-teal-600",
+    borderClass: "border-teal-400",
+  },
+  {
+    name: "Nile Green",
+    value: "#15803D",
+    bgClass: "bg-emerald-700",
+    borderClass: "border-emerald-400",
+  },
+  {
+    name: "Equator Gold",
+    value: "#D97706",
+    bgClass: "bg-amber-600",
+    borderClass: "border-amber-400",
+  },
+  {
+    name: "Volcanic Ruby",
+    value: "#BE123C",
+    bgClass: "bg-rose-700",
+    borderClass: "border-rose-400",
+  },
 ];
 
 export function SchoolIdQRCode({
@@ -38,14 +69,14 @@ export function SchoolIdQRCode({
 }: SchoolIdQRCodeProps) {
   const [copied, setCopied] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  
+
   // Customizations States
   const [primaryColor, setPrimaryColor] = useState("#1E40AF");
   const [logoOption, setLogoOption] = useState<"crest" | "cap" | "none">("crest");
 
   const baseUrl =
     typeof window !== "undefined" ? window.location.origin : "https://study.cymatichub.xyz";
-  
+
   // Payload used for secure validation scanning
   const qrPayload = `${baseUrl}/verify-document?user=${encodeURIComponent(studentName)}&school=${encodeURIComponent(schoolId)}&type=boarding_id&role=${encodeURIComponent(role)}`;
 
@@ -109,7 +140,7 @@ export function SchoolIdQRCode({
 
           // School/Institution Name
           ctx.font = "bold 24px system-ui, -apple-system, sans-serif";
-          let name = schoolName;
+          const name = schoolName;
           if (name.length > 30) {
             ctx.font = "bold 20px system-ui, -apple-system, sans-serif";
           }
@@ -169,7 +200,10 @@ export function SchoolIdQRCode({
 
             const pngFile = canvas.toDataURL("image/png");
             const downloadLink = document.createElement("a");
-            const safeName = schoolName.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-");
+            const safeName = schoolName
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, "-")
+              .replace(/-+/g, "-");
             downloadLink.download = `${safeName}-identity-badge-${schoolId}.png`;
             downloadLink.href = pngFile;
             downloadLink.click();
@@ -226,7 +260,10 @@ export function SchoolIdQRCode({
           function triggerDownload() {
             const pngFile = canvas.toDataURL("image/png");
             const downloadLink = document.createElement("a");
-            const safeName = schoolName.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-");
+            const safeName = schoolName
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, "-")
+              .replace(/-+/g, "-");
             downloadLink.download = `${safeName}-qr-only-${schoolId}.png`;
             downloadLink.href = pngFile;
             downloadLink.click();
@@ -250,7 +287,6 @@ export function SchoolIdQRCode({
 
   return (
     <div className={`space-y-3 ${className}`}>
-      
       {/* Hidden high-res QR for perfect export generation */}
       <div style={{ display: "none" }}>
         <QRCodeSVG
@@ -261,12 +297,16 @@ export function SchoolIdQRCode({
           includeMargin={true}
           fgColor={primaryColor}
           bgColor="#FFFFFF"
-          imageSettings={activeLogoSrc ? {
-            src: activeLogoSrc,
-            height: 95,
-            width: 95,
-            excavate: true,
-          } : undefined}
+          imageSettings={
+            activeLogoSrc
+              ? {
+                  src: activeLogoSrc,
+                  height: 95,
+                  width: 95,
+                  excavate: true,
+                }
+              : undefined
+          }
         />
       </div>
 
@@ -282,12 +322,16 @@ export function SchoolIdQRCode({
               includeMargin={false}
               fgColor={primaryColor}
               bgColor="#FFFFFF"
-              imageSettings={activeLogoSrc ? {
-                src: activeLogoSrc,
-                height: 12,
-                width: 12,
-                excavate: true,
-              } : undefined}
+              imageSettings={
+                activeLogoSrc
+                  ? {
+                      src: activeLogoSrc,
+                      height: 12,
+                      width: 12,
+                      excavate: true,
+                    }
+                  : undefined
+              }
             />
           </div>
           <div>
@@ -314,7 +358,6 @@ export function SchoolIdQRCode({
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fade-in overflow-y-auto">
           <div className="relative w-full max-w-4xl rounded-3xl border border-white/10 bg-zinc-950 p-6 shadow-2xl flex flex-col lg:flex-row gap-6 text-left my-8">
-            
             {/* Close Button */}
             <button
               onClick={() => setShowModal(false)}
@@ -330,16 +373,18 @@ export function SchoolIdQRCode({
               </span>
 
               {/* Mock Badge layout matching downloaded image perfectly */}
-              <div 
+              <div
                 className="w-full max-w-[280px] bg-white rounded-2xl p-4 shadow-2xl border-t-8 border-b-8 flex flex-col items-center text-center select-none"
                 style={{ borderColor: primaryColor }}
               >
                 {/* Header Band inside Card */}
-                <div 
+                <div
                   className="w-full p-2.5 rounded-lg mb-4 text-white text-[9px] font-bold flex flex-col justify-center items-center min-h-[50px]"
                   style={{ backgroundColor: primaryColor }}
                 >
-                  <span className="text-[6px] tracking-wider opacity-90 font-mono">UGANDA NCDC</span>
+                  <span className="text-[6px] tracking-wider opacity-90 font-mono">
+                    UGANDA NCDC
+                  </span>
                   <span className="leading-tight uppercase tracking-tight line-clamp-2 max-w-[240px] text-center">
                     {schoolName}
                   </span>
@@ -354,15 +399,19 @@ export function SchoolIdQRCode({
                     includeMargin={false}
                     fgColor={primaryColor}
                     bgColor="#FFFFFF"
-                    imageSettings={activeLogoSrc ? {
-                      src: activeLogoSrc,
-                      height: 36,
-                      width: 36,
-                      excavate: true,
-                    } : undefined}
+                    imageSettings={
+                      activeLogoSrc
+                        ? {
+                            src: activeLogoSrc,
+                            height: 36,
+                            width: 36,
+                            excavate: true,
+                          }
+                        : undefined
+                    }
                   />
                 </div>
-                
+
                 {/* School ID Text code */}
                 <span className="mt-2 text-[10px] font-mono font-black text-zinc-800 tracking-wider">
                   {schoolId}
@@ -373,7 +422,7 @@ export function SchoolIdQRCode({
                   <h4 className="text-sm font-extrabold text-slate-950 leading-tight">
                     {studentName}
                   </h4>
-                  <span 
+                  <span
                     className="text-[9px] font-bold uppercase tracking-wider block"
                     style={{ color: primaryColor }}
                   >
@@ -391,9 +440,12 @@ export function SchoolIdQRCode({
                     <Sparkles className="h-3 w-3" />
                     Branded QR Identity Suite
                   </span>
-                  <h3 className="text-xl font-extrabold text-white mt-2">Customize School Branding</h3>
+                  <h3 className="text-xl font-extrabold text-white mt-2">
+                    Customize School Branding
+                  </h3>
                   <p className="text-xs text-zinc-400">
-                    Apply institutional colors and embed logos to align with your school's brand guidelines.
+                    Apply institutional colors and embed logos to align with your school's brand
+                    guidelines.
                   </p>
                 </div>
 
@@ -410,12 +462,12 @@ export function SchoolIdQRCode({
                         title={p.name}
                         onClick={() => setPrimaryColor(p.value)}
                         className={`h-9 w-full rounded-xl transition-all border-2 flex items-center justify-center ${p.bgClass} ${
-                          primaryColor === p.value ? `${p.borderClass} scale-110 shadow-glow` : "border-transparent opacity-85 hover:opacity-100"
+                          primaryColor === p.value
+                            ? `${p.borderClass} scale-110 shadow-glow`
+                            : "border-transparent opacity-85 hover:opacity-100"
                         }`}
                       >
-                        {primaryColor === p.value && (
-                          <Check className="h-4 w-4 text-white" />
-                        )}
+                        {primaryColor === p.value && <Check className="h-4 w-4 text-white" />}
                       </button>
                     ))}
                   </div>
@@ -499,11 +551,11 @@ export function SchoolIdQRCode({
                   Download Pure QR Code Only
                 </Button>
                 <p className="text-[10px] text-zinc-500 text-center leading-normal max-w-xs mx-auto mt-1">
-                  Exports high-resolution 1000px pure QR vector or 600x850 badge for professional print.
+                  Exports high-resolution 1000px pure QR vector or 600x850 badge for professional
+                  print.
                 </p>
               </div>
             </div>
-
           </div>
         </div>
       )}

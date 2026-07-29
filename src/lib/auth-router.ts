@@ -1,6 +1,7 @@
 import { UserProfile } from "./auth-context-core";
 
-export type UserRoleType = "admin" | "org_admin" | "teacher" | "instructor" | "independent_teacher" | "student";
+export type UserRoleType =
+  "admin" | "org_admin" | "teacher" | "instructor" | "independent_teacher" | "student";
 
 export interface RouteDecision {
   targetPath: string;
@@ -15,7 +16,7 @@ export interface RouteDecision {
  */
 export function determineUserDashboardRoute(
   profile: UserProfile | null,
-  userMetadata?: Record<string, any>
+  userMetadata?: Record<string, any>,
 ): RouteDecision {
   const rawRole = (profile?.role || userMetadata?.role || "student").toLowerCase();
   const schoolId =
@@ -70,7 +71,13 @@ export function determineUserDashboardRoute(
  * Generates official Student Identity Code automatically upon binding.
  */
 export function generateStudentRegistryCode(schoolId: string, userId: string): string {
-  const cleanSchool = schoolId.replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(-6);
-  const cleanUser = userId.replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(-4);
+  const cleanSchool = schoolId
+    .replace(/[^A-Z0-9]/gi, "")
+    .toUpperCase()
+    .slice(-6);
+  const cleanUser = userId
+    .replace(/[^A-Z0-9]/gi, "")
+    .toUpperCase()
+    .slice(-4);
   return `STD-${cleanSchool}-${cleanUser}`;
 }

@@ -28,7 +28,7 @@ export const ReportPrintView = forwardRef<HTMLDivElement, ReportPrintViewProps>(
       awardPoints = 450,
       autoPrint = false,
     },
-    ref
+    ref,
   ) {
     useEffect(() => {
       if (autoPrint) {
@@ -80,9 +80,7 @@ export const ReportPrintView = forwardRef<HTMLDivElement, ReportPrintViewProps>(
                 <td className="border border-black p-2 font-bold bg-gray-100 w-1/4">
                   Student Name:
                 </td>
-                <td className="border border-black p-2 font-semibold w-1/4">
-                  {studentName}
-                </td>
+                <td className="border border-black p-2 font-semibold w-1/4">{studentName}</td>
                 <td className="border border-black p-2 font-bold bg-gray-100 w-1/4">
                   Report Date:
                 </td>
@@ -93,15 +91,11 @@ export const ReportPrintView = forwardRef<HTMLDivElement, ReportPrintViewProps>(
                   School / Institution:
                 </td>
                 <td className="border border-black p-2">{schoolName}</td>
-                <td className="border border-black p-2 font-bold bg-gray-100">
-                  Class / Level:
-                </td>
+                <td className="border border-black p-2 font-bold bg-gray-100">Class / Level:</td>
                 <td className="border border-black p-2">{className}</td>
               </tr>
               <tr>
-                <td className="border border-black p-2 font-bold bg-gray-100">
-                  Reg / UNEB Index:
-                </td>
+                <td className="border border-black p-2 font-bold bg-gray-100">Reg / UNEB Index:</td>
                 <td className="border border-black p-2">{unebIndex}</td>
                 <td className="border border-black p-2 font-bold bg-gray-100">
                   Award Scheme Tier:
@@ -188,9 +182,7 @@ export const ReportPrintView = forwardRef<HTMLDivElement, ReportPrintViewProps>(
                 )}
                 <div className="flex justify-between text-[10px] text-gray-600 border-t border-gray-300 pt-1">
                   <span>Evaluator: {rpt.teacherName || "Faculty Lead"}</span>
-                  <span>
-                    Digital Stamp: {rpt.teacherSignature || "Official Seal Verified"}
-                  </span>
+                  <span>Digital Stamp: {rpt.teacherSignature || "Official Seal Verified"}</span>
                 </div>
               </div>
             ))
@@ -203,15 +195,11 @@ export const ReportPrintView = forwardRef<HTMLDivElement, ReportPrintViewProps>(
             <tbody>
               <tr>
                 <td className="w-1/3 p-2 vertical-bottom">
-                  <div className="border-t border-black pt-1 font-bold">
-                    {studentName}
-                  </div>
+                  <div className="border-t border-black pt-1 font-bold">{studentName}</div>
                   <div className="text-[10px] text-gray-600">Learner Signature</div>
                 </td>
                 <td className="w-1/3 p-2 vertical-bottom">
-                  <div className="border-t border-black pt-1 font-bold">
-                    Subject Head Teacher
-                  </div>
+                  <div className="border-t border-black pt-1 font-bold">Subject Head Teacher</div>
                   <div className="text-[10px] text-gray-600">Faculty Signature &amp; Seal</div>
                 </td>
                 <td className="w-1/3 p-2 vertical-bottom">
@@ -227,9 +215,10 @@ export const ReportPrintView = forwardRef<HTMLDivElement, ReportPrintViewProps>(
 
         {/* FOOTER */}
         <div className="mt-8 pt-2 border-t border-gray-400 text-[9px] text-gray-500 text-center">
-          Cymatic Study Portfolio · NCDC Assessment Standard · Document Security Key: 0xCYM-2026-NCDC
+          Cymatic Study Portfolio · NCDC Assessment Standard · Document Security Key:
+          0xCYM-2026-NCDC
         </div>
       </div>
     );
-  }
+  },
 );

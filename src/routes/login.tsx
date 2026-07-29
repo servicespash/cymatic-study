@@ -103,8 +103,8 @@ function LoginPage() {
               label: "Retry",
               onClick: () => {
                 handleSubmit();
-              }
-            }
+              },
+            },
           });
           setSubmitting(false);
           return;
@@ -125,7 +125,8 @@ function LoginPage() {
         } else if (res.type === "email") {
           emailToUse = res.email || "";
         } else if (res.type === "organization") {
-          const msg = "That looks like a School ID, not a login username. Please sign in with the associated email address.";
+          const msg =
+            "That looks like a School ID, not a login username. Please sign in with the associated email address.";
           setError(msg);
           toast.error(msg, { id: toastId });
           setSubmitting(false);
@@ -147,8 +148,8 @@ function LoginPage() {
             label: "Retry",
             onClick: () => {
               handleSubmit();
-            }
-          }
+            },
+          },
         });
         setSubmitting(false);
         return;
@@ -170,11 +171,14 @@ function LoginPage() {
           error.message?.toLowerCase().includes("fetch failed") ||
           error.message?.toLowerCase().includes("networkerror")
         ) {
-          errMsg = "Authentication server unreachable (Failed to fetch). Check your Supabase environment variables or continue as Guest.";
+          errMsg =
+            "Authentication server unreachable (Failed to fetch). Check your Supabase environment variables or continue as Guest.";
         } else if (error.message.includes("Invalid login credentials")) {
-          errMsg = "Invalid email, username or password. Please check your credentials and try again.";
+          errMsg =
+            "Invalid email, username or password. Please check your credentials and try again.";
         } else if (error.message.includes("Email not confirmed")) {
-          errMsg = "Your email address has not been confirmed yet. Please check your inbox for the confirmation link.";
+          errMsg =
+            "Your email address has not been confirmed yet. Please check your inbox for the confirmation link.";
         }
         setError(errMsg);
         toast.error(errMsg, {
@@ -183,8 +187,8 @@ function LoginPage() {
             label: "Retry",
             onClick: () => {
               handleSubmit();
-            }
-          }
+            },
+          },
         });
       } else if (signInData.user) {
         toast.success("Successfully authenticated! Verifying metadata & role...", { id: toastId });
@@ -236,7 +240,10 @@ function LoginPage() {
           .eq("user_id", signInData.user.id)
           .maybeSingle();
 
-        const mergedMeta = { ...signInData.user.user_metadata, role: metaRole || signInData.user.user_metadata?.role };
+        const mergedMeta = {
+          ...signInData.user.user_metadata,
+          role: metaRole || signInData.user.user_metadata?.role,
+        };
         const decision = determineUserDashboardRoute(profileData, mergedMeta);
 
         if (decision.schoolId) {
@@ -249,7 +256,8 @@ function LoginPage() {
     } catch (err: any) {
       setSubmitting(false);
       console.error("Sign-in exception:", err);
-      const msg = "Network or authentication error (Failed to fetch). You can continue to explore as Guest.";
+      const msg =
+        "Network or authentication error (Failed to fetch). You can continue to explore as Guest.";
       setError(msg);
       toast.error(msg, {
         id: toastId,
@@ -257,8 +265,8 @@ function LoginPage() {
           label: "Retry",
           onClick: () => {
             handleSubmit();
-          }
-        }
+          },
+        },
       });
     }
   };

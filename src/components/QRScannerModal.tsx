@@ -12,7 +12,9 @@ interface QRScannerModalProps {
 }
 
 export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModalProps) {
-  const [permissionState, setPermissionState] = useState<"prompt" | "granted" | "denied" | "loading">("loading");
+  const [permissionState, setPermissionState] = useState<
+    "prompt" | "granted" | "denied" | "loading"
+  >("loading");
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [activeCameraId, setActiveCameraId] = useState<string>("");
   const [scannerError, setScannerError] = useState<string | null>(null);
@@ -32,21 +34,21 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       if (AudioContext) {
         const ctx = new AudioContext();
-        
+
         const playTone = (freq: number, startOffset: number, duration: number, volume: number) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
-          
+
           osc.type = "sine";
           osc.frequency.setValueAtTime(freq, ctx.currentTime + startOffset);
-          
+
           gain.gain.setValueAtTime(0, ctx.currentTime + startOffset);
           gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + startOffset + 0.02);
           gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + startOffset + duration);
-          
+
           osc.connect(gain);
           gain.connect(ctx.destination);
-          
+
           osc.start(ctx.currentTime + startOffset);
           osc.stop(ctx.currentTime + startOffset + duration);
         };
@@ -65,12 +67,12 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
     const startScanner = async () => {
       setPermissionState("loading");
       setScannerError(null);
-      
+
       try {
         // First check permissions and retrieve cameras
         const cameras = await Html5Qrcode.getCameras();
         setDevices(cameras);
-        
+
         if (cameras.length === 0) {
           setPermissionState("denied");
           setScannerError("No video capture devices/cameras found on this system.");
@@ -78,9 +80,12 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
         }
 
         setPermissionState("granted");
-        
+
         // Select back camera if available, otherwise first camera
-        const backCam = cameras.find(c => c.label.toLowerCase().includes("back") || c.label.toLowerCase().includes("environment"));
+        const backCam = cameras.find(
+          (c) =>
+            c.label.toLowerCase().includes("back") || c.label.toLowerCase().includes("environment"),
+        );
         const targetCamId = backCam ? backCam.id : cameras[0].id;
         setActiveCameraId(targetCamId);
 
@@ -95,7 +100,7 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
             qrbox: (width, height) => {
               const size = Math.min(width, height) * 0.7;
               return { width: size, height: size };
-            }
+            },
           },
           (decodedText) => {
             // Success
@@ -103,7 +108,7 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
           },
           () => {
             // Quietly parse frames without spamming logs
-          }
+          },
         );
       } catch (err: any) {
         console.error("Camera access failed:", err);
@@ -136,19 +141,19 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
 
   const handleSwitchCamera = async () => {
     if (devices.length <= 1 || !qrScannerRef.current) return;
-    
-    const currentIndex = devices.findIndex(d => d.id === activeCameraId);
+
+    const currentIndex = devices.findIndex((d) => d.id === activeCameraId);
     const nextIndex = (currentIndex + 1) % devices.length;
     const nextCamId = devices[nextIndex].id;
-    
+
     const toastId = toast.loading("Switching active camera...");
     try {
       await stopScanner();
       setActiveCameraId(nextCamId);
-      
+
       const scanner = new Html5Qrcode(elementId);
       qrScannerRef.current = scanner;
-      
+
       await scanner.start(
         nextCamId,
         {
@@ -156,12 +161,12 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
           qrbox: (width, height) => {
             const size = Math.min(width, height) * 0.7;
             return { width: size, height: size };
-          }
+          },
         },
         (decodedText) => {
           handleDecodedText(decodedText);
         },
-        () => {}
+        () => {},
       );
       toast.success("Active camera updated!", { id: toastId });
     } catch (err) {
@@ -171,15 +176,16 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
 
   const handleDecodedText = (text: string) => {
     let finalSchoolId = text.trim();
-    
+
     // Parse URL payload if applicable
     try {
       if (text.includes("verify-document") || text.startsWith("http")) {
         const url = new URL(text.startsWith("http") ? text : `https://${text}`);
-        const schoolParam = url.searchParams.get("school") || 
-                            url.searchParams.get("school_id") || 
-                            url.searchParams.get("schoolId") ||
-                            url.searchParams.get("id");
+        const schoolParam =
+          url.searchParams.get("school") ||
+          url.searchParams.get("school_id") ||
+          url.searchParams.get("schoolId") ||
+          url.searchParams.get("id");
         if (schoolParam) {
           finalSchoolId = schoolParam;
         }
@@ -201,7 +207,6 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fade-in">
       <div className="relative w-full max-w-md rounded-3xl border border-white/10 bg-zinc-950 p-6 shadow-2xl flex flex-col max-h-[90vh]">
-        
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -228,16 +233,21 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
           {permissionState === "loading" && (
             <div className="text-center p-6 space-y-3 z-10">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent mx-auto" />
-              <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider animate-pulse">Accessing Device Camera...</p>
+              <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider animate-pulse">
+                Accessing Device Camera...
+              </p>
             </div>
           )}
 
           {permissionState === "denied" && (
             <div className="text-center p-6 space-y-3 max-w-sm z-10">
               <AlertTriangle className="h-10 w-10 text-amber-500 mx-auto" />
-              <p className="text-sm font-bold text-white uppercase tracking-wide">Camera Access Failed</p>
+              <p className="text-sm font-bold text-white uppercase tracking-wide">
+                Camera Access Failed
+              </p>
               <p className="text-xs text-zinc-500 leading-relaxed">
-                {scannerError || "Please grant camera permissions in your browser or device settings to scan school ID codes."}
+                {scannerError ||
+                  "Please grant camera permissions in your browser or device settings to scan school ID codes."}
               </p>
               <Button
                 size="sm"
@@ -251,9 +261,9 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
           )}
 
           {/* Active Reader Div */}
-          <div 
-            id={elementId} 
-            className={`w-full h-full ${permissionState === "granted" ? "block" : "hidden"}`} 
+          <div
+            id={elementId}
+            className={`w-full h-full ${permissionState === "granted" ? "block" : "hidden"}`}
           />
 
           {/* Laser guideline overlay */}

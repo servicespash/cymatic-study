@@ -29,7 +29,8 @@ function AuthCallbackPage() {
         const code = urlParams.get("code");
 
         if (code) {
-          const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          const { data: exchangeData, error: exchangeError } =
+            await supabase.auth.exchangeCodeForSession(code);
           if (exchangeError) {
             console.error("Code exchange error:", exchangeError);
             if (isMounted) {
@@ -44,7 +45,10 @@ function AuthCallbackPage() {
         }
 
         // 2. Get active session (Supabase client automatically parses hash tokens like #access_token=...)
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
 
         if (sessionError) {
           console.error("Session fetch error:", sessionError);
@@ -74,8 +78,10 @@ function AuthCallbackPage() {
 
           if (isMounted) {
             setStatus("success");
-            toast.success(`Session verified! Welcome, ${decision.roleLabel}. Redirecting to ${decision.dashboardTitle}...`);
-            
+            toast.success(
+              `Session verified! Welcome, ${decision.roleLabel}. Redirecting to ${decision.dashboardTitle}...`,
+            );
+
             setTimeout(() => {
               navigate({ to: decision.targetPath });
             }, 800);
@@ -122,7 +128,8 @@ function AuthCallbackPage() {
             {status === "error" && "Verification Notice"}
           </h1>
           <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-            {status === "loading" && "Connecting to security node, fetching your profile and School ID..."}
+            {status === "loading" &&
+              "Connecting to security node, fetching your profile and School ID..."}
             {status === "success" && "Redirecting you to your NCDC study dashboard..."}
             {status === "error" && (errorMessage || "Could not complete session verification.")}
           </p>

@@ -104,7 +104,8 @@ export function TeacherGradingStation() {
       stream: "West Stream",
       subject: "Biology",
       project_title: "Local Plant Taxonomy & Herbarium Collection",
-      project_description: "Cataloging indigenous medicinal flora in the Kampala region with digital taxonomy cards.",
+      project_description:
+        "Cataloging indigenous medicinal flora in the Kampala region with digital taxonomy cards.",
       submitted_at: "2026-07-22",
       status: "pending",
       school_id: currentSchoolId,
@@ -117,7 +118,8 @@ export function TeacherGradingStation() {
       stream: "Science A",
       subject: "Mathematics",
       project_title: "Epidemiological Growth Curve Modeling for Regional Health Data",
-      project_description: "Differential equation models applied to Ministry of Health viral transmission metrics.",
+      project_description:
+        "Differential equation models applied to Ministry of Health viral transmission metrics.",
       submitted_at: "2026-07-21",
       status: "pending",
       school_id: currentSchoolId,
@@ -125,7 +127,7 @@ export function TeacherGradingStation() {
   ]);
 
   const [selectedSubmission, setSelectedSubmission] = useState<StudentSubmission | null>(
-    submissions[0]
+    submissions[0],
   );
   const [selectedLevel, setSelectedLevel] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -193,7 +195,9 @@ export function TeacherGradingStation() {
   }, [planningScore, executionScore, conclusionScore]);
 
   // Canvas drawing functions
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const startDrawing = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>,
+  ) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -260,7 +264,9 @@ export function TeacherGradingStation() {
     }
 
     setIsSubmittingGrade(true);
-    const toastId = toast.loading("Validating marks and affixing digital institutional signature...");
+    const toastId = toast.loading(
+      "Validating marks and affixing digital institutional signature...",
+    );
 
     try {
       const now = new Date().toISOString();
@@ -325,7 +331,8 @@ export function TeacherGradingStation() {
             NCDC Competency Assessment & Digital Marking
           </h2>
           <p className="text-xs text-zinc-400 mt-1">
-            Review learner project submissions, grade across standard rubric criteria, and apply your digital signature stamp.
+            Review learner project submissions, grade across standard rubric criteria, and apply
+            your digital signature stamp.
           </p>
         </div>
 
@@ -392,53 +399,64 @@ export function TeacherGradingStation() {
               </div>
             ) : (
               filteredSubmissions.map((sub) => {
-              const isSelected = selectedSubmission?.id === sub.id;
-              return (
-                <div
-                  key={sub.id}
-                  onClick={() => {
-                    setSelectedSubmission(sub);
-                    if (sub.status === "graded" && sub.score) {
-                      setScoreVal(sub.score);
-                      setFeedbackVal(sub.feedback || "");
-                    }
-                  }}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                    isSelected
-                      ? "bg-blue-950/40 border-blue-500/50 shadow-lg shadow-blue-500/10"
-                      : "bg-black/40 border-white/5 hover:border-white/20 hover:bg-white/[0.02]"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <Badge
-                      className={
-                        sub.status === "graded"
-                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px]"
-                          : "bg-amber-500/10 text-amber-400 border-amber-500/30 text-[10px]"
+                const isSelected = selectedSubmission?.id === sub.id;
+                return (
+                  <div
+                    key={sub.id}
+                    onClick={() => {
+                      setSelectedSubmission(sub);
+                      if (sub.status === "graded" && sub.score) {
+                        setScoreVal(sub.score);
+                        setFeedbackVal(sub.feedback || "");
                       }
-                    >
-                      {sub.status === "graded" ? "GRADED & SIGNED" : "PENDING REVIEW"}
-                    </Badge>
-                    <span className="text-[10px] font-mono text-zinc-500">{sub.submitted_at}</span>
-                  </div>
+                    }}
+                    className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-blue-950/40 border-blue-500/50 shadow-lg shadow-blue-500/10"
+                        : "bg-black/40 border-white/5 hover:border-white/20 hover:bg-white/[0.02]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge
+                        className={
+                          sub.status === "graded"
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px]"
+                            : "bg-amber-500/10 text-amber-400 border-amber-500/30 text-[10px]"
+                        }
+                      >
+                        {sub.status === "graded" ? "GRADED & SIGNED" : "PENDING REVIEW"}
+                      </Badge>
+                      <span className="text-[10px] font-mono text-zinc-500">
+                        {sub.submitted_at}
+                      </span>
+                    </div>
 
-                  <h4 className="font-bold text-white text-sm line-clamp-1">{sub.project_title}</h4>
-                  <div className="flex items-center gap-2 mt-2 text-xs text-zinc-400">
-                    <User className="h-3.5 w-3.5 text-blue-400" />
-                    <span className="font-semibold text-zinc-200">{sub.student_name}</span>
-                    <span className="text-zinc-600">•</span>
-                    <span className="text-blue-400 font-mono">{sub.level} ({sub.stream})</span>
-                  </div>
+                    <h4 className="font-bold text-white text-sm line-clamp-1">
+                      {sub.project_title}
+                    </h4>
+                    <div className="flex items-center gap-2 mt-2 text-xs text-zinc-400">
+                      <User className="h-3.5 w-3.5 text-blue-400" />
+                      <span className="font-semibold text-zinc-200">{sub.student_name}</span>
+                      <span className="text-zinc-600">•</span>
+                      <span className="text-blue-400 font-mono">
+                        {sub.level} ({sub.stream})
+                      </span>
+                    </div>
 
-                  <div className="flex items-center justify-between mt-3 pt-2 border-t border-white/5 text-[11px] text-zinc-500">
-                    <span>Subject: <strong className="text-zinc-300">{sub.subject}</strong></span>
-                    {sub.score !== undefined && (
-                      <span className="font-mono font-bold text-emerald-400">{sub.score}/100</span>
-                    )}
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-white/5 text-[11px] text-zinc-500">
+                      <span>
+                        Subject: <strong className="text-zinc-300">{sub.subject}</strong>
+                      </span>
+                      {sub.score !== undefined && (
+                        <span className="font-mono font-bold text-emerald-400">
+                          {sub.score}/100
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            }))}
+                );
+              })
+            )}
 
             {!loadingData && filteredSubmissions.length === 0 && (
               <div className="p-8 text-center text-zinc-500 border border-dashed border-white/10 rounded-xl">
@@ -455,14 +473,21 @@ export function TeacherGradingStation() {
               {/* SUBMISSION METADATA HEADER */}
               <div className="border-b border-white/10 pb-4 space-y-2">
                 <div className="flex items-center justify-between">
-                  <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-400 text-xs">
+                  <Badge
+                    variant="outline"
+                    className="border-blue-500/30 bg-blue-500/10 text-blue-400 text-xs"
+                  >
                     {selectedSubmission.level} • {selectedSubmission.subject}
                   </Badge>
-                  <span className="text-xs font-mono text-zinc-400">ID: {selectedSubmission.id}</span>
+                  <span className="text-xs font-mono text-zinc-400">
+                    ID: {selectedSubmission.id}
+                  </span>
                 </div>
-                <h3 className="text-xl font-black text-white">{selectedSubmission.project_title}</h3>
+                <h3 className="text-xl font-black text-white">
+                  {selectedSubmission.project_title}
+                </h3>
                 <p className="text-xs text-zinc-400">{selectedSubmission.project_description}</p>
-                
+
                 <div className="flex items-center gap-4 text-xs text-zinc-300 pt-2">
                   <div>
                     <span className="text-zinc-500">Student: </span>
@@ -474,7 +499,9 @@ export function TeacherGradingStation() {
                   </div>
                   <div>
                     <span className="text-zinc-500">School ID: </span>
-                    <strong className="text-blue-400 font-mono">{selectedSubmission.school_id}</strong>
+                    <strong className="text-blue-400 font-mono">
+                      {selectedSubmission.school_id}
+                    </strong>
                   </div>
                 </div>
               </div>
@@ -538,16 +565,22 @@ export function TeacherGradingStation() {
                     <p className="text-[10px] font-black uppercase text-blue-400 tracking-wider">
                       Aggregate Assessment Grade
                     </p>
-                    <p className="text-xs text-zinc-400">NCDC Continuous Assessment (20% Final Contribution)</p>
+                    <p className="text-xs text-zinc-400">
+                      NCDC Continuous Assessment (20% Final Contribution)
+                    </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-3xl font-black text-emerald-400 font-mono">{scoreVal}%</span>
+                    <span className="text-3xl font-black text-emerald-400 font-mono">
+                      {scoreVal}%
+                    </span>
                   </div>
                 </div>
 
                 {/* EVALUATOR FEEDBACK */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-zinc-300">Evaluator's Remarks & Feedback</Label>
+                  <Label className="text-xs font-bold text-zinc-300">
+                    Evaluator's Remarks & Feedback
+                  </Label>
                   <Textarea
                     placeholder="Enter formative feedback for the learner..."
                     value={feedbackVal}
@@ -560,7 +593,8 @@ export function TeacherGradingStation() {
                 <div className="space-y-3 pt-2 border-t border-white/10">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-black uppercase text-zinc-300 flex items-center gap-1.5">
-                      <PenTool className="h-4 w-4 text-blue-400" /> Faculty Digital Signature & Validation Stamp
+                      <PenTool className="h-4 w-4 text-blue-400" /> Faculty Digital Signature &
+                      Validation Stamp
                     </Label>
                     <div className="flex gap-2">
                       <Button
@@ -591,7 +625,9 @@ export function TeacherGradingStation() {
                         className="bg-white/5 border-white/10 text-xs font-serif italic text-blue-300 text-sm"
                       />
                       <p className="text-[10px] text-zinc-500">
-                        Will be stamped as: <span className="text-zinc-300 italic font-serif">"{typedSignature}"</span> bound to School ID <span className="font-mono">{currentSchoolId}</span>.
+                        Will be stamped as:{" "}
+                        <span className="text-zinc-300 italic font-serif">"{typedSignature}"</span>{" "}
+                        bound to School ID <span className="font-mono">{currentSchoolId}</span>.
                       </p>
                     </div>
                   ) : (
@@ -630,7 +666,9 @@ export function TeacherGradingStation() {
                       <div className="flex items-center gap-2">
                         <ShieldCheck className="h-5 w-5 text-emerald-400 shrink-0" />
                         <div>
-                          <p className="text-xs font-bold text-emerald-300">Signed & Validated Grade Sheet</p>
+                          <p className="text-xs font-bold text-emerald-300">
+                            Signed & Validated Grade Sheet
+                          </p>
                           <p className="text-[10px] text-zinc-400 font-mono">
                             {selectedSubmission.teacher_signature}
                           </p>
@@ -658,7 +696,8 @@ export function TeacherGradingStation() {
             </Card>
           ) : (
             <div className="p-12 text-center text-zinc-500 border border-dashed border-white/10 rounded-2xl">
-              Select a student project submission from the left column to view details, enter score rubrics, and affix your digital signature.
+              Select a student project submission from the left column to view details, enter score
+              rubrics, and affix your digital signature.
             </div>
           )}
         </div>
