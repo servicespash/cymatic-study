@@ -43,7 +43,7 @@ export const VisionLiveSession: React.FC<{
   });
 
   const handleStructuredTrigger = async (transcript: string) => {
-    const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tutor-chat`;
+    const url = `/api/tutor`;
     try {
       const { data: sess } = await supabase.auth.getSession();
       const accessToken = sess.session?.access_token;

@@ -21,7 +21,7 @@ export const MiraFAB: React.FC = () => {
   const handleSend = async ({ dataUrl, transcript }: { dataUrl: string; transcript: string }) => {
     // Basic implementation of sending from FAB
     // In a real app, this might go to a global chat state or just trigger a one-off response
-    const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tutor-chat`;
+    const url = `/api/tutor`;
     try {
       const { data: sess } = await supabase.auth.getSession();
       const accessToken = sess.session?.access_token;

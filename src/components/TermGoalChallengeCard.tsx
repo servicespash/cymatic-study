@@ -177,7 +177,7 @@ export function TermGoalChallengeCard() {
         const { data: sess } = await supabase.auth.getSession();
         const accessToken = sess.session?.access_token;
         if (accessToken) {
-          const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tutor-chat`, {
+          const res = await fetch(`/api/tutor`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

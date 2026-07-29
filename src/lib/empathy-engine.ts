@@ -33,7 +33,7 @@ export async function generateEmpathyResponse(
 
       if (accessToken) {
         const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tutor-chat`,
+          `/api/tutor`,
           {
             method: "POST",
             headers: {

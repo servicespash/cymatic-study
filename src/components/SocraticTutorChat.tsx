@@ -178,14 +178,13 @@ export function SocraticTutorChat() {
           throw new Error("Local API failed status: " + res.status);
         }
       } catch (err) {
-        console.warn("[Socratic Coach] Local API failed, trying Supabase Edge Function directly:", err);
-        const edgeUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tutor-chat`;
+        console.warn("[Socratic Coach] Primary API call failed, retrying /api/tutor:", err);
+        const edgeUrl = `/api/tutor`;
         res = await fetch(edgeUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
           },
           body: JSON.stringify({
             messages: [...messages, studentMsg].map((m) => ({
