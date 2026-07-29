@@ -103,7 +103,11 @@ export const PRESET_SCIENCE_CONCEPTS: ScienceConceptItem[] = [
     promptDescription:
       "3D DNA double helix with antiparallel sugar-phosphate backbones, complementary base pairs Adenine-Thymine and Guanine-Cytosine.",
     imageUrl: dnaImg,
-    keyFormulas: ["A + G = T + C (Chargaff's Rule)", "A-T = 2 Hydrogen Bonds", "G-C = 3 Hydrogen Bonds"],
+    keyFormulas: [
+      "A + G = T + C (Chargaff's Rule)",
+      "A-T = 2 Hydrogen Bonds",
+      "G-C = 3 Hydrogen Bonds",
+    ],
     explanation:
       "Deoxyribonucleic acid (DNA) consists of two antiparallel polynucleotide strands coiled around a central axis. Complementary nitrogenous bases hold the double helix together through specific hydrogen bonding.",
     keyPoints: [
@@ -129,7 +133,7 @@ export function ScienceConceptIllustrator({
       const match = PRESET_SCIENCE_CONCEPTS.find(
         (c) =>
           c.title.toLowerCase().includes(initialConceptTitle.toLowerCase()) ||
-          c.id.toLowerCase().includes(initialConceptTitle.toLowerCase())
+          c.id.toLowerCase().includes(initialConceptTitle.toLowerCase()),
       );
       if (match) return match;
     }
@@ -139,7 +143,8 @@ export function ScienceConceptIllustrator({
   const [customSearch, setCustomSearch] = useState("");
   const [customPrompt, setCustomPrompt] = useState("");
   const [isGeneratingCustom, setIsGeneratingCustom] = useState(false);
-  const [generatedItems, setGeneratedItems] = useState<ScienceConceptItem[]>(PRESET_SCIENCE_CONCEPTS);
+  const [generatedItems, setGeneratedItems] =
+    useState<ScienceConceptItem[]>(PRESET_SCIENCE_CONCEPTS);
   const [fullScreenImg, setFullScreenImg] = useState<string | null>(null);
 
   const handleGenerateConceptIllustration = (conceptTopic: string) => {
@@ -158,15 +163,30 @@ export function ScienceConceptIllustrator({
       let category: ScienceConceptItem["category"] = "Physics";
       let formulas = ["E = hf", "Δv = a · Δt", "K = ½mv²"];
 
-      if (lower.includes("molecule") || lower.includes("bond") || lower.includes("chem") || lower.includes("atom")) {
+      if (
+        lower.includes("molecule") ||
+        lower.includes("bond") ||
+        lower.includes("chem") ||
+        lower.includes("atom")
+      ) {
         matchedAsset = molecularImg;
         category = "Chemistry";
         formulas = ["C_n H_{2n+2}", "pH = -log[H+]", "PV = nRT"];
-      } else if (lower.includes("cell") || lower.includes("dna") || lower.includes("bio") || lower.includes("gene")) {
+      } else if (
+        lower.includes("cell") ||
+        lower.includes("dna") ||
+        lower.includes("bio") ||
+        lower.includes("gene")
+      ) {
         matchedAsset = dnaImg;
         category = "Biology";
         formulas = ["6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂", "A-T / G-C"];
-      } else if (lower.includes("light") || lower.includes("optics") || lower.includes("prism") || lower.includes("wave")) {
+      } else if (
+        lower.includes("light") ||
+        lower.includes("optics") ||
+        lower.includes("prism") ||
+        lower.includes("wave")
+      ) {
         matchedAsset = opticsImg;
         category = "Physics";
         formulas = ["n = c / v", "v = f · λ", "sin(i)/sin(r) = n"];
@@ -193,7 +213,9 @@ export function ScienceConceptIllustrator({
       setActiveConcept(newConceptItem);
       setIsGeneratingCustom(false);
       setCustomPrompt("");
-      toast.success(`Generated thematic illustration for "${newConceptItem.title}"!`, { id: toastId });
+      toast.success(`Generated thematic illustration for "${newConceptItem.title}"!`, {
+        id: toastId,
+      });
     }, 1200);
   };
 
@@ -211,7 +233,7 @@ export function ScienceConceptIllustrator({
     (item) =>
       item.title.toLowerCase().includes(customSearch.toLowerCase()) ||
       item.category.toLowerCase().includes(customSearch.toLowerCase()) ||
-      item.ncdcTopicRef.toLowerCase().includes(customSearch.toLowerCase())
+      item.ncdcTopicRef.toLowerCase().includes(customSearch.toLowerCase()),
   );
 
   return (
@@ -228,7 +250,9 @@ export function ScienceConceptIllustrator({
               Thematic Science Concept Diagrams
             </h2>
             <p className="text-xs md:text-sm text-muted-foreground max-w-xl">
-              Visualize abstract scientific concepts — from acoustic resonance and orbital hybridization to optical dispersion and DNA double helices — rendered with crisp vector aesthetics and formula overlays.
+              Visualize abstract scientific concepts — from acoustic resonance and orbital
+              hybridization to optical dispersion and DNA double helices — rendered with crisp
+              vector aesthetics and formula overlays.
             </p>
           </div>
 
@@ -321,7 +345,10 @@ export function ScienceConceptIllustrator({
                 <Badge className="bg-primary/90 text-primary-foreground font-bold shadow-md">
                   {activeConcept.category}
                 </Badge>
-                <Badge variant="outline" className="bg-background/80 backdrop-blur-md font-semibold text-foreground border-white/20">
+                <Badge
+                  variant="outline"
+                  className="bg-background/80 backdrop-blur-md font-semibold text-foreground border-white/20"
+                >
                   {activeConcept.level}
                 </Badge>
               </div>
@@ -477,7 +504,8 @@ export function ScienceConceptIllustrator({
           <DialogContent className="max-w-4xl p-2 bg-black/95 border-zinc-800">
             <DialogHeader className="p-4 flex flex-row items-center justify-between">
               <DialogTitle className="text-white text-base font-bold flex items-center gap-2">
-                <Atom className="h-5 w-5 text-primary" /> {activeConcept.title} — High Resolution Schematic
+                <Atom className="h-5 w-5 text-primary" /> {activeConcept.title} — High Resolution
+                Schematic
               </DialogTitle>
             </DialogHeader>
             <div className="relative w-full max-h-[80vh] flex items-center justify-center overflow-hidden rounded-xl bg-black">

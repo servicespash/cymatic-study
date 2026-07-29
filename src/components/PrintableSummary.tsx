@@ -37,7 +37,8 @@ export function PrintableSummary({
   customUnebIndex,
   markedReports = [],
 }: PrintableSummaryProps) {
-  const { xp, level, completedGaps, goalName, goalType, completedTasks, badges } = useGamificationStore();
+  const { xp, level, completedGaps, goalName, goalType, completedTasks, badges } =
+    useGamificationStore();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [displayName, setDisplayName] = useState(customStudentName || "Learner");
   const [schoolName, setSchoolName] = useState(customSchoolName || "National Curriculum Center");
@@ -89,10 +90,26 @@ export function PrintableSummary({
 
   const categorizeText = (text: string): string => {
     const t = text.toLowerCase();
-    if (/math|algebra|quadratic|equation|calculus|geometry|fraction|numeric|number/.test(t)) return "Mathematics";
-    if (/physics|force|gravity|velocity|speed|kinematics|motion|mechanics|wave|optics|light|laser|electricity|circuit/.test(t)) return "Physics";
-    if (/chemistry|chemical|acid|base|ph|molecule|atom|bond|compound|periodic|reaction|catalyst|element/.test(t)) return "Chemistry";
-    if (/biology|cell|dna|organism|gene|evolution|plant|photosynthesis|mitochondria|bacteria|virus|anatomy/.test(t)) return "Biology";
+    if (/math|algebra|quadratic|equation|calculus|geometry|fraction|numeric|number/.test(t))
+      return "Mathematics";
+    if (
+      /physics|force|gravity|velocity|speed|kinematics|motion|mechanics|wave|optics|light|laser|electricity|circuit/.test(
+        t,
+      )
+    )
+      return "Physics";
+    if (
+      /chemistry|chemical|acid|base|ph|molecule|atom|bond|compound|periodic|reaction|catalyst|element/.test(
+        t,
+      )
+    )
+      return "Chemistry";
+    if (
+      /biology|cell|dna|organism|gene|evolution|plant|photosynthesis|mitochondria|bacteria|virus|anatomy/.test(
+        t,
+      )
+    )
+      return "Biology";
     return "General Science & Humanities";
   };
 
@@ -158,13 +175,36 @@ export function PrintableSummary({
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
           <tbody>
             <tr>
-              <td style={{ border: "1px solid #000000", padding: "6px 8px", fontWeight: "700", width: "22%", background: "#f3f4f6" }}>
+              <td
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px 8px",
+                  fontWeight: "700",
+                  width: "22%",
+                  background: "#f3f4f6",
+                }}
+              >
                 Student Name
               </td>
-              <td style={{ border: "1px solid #000000", padding: "6px 8px", width: "28%", fontWeight: "600" }}>
+              <td
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px 8px",
+                  width: "28%",
+                  fontWeight: "600",
+                }}
+              >
                 {displayName}
               </td>
-              <td style={{ border: "1px solid #000000", padding: "6px 8px", fontWeight: "700", width: "22%", background: "#f3f4f6" }}>
+              <td
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px 8px",
+                  fontWeight: "700",
+                  width: "22%",
+                  background: "#f3f4f6",
+                }}
+              >
                 Report Date
               </td>
               <td style={{ border: "1px solid #000000", padding: "6px 8px", width: "28%" }}>
@@ -172,30 +212,59 @@ export function PrintableSummary({
               </td>
             </tr>
             <tr>
-              <td style={{ border: "1px solid #000000", padding: "6px 8px", fontWeight: "700", background: "#f3f4f6" }}>
+              <td
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px 8px",
+                  fontWeight: "700",
+                  background: "#f3f4f6",
+                }}
+              >
                 School / Institution
               </td>
-              <td style={{ border: "1px solid #000000", padding: "6px 8px" }}>
-                {schoolName}
-              </td>
-              <td style={{ border: "1px solid #000000", padding: "6px 8px", fontWeight: "700", background: "#f3f4f6" }}>
+              <td style={{ border: "1px solid #000000", padding: "6px 8px" }}>{schoolName}</td>
+              <td
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px 8px",
+                  fontWeight: "700",
+                  background: "#f3f4f6",
+                }}
+              >
                 Class / Level
               </td>
-              <td style={{ border: "1px solid #000000", padding: "6px 8px" }}>
-                {className}
-              </td>
+              <td style={{ border: "1px solid #000000", padding: "6px 8px" }}>{className}</td>
             </tr>
             <tr>
-              <td style={{ border: "1px solid #000000", padding: "6px 8px", fontWeight: "700", background: "#f3f4f6" }}>
+              <td
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px 8px",
+                  fontWeight: "700",
+                  background: "#f3f4f6",
+                }}
+              >
                 UNEB Centre / Index
               </td>
-              <td style={{ border: "1px solid #000000", padding: "6px 8px" }}>
-                {unebIndex}
-              </td>
-              <td style={{ border: "1px solid #000000", padding: "6px 8px", fontWeight: "700", background: "#f3f4f6" }}>
+              <td style={{ border: "1px solid #000000", padding: "6px 8px" }}>{unebIndex}</td>
+              <td
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px 8px",
+                  fontWeight: "700",
+                  background: "#f3f4f6",
+                }}
+              >
                 Current Tier Level
               </td>
-              <td style={{ border: "1px solid #000000", padding: "6px 8px", fontWeight: "700", color: "#1d4ed8" }}>
+              <td
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px 8px",
+                  fontWeight: "700",
+                  color: "#1d4ed8",
+                }}
+              >
                 Tier {level} Scholar
               </td>
             </tr>
@@ -221,15 +290,52 @@ export function PrintableSummary({
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
           <thead>
             <tr style={{ background: "#e5e7eb" }}>
-              <th style={{ border: "1px solid #000000", padding: "6px", textAlign: "left", width: "30%" }}>Metric Item</th>
-              <th style={{ border: "1px solid #000000", padding: "6px", textAlign: "center", width: "30%" }}>Recorded Value</th>
-              <th style={{ border: "1px solid #000000", padding: "6px", textAlign: "left", width: "40%" }}>Competency Context</th>
+              <th
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px",
+                  textAlign: "left",
+                  width: "30%",
+                }}
+              >
+                Metric Item
+              </th>
+              <th
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px",
+                  textAlign: "center",
+                  width: "30%",
+                }}
+              >
+                Recorded Value
+              </th>
+              <th
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px",
+                  textAlign: "left",
+                  width: "40%",
+                }}
+              >
+                Competency Context
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td style={{ border: "1px solid #000000", padding: "6px", fontWeight: "700" }}>Study Time Points</td>
-              <td style={{ border: "1px solid #000000", padding: "6px", textAlign: "center", fontWeight: "800", color: "#0d9488" }}>
+              <td style={{ border: "1px solid #000000", padding: "6px", fontWeight: "700" }}>
+                Study Time Points
+              </td>
+              <td
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px",
+                  textAlign: "center",
+                  fontWeight: "800",
+                  color: "#0d9488",
+                }}
+              >
                 {totalHours} Total Study Hours
               </td>
               <td style={{ border: "1px solid #000000", padding: "6px" }}>
@@ -237,8 +343,18 @@ export function PrintableSummary({
               </td>
             </tr>
             <tr>
-              <td style={{ border: "1px solid #000000", padding: "6px", fontWeight: "700" }}>Award Points (XP)</td>
-              <td style={{ border: "1px solid #000000", padding: "6px", textAlign: "center", fontWeight: "800", color: "#2563eb" }}>
+              <td style={{ border: "1px solid #000000", padding: "6px", fontWeight: "700" }}>
+                Award Points (XP)
+              </td>
+              <td
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px",
+                  textAlign: "center",
+                  fontWeight: "800",
+                  color: "#2563eb",
+                }}
+              >
                 {xp} Total XP Points
               </td>
               <td style={{ border: "1px solid #000000", padding: "6px" }}>
@@ -246,8 +362,17 @@ export function PrintableSummary({
               </td>
             </tr>
             <tr>
-              <td style={{ border: "1px solid #000000", padding: "6px", fontWeight: "700" }}>Badges &amp; Credentials</td>
-              <td style={{ border: "1px solid #000000", padding: "6px", textAlign: "center", fontWeight: "700" }}>
+              <td style={{ border: "1px solid #000000", padding: "6px", fontWeight: "700" }}>
+                Badges &amp; Credentials
+              </td>
+              <td
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px",
+                  textAlign: "center",
+                  fontWeight: "700",
+                }}
+              >
                 {badges.length > 0 ? `${badges.length} Badges Unlocked` : "3 Foundation Badges"}
               </td>
               <td style={{ border: "1px solid #000000", padding: "6px" }}>
@@ -255,7 +380,9 @@ export function PrintableSummary({
               </td>
             </tr>
             <tr>
-              <td style={{ border: "1px solid #000000", padding: "6px", fontWeight: "700" }}>Active Term Goal</td>
+              <td style={{ border: "1px solid #000000", padding: "6px", fontWeight: "700" }}>
+                Active Term Goal
+              </td>
               <td style={{ border: "1px solid #000000", padding: "6px", textAlign: "center" }}>
                 {goalName}
               </td>
@@ -286,16 +413,36 @@ export function PrintableSummary({
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
             <tbody>
               <tr>
-                <td style={{ border: "1px solid #000000", padding: "10px", textAlign: "center", fontStyle: "italic", color: "#666" }}>
-                  No marked project reports submitted yet. Marked projects and teacher evaluation rubrics will be recorded here automatically upon evaluation.
+                <td
+                  style={{
+                    border: "1px solid #000000",
+                    padding: "10px",
+                    textAlign: "center",
+                    fontStyle: "italic",
+                    color: "#666",
+                  }}
+                >
+                  No marked project reports submitted yet. Marked projects and teacher evaluation
+                  rubrics will be recorded here automatically upon evaluation.
                 </td>
               </tr>
             </tbody>
           </table>
         ) : (
           markedReports.map((report, idx) => (
-            <div key={report.id || idx} style={{ marginBottom: "12px", border: "1px solid #000000", padding: "10px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", borderBottom: "1px solid #ccc", paddingBottom: "4px" }}>
+            <div
+              key={report.id || idx}
+              style={{ marginBottom: "12px", border: "1px solid #000000", padding: "10px" }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: "6px",
+                  borderBottom: "1px solid #ccc",
+                  paddingBottom: "4px",
+                }}
+              >
                 <span style={{ fontWeight: "800", fontSize: "12px" }}>
                   {idx + 1}. {report.projectTitle} ({report.subject})
                 </span>
@@ -304,11 +451,29 @@ export function PrintableSummary({
                 </span>
               </div>
               {report.rubricScores && (
-                <div style={{ fontSize: "10px", margin: "4px 0 6px", color: "#333", display: "flex", gap: "12px" }}>
-                  <span><strong>Planning:</strong> {report.rubricScores.planning}/30</span>
-                  <span><strong>Execution:</strong> {report.rubricScores.execution}/40</span>
-                  <span><strong>Conclusion:</strong> {report.rubricScores.conclusion}/30</span>
-                  {report.awardPointsEarned && <span><strong>Points Awarded:</strong> +{report.awardPointsEarned} XP</span>}
+                <div
+                  style={{
+                    fontSize: "10px",
+                    margin: "4px 0 6px",
+                    color: "#333",
+                    display: "flex",
+                    gap: "12px",
+                  }}
+                >
+                  <span>
+                    <strong>Planning:</strong> {report.rubricScores.planning}/30
+                  </span>
+                  <span>
+                    <strong>Execution:</strong> {report.rubricScores.execution}/40
+                  </span>
+                  <span>
+                    <strong>Conclusion:</strong> {report.rubricScores.conclusion}/30
+                  </span>
+                  {report.awardPointsEarned && (
+                    <span>
+                      <strong>Points Awarded:</strong> +{report.awardPointsEarned} XP
+                    </span>
+                  )}
                 </div>
               )}
               {report.feedback && (
@@ -316,9 +481,23 @@ export function PrintableSummary({
                   <strong>Teacher Feedback:</strong> "{report.feedback}"
                 </p>
               )}
-              <div style={{ fontSize: "10px", color: "#555", marginTop: "4px", display: "flex", justifyContent: "space-between" }}>
-                <span>Marked by: {report.teacherName || "Faculty Evaluator"} {report.teacherTitle ? `(${report.teacherTitle})` : ""}</span>
-                <span>Signature/Stamp: {report.teacherSignature || "Verified"} ({report.markedAt ? new Date(report.markedAt).toLocaleDateString("en-GB") : today})</span>
+              <div
+                style={{
+                  fontSize: "10px",
+                  color: "#555",
+                  marginTop: "4px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
+              >
+                <span>
+                  Marked by: {report.teacherName || "Faculty Evaluator"}{" "}
+                  {report.teacherTitle ? `(${report.teacherTitle})` : ""}
+                </span>
+                <span>
+                  Signature/Stamp: {report.teacherSignature || "Verified"} (
+                  {report.markedAt ? new Date(report.markedAt).toLocaleDateString("en-GB") : today})
+                </span>
               </div>
             </div>
           ))
@@ -343,24 +522,70 @@ export function PrintableSummary({
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
           <thead>
             <tr style={{ background: "#e5e7eb" }}>
-              <th style={{ border: "1px solid #000000", padding: "6px", textAlign: "left", width: "30%" }}>Domain / Subject</th>
-              <th style={{ border: "1px solid #000000", padding: "6px", textAlign: "left", width: "50%" }}>Identified Concept / Topic</th>
-              <th style={{ border: "1px solid #000000", padding: "6px", textAlign: "center", width: "20%" }}>Status</th>
+              <th
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px",
+                  textAlign: "left",
+                  width: "30%",
+                }}
+              >
+                Domain / Subject
+              </th>
+              <th
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px",
+                  textAlign: "left",
+                  width: "50%",
+                }}
+              >
+                Identified Concept / Topic
+              </th>
+              <th
+                style={{
+                  border: "1px solid #000000",
+                  padding: "6px",
+                  textAlign: "center",
+                  width: "20%",
+                }}
+              >
+                Status
+              </th>
             </tr>
           </thead>
           <tbody>
             {gapSubjects.length === 0 ? (
               <tr>
-                <td colSpan={3} style={{ border: "1px solid #000000", padding: "10px", textAlign: "center", color: "#666", fontStyle: "italic" }}>
+                <td
+                  colSpan={3}
+                  style={{
+                    border: "1px solid #000000",
+                    padding: "10px",
+                    textAlign: "center",
+                    color: "#666",
+                    fontStyle: "italic",
+                  }}
+                >
                   All curriculum diagnostic checkpoints satisfied. No active knowledge gaps logged.
                 </td>
               </tr>
             ) : (
               gapSubjects.map((gap, idx) => (
                 <tr key={idx}>
-                  <td style={{ border: "1px solid #000000", padding: "6px", fontWeight: "700" }}>{gap.subject}</td>
+                  <td style={{ border: "1px solid #000000", padding: "6px", fontWeight: "700" }}>
+                    {gap.subject}
+                  </td>
                   <td style={{ border: "1px solid #000000", padding: "6px" }}>{gap.topic}</td>
-                  <td style={{ border: "1px solid #000000", padding: "6px", textAlign: "center", fontWeight: "700", color: "#16a34a" }}>
+                  <td
+                    style={{
+                      border: "1px solid #000000",
+                      padding: "6px",
+                      textAlign: "center",
+                      fontWeight: "700",
+                      color: "#16a34a",
+                    }}
+                  >
                     Verified Mastered
                   </td>
                 </tr>
@@ -375,22 +600,55 @@ export function PrintableSummary({
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <tbody>
             <tr>
-              <td style={{ width: "33%", padding: "0 8px", textAlign: "center", verticalAlign: "bottom" }}>
-                <div style={{ borderTop: "1px solid #000000", paddingTop: "4px", fontSize: "10px" }}>
+              <td
+                style={{
+                  width: "33%",
+                  padding: "0 8px",
+                  textAlign: "center",
+                  verticalAlign: "bottom",
+                }}
+              >
+                <div
+                  style={{ borderTop: "1px solid #000000", paddingTop: "4px", fontSize: "10px" }}
+                >
                   <strong>{displayName}</strong>
-                  <div style={{ color: "#666666", marginTop: "2px" }}>Student Signature &amp; Date</div>
+                  <div style={{ color: "#666666", marginTop: "2px" }}>
+                    Student Signature &amp; Date
+                  </div>
                 </div>
               </td>
-              <td style={{ width: "34%", padding: "0 8px", textAlign: "center", verticalAlign: "bottom" }}>
-                <div style={{ borderTop: "1px solid #000000", paddingTop: "4px", fontSize: "10px" }}>
+              <td
+                style={{
+                  width: "34%",
+                  padding: "0 8px",
+                  textAlign: "center",
+                  verticalAlign: "bottom",
+                }}
+              >
+                <div
+                  style={{ borderTop: "1px solid #000000", paddingTop: "4px", fontSize: "10px" }}
+                >
                   <strong>Subject Teacher</strong>
-                  <div style={{ color: "#666666", marginTop: "2px" }}>Faculty Signature &amp; Date</div>
+                  <div style={{ color: "#666666", marginTop: "2px" }}>
+                    Faculty Signature &amp; Date
+                  </div>
                 </div>
               </td>
-              <td style={{ width: "33%", padding: "0 8px", textAlign: "center", verticalAlign: "bottom" }}>
-                <div style={{ borderTop: "1px solid #000000", paddingTop: "4px", fontSize: "10px" }}>
+              <td
+                style={{
+                  width: "33%",
+                  padding: "0 8px",
+                  textAlign: "center",
+                  verticalAlign: "bottom",
+                }}
+              >
+                <div
+                  style={{ borderTop: "1px solid #000000", paddingTop: "4px", fontSize: "10px" }}
+                >
                   <strong>Headteacher / Official Stamp</strong>
-                  <div style={{ color: "#666666", marginTop: "2px" }}>Institutional Verification</div>
+                  <div style={{ color: "#666666", marginTop: "2px" }}>
+                    Institutional Verification
+                  </div>
                 </div>
               </td>
             </tr>
@@ -409,7 +667,8 @@ export function PrintableSummary({
           textAlign: "center",
         }}
       >
-        Cymatic Study Portfolio Report · NCDC Lower Secondary Assessment Framework · Generated {today}
+        Cymatic Study Portfolio Report · NCDC Lower Secondary Assessment Framework · Generated{" "}
+        {today}
       </div>
     </div>
   );

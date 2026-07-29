@@ -73,7 +73,16 @@ import { RoleGuard } from "@/components/RoleGuard";
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "My Hub — Cymatic Study" }] }),
   component: () => (
-    <RoleGuard allowedRoles={["student", "teacher", "independent_teacher", "instructor", "admin", "org_admin"]}>
+    <RoleGuard
+      allowedRoles={[
+        "student",
+        "teacher",
+        "independent_teacher",
+        "instructor",
+        "admin",
+        "org_admin",
+      ]}
+    >
       <DashboardPage />
     </RoleGuard>
   ),
@@ -210,7 +219,7 @@ function DashboardPage() {
     profile?.school_id,
     profile?.org_id,
     profile?.school_name,
-    isGuestMode
+    isGuestMode,
   ]);
 
   const handleTeacherCreateTask = (e: React.FormEvent) => {
@@ -335,7 +344,8 @@ function DashboardPage() {
                 Institutional Command Node Available
               </h3>
               <p className="text-xs text-zinc-400">
-                Manage teachers, oversee student cohorts across Senior 1 to Senior 6, monitor performance analytics, and issue official School IDs.
+                Manage teachers, oversee student cohorts across Senior 1 to Senior 6, monitor
+                performance analytics, and issue official School IDs.
               </p>
             </div>
             <Button

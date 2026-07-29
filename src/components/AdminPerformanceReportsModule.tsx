@@ -30,7 +30,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export interface StudentPerformanceReportItem {
   id: string;
@@ -53,7 +60,7 @@ export interface AggregatedPerformanceReport {
 
 export async function fetchAndAggregatePerformanceData(
   currentSchoolId: string,
-  fallbackAverages: Record<string, { avg: number; count: number }>
+  fallbackAverages: Record<string, { avg: number; count: number }>,
 ): Promise<AggregatedPerformanceReport> {
   const { data: dbSubmissions } = await supabase
     .from("project_submissions")
@@ -192,7 +199,9 @@ export function AdminPerformanceReportsModule() {
   const [reportsData, setReportsData] = useState<StudentPerformanceReportItem[]>([]);
 
   // Class Averages state
-  const [classAverages, setClassAverages] = useState<Record<string, { avg: number; count: number }>>({
+  const [classAverages, setClassAverages] = useState<
+    Record<string, { avg: number; count: number }>
+  >({
     S1: { avg: 76, count: 18 },
     S2: { avg: 79, count: 22 },
     S3: { avg: 82, count: 25 },
@@ -220,7 +229,7 @@ export function AdminPerformanceReportsModule() {
   };
 
   const filteredReports = reportsData.filter(
-    (item) => selectedLevelFilter === "ALL" || item.level === selectedLevelFilter
+    (item) => selectedLevelFilter === "ALL" || item.level === selectedLevelFilter,
   );
 
   const totalEvaluated = filteredReports.length;
@@ -275,7 +284,7 @@ export function AdminPerformanceReportsModule() {
     link.setAttribute("href", encodedUri);
     link.setAttribute(
       "download",
-      `NCDC_Performance_Summary_${currentSchoolId}_${new Date().toISOString().split("T")[0]}.csv`
+      `NCDC_Performance_Summary_${currentSchoolId}_${new Date().toISOString().split("T")[0]}.csv`,
     );
     document.body.appendChild(link);
     link.click();
@@ -307,7 +316,8 @@ export function AdminPerformanceReportsModule() {
             Performance & Competency Summary Reports
           </h2>
           <p className="text-xs text-zinc-400">
-            Generate official academic report cards, class average benchmarks, and exportable CSV/PDF records for NCDC evaluation audits.
+            Generate official academic report cards, class average benchmarks, and exportable
+            CSV/PDF records for NCDC evaluation audits.
           </p>
         </div>
 
@@ -414,10 +424,12 @@ export function AdminPerformanceReportsModule() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
               <div>
                 <h3 className="text-base font-black uppercase text-white flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-emerald-400" /> Student Competency Evaluation Roster
+                  <FileText className="h-5 w-5 text-emerald-400" /> Student Competency Evaluation
+                  Roster
                 </h3>
                 <p className="text-xs text-zinc-400">
-                  Detailed breakdown of graded continuous assessment tasks with digital signature records.
+                  Detailed breakdown of graded continuous assessment tasks with digital signature
+                  records.
                 </p>
               </div>
 
@@ -446,7 +458,9 @@ export function AdminPerformanceReportsModule() {
               <p className="text-sm font-semibold">
                 Official NCDC Competency Continuous Assessment Report • School ID: {currentSchoolId}
               </p>
-              <p className="text-xs text-gray-600">Generated on: {new Date().toLocaleDateString()}</p>
+              <p className="text-xs text-gray-600">
+                Generated on: {new Date().toLocaleDateString()}
+              </p>
             </div>
 
             <div className="border border-white/5 print:border-black rounded-xl overflow-hidden">
@@ -507,7 +521,10 @@ export function AdminPerformanceReportsModule() {
 
                   {filteredReports.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-zinc-500 italic text-xs">
+                      <TableCell
+                        colSpan={6}
+                        className="text-center py-8 text-zinc-500 italic text-xs"
+                      >
                         No performance records found for selected class level.
                       </TableCell>
                     </TableRow>

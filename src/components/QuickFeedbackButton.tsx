@@ -87,10 +87,7 @@ export default function QuickFeedbackButton() {
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="type">Feedback Type</Label>
-              <Select
-                value={feedbackType}
-                onValueChange={setFeedbackType}
-              >
+              <Select value={feedbackType} onValueChange={setFeedbackType}>
                 <SelectTrigger id="type">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -119,11 +116,7 @@ export default function QuickFeedbackButton() {
             </div>
           </div>
           <DialogFooter>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full sm:w-auto"
-            >
+            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
               {isSubmitting ? "Sending..." : "Send Feedback"}
               <Send className="ml-2 h-4 w-4" />
             </Button>

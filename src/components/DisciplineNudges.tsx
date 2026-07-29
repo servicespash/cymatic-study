@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Capacitor } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
-import { 
-  Bell, 
-  BellRing, 
-  ShieldAlert, 
-  Check, 
-  Play, 
-  Sparkles, 
+import {
+  Bell,
+  BellRing,
+  ShieldAlert,
+  Check,
+  Play,
+  Sparkles,
   AlertCircle,
   HelpCircle,
-  Volume2
+  Volume2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -32,7 +32,13 @@ export function DisciplineNudges() {
     if (Capacitor.isNativePlatform()) {
       try {
         const check = await LocalNotifications.checkPermissions();
-        setPermissionState(check.display === "granted" ? "granted" : check.display === "denied" ? "denied" : "prompt");
+        setPermissionState(
+          check.display === "granted"
+            ? "granted"
+            : check.display === "denied"
+              ? "denied"
+              : "prompt",
+        );
       } catch (e) {
         console.warn("Capacitor notification permissions check failed:", e);
       }
@@ -61,7 +67,9 @@ export function DisciplineNudges() {
     } else if (typeof window !== "undefined" && "Notification" in window) {
       try {
         const result = await Notification.requestPermission();
-        setPermissionState(result === "granted" ? "granted" : result === "denied" ? "denied" : "prompt");
+        setPermissionState(
+          result === "granted" ? "granted" : result === "denied" ? "denied" : "prompt",
+        );
         if (result === "granted") {
           toast.success("Desktop notification access granted!");
         } else {
@@ -78,7 +86,7 @@ export function DisciplineNudges() {
   const handlePersonaChange = async (persona: "Adams" | "Haawa") => {
     setSelectedPersona(persona);
     toast.info(`Switched discipline voice to ${persona}.`);
-    
+
     // Reschedule on active platform
     if (Capacitor.isNativePlatform() && permissionState === "granted") {
       await scheduleDailyNudges(persona);
@@ -91,13 +99,13 @@ export function DisciplineNudges() {
       Adams: [
         "Rise and shine, bro. The day belongs to those who work for it.",
         "Midday hustle! Keep that brain sharp and focused.",
-        "Sun's setting, but the grind stays. One more quiz?"
+        "Sun's setting, but the grind stays. One more quiz?",
       ],
       Haawa: [
         "Sunrise, my dear. A beautiful day to seek knowledge.",
         "High noon. Take a deep breath, then back to the light.",
-        "Evening reflection. You did well today. Rest now."
-      ]
+        "Evening reflection. You did well today. Rest now.",
+      ],
     };
 
     const playlist = messages[selectedPersona];
@@ -123,7 +131,7 @@ export function DisciplineNudges() {
         };
         playTone(587.33, 0, 0.35); // D5
         playTone(880, 0.05, 0.5); // A5
-        
+
         // Cleanup context after sounds finish
         setTimeout(() => {
           ctx.close().catch(console.error);
@@ -135,40 +143,43 @@ export function DisciplineNudges() {
 
     // Always trigger a gorgeous, highly custom in-app system push notification toast via sonner
     // so that it works perfectly inside browser previews even when desktop notifications are blocked/dismissed.
-    toast.custom((t) => (
-      <div className="w-full max-w-sm bg-zinc-950/95 border border-cyan-500/30 rounded-2xl p-4 shadow-2xl backdrop-blur-xl flex gap-3 animate-bounce">
-        <div className="h-10 w-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
-          <BellRing className="h-5 w-5 animate-pulse" />
-        </div>
-        <div className="flex-1 overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-widest text-cyan-400">
-              {selectedPersona === "Adams" ? "Coach Adams ⚡" : "Sister Haawa 🌸"}
-            </span>
-            <span className="text-[9px] text-zinc-500 font-medium">Just now</span>
+    toast.custom(
+      (t) => (
+        <div className="w-full max-w-sm bg-zinc-950/95 border border-cyan-500/30 rounded-2xl p-4 shadow-2xl backdrop-blur-xl flex gap-3 animate-bounce">
+          <div className="h-10 w-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
+            <BellRing className="h-5 w-5 animate-pulse" />
           </div>
-          <h4 className="text-xs font-bold text-white mt-1 leading-normal">
-            {randomNudge}
-          </h4>
-          <p className="text-[9px] text-zinc-500 font-mono mt-2 flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            NCDC Discipline Loop Verified
-          </p>
+          <div className="flex-1 overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-widest text-cyan-400">
+                {selectedPersona === "Adams" ? "Coach Adams ⚡" : "Sister Haawa 🌸"}
+              </span>
+              <span className="text-[9px] text-zinc-500 font-medium">Just now</span>
+            </div>
+            <h4 className="text-xs font-bold text-white mt-1 leading-normal">{randomNudge}</h4>
+            <p className="text-[9px] text-zinc-500 font-mono mt-2 flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              NCDC Discipline Loop Verified
+            </p>
+          </div>
         </div>
-      </div>
-    ), {
-      duration: 6000,
-      position: "top-right"
-    });
+      ),
+      {
+        duration: 6000,
+        position: "top-right",
+      },
+    );
 
     if (Capacitor.isNativePlatform()) {
       LocalNotifications.schedule({
-        notifications: [{
-          id: Math.floor(Math.random() * 100000),
-          title: `Discipline Nudge (${selectedPersona})`,
-          body: randomNudge,
-          schedule: { at: new Date(Date.now() + 500) }
-        }]
+        notifications: [
+          {
+            id: Math.floor(Math.random() * 100000),
+            title: `Discipline Nudge (${selectedPersona})`,
+            body: randomNudge,
+            schedule: { at: new Date(Date.now() + 500) },
+          },
+        ],
       });
     } else if (typeof window !== "undefined" && "Notification" in window) {
       if (Notification.permission === "granted") {
@@ -176,7 +187,7 @@ export function DisciplineNudges() {
           body: randomNudge,
           icon: "/pwa-192x192.png",
           tag: "ncdc-discipline-nudge",
-          requireInteraction: false
+          requireInteraction: false,
         });
       }
     }
@@ -197,10 +208,11 @@ export function DisciplineNudges() {
               Daily Discipline Nudges
             </CardTitle>
             <CardDescription className="text-zinc-400 text-xs mt-1">
-              Configure automated notifications to check in on study goals, streaks, and focus metrics.
+              Configure automated notifications to check in on study goals, streaks, and focus
+              metrics.
             </CardDescription>
           </div>
-          
+
           <Button
             onClick={triggerInstantNudgeTest}
             className="rounded-xl text-xs font-bold bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-cyan-400 flex items-center gap-2 h-9 px-4 cursor-pointer"
@@ -210,27 +222,32 @@ export function DisciplineNudges() {
           </Button>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
         {/* Permission Status Box */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl border border-white/5 bg-zinc-950/40 gap-4">
           <div className="flex items-start gap-3">
-            <div className={`p-2 rounded-xl shrink-0 ${
-              permissionState === "granted" 
-                ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" 
-                : "bg-amber-500/10 border border-amber-500/20 text-amber-400"
-            }`}>
+            <div
+              className={`p-2 rounded-xl shrink-0 ${
+                permissionState === "granted"
+                  ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"
+                  : "bg-amber-500/10 border border-amber-500/20 text-amber-400"
+              }`}
+            >
               <Bell className="h-5 w-5" />
             </div>
             <div>
               <p className="text-xs font-bold flex items-center gap-1.5">
-                Notification Status: 
-                <span className={permissionState === "granted" ? "text-emerald-400" : "text-amber-400"}>
+                Notification Status:
+                <span
+                  className={permissionState === "granted" ? "text-emerald-400" : "text-amber-400"}
+                >
                   {permissionState === "granted" ? "Granted & Active" : "Permission Required"}
                 </span>
               </p>
               <p className="text-[10px] text-zinc-500 mt-1 max-w-md">
-                Allows real-time reminders to push even when the app sits idle, helping you maintain streaks.
+                Allows real-time reminders to push even when the app sits idle, helping you maintain
+                streaks.
               </p>
             </div>
           </div>
@@ -252,7 +269,6 @@ export function DisciplineNudges() {
 
         {/* Nudge Options & Personas */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
           {/* Tone Selector */}
           <div className="space-y-3 p-4 rounded-2xl border border-white/5 bg-zinc-950/20">
             <h4 className="text-xs font-black uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
@@ -297,7 +313,7 @@ export function DisciplineNudges() {
             <p className="text-[11px] text-zinc-500 leading-normal">
               Automated reminders fire 3x daily to keep study rhythms solid.
             </p>
-            
+
             <div className="space-y-2 mt-2">
               <div className="flex items-center justify-between p-2 rounded-lg bg-zinc-900/60 text-[10px] font-mono">
                 <span className="text-zinc-400">06:00 AM — Morning Wake-up</span>
@@ -313,14 +329,15 @@ export function DisciplineNudges() {
               </div>
             </div>
           </div>
-
         </div>
 
         {/* Info Banner */}
         <div className="flex items-start gap-2.5 p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 text-[10.5px] text-zinc-400 leading-normal">
           <HelpCircle className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
           <span>
-            <strong>Capacitor Native Support:</strong> For compilation on Android/iOS, push reminders integrate with system-level local notification schedulers to run flawlessly offline even if the device restarts.
+            <strong>Capacitor Native Support:</strong> For compilation on Android/iOS, push
+            reminders integrate with system-level local notification schedulers to run flawlessly
+            offline even if the device restarts.
           </span>
         </div>
       </CardContent>

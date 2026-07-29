@@ -35,7 +35,8 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
         <User className="h-10 w-10 mx-auto mb-2 text-muted-foreground/60" />
         <h3 className="text-base font-bold text-foreground">Guest Explorer Mode</h3>
         <p className="text-xs text-muted-foreground mt-1 mb-4">
-          Sign in or connect with your School ID to sync progress & unlock personalized NCDC study tools.
+          Sign in or connect with your School ID to sync progress & unlock personalized NCDC study
+          tools.
         </p>
         <Link
           to="/login"
@@ -47,9 +48,11 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
     );
   }
 
-  const schoolId = profile?.school_id || profile?.org_id || localStorage.getItem("cymatic_school_id");
+  const schoolId =
+    profile?.school_id || profile?.org_id || localStorage.getItem("cymatic_school_id");
   const schoolName = profile?.school_name || "Uganda NCDC Member School";
-  const displayName = profile?.display_name || profile?.full_name || user.email?.split("@")[0] || "Scholar";
+  const displayName =
+    profile?.display_name || profile?.full_name || user.email?.split("@")[0] || "Scholar";
   const userEmail = user.email || "";
   const roleTitle = isAdmin
     ? "School Administrator"
@@ -95,7 +98,10 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
             <div className="h-full w-full rounded-[14px] bg-background flex items-center justify-center font-black text-xl text-primary uppercase">
               {displayName.charAt(0)}
             </div>
-            <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-emerald-500 ring-2 ring-background" title="Authenticated Session" />
+            <span
+              className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-emerald-500 ring-2 ring-background"
+              title="Authenticated Session"
+            />
           </div>
 
           <div className="space-y-1 min-w-0">
@@ -142,7 +148,11 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
                 className="h-8 px-2.5 rounded-xl bg-background border border-border hover:border-primary/40 text-xs font-semibold flex items-center gap-1 transition-colors"
                 title="Copy School ID"
               >
-                {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-500" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
                 <span>{copied ? "Copied" : "Copy"}</span>
               </button>
             ) : (

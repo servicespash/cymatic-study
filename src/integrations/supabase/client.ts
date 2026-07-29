@@ -5,12 +5,13 @@ import type { Database } from "./types";
 function getEnv(name: string): string | undefined {
   // Use a safe way to access environment variables that works in both Vite (import.meta.env)
   // and Node (process.env), and is safe for CommonJS bundling.
-  
+
   // 1. Try process.env first (Node / Server-side)
   if (typeof process !== "undefined" && process.env) {
     if (process.env[name]) return process.env[name];
     // Also check VITE_ prefixed version if we're looking for a non-prefixed one
-    if (!name.startsWith("VITE_") && process.env[`VITE_${name}`]) return process.env[`VITE_${name}`];
+    if (!name.startsWith("VITE_") && process.env[`VITE_${name}`])
+      return process.env[`VITE_${name}`];
   }
 
   // 2. Try import.meta.env (Vite / Client-side)
@@ -28,7 +29,7 @@ function getEnv(name: string): string | undefined {
   if (typeof window !== "undefined" && (window as any)[name]) {
     return (window as any)[name];
   }
-  
+
   return undefined;
 }
 
@@ -37,7 +38,10 @@ function createSupabaseClient() {
   const DEFAULT_KEY = "sb_publishable_Q6c0ZU7hu-Ow6bdzbK5-ig_S74FsIK0";
 
   const SUPABASE_URL =
-    getEnv("VITE_SUPABASE_URL") || getEnv("SUPABASE_URL") || getEnv("PUBLIC_SUPABASE_URL") || DEFAULT_URL;
+    getEnv("VITE_SUPABASE_URL") ||
+    getEnv("SUPABASE_URL") ||
+    getEnv("PUBLIC_SUPABASE_URL") ||
+    DEFAULT_URL;
 
   // Filter out invalid URL-like strings that are mistakenly populated as key
   const keys = [
@@ -49,9 +53,10 @@ function createSupabaseClient() {
     getEnv("PUBLIC_SUPABASE_ANON_KEY"),
   ];
 
-  const SUPABASE_PUBLISHABLE_KEY = keys.find(
-    (k) => k && typeof k === "string" && !k.startsWith("http://") && !k.startsWith("https://"),
-  ) || DEFAULT_KEY;
+  const SUPABASE_PUBLISHABLE_KEY =
+    keys.find(
+      (k) => k && typeof k === "string" && !k.startsWith("http://") && !k.startsWith("https://"),
+    ) || DEFAULT_KEY;
 
   if (SUPABASE_URL === DEFAULT_URL || SUPABASE_PUBLISHABLE_KEY === DEFAULT_KEY) {
     console.log("[Supabase] Using production fallback environment variables.");

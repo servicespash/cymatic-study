@@ -79,7 +79,8 @@ export const Route = createFileRoute("/admin/dashboard")({
       { title: "Admin Institutional Console | Cymatic Study" },
       {
         name: "description",
-        content: "Institutional administrator command node for School ID management, student oversight (S1-S6), and teacher supervision.",
+        content:
+          "Institutional administrator command node for School ID management, student oversight (S1-S6), and teacher supervision.",
       },
     ],
   }),
@@ -138,10 +139,17 @@ function AdminDashboard() {
   const [velocityData, setVelocityData] = useState<VelocityData[]>([]);
   const [teacherBottlenecks, setTeacherBottlenecks] = useState<TeacherBottleneck[]>([]);
   const [isOnboardingNeeded, setIsOnboardingNeeded] = useState(false);
-  
+
   // Navigation tabs: Overview, Class Students (S1-S6), Submissions, Faculty, Analytics, Summary Reports, Campus Controls, Feedback
   const [activeTab, setActiveTab] = useState<
-    "overview" | "students" | "submissions" | "faculty" | "analytics" | "reports" | "settings" | "feedback"
+    | "overview"
+    | "students"
+    | "submissions"
+    | "faculty"
+    | "analytics"
+    | "reports"
+    | "settings"
+    | "feedback"
   >("overview");
 
   // Class filtering states
@@ -159,11 +167,7 @@ function AdminDashboard() {
   const [loadingFeedback, setLoadingFeedback] = useState(false);
 
   const currentOrgId =
-    profile?.org_id ||
-    profile?.school_id ||
-    user?.user_metadata?.school_id ||
-    org?.id ||
-    "";
+    profile?.org_id || profile?.school_id || user?.user_metadata?.school_id || org?.id || "";
 
   useEffect(() => {
     if (!user?.id) return;
@@ -174,7 +178,7 @@ function AdminDashboard() {
 
   const fetchOrgData = async () => {
     if (!user?.id) return;
-    
+
     // Fetch organization or active profile
     const { data: prof } = await supabase
       .from("profiles")
@@ -209,10 +213,12 @@ function AdminDashboard() {
     try {
       const { data, error } = await supabase
         .from("user_feedback")
-        .select(`
+        .select(
+          `
           *,
           profiles:user_id (display_name, level)
-        `)
+        `,
+        )
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -226,11 +232,8 @@ function AdminDashboard() {
 
   const updateFeedbackStatus = async (id: string, status: string) => {
     try {
-      const { error } = await supabase
-        .from("user_feedback")
-        .update({ status })
-        .eq("id", id);
-      
+      const { error } = await supabase.from("user_feedback").update({ status }).eq("id", id);
+
       if (error) throw error;
       toast.success(`Feedback marked as ${status}`);
       loadFeedback();
@@ -367,15 +370,20 @@ function AdminDashboard() {
       // Load project submissions
       const { data: subData } = await supabase
         .from("project_submissions")
-        .select("id, project_title, student_name, student_id, level, subject, score, teacher_name, status, created_at, org_id")
+        .select(
+          "id, project_title, student_name, student_id, level, subject, score, teacher_name, status, created_at, org_id",
+        )
         .or(`org_id.eq.${orgId}`);
 
       if (stdData && stdData.length > 0) {
         const mappedStudents: StudentRecord[] = stdData.map((s) => {
-          const studentSubs = subData?.filter(
-            (sub) => sub.student_id === s.user_id || sub.student_name === s.display_name
-          ) || [];
-          const gradedSubs = studentSubs.filter((sub) => sub.score !== null && sub.score !== undefined);
+          const studentSubs =
+            subData?.filter(
+              (sub) => sub.student_id === s.user_id || sub.student_name === s.display_name,
+            ) || [];
+          const gradedSubs = studentSubs.filter(
+            (sub) => sub.score !== null && sub.score !== undefined,
+          );
           const totalScore = gradedSubs.reduce((acc, sub) => acc + (sub.score || 0), 0);
           const avgScore = gradedSubs.length > 0 ? Math.round(totalScore / gradedSubs.length) : 75;
 
@@ -445,7 +453,7 @@ function AdminDashboard() {
             teacher_name: s.teacher_name || "Lead Verifier",
             status: s.status || "pending",
             created_at: s.created_at || new Date().toISOString(),
-          }))
+          })),
         );
       } else {
         setSubmissionsList([
@@ -808,7 +816,10 @@ function AdminDashboard() {
                   Institutional Learner Directory
                 </h2>
                 <p className="text-zinc-500 text-sm">
-                  Oversee students registered under School ID: <span className="font-mono text-blue-400 font-bold">{currentOrgId || "SCH-UG-2026"}</span>
+                  Oversee students registered under School ID:{" "}
+                  <span className="font-mono text-blue-400 font-bold">
+                    {currentOrgId || "SCH-UG-2026"}
+                  </span>
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -869,9 +880,10 @@ function AdminDashboard() {
                     {filteredStudents.length
                       ? Math.round(
                           filteredStudents.reduce((acc, s) => acc + (s.avgScore || 0), 0) /
-                            filteredStudents.length
+                            filteredStudents.length,
                         )
-                      : 0}%
+                      : 0}
+                    %
                   </p>
                 </CardContent>
               </Card>
@@ -894,7 +906,8 @@ function AdminDashboard() {
                   Class Roll & Individual Performance
                 </CardTitle>
                 <CardDescription>
-                  Click 'Inspect' to view detailed project submissions and teacher assessment sheets for any student.
+                  Click 'Inspect' to view detailed project submissions and teacher assessment sheets
+                  for any student.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -930,52 +943,58 @@ function AdminDashboard() {
                       </>
                     ) : (
                       filteredStudents.map((s) => (
-                      <TableRow key={s.id} className="border-white/5 hover:bg-white/[0.02]">
-                        <TableCell className="font-bold flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-full bg-blue-600/20 text-blue-400 border border-blue-600/30 flex items-center justify-center font-black text-xs uppercase">
-                            {s.display_name.slice(0, 2)}
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-white">{s.display_name}</p>
-                            <p className="text-[10px] text-zinc-500">ID: {s.user_id.slice(0, 8)}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className="bg-blue-600/10 text-blue-400 border-none">
-                            {s.level} - {s.stream || "Stream A"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-mono text-xs text-zinc-400">
-                          {currentOrgId || "SCH-UG-2026"}
-                        </TableCell>
-                        <TableCell className="font-bold text-white">
-                          {s.submissionCount || 1}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Progress value={s.avgScore || 75} className="h-1.5 w-16 bg-white/5" />
-                            <span className="text-xs font-mono font-bold text-emerald-400">
-                              {s.avgScore || 75}%
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setInspectedStudent(s)}
-                            className="border-blue-600/30 bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white transition-all text-xs"
-                          >
-                            <Eye className="h-3.5 w-3.5 mr-1" /> Inspect Student
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                        <TableRow key={s.id} className="border-white/5 hover:bg-white/[0.02]">
+                          <TableCell className="font-bold flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-full bg-blue-600/20 text-blue-400 border border-blue-600/30 flex items-center justify-center font-black text-xs uppercase">
+                              {s.display_name.slice(0, 2)}
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-white">{s.display_name}</p>
+                              <p className="text-[10px] text-zinc-500">
+                                ID: {s.user_id.slice(0, 8)}
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className="bg-blue-600/10 text-blue-400 border-none">
+                              {s.level} - {s.stream || "Stream A"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-zinc-400">
+                            {currentOrgId || "SCH-UG-2026"}
+                          </TableCell>
+                          <TableCell className="font-bold text-white">
+                            {s.submissionCount || 1}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Progress
+                                value={s.avgScore || 75}
+                                className="h-1.5 w-16 bg-white/5"
+                              />
+                              <span className="text-xs font-mono font-bold text-emerald-400">
+                                {s.avgScore || 75}%
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setInspectedStudent(s)}
+                              className="border-blue-600/30 bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white transition-all text-xs"
+                            >
+                              <Eye className="h-3.5 w-3.5 mr-1" /> Inspect Student
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
                     )}
                     {!loadingList && filteredStudents.length === 0 && (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-12 text-zinc-500 italic">
-                          No students registered in this class level yet. Students bound to your School ID will automatically appear here.
+                          No students registered in this class level yet. Students bound to your
+                          School ID will automatically appear here.
                         </TableCell>
                       </TableRow>
                     )}
@@ -1202,74 +1221,84 @@ function AdminDashboard() {
                           </div>
                         </TableCell>
                       </TableRow>
-                    ) : feedbackList.map((f) => (
-                      <TableRow key={f.id} className="border-white/5 hover:bg-white/[0.02]">
-                        <TableCell>
-                          <Badge 
-                            variant="outline" 
-                            className={`uppercase text-[10px] border-none ${
-                              f.type === "bug" ? "bg-red-500/10 text-red-500" : 
-                              f.type === "suggestion" ? "bg-blue-500/10 text-blue-500" : 
-                              "bg-zinc-500/10 text-zinc-500"
-                            }`}
-                          >
-                            {f.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="text-xs font-bold text-white">{f.profiles?.display_name || "User"}</p>
-                            <p className="text-[10px] text-zinc-500">{f.profiles?.level || "N/A"}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-[10px] font-mono text-zinc-500 truncate block max-w-[100px]">
-                            {f.section}
-                          </span>
-                        </TableCell>
-                        <TableCell className="max-w-md">
-                          <p className="text-xs text-zinc-300 line-clamp-2 leading-relaxed">
-                            {f.message}
-                          </p>
-                        </TableCell>
-                        <TableCell>
-                          <Badge 
-                            className={`text-[10px] font-black uppercase ${
-                              f.status === "open" ? "bg-amber-500/10 text-amber-500" :
-                              f.status === "resolved" ? "bg-emerald-500/10 text-emerald-500" :
-                              "bg-zinc-500/10 text-zinc-500"
-                            }`}
-                          >
-                            {f.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
-                            {f.status === "open" && (
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                className="h-8 text-[10px] text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10"
-                                onClick={() => updateFeedbackStatus(f.id, "resolved")}
-                              >
-                                Resolve
-                              </Button>
-                            )}
-                            <Button 
-                              size="icon" 
-                              variant="ghost" 
-                              className="h-8 w-8 text-zinc-500"
-                              onClick={() => {
-                                // Potentially delete or archive
-                                toast.info("Detailed view coming soon");
-                              }}
+                    ) : (
+                      feedbackList.map((f) => (
+                        <TableRow key={f.id} className="border-white/5 hover:bg-white/[0.02]">
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={`uppercase text-[10px] border-none ${
+                                f.type === "bug"
+                                  ? "bg-red-500/10 text-red-500"
+                                  : f.type === "suggestion"
+                                    ? "bg-blue-500/10 text-blue-500"
+                                    : "bg-zinc-500/10 text-zinc-500"
+                              }`}
                             >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                              {f.type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="text-xs font-bold text-white">
+                                {f.profiles?.display_name || "User"}
+                              </p>
+                              <p className="text-[10px] text-zinc-500">
+                                {f.profiles?.level || "N/A"}
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-[10px] font-mono text-zinc-500 truncate block max-w-[100px]">
+                              {f.section}
+                            </span>
+                          </TableCell>
+                          <TableCell className="max-w-md">
+                            <p className="text-xs text-zinc-300 line-clamp-2 leading-relaxed">
+                              {f.message}
+                            </p>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              className={`text-[10px] font-black uppercase ${
+                                f.status === "open"
+                                  ? "bg-amber-500/10 text-amber-500"
+                                  : f.status === "resolved"
+                                    ? "bg-emerald-500/10 text-emerald-500"
+                                    : "bg-zinc-500/10 text-zinc-500"
+                              }`}
+                            >
+                              {f.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              {f.status === "open" && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 text-[10px] text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10"
+                                  onClick={() => updateFeedbackStatus(f.id, "resolved")}
+                                >
+                                  Resolve
+                                </Button>
+                              )}
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 text-zinc-500"
+                                onClick={() => {
+                                  // Potentially delete or archive
+                                  toast.info("Detailed view coming soon");
+                                }}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                     {feedbackList.length === 0 && !loadingFeedback && (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-12 text-zinc-500 italic">
@@ -1466,7 +1495,10 @@ function AdminDashboard() {
                 <div>
                   <h3 className="text-xl font-black text-white">{inspectedStudent.display_name}</h3>
                   <p className="text-xs text-zinc-400">
-                    Senior Level: <span className="text-blue-400 font-bold">{inspectedStudent.level}</span> • Stream: <span className="text-white">{inspectedStudent.stream || "Stream A"}</span>
+                    Senior Level:{" "}
+                    <span className="text-blue-400 font-bold">{inspectedStudent.level}</span> •
+                    Stream:{" "}
+                    <span className="text-white">{inspectedStudent.stream || "Stream A"}</span>
                   </p>
                 </div>
               </div>
@@ -1474,11 +1506,17 @@ function AdminDashboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white/5 p-4 rounded-xl">
                   <p className="text-[10px] uppercase font-bold text-zinc-500">Bound Institution</p>
-                  <p className="text-sm font-bold mt-1 text-white">{inspectedStudent.school_name || org?.name || "NCDC Boarding School"}</p>
+                  <p className="text-sm font-bold mt-1 text-white">
+                    {inspectedStudent.school_name || org?.name || "NCDC Boarding School"}
+                  </p>
                 </div>
                 <div className="bg-white/5 p-4 rounded-xl">
-                  <p className="text-[10px] uppercase font-bold text-zinc-500">Institutional School ID</p>
-                  <p className="text-sm font-mono font-bold mt-1 text-blue-400">{currentOrgId || "SCH-UG-2026"}</p>
+                  <p className="text-[10px] uppercase font-bold text-zinc-500">
+                    Institutional School ID
+                  </p>
+                  <p className="text-sm font-mono font-bold mt-1 text-blue-400">
+                    {currentOrgId || "SCH-UG-2026"}
+                  </p>
                 </div>
               </div>
 

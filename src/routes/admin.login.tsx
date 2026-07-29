@@ -63,8 +63,8 @@ function AdminLogin() {
             label: "Retry",
             onClick: () => {
               handleLogin();
-            }
-          }
+            },
+          },
         });
         setLoading(false);
         return;
@@ -91,8 +91,8 @@ function AdminLogin() {
             label: "Retry",
             onClick: () => {
               handleLogin();
-            }
-          }
+            },
+          },
         });
         setLoading(false);
         return;
@@ -131,8 +131,8 @@ function AdminLogin() {
           label: "Retry",
           onClick: () => {
             handleLogin();
-          }
-        }
+          },
+        },
       });
     } finally {
       setLoading(false);

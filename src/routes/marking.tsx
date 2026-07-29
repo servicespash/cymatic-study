@@ -13,7 +13,16 @@ export const Route = createFileRoute("/marking")({
     ],
   }),
   component: () => (
-    <RoleGuard allowedRoles={["teacher", "independent_teacher", "school_admin", "admin", "institution_admin", "org_admin"]}>
+    <RoleGuard
+      allowedRoles={[
+        "teacher",
+        "independent_teacher",
+        "school_admin",
+        "admin",
+        "institution_admin",
+        "org_admin",
+      ]}
+    >
       <MarkingPage />
     </RoleGuard>
   ),

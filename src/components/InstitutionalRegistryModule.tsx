@@ -30,7 +30,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { generateStudentRegistryCode } from "@/lib/auth-router";
 
 export interface RegistryMember {
@@ -118,7 +125,8 @@ export function InstitutionalRegistryModule() {
 
   // Generate official secure invite / binding link
   const generateOfficialInviteLink = (targetRole: string, targetEmail?: string) => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://app.cymaticstudy.ug";
+    const origin =
+      typeof window !== "undefined" ? window.location.origin : "https://app.cymaticstudy.ug";
     const cleanId = encodeURIComponent(currentSchoolId.trim());
     let link = `${origin}/signup?school_id=${cleanId}&role=${targetRole}`;
     if (targetEmail) {
@@ -139,7 +147,10 @@ export function InstitutionalRegistryModule() {
     const toastId = toast.loading("Adding member to Institutional Registry...");
 
     try {
-      const uniqueCode = generateStudentRegistryCode(currentSchoolId, Math.random().toString(36).slice(2, 6));
+      const uniqueCode = generateStudentRegistryCode(
+        currentSchoolId,
+        Math.random().toString(36).slice(2, 6),
+      );
       const newMember: RegistryMember = {
         id: `REG-${Date.now().toString().slice(-4)}`,
         name: fullName.trim(),
@@ -183,7 +194,7 @@ export function InstitutionalRegistryModule() {
         {
           id: toastId,
           description: `Official registry code ${uniqueCode} generated. Share binding link below.`,
-        }
+        },
       );
     } catch (err) {
       setIsAdding(false);
@@ -228,17 +239,15 @@ export function InstitutionalRegistryModule() {
             {schoolName} Member Management
           </h2>
           <p className="text-xs text-zinc-400">
-            Manually register teachers and student cohorts (S1-S6). Generate secure school ID binding invite links for automated onboarding.
+            Manually register teachers and student cohorts (S1-S6). Generate secure school ID
+            binding invite links for automated onboarding.
           </p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
           <Button
             onClick={() =>
-              copyToClipboard(
-                generateOfficialInviteLink("student"),
-                "General Student Binding Link"
-              )
+              copyToClipboard(generateOfficialInviteLink("student"), "General Student Binding Link")
             }
             variant="outline"
             className="border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-600 hover:text-white text-xs"
@@ -247,10 +256,7 @@ export function InstitutionalRegistryModule() {
           </Button>
           <Button
             onClick={() =>
-              copyToClipboard(
-                generateOfficialInviteLink("teacher"),
-                "Faculty Teacher Binding Link"
-              )
+              copyToClipboard(generateOfficialInviteLink("teacher"), "Faculty Teacher Binding Link")
             }
             className="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs shadow-md shadow-blue-600/30"
           >
@@ -363,7 +369,9 @@ export function InstitutionalRegistryModule() {
             {/* TEACHER SPECIFIC FIELDS */}
             {memberType === "teacher" && (
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-zinc-300">Primary Subject Specialization</Label>
+                <Label className="text-xs font-bold text-zinc-300">
+                  Primary Subject Specialization
+                </Label>
                 <Input
                   placeholder="e.g., Physics, Chemistry, Pure Math"
                   value={subject}
@@ -411,7 +419,8 @@ export function InstitutionalRegistryModule() {
                 <Users className="h-5 w-5 text-indigo-400" /> Institutional Registry Directory
               </h3>
               <p className="text-xs text-zinc-400">
-                Official register of scholars and faculty linked to School ID: <span className="font-mono text-blue-400">{currentSchoolId}</span>
+                Official register of scholars and faculty linked to School ID:{" "}
+                <span className="font-mono text-blue-400">{currentSchoolId}</span>
               </p>
             </div>
 
@@ -472,7 +481,9 @@ export function InstitutionalRegistryModule() {
                       <TableCell className="font-bold text-white text-xs">
                         <div>
                           <p>{m.name}</p>
-                          <p className="text-[10px] text-zinc-500 font-mono font-normal">{m.email}</p>
+                          <p className="text-[10px] text-zinc-500 font-mono font-normal">
+                            {m.email}
+                          </p>
                         </div>
                       </TableCell>
 
@@ -532,7 +543,10 @@ export function InstitutionalRegistryModule() {
 
                 {filteredRoster.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-zinc-500 italic text-xs">
+                    <TableCell
+                      colSpan={5}
+                      className="text-center py-8 text-zinc-500 italic text-xs"
+                    >
                       No matching records found in institutional registry.
                     </TableCell>
                   </TableRow>

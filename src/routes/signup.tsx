@@ -1,6 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { Loader2, Sparkles, UserPlus, Copy, Check, Eye, EyeOff, RefreshCw, QrCode } from "lucide-react";
+import {
+  Loader2,
+  Sparkles,
+  UserPlus,
+  Copy,
+  Check,
+  Eye,
+  EyeOff,
+  RefreshCw,
+  QrCode,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Database } from "@/integrations/supabase/types";
@@ -54,7 +64,7 @@ function SignupPage() {
       const cleanedId = schoolIdParam.trim();
       setSchoolId(cleanedId);
       setMode("student-teacher");
-      
+
       // Also save to localStorage as a fallback
       window.localStorage.setItem("cymatic_school_id", cleanedId);
       toast.info(`Pre-filled School ID: ${cleanedId}`);
@@ -176,7 +186,8 @@ function SignupPage() {
           navigate({ to: "/dashboard" });
         }
       } else {
-        const msg = afterSignupInfo ?? "Success! Check your email to confirm your account and join the hub.";
+        const msg =
+          afterSignupInfo ?? "Success! Check your email to confirm your account and join the hub.";
         setInfo(msg);
         toast.success(msg, { id: toastId });
       }
@@ -187,7 +198,8 @@ function SignupPage() {
         errMsg.toLowerCase().includes("networkerror") ||
         errMsg.toLowerCase().includes("fetch failed")
       ) {
-        errMsg = "Server unreachable (Failed to fetch). Check your network connection and retry, or login as Guest.";
+        errMsg =
+          "Server unreachable (Failed to fetch). Check your network connection and retry, or login as Guest.";
       }
       setError(errMsg);
       toast.error(errMsg, {
@@ -196,8 +208,8 @@ function SignupPage() {
           label: "Retry",
           onClick: () => {
             handleSubmit();
-          }
-        }
+          },
+        },
       });
     } finally {
       setSubmitting(false);

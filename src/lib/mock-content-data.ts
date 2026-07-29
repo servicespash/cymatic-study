@@ -16,7 +16,8 @@ export const MOCK_CONTENT_DATA: NewsItem[] = [
     id: "mock-podcast-1",
     title: "The Magic of Matrices in Real Life",
     body: JSON.stringify({
-      description: "Discover how S5/S6 matrix algebra powers modern computer graphics, video game mechanics, and complex transformations.",
+      description:
+        "Discover how S5/S6 matrix algebra powers modern computer graphics, video game mechanics, and complex transformations.",
       subject: "Mathematics",
       speaker: "Sir Latif Isabirye",
       duration: "12:45",
@@ -31,7 +32,8 @@ export const MOCK_CONTENT_DATA: NewsItem[] = [
     id: "mock-podcast-2",
     title: "Quantum Mechanics & Semiconductor Electronics",
     body: JSON.stringify({
-      description: "Dive into wave-particle duality, Planck's constant, and how modern diodes and transistors are designed to power our devices.",
+      description:
+        "Dive into wave-particle duality, Planck's constant, and how modern diodes and transistors are designed to power our devices.",
       subject: "Physics",
       speaker: "Dr. Florence Nakayiza",
       duration: "15:20",
@@ -46,7 +48,8 @@ export const MOCK_CONTENT_DATA: NewsItem[] = [
     id: "mock-podcast-3",
     title: "The Energy Landscapes of Thermodynamics",
     body: JSON.stringify({
-      description: "A deep-dive into physical chemistry principles, explaining how Enthalpy, Entropy, and Gibbs Free Energy govern natural reactions.",
+      description:
+        "A deep-dive into physical chemistry principles, explaining how Enthalpy, Entropy, and Gibbs Free Energy govern natural reactions.",
       subject: "Chemistry",
       speaker: "Prof. Herbert Mukasa",
       duration: "10:15",
@@ -61,7 +64,8 @@ export const MOCK_CONTENT_DATA: NewsItem[] = [
     id: "mock-podcast-4",
     title: "DNA Replication & The Molecular Clock",
     body: JSON.stringify({
-      description: "Syllabus review of the molecular processes of transcription and translation, and how cell division maintains biological lifespans.",
+      description:
+        "Syllabus review of the molecular processes of transcription and translation, and how cell division maintains biological lifespans.",
       subject: "Biology",
       speaker: "Teacher Brenda Namubiru",
       duration: "14:10",
@@ -76,7 +80,8 @@ export const MOCK_CONTENT_DATA: NewsItem[] = [
     id: "mock-live-1",
     title: "Cymatic Masterclass: Oscillating Systems & Resonance",
     body: JSON.stringify({
-      description: "An intensive visual lecture on mechanical resonance, sound wave amplification, and the mathematical equations of simple harmonic motion.",
+      description:
+        "An intensive visual lecture on mechanical resonance, sound wave amplification, and the mathematical equations of simple harmonic motion.",
       subject: "Physics",
       instructor: "Sir Latif Isabirye",
       scheduled_at: new Date(Date.now() + 3600000 * 24).toISOString(),
@@ -92,7 +97,8 @@ export const MOCK_CONTENT_DATA: NewsItem[] = [
     id: "mock-live-2",
     title: "S5/S6 Organic Chemistry Synthesis Pathway Review",
     body: JSON.stringify({
-      description: "Step-by-step breakdown of aliphatic and aromatic reaction mechanisms, functional groups, and esterification practical questions.",
+      description:
+        "Step-by-step breakdown of aliphatic and aromatic reaction mechanisms, functional groups, and esterification practical questions.",
       subject: "Chemistry",
       instructor: "Prof. Herbert Mukasa",
       scheduled_at: new Date(Date.now() + 3600000 * 48).toISOString(),

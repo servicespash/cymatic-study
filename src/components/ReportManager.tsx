@@ -60,20 +60,24 @@ export function ReportManager() {
   ]);
 
   const [selectedStudent, setSelectedStudent] = useState<StudentProfile>(students[0]);
-  const [template, setTemplate] = useState<"NCDC Competency" | "STEM Research" | "Term Summary" | "Project Portfolio">("NCDC Competency");
+  const [template, setTemplate] = useState<
+    "NCDC Competency" | "STEM Research" | "Term Summary" | "Project Portfolio"
+  >("NCDC Competency");
 
   // Report Curation State
   const [reportTitle, setReportTitle] = useState("Continuous Competency Assessment Report");
   const [subject, setSubject] = useState("Physics");
   const [projectTitle, setProjectTitle] = useState("Solar Thermal Water Purifier Prototype");
-  
+
   // Grading & Award Schemes
   const [planningScore, setPlanningScore] = useState(27);
   const [executionScore, setExecutionScore] = useState(36);
   const [conclusionScore, setConclusionScore] = useState(25);
   const [timePoints, setTimePoints] = useState(8.5);
   const [awardXP, setAwardXP] = useState(120);
-  const [feedback, setFeedback] = useState("Excellent research logbook and clear experimental trial data.");
+  const [feedback, setFeedback] = useState(
+    "Excellent research logbook and clear experimental trial data.",
+  );
   const [teacherName, setTeacherName] = useState("Mr. Okello David");
 
   const [curatedReports, setCuratedReports] = useState<MarkedReportItem[]>([
@@ -108,7 +112,11 @@ export function ReportManager() {
       projectTitle: projectTitle.trim(),
       subject,
       score: calculateTotalScore(),
-      rubricScores: { planning: planningScore, execution: executionScore, conclusion: conclusionScore },
+      rubricScores: {
+        planning: planningScore,
+        execution: executionScore,
+        conclusion: conclusionScore,
+      },
       feedback: feedback.trim(),
       teacherName: teacherName.trim(),
       teacherTitle: "Subject Educator",
@@ -142,7 +150,9 @@ export function ReportManager() {
           </div>
           <h1 className="text-2xl font-black text-white">Thematic Report Manager</h1>
           <p className="text-xs text-zinc-400 max-w-2xl leading-relaxed">
-            Curate student performance records, define custom grading schemes (Planning, Execution, Conclusion), allocate study time points and award XP, and generate print-ready or PDF-exportable reports.
+            Curate student performance records, define custom grading schemes (Planning, Execution,
+            Conclusion), allocate study time points and award XP, and generate print-ready or
+            PDF-exportable reports.
           </p>
         </div>
 
@@ -190,7 +200,9 @@ export function ReportManager() {
                 >
                   <div>
                     <p className="font-bold text-xs text-white">{st.name}</p>
-                    <p className="text-[10px] text-zinc-400">{st.className} · {st.unebIndex}</p>
+                    <p className="text-[10px] text-zinc-400">
+                      {st.className} · {st.unebIndex}
+                    </p>
                   </div>
                   {selectedStudent.id === st.id && (
                     <CheckCircle2 className="w-4 h-4 text-indigo-400" />
@@ -236,7 +248,8 @@ export function ReportManager() {
                 Define Evaluation &amp; Award Scheme
               </CardTitle>
               <CardDescription className="text-xs text-zinc-400 mt-1">
-                Configure rubric breakdown, credit study hours (time points), and grant award XP for {selectedStudent.name}.
+                Configure rubric breakdown, credit study hours (time points), and grant award XP for{" "}
+                {selectedStudent.name}.
               </CardDescription>
             </div>
 
@@ -398,7 +411,8 @@ export function ReportManager() {
                   <div className="space-y-1">
                     <p className="font-bold text-xs text-white">{item.projectTitle}</p>
                     <p className="text-[11px] text-zinc-400">
-                      Score: <strong className="text-emerald-400">{item.score}%</strong> | Time Points: +{item.timePointsEarned}h | Award: +{item.awardPointsEarned} XP
+                      Score: <strong className="text-emerald-400">{item.score}%</strong> | Time
+                      Points: +{item.timePointsEarned}h | Award: +{item.awardPointsEarned} XP
                     </p>
                     <p className="text-[10px] text-zinc-500 italic">"{item.feedback}"</p>
                   </div>

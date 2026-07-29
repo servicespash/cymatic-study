@@ -92,7 +92,10 @@ export function FoundersSpotlight() {
 
         <div className="border-t border-border/70 bg-background/35 px-4 pb-6 pt-5 sm:px-6 sm:pb-7 min-w-0 overflow-hidden">
           <div className="relative space-y-4 text-sm sm:text-[15px] leading-relaxed text-foreground/85 break-words min-w-0">
-            <Quote className="absolute -left-1 -top-2 h-7 w-7 sm:h-9 sm:w-9 text-primary/25" aria-hidden />
+            <Quote
+              className="absolute -left-1 -top-2 h-7 w-7 sm:h-9 sm:w-9 text-primary/25"
+              aria-hidden
+            />
 
             {/* New Empathetic Narrative */}
             <p className="pl-3 sm:pl-8">

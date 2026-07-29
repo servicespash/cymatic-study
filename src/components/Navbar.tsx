@@ -105,7 +105,12 @@ export function Navbar() {
     const userRole = profile?.role || "student";
     if (to === "/teacher") {
       // Only show teacher link to teachers and admins
-      return userRole === "teacher" || userRole === "admin" || userRole === "org_admin" || !!profile?.teacher_license_id;
+      return (
+        userRole === "teacher" ||
+        userRole === "admin" ||
+        userRole === "org_admin" ||
+        !!profile?.teacher_license_id
+      );
     }
     if (to === "/student") {
       // Only show student link to students and admins
