@@ -2,102 +2,117 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://study.cymatichub.xyz</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.725Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/analytics</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.727Z</lastmod>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://study.cymatichub.xyz/auth-callback</loc>
+    <lastmod>2026-07-30T04:28:19.727Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/chat</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.727Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/curriculum</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.727Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/dashboard</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.727Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/diagnostics</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.727Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/lessons</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.727Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/login</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.727Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/news</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.727Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/onboarding</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.728Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/projects</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.728Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/quizzes</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.728Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/settings</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.728Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/signup</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.728Z</lastmod>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://study.cymatichub.xyz/student</loc>
+    <lastmod>2026-07-30T04:28:19.728Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/support</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.728Z</lastmod>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://study.cymatichub.xyz/teacher</loc>
+    <lastmod>2026-07-30T04:28:19.728Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/tutor</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.728Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/verify-assessment</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.728Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/verify-document</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.728Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/tools/</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.728Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://study.cymatichub.xyz/tools</loc>
-    <lastmod>2026-07-23T04:05:34.804Z</lastmod>
+    <lastmod>2026-07-30T04:28:19.728Z</lastmod>
     <changefreq>weekly</changefreq>
   </url>
 </urlset>

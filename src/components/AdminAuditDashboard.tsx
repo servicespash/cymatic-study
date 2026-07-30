@@ -4,13 +4,11 @@
  */
 
 import { useState, useEffect } from "react";
-import {
-  AuditResult,
-  AuditMetrics,
-  generateAuditMetrics,
-  getAuditSeverity,
-} from "@/lib/tutor-audit";
-import { AISafetyMetrics, generateAISafetyMetrics } from "@/lib/ai-safety";
+import type { AuditResult, AuditMetrics } from "@/lib/tutor-audit";
+import { generateAuditMetrics, getAuditSeverity } from "@/lib/tutor-audit";
+import type { AISafetyMetrics } from "@/lib/ai-safety";
+import { generateAISafetyMetrics } from "@/lib/ai-safety";
+import { ReleaseDashboard } from "@/components/ReleaseDashboard";
 
 interface AuditDashboardProps {
   auditResults?: AuditResult[];
@@ -27,7 +25,9 @@ export function AdminAuditDashboard({
 }: AuditDashboardProps) {
   const [metrics, setMetrics] = useState<AuditMetrics | null>(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "tutor" | "safety">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "tutor" | "safety" | "releases">(
+    "overview",
+  );
 
   useEffect(() => {
     if (auditResults.length > 0) {
@@ -115,6 +115,16 @@ export function AdminAuditDashboard({
           }`}
         >
           AI Safety
+        </button>
+        <button
+          onClick={() => setActiveTab("releases")}
+          className={`px-4 py-2 font-medium transition-colors ${
+            activeTab === "releases"
+              ? "border-b-2 border-primary text-primary"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Releases
         </button>
       </div>
 
@@ -285,6 +295,13 @@ export function AdminAuditDashboard({
             <p className="text-sm text-muted-foreground mb-2">Last Audit</p>
             <p className="text-sm">{aiSafetyMetrics.lastAudit.toLocaleString()}</p>
           </div>
+        </div>
+      )}
+
+      {/* Releases Tab */}
+      {activeTab === "releases" && (
+        <div className="p-6">
+          <ReleaseDashboard />
         </div>
       )}
     </div>

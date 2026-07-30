@@ -29,18 +29,6 @@ interface OrganizationRecord {
   created_at?: string;
 }
 
-const DEFAULT_MOCK_SCHOOLS: OrganizationRecord[] = [
-  { id: "SCH-NCDC-KAMPALA", name: "King's College Budo", school_key: "NCDC-KAMPALA-BUDO" },
-  {
-    id: "SCH-NCDC-WAKISO",
-    name: "St. Mary's College Kisubi (SMACK)",
-    school_key: "NCDC-WAKISO-SMACK",
-  },
-  { id: "SCH-NCDC-MUKONO", name: "Gayaza High School", school_key: "NCDC-MUKONO-GAYAZA" },
-  { id: "SCH-NCDC-MBARARA", name: "Ntare School", school_key: "NCDC-MBARARA-NTARE" },
-  { id: "SCH-NCDC-GULU", name: "Gombe High School", school_key: "NCDC-GULU-GOMBE" },
-];
-
 export function BulkQRGenerator() {
   const [organizations, setOrganizations] = useState<OrganizationRecord[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -65,25 +53,14 @@ export function BulkQRGenerator() {
 
       if (error) throw error;
 
-      let list = data || [];
-
-      // If empty or only 1, merge with mock schools to guarantee a rich interactive demo experience
-      if (list.length <= 1) {
-        const uniqueMocks = DEFAULT_MOCK_SCHOOLS.filter(
-          (mock) => !list.some((org) => org.id === mock.id || org.school_key === mock.school_key),
-        );
-        list = [...list, ...uniqueMocks];
-      }
+      const list = data || [];
 
       setOrganizations(list);
       // Auto-select all by default
       setSelectedIds(list.map((org) => org.id));
     } catch (err: any) {
       console.error("Error fetching organizations:", err);
-      // Fallback to mocks on error
-      setOrganizations(DEFAULT_MOCK_SCHOOLS);
-      setSelectedIds(DEFAULT_MOCK_SCHOOLS.map((org) => org.id));
-      toast.info("Showing standard National Curriculum Registry schools list.");
+      toast.error("Failed to load official institutional registries.");
     } finally {
       setLoading(false);
     }
@@ -228,7 +205,7 @@ export function BulkQRGenerator() {
         const qrX = xOffset + (cardWidth - qrSize) / 2;
         const qrY = yPos + 22;
         doc.rect(qrX - 1, qrY - 1, qrSize + 2, qrSize + 2, "S"); // border box around QR
-        doc.drawImage(qrDataUrl, "PNG", qrX, qrY, qrSize, qrSize);
+        doc.addImage(qrDataUrl, "PNG", qrX, qrY, qrSize, qrSize);
 
         // 4. Draw School Registry ID
         doc.setTextColor(15, 23, 42); // slate-900

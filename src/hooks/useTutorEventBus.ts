@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { TutorEvent } from "@/types/tutor-events";
+import type { TutorEvent } from "@/types/tutor-events";
 
 export function useTutorEventBus(onEvent?: (event: TutorEvent) => void) {
   const [connected, setConnected] = useState(false);

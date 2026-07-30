@@ -560,7 +560,7 @@
   }
 
   /* Card styling for print */
-  .card, 
+  .card,
   [class*="Card"],
   .rounded-2xl,
   .rounded-3xl {
@@ -573,25 +573,61 @@
   }
 
   /* Ensure text is black and high-contrast */
-  h1, h2, h3, h4, p, span, td, th, li {
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  span,
+  td,
+  th,
+  li {
     color: black !important;
     text-shadow: none !important;
   }
 
-  h1 { font-size: 24pt !important; margin-bottom: 24pt !important; border-bottom: 2px solid black; padding-bottom: 8pt; }
-  h2 { font-size: 18pt !important; margin-top: 18pt !important; margin-bottom: 12pt !important; border-bottom: 1px solid #ddd; padding-bottom: 4pt; }
-  h3 { font-size: 14pt !important; margin-top: 14pt !important; margin-bottom: 8pt !important; }
+  h1 {
+    font-size: 24pt !important;
+    margin-bottom: 24pt !important;
+    border-bottom: 2px solid black;
+    padding-bottom: 8pt;
+  }
+  h2 {
+    font-size: 18pt !important;
+    margin-top: 18pt !important;
+    margin-bottom: 12pt !important;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 4pt;
+  }
+  h3 {
+    font-size: 14pt !important;
+    margin-top: 14pt !important;
+    margin-bottom: 8pt !important;
+  }
 
   /* Table improvements */
-  table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 1.5rem !important; }
-  th { background-color: #f1f5f9 !important; border: 1px solid #cbd5e1 !important; padding: 8pt !important; font-weight: bold !important; }
-  td { border: 1px solid #e2e8f0 !important; padding: 6pt !important; }
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-bottom: 1.5rem !important;
+  }
+  th {
+    background-color: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 8pt !important;
+    font-weight: bold !important;
+  }
+  td {
+    border: 1px solid #e2e8f0 !important;
+    padding: 6pt !important;
+  }
 
   /* Page breaks */
   .page-break,
   .report-section,
   .portfolio-item,
-  h1, h2 {
+  h1,
+  h2 {
     break-before: page;
   }
 
@@ -618,6 +654,13 @@
   }
 
   /* Links */
-  a { text-decoration: underline !important; color: black !important; }
-  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.8rem; color: #666; }
+  a {
+    text-decoration: underline !important;
+    color: black !important;
+  }
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8rem;
+    color: #666;
+  }
 }

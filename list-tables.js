@@ -11,10 +11,10 @@ async function listTables() {
   // Use a query that is likely to work if PostgREST is up
   // Or try to use a RPC if one exists to list tables
   // Since we can't easily run raw SQL, we'll try to guess or use a known table to see if it works
-  
+
   console.log("Checking some known tables...");
   const tables = ["profiles", "organizations", "project_submissions", "chat_messages"];
-  
+
   for (const table of tables) {
     const { error } = await supabase.from(table).select("*").limit(0);
     if (error) {

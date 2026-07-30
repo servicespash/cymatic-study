@@ -17,7 +17,7 @@ export default tseslint.config(
         ...globals.node,
       },
       parserOptions: {
-        project: "./tsconfig.json",
+        project: false,
       },
     },
     plugins: {

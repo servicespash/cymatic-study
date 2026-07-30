@@ -38,7 +38,10 @@ export function Sidebar({
             <Plus className="h-5 w-5 text-cyan-400" />
             <span>New Chat</span>
           </button>
-          <button onClick={() => setIsOpen(false)} className="md:hidden text-zinc-400 hover:text-white p-2">
+          <button
+            onClick={() => setIsOpen(false)}
+            className="md:hidden text-zinc-400 hover:text-white p-2"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>

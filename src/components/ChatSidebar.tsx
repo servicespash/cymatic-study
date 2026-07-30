@@ -50,7 +50,9 @@ export function ChatSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                 }}
               >
                 <MessageSquare className="w-4 h-4 text-zinc-400 shrink-0" />
-                <span className="text-sm font-medium text-zinc-200 truncate">Chat {session.id}</span>
+                <span className="text-sm font-medium text-zinc-200 truncate">
+                  Chat {session.id}
+                </span>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <Button

@@ -14,10 +14,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function checkTable() {
   console.log(`Checking table 'project_submissions' at ${supabaseUrl}...`);
-  const { data, error } = await supabase
-    .from("project_submissions")
-    .select("*")
-    .limit(1);
+  const { data, error } = await supabase.from("project_submissions").select("*").limit(1);
 
   if (error) {
     console.error("Error checking table:", JSON.stringify(error, null, 2));

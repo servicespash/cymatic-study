@@ -1,12 +1,6 @@
 {
   "name": "Cymatic Study",
   "description": "An interactive learning evolution for the New Lower Secondary Curriculum in Uganda, featuring smart tools, real-time assessments, and empathetic AI guidance.",
-  "requestFramePermissions": [
-    "camera",
-    "microphone",
-    "geolocation"
-  ],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
+  "requestFramePermissions": ["camera", "microphone", "geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

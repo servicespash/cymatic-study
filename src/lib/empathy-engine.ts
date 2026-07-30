@@ -32,37 +32,34 @@ export async function generateEmpathyResponse(
       const accessToken = sess.session?.access_token;
 
       if (accessToken) {
-        const response = await fetch(
-          `/api/tutor`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({
-              messages: [
-                {
-                  role: "user",
-                  content: `[INTERNAL_TRIGGER: ${trigger}] Context: Name=${context.name}, Mood=${context.mood}, Time=${context.time}, District=${context.district || "Uganda"}. Generate a short, 1-sentence ${trigger === "greeting" ? "greeting" : "reaction"} in your persona.`,
-                },
-              ],
-              persona: persona.voice,
-              mood: context.mood,
-              userMood: context.mood, // Using mood as userMood for internal triggers
-              userName: context.name,
-              user_id: sess.session?.user?.id,
-              context: {
-                weather: context.district ? `Weather in ${context.district}` : undefined,
-                district: context.district,
-                points: context.points || 0,
-                timeContext: context.time,
-                route: "Internal Trigger",
-              },
-              internal: true,
-            }),
+        const response = await fetch(`/api/tutor`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
           },
-        );
+          body: JSON.stringify({
+            messages: [
+              {
+                role: "user",
+                content: `[INTERNAL_TRIGGER: ${trigger}] Context: Name=${context.name}, Mood=${context.mood}, Time=${context.time}, District=${context.district || "Uganda"}. Generate a short, 1-sentence ${trigger === "greeting" ? "greeting" : "reaction"} in your persona.`,
+              },
+            ],
+            persona: persona.voice,
+            mood: context.mood,
+            userMood: context.mood, // Using mood as userMood for internal triggers
+            userName: context.name,
+            user_id: sess.session?.user?.id,
+            context: {
+              weather: context.district ? `Weather in ${context.district}` : undefined,
+              district: context.district,
+              points: context.points || 0,
+              timeContext: context.time,
+              route: "Internal Trigger",
+            },
+            internal: true,
+          }),
+        });
 
         if (response.ok) {
           const reader = response.body?.getReader();

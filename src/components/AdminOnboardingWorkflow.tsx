@@ -72,7 +72,7 @@ export function AdminOnboardingWorkflow({ onComplete }: AdminOnboardingWorkflowP
           org_id: generatedId,
           school_name: schoolName.trim(),
           student_registry_code: registryCode,
-        },
+        } as any,
       });
 
       if (metaError) {

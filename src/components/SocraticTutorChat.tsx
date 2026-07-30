@@ -13,6 +13,7 @@ import {
   Menu,
   Download,
   Printer,
+  Button,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,7 @@ import { ChatSidebar } from "./ChatSidebar";
 import { ExportPdfModal } from "./ExportPdfModal";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import { tutorService } from "@/services/TutorService";
 
 interface TopicConfig {
   name: string;
@@ -120,9 +122,6 @@ export function SocraticTutorChat() {
     }
   };
 
-  // Initialize with starter message
-  // Messages now managed by useTutorStore and dynamic useEffect
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
@@ -153,95 +152,19 @@ export function SocraticTutorChat() {
     setMessages((prev) => [...prev, tutorMsg]);
 
     try {
-      const { data: sess } = await supabase.auth.getSession();
-      const token = sess.session?.access_token;
-
-      let res;
-      try {
-        const url = "/api/tutor";
-        res = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({
-            messages: [...messages, studentMsg].map((m) => ({
-              role: m.sender === "student" ? "user" : "assistant",
-              content: m.text,
-            })),
-            userName: displayName,
-            subject: activeSubject,
-          }),
-        });
-        if (!res.ok) {
-          throw new Error("Local API failed status: " + res.status);
-        }
-      } catch (err) {
-        console.warn(
-          "[Socratic Coach] Local API failed, trying Supabase Edge Function directly:",
-          err,
-        );
-        const edgeUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tutor-chat`;
-        res = await fetch(edgeUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({
-            messages: [...messages, studentMsg].map((m) => ({
-              role: m.sender === "student" ? "user" : "assistant",
-              content: m.text,
-            })),
-            persona:
-              activeSubject === "physics" || activeSubject === "mathematics" ? "male" : "female",
-            userName: displayName,
-            subject: activeSubject,
-          }),
-        });
-      }
-
-      if (!res.ok) {
-        const errText = await res.text().catch(() => "Unknown error");
-        throw new Error(`Tutor APIs failed (${res.status}): ${errText}`);
-      }
-
-      const reader = res.body?.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() || "";
-
-          let chunkText = "";
-          for (const line of lines) {
-            if (!line.startsWith("data: ")) continue;
-            const payload = line.slice(6).trim();
-            if (!payload || payload === "[DONE]") continue;
-            try {
-              const j = JSON.parse(payload);
-              const delta = j.choices?.[0]?.delta?.content;
-              if (typeof delta === "string") chunkText += delta;
-            } catch (e) {
-              // Ignore payload parse errors
-            }
-          }
-
-          if (chunkText) {
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg.id === tutorMsgId ? { ...msg, text: msg.text + chunkText } : msg,
-              ),
-            );
-          }
-        }
-      }
+      await tutorService.sendMessage(
+        [...messages, studentMsg].map((m) => ({
+          role: m.sender === "student" ? "user" : "assistant",
+          content: m.text,
+        })),
+        displayName,
+        activeSubject,
+        (chunk) => {
+          setMessages((prev) =>
+            prev.map((msg) => (msg.id === tutorMsgId ? { ...msg, text: msg.text + chunk } : msg)),
+          );
+        },
+      );
 
       await incrementProgress(
         activeSubject,

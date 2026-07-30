@@ -23,7 +23,7 @@ if (!existsSync(packageJsonPath)) {
 
 if (!existsSync(packageLockPath)) {
   console.error(
-    "❌ [validate-deps] ERROR: package-lock.json is missing! Run 'npm install' to generate it."
+    "❌ [validate-deps] ERROR: package-lock.json is missing! Run 'npm install' to generate it.",
   );
   process.exit(1);
 }
@@ -76,10 +76,10 @@ if (missingDeps.length > 0) {
   for (const item of missingDeps) {
     console.error(`  - ${item.name} (required: ${item.reqVersion})`);
   }
-  console.error(
-    "\n💡 To fix this, synchronize package-lock.json by running:\n    npm install\n"
-  );
+  console.error("\n💡 To fix this, synchronize package-lock.json by running:\n    npm install\n");
   process.exit(1);
 }
 
-console.log("✨ [validate-deps] All dependencies successfully synchronized in package-lock.json!\n");
+console.log(
+  "✨ [validate-deps] All dependencies successfully synchronized in package-lock.json!\n",
+);

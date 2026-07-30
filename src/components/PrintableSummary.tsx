@@ -63,7 +63,7 @@ export function PrintableSummary({
         if (user) {
           const { data: profile } = await supabase
             .from("profiles")
-            .select("full_name, school_id, org_id")
+            .select("full_name, org_id, school_name")
             .eq("user_id", user.id)
             .maybeSingle();
 
@@ -73,7 +73,7 @@ export function PrintableSummary({
           }
 
           if (!customSchoolName) {
-            const sch = user.user_metadata?.school_name || profile?.school_id || profile?.org_id;
+            const sch = user.user_metadata?.school_name || profile?.school_name || profile?.org_id;
             if (sch) setSchoolName(sch);
           }
         }
