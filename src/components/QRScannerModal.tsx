@@ -15,7 +15,7 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
   const [permissionState, setPermissionState] = useState<
     "prompt" | "granted" | "denied" | "loading"
   >("loading");
-  const [devices, setDevices] = useState<any[]>([]);
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [activeCameraId, setActiveCameraId] = useState<string>("");
   const [scannerError, setScannerError] = useState<string | null>(null);
   const qrScannerRef = useRef<Html5Qrcode | null>(null);

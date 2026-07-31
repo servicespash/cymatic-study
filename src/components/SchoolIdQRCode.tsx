@@ -140,7 +140,7 @@ export function SchoolIdQRCode({
 
           // School/Institution Name
           ctx.font = "bold 24px system-ui, -apple-system, sans-serif";
-          const name = schoolName;
+          let name = schoolName;
           if (name.length > 30) {
             ctx.font = "bold 20px system-ui, -apple-system, sans-serif";
           }

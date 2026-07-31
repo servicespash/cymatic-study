@@ -12,25 +12,19 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyDocumentRouteImport } from './routes/verify-document'
 import { Route as VerifyAssessmentRouteImport } from './routes/verify-assessment'
 import { Route as TutorRouteImport } from './routes/tutor'
-import { Route as TeacherRouteImport } from './routes/teacher'
 import { Route as SupportRouteImport } from './routes/support'
-import { Route as StudentRouteImport } from './routes/student'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as QuizzesRouteImport } from './routes/quizzes'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NewsRouteImport } from './routes/news'
-import { Route as MarkingRouteImport } from './routes/marking'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LessonsRouteImport } from './routes/lessons'
-import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CurriculumRouteImport } from './routes/curriculum'
 import { Route as ChatRouteImport } from './routes/chat'
-import { Route as AuthCallbackRouteImport } from './routes/auth-callback'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToolsIndexRouteImport } from './routes/tools.index'
 import { Route as ToolsCategoryRouteImport } from './routes/tools.$category'
@@ -55,19 +49,9 @@ const TutorRoute = TutorRouteImport.update({
   path: '/tutor',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TeacherRoute = TeacherRouteImport.update({
-  id: '/teacher',
-  path: '/teacher',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SupportRoute = SupportRouteImport.update({
   id: '/support',
   path: '/support',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const StudentRoute = StudentRouteImport.update({
-  id: '/student',
-  path: '/student',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -100,11 +84,6 @@ const NewsRoute = NewsRouteImport.update({
   path: '/news',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MarkingRoute = MarkingRouteImport.update({
-  id: '/marking',
-  path: '/marking',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -113,11 +92,6 @@ const LoginRoute = LoginRouteImport.update({
 const LessonsRoute = LessonsRouteImport.update({
   id: '/lessons',
   path: '/lessons',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DiagnosticsRoute = DiagnosticsRouteImport.update({
-  id: '/diagnostics',
-  path: '/diagnostics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -135,19 +109,9 @@ const ChatRoute = ChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthCallbackRoute = AuthCallbackRouteImport.update({
-  id: '/auth-callback',
-  path: '/auth-callback',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AnalyticsRoute = AnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -181,37 +145,31 @@ const MarkProjectIdRoute = MarkProjectIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/dashboard',
+  path: '/admin/dashboard',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
-  '/auth-callback': typeof AuthCallbackRoute
   '/chat': typeof ChatRoute
   '/curriculum': typeof CurriculumRoute
   '/dashboard': typeof DashboardRoute
-  '/diagnostics': typeof DiagnosticsRoute
   '/lessons': typeof LessonsRoute
   '/login': typeof LoginRoute
-  '/marking': typeof MarkingRoute
   '/news': typeof NewsRoute
   '/onboarding': typeof OnboardingRoute
   '/projects': typeof ProjectsRoute
   '/quizzes': typeof QuizzesRouteWithChildren
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
-  '/student': typeof StudentRoute
   '/support': typeof SupportRoute
-  '/teacher': typeof TeacherRoute
   '/tutor': typeof TutorRoute
   '/verify-assessment': typeof VerifyAssessmentRoute
   '/verify-document': typeof VerifyDocumentRoute
@@ -225,25 +183,19 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
-  '/auth-callback': typeof AuthCallbackRoute
   '/chat': typeof ChatRoute
   '/curriculum': typeof CurriculumRoute
   '/dashboard': typeof DashboardRoute
-  '/diagnostics': typeof DiagnosticsRoute
   '/lessons': typeof LessonsRoute
   '/login': typeof LoginRoute
-  '/marking': typeof MarkingRoute
   '/news': typeof NewsRoute
   '/onboarding': typeof OnboardingRoute
   '/projects': typeof ProjectsRoute
   '/quizzes': typeof QuizzesRouteWithChildren
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
-  '/student': typeof StudentRoute
   '/support': typeof SupportRoute
-  '/teacher': typeof TeacherRoute
   '/tutor': typeof TutorRoute
   '/verify-assessment': typeof VerifyAssessmentRoute
   '/verify-document': typeof VerifyDocumentRoute
@@ -258,25 +210,19 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
-  '/auth-callback': typeof AuthCallbackRoute
   '/chat': typeof ChatRoute
   '/curriculum': typeof CurriculumRoute
   '/dashboard': typeof DashboardRoute
-  '/diagnostics': typeof DiagnosticsRoute
   '/lessons': typeof LessonsRoute
   '/login': typeof LoginRoute
-  '/marking': typeof MarkingRoute
   '/news': typeof NewsRoute
   '/onboarding': typeof OnboardingRoute
   '/projects': typeof ProjectsRoute
   '/quizzes': typeof QuizzesRouteWithChildren
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
-  '/student': typeof StudentRoute
   '/support': typeof SupportRoute
-  '/teacher': typeof TeacherRoute
   '/tutor': typeof TutorRoute
   '/verify-assessment': typeof VerifyAssessmentRoute
   '/verify-document': typeof VerifyDocumentRoute
@@ -292,25 +238,19 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/admin'
     | '/analytics'
-    | '/auth-callback'
     | '/chat'
     | '/curriculum'
     | '/dashboard'
-    | '/diagnostics'
     | '/lessons'
     | '/login'
-    | '/marking'
     | '/news'
     | '/onboarding'
     | '/projects'
     | '/quizzes'
     | '/settings'
     | '/signup'
-    | '/student'
     | '/support'
-    | '/teacher'
     | '/tutor'
     | '/verify-assessment'
     | '/verify-document'
@@ -324,25 +264,19 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/analytics'
-    | '/auth-callback'
     | '/chat'
     | '/curriculum'
     | '/dashboard'
-    | '/diagnostics'
     | '/lessons'
     | '/login'
-    | '/marking'
     | '/news'
     | '/onboarding'
     | '/projects'
     | '/quizzes'
     | '/settings'
     | '/signup'
-    | '/student'
     | '/support'
-    | '/teacher'
     | '/tutor'
     | '/verify-assessment'
     | '/verify-document'
@@ -356,25 +290,19 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/admin'
     | '/analytics'
-    | '/auth-callback'
     | '/chat'
     | '/curriculum'
     | '/dashboard'
-    | '/diagnostics'
     | '/lessons'
     | '/login'
-    | '/marking'
     | '/news'
     | '/onboarding'
     | '/projects'
     | '/quizzes'
     | '/settings'
     | '/signup'
-    | '/student'
     | '/support'
-    | '/teacher'
     | '/tutor'
     | '/verify-assessment'
     | '/verify-document'
@@ -389,28 +317,24 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRouteWithChildren
   AnalyticsRoute: typeof AnalyticsRoute
-  AuthCallbackRoute: typeof AuthCallbackRoute
   ChatRoute: typeof ChatRoute
   CurriculumRoute: typeof CurriculumRoute
   DashboardRoute: typeof DashboardRoute
-  DiagnosticsRoute: typeof DiagnosticsRoute
   LessonsRoute: typeof LessonsRoute
   LoginRoute: typeof LoginRoute
-  MarkingRoute: typeof MarkingRoute
   NewsRoute: typeof NewsRoute
   OnboardingRoute: typeof OnboardingRoute
   ProjectsRoute: typeof ProjectsRoute
   QuizzesRoute: typeof QuizzesRouteWithChildren
   SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
-  StudentRoute: typeof StudentRoute
   SupportRoute: typeof SupportRoute
-  TeacherRoute: typeof TeacherRoute
   TutorRoute: typeof TutorRoute
   VerifyAssessmentRoute: typeof VerifyAssessmentRoute
   VerifyDocumentRoute: typeof VerifyDocumentRoute
+  AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminLoginRoute: typeof AdminLoginRoute
   MarkProjectIdRoute: typeof MarkProjectIdRoute
   MarkTokenRoute: typeof MarkTokenRoute
   ToolsCategoryRoute: typeof ToolsCategoryRoute
@@ -440,25 +364,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TutorRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/teacher': {
-      id: '/teacher'
-      path: '/teacher'
-      fullPath: '/teacher'
-      preLoaderRoute: typeof TeacherRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/support': {
       id: '/support'
       path: '/support'
       fullPath: '/support'
       preLoaderRoute: typeof SupportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/student': {
-      id: '/student'
-      path: '/student'
-      fullPath: '/student'
-      preLoaderRoute: typeof StudentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -503,13 +413,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NewsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/marking': {
-      id: '/marking'
-      path: '/marking'
-      fullPath: '/marking'
-      preLoaderRoute: typeof MarkingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -522,13 +425,6 @@ declare module '@tanstack/react-router' {
       path: '/lessons'
       fullPath: '/lessons'
       preLoaderRoute: typeof LessonsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/diagnostics': {
-      id: '/diagnostics'
-      path: '/diagnostics'
-      fullPath: '/diagnostics'
-      preLoaderRoute: typeof DiagnosticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -552,25 +448,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth-callback': {
-      id: '/auth-callback'
-      path: '/auth-callback'
-      fullPath: '/auth-callback'
-      preLoaderRoute: typeof AuthCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/analytics': {
       id: '/analytics'
       path: '/analytics'
       fullPath: '/analytics'
       preLoaderRoute: typeof AnalyticsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -617,32 +499,20 @@ declare module '@tanstack/react-router' {
     }
     '/admin/login': {
       id: '/admin/login'
-      path: '/login'
+      path: '/admin/login'
       fullPath: '/admin/login'
       preLoaderRoute: typeof AdminLoginRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/dashboard': {
       id: '/admin/dashboard'
-      path: '/dashboard'
+      path: '/admin/dashboard'
       fullPath: '/admin/dashboard'
       preLoaderRoute: typeof AdminDashboardRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
-
-interface AdminRouteChildren {
-  AdminDashboardRoute: typeof AdminDashboardRoute
-  AdminLoginRoute: typeof AdminLoginRoute
-}
-
-const AdminRouteChildren: AdminRouteChildren = {
-  AdminDashboardRoute: AdminDashboardRoute,
-  AdminLoginRoute: AdminLoginRoute,
-}
-
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface QuizzesRouteChildren {
   QuizzesSubjectRoute: typeof QuizzesSubjectRoute
@@ -657,28 +527,24 @@ const QuizzesRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRouteWithChildren,
   AnalyticsRoute: AnalyticsRoute,
-  AuthCallbackRoute: AuthCallbackRoute,
   ChatRoute: ChatRoute,
   CurriculumRoute: CurriculumRoute,
   DashboardRoute: DashboardRoute,
-  DiagnosticsRoute: DiagnosticsRoute,
   LessonsRoute: LessonsRoute,
   LoginRoute: LoginRoute,
-  MarkingRoute: MarkingRoute,
   NewsRoute: NewsRoute,
   OnboardingRoute: OnboardingRoute,
   ProjectsRoute: ProjectsRoute,
   QuizzesRoute: QuizzesRouteWithChildren,
   SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
-  StudentRoute: StudentRoute,
   SupportRoute: SupportRoute,
-  TeacherRoute: TeacherRoute,
   TutorRoute: TutorRoute,
   VerifyAssessmentRoute: VerifyAssessmentRoute,
   VerifyDocumentRoute: VerifyDocumentRoute,
+  AdminDashboardRoute: AdminDashboardRoute,
+  AdminLoginRoute: AdminLoginRoute,
   MarkProjectIdRoute: MarkProjectIdRoute,
   MarkTokenRoute: MarkTokenRoute,
   ToolsCategoryRoute: ToolsCategoryRoute,

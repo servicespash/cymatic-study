@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useTransition } from "react";
-import { generateMetaTags, getCanonicalLink } from "@/lib/seo";
 import {
   LogOut,
   Settings,
@@ -72,15 +71,7 @@ import { DisciplineNudges } from "@/components/DisciplineNudges";
 import { RoleGuard } from "@/components/RoleGuard";
 
 export const Route = createFileRoute("/dashboard")({
-  head: () => ({
-    meta: generateMetaTags({
-      title: "Student Dashboard - Track Your Progress | Latty's Cymatic Study",
-      description:
-        "View your learning progress, earned points, completed quizzes, and personalized recommendations.",
-      canonicalUrl: "https://study.cymatichub.xyz/dashboard",
-    }),
-    links: [getCanonicalLink("https://study.cymatichub.xyz/dashboard")],
-  }),
+  head: () => ({ meta: [{ title: "My Hub — Cymatic Study" }] }),
   component: () => (
     <RoleGuard
       allowedRoles={[

@@ -5,6 +5,7 @@ import { AlertTriangle, CheckCircle2, Copy, Terminal, ShieldAlert } from "lucide
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
+import { DeveloperDiagnosticDashboard } from "@/components/DeveloperDiagnosticDashboard";
 
 export const Route = createFileRoute("/diagnostics")({
   component: DiagnosticsPage,
@@ -127,6 +128,8 @@ CREATE POLICY "Authenticated users can insert chat" ON public.chat_messages FOR 
       </div>
 
       <div className="grid gap-6">
+        <DeveloperDiagnosticDashboard />
+
         <Card>
           <CardHeader>
             <CardTitle>Database Tables</CardTitle>

@@ -14,6 +14,13 @@ import { handleEmailRequest } from "./src/server/email-router";
 import { handleAttendanceRequest } from "./src/server/attendance";
 
 async function startServer() {
+  console.log("[Boot] Current working directory:", process.cwd());
+  console.log("[Boot] GEMINI_API_KEY length:", process.env.GEMINI_API_KEY?.length || 0);
+  console.log(
+    "[Boot] GEMINI_API_KEY prefix:",
+    process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.substring(0, 15) : "none",
+  );
+
   const app = express();
   const PORT = 3000;
 
@@ -39,6 +46,19 @@ async function startServer() {
   }
 
   // API Routes
+  app.get("/api/debug-env", (req, res) => {
+    res.json({
+      cwd: process.cwd(),
+      keys: Object.keys(process.env).filter(
+        (k) => k.includes("GEMINI") || k.includes("GOOGLE") || k.includes("API"),
+      ),
+      geminiLength: process.env.GEMINI_API_KEY?.length || 0,
+      geminiPrefix: process.env.GEMINI_API_KEY
+        ? process.env.GEMINI_API_KEY.substring(0, 15)
+        : "none",
+    });
+  });
+
   app.post("/api/tutor", async (req, res) => {
     console.log(`[API] POST /api/tutor from ${req.ip}`);
     try {

@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useRef, useMemo } from "react";
-import { generateMetaTags, getCanonicalLink } from "@/lib/seo";
 import {
   Send,
   Users,
@@ -52,14 +51,13 @@ export interface ChatMessage {
 
 export const Route = createFileRoute("/chat")({
   head: () => ({
-    meta: generateMetaTags({
-      title: "AI Tutor Chat - Get Help with Your Studies | Latty's Cymatic Study",
-      description:
-        "Get personalized academic help, ask questions, and explore subjects with our AI tutor.",
-      canonicalUrl: "https://study.cymatichub.xyz/chat",
-      keywords: ["tutor", "chat", "academic help", "ai tutor", "learning"],
-    }),
-    links: [getCanonicalLink("https://study.cymatichub.xyz/chat")],
+    meta: [
+      { title: "Tutor Chat | Latty's Cymatic Study" },
+      {
+        name: "description",
+        content: "Live chat with your AI tutor. Designed by Isabirye Latif.",
+      },
+    ],
   }),
   component: ChatPageWrapper,
 });

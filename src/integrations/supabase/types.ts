@@ -71,30 +71,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      content_comments: {
-        Row: {
-          id: string;
-          user_id: string;
-          content_id: string;
-          content: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          content_id: string;
-          content: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          content_id?: string;
-          content?: string;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
       daily_tasks: {
         Row: {
           created_at: string;
@@ -199,7 +175,6 @@ export type Database = {
           avatar_url: string | null;
           created_at: string;
           display_name: string | null;
-          full_name: string | null;
           id: string;
           is_verified: boolean;
           level: string | null;
@@ -216,7 +191,6 @@ export type Database = {
           avatar_url?: string | null;
           created_at?: string;
           display_name?: string | null;
-          full_name?: string | null;
           id: string;
           is_verified?: boolean;
           level?: string | null;
@@ -233,7 +207,6 @@ export type Database = {
           avatar_url?: string | null;
           created_at?: string;
           display_name?: string | null;
-          full_name?: string | null;
           id?: string;
           is_verified?: boolean;
           level?: string | null;
@@ -258,15 +231,6 @@ export type Database = {
       };
       project_submissions: {
         Row: {
-          student_name: string | null;
-          student_id: string | null;
-          level: string | null;
-          stream: string | null;
-          subject: string | null;
-          project_title: string | null;
-          project_description: string | null;
-          score: number | null;
-          feedback: string | null;
           awarded_grade: string | null;
           awarded_score: number | null;
           created_at: string;
@@ -287,6 +251,8 @@ export type Database = {
           school_reference_key: string | null;
           status: string;
           student_email: string | null;
+          student_id: string | null;
+          student_user_id: string | null;
           submitted_at: string | null;
           teacher_comments: string | null;
           teacher_id: string | null;
@@ -300,15 +266,6 @@ export type Database = {
           verified_at: string | null;
         };
         Insert: {
-          student_name?: string | null;
-          student_id?: string | null;
-          level?: string | null;
-          stream?: string | null;
-          subject?: string | null;
-          project_title?: string | null;
-          project_description?: string | null;
-          score?: number | null;
-          feedback?: string | null;
           awarded_grade?: string | null;
           awarded_score?: number | null;
           created_at?: string;
@@ -329,6 +286,8 @@ export type Database = {
           school_reference_key?: string | null;
           status?: string;
           student_email?: string | null;
+          student_id?: string | null;
+          student_user_id?: string | null;
           submitted_at?: string | null;
           teacher_comments?: string | null;
           teacher_id?: string | null;
@@ -342,15 +301,6 @@ export type Database = {
           verified_at?: string | null;
         };
         Update: {
-          student_name?: string | null;
-          student_id?: string | null;
-          level?: string | null;
-          stream?: string | null;
-          subject?: string | null;
-          project_title?: string | null;
-          project_description?: string | null;
-          score?: number | null;
-          feedback?: string | null;
           awarded_grade?: string | null;
           awarded_score?: number | null;
           created_at?: string;
@@ -371,6 +321,8 @@ export type Database = {
           school_reference_key?: string | null;
           status?: string;
           student_email?: string | null;
+          student_id?: string | null;
+          student_user_id?: string | null;
           submitted_at?: string | null;
           teacher_comments?: string | null;
           teacher_id?: string | null;
@@ -382,39 +334,6 @@ export type Database = {
           total_competency_score?: number | null;
           updated_at?: string;
           verified_at?: string | null;
-        };
-        Relationships: [];
-      };
-      registry_members: {
-        Row: {
-          id: string;
-          org_id: string;
-          full_name: string;
-          email: string;
-          role: string;
-          level: string | null;
-          registry_code: string;
-          status: string;
-        };
-        Insert: {
-          id?: string;
-          org_id: string;
-          full_name: string;
-          email: string;
-          role: string;
-          level?: string | null;
-          registry_code: string;
-          status: string;
-        };
-        Update: {
-          id?: string;
-          org_id?: string;
-          full_name?: string;
-          email?: string;
-          role?: string;
-          level?: string | null;
-          registry_code?: string;
-          status?: string;
         };
         Relationships: [];
       };
@@ -445,75 +364,6 @@ export type Database = {
           topic_id?: string;
           total?: number;
           user_id?: string;
-        };
-        Relationships: [];
-      };
-      reactions: {
-        Row: {
-          id: string;
-          user_id: string;
-          content_id: string;
-          type: string;
-          created_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          content_id: string;
-          type: string;
-          created_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          content_id?: string;
-          type?: string;
-          created_at?: string | null;
-        };
-        Relationships: [];
-      };
-      engagement_logs: {
-        Row: {
-          id: string;
-          user_id: string | null;
-          content_id: string | null;
-          action: string;
-          created_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          user_id?: string | null;
-          content_id?: string | null;
-          action: string;
-          created_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          user_id?: string | null;
-          content_id?: string | null;
-          action?: string;
-          created_at?: string | null;
-        };
-        Relationships: [];
-      };
-      user_bookmarks: {
-        Row: {
-          id: string;
-          user_id: string;
-          content_id: string;
-          created_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          content_id: string;
-          created_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          content_id?: string;
-          created_at?: string | null;
         };
         Relationships: [];
       };
@@ -568,27 +418,6 @@ export type Database = {
           points?: number;
           reason?: string | null;
           user_id?: string;
-        };
-        Relationships: [];
-      };
-      user_subscriptions: {
-        Row: {
-          id: string;
-          user_id: string;
-          category_id: string;
-          created_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          category_id: string;
-          created_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          category_id?: string;
-          created_at?: string | null;
         };
         Relationships: [];
       };
