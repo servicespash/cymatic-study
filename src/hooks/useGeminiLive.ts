@@ -1,7 +1,7 @@
 // Updated Gemini Live API client — now acts as a listener to backend-orchestrated events.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { TutorEvent } from "@/types/tutor-events";
+import { TutorEvent } from "@/types/tutor-events";
 
 type GeminiLiveOptions = {
   voice?: string;

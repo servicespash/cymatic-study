@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
-import type { Message } from "@/store/useTutorStore";
-import { useTutorStore } from "@/store/useTutorStore";
+import { Message, useTutorStore } from "@/store/useTutorStore";
 import { Download, Volume2, VolumeX } from "lucide-react";
 import { useState } from "react";
 import { ExportPdfModal } from "./ExportPdfModal";
@@ -16,7 +15,7 @@ export function ChatArea({ messages, isLoading }: { messages: Message[]; isLoadi
 
   const formattedChatContent = messages
     .map((msg) => {
-      const isStudent = msg.sender === "student"; // Removed unintentional "user" type check
+      const isStudent = msg.sender === "student" || msg.sender === "user";
       const roleLabel = isStudent ? "Learner" : persona;
       return `[${msg.timestamp || ""}] ${roleLabel}: ${msg.text}`;
     })
@@ -58,7 +57,7 @@ export function ChatArea({ messages, isLoading }: { messages: Message[]; isLoadi
         </button>
       </div>
       {messages.map((msg) => {
-        const isStudent = msg.sender === "student";
+        const isStudent = msg.sender === "student" || msg.sender === "user";
         return (
           <motion.div
             key={msg.id}

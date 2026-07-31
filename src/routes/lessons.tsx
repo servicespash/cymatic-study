@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
-import { generateMetaTags, getCanonicalLink } from "@/lib/seo";
 import {
   ChevronDown,
   Download,
@@ -27,16 +26,7 @@ import { ScienceConceptIllustrator } from "@/components/ScienceConceptIllustrato
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/lessons")({
-  head: () => ({
-    meta: generateMetaTags({
-      title: "Interactive Lessons - Latty's Cymatic Study",
-      description:
-        "Explore interactive lessons for Mathematics, Physics, Chemistry, and Biology aligned with Uganda's Senior 1-4 curriculum.",
-      canonicalUrl: "https://study.cymatichub.xyz/lessons",
-      keywords: ["lessons", "interactive learning", "Uganda curriculum", "S1", "S2", "S3", "S4"],
-    }),
-    links: [getCanonicalLink("https://study.cymatichub.xyz/lessons")],
-  }),
+  head: () => ({ meta: [{ title: "Lessons — Lattys Cymatic Study" }] }),
   component: LessonsPage,
 });
 

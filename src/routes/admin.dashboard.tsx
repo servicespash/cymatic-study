@@ -72,6 +72,8 @@ import { AdminOnboardingWorkflow } from "@/components/AdminOnboardingWorkflow";
 import { UnifiedInstitutionalDirectory } from "@/components/UnifiedInstitutionalDirectory";
 import { BulkQRGenerator } from "@/components/BulkQRGenerator";
 import { DisciplineNudges } from "@/components/DisciplineNudges";
+import { SupabaseLivePulseHeader } from "@/components/SupabaseLivePulseHeader";
+import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 
 export const Route = createFileRoute("/admin/dashboard")({
   head: () => ({
@@ -85,9 +87,11 @@ export const Route = createFileRoute("/admin/dashboard")({
     ],
   }),
   component: () => (
-    <RoleGuard requireAdmin>
-      <AdminDashboard />
-    </RoleGuard>
+    <GlobalErrorBoundary fallbackTitle="Admin Dashboard Exception">
+      <RoleGuard requireAdmin>
+        <AdminDashboard />
+      </RoleGuard>
+    </GlobalErrorBoundary>
   ),
 });
 
@@ -594,7 +598,8 @@ function AdminDashboard() {
             <h1 className="text-3xl font-black tracking-tight uppercase">Dashboard Overview</h1>
             <p className="text-zinc-500 text-sm">Institutional command node for {org?.name}.</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <SupabaseLivePulseHeader />
             <Badge
               variant="outline"
               className="border-blue-600/30 bg-blue-600/5 text-blue-400 px-3 py-1"

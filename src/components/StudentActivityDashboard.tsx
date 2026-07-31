@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSubjectProgress } from "@/hooks/useSubjectProgress";
-import { supabase } from "@/integrations/supabase/client";
+import { getRecentActivities, type RecentActivity } from "@/lib/offline-db";
 import {
   BarChart,
   Bar,
@@ -11,61 +11,38 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import { BookOpen, Trophy, Activity, Award, Sparkles, RefreshCw, HelpCircle } from "lucide-react";
+import {
+  BookOpen,
+  Trophy,
+  Activity,
+  Award,
+  Sparkles,
+  RefreshCw,
+  PlusCircle,
+  HelpCircle,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
-export interface RecentActivity {
-  id: string;
-  type: "quiz" | "lesson" | "chat" | "project";
-  description: string;
-  timestamp: string;
-}
-
 export function StudentActivityDashboard() {
-  const { progress, loading } = useSubjectProgress();
+  const { progress, incrementProgress, loading } = useSubjectProgress();
   const [activities, setActivities] = useState<RecentActivity[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(true);
 
   const fetchActivities = async () => {
-    performance.mark("fetchActivities-start");
-    setLoadingActivities(true);
     try {
-      const { data, error } = await supabase
-        .from("user_activity_logs")
-        .select("id, type, description, created_at")
-        .order("created_at", { ascending: false })
-        .limit(5);
-
-      if (error) throw error;
-
-      setActivities(
-        (data || []).map((a) => ({
-          id: a.id,
-          type: a.type as any,
-          description: a.description,
-          timestamp: a.created_at,
-        })),
-      );
+      const list = await getRecentActivities(5);
+      setActivities(list);
     } catch (e) {
       console.error(e);
-      toast.error("Failed to load activity logs.");
     } finally {
       setLoadingActivities(false);
-      performance.mark("fetchActivities-end");
-      performance.measure("fetchActivities", "fetchActivities-start", "fetchActivities-end");
     }
   };
 
   useEffect(() => {
-    performance.mark("dashboard-render-start");
     fetchActivities();
   }, [progress]);
-
-  useEffect(() => {
-    performance.mark("dashboard-render-end");
-    performance.measure("dashboard-render", "dashboard-render-start", "dashboard-render-end");
-  });
 
   // Color mappings for subjects
   const subjectColors: Record<string, string> = {
@@ -84,6 +61,22 @@ export function StudentActivityDashboard() {
     percentage: p.completedPercentage,
     color: getSubjectColor(p.subject),
   }));
+
+  const handleSimulateStudy = async (subject: string) => {
+    const messages = [
+      `Completed an offline lesson in ${subject}.`,
+      `Finished active homework exercises on ${subject} NCDC module.`,
+      `Verified study summary of ${subject} formulas.`,
+    ];
+    const randMsg = messages[Math.floor(Math.random() * messages.length)];
+
+    // Add 10% progress
+    await incrementProgress(subject, 12, randMsg);
+    toast.success(`Progress Updated!`, {
+      description: `Gained +12% progress on your ${subject} syllabus curriculum tracker.`,
+    });
+    fetchActivities();
+  };
 
   return (
     <div className="space-y-6">
@@ -137,6 +130,12 @@ export function StudentActivityDashboard() {
                       ? new Date(sub.lastInteracted).toLocaleDateString()
                       : "Never"}
                   </span>
+                  <button
+                    onClick={() => handleSimulateStudy(sub.subject)}
+                    className="text-[9px] font-bold text-zinc-400 hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <PlusCircle className="w-3 h-3" /> Study +12%
+                  </button>
                 </div>
               </div>
             </motion.div>

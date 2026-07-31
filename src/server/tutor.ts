@@ -175,21 +175,26 @@ Your task is to provide personalized, Socratic guidance based on this specific s
     : currentMessage;
 
   let responseStreamPromise: any = null;
+  const modelsToTry = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
+
   if (!useFallback && aiClient) {
-    try {
-      responseStreamPromise = aiClient.models.generateContentStream({
-        model: "gemini-3.6-flash",
-        contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
-        config: {
-          systemInstruction: systemPrompt,
-        },
-      });
-    } catch (genErr) {
-      console.warn(
-        "[Tutor Server] generateContentStream failed, attempting Supabase Edge Function fallback:",
-        genErr,
-      );
-      useFallback = true;
+    for (const modelName of modelsToTry) {
+      try {
+        responseStreamPromise = await aiClient.models.generateContentStream({
+          model: modelName,
+          contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
+          config: {
+            systemInstruction: systemPrompt,
+          },
+        });
+        break;
+      } catch (genErr: any) {
+        console.warn(`[Tutor Server] Model ${modelName} failed:`, genErr?.message || genErr);
+        // If quota exceeded (429), try next model or fallback
+        if (modelName === modelsToTry[modelsToTry.length - 1]) {
+          useFallback = true;
+        }
+      }
     }
   }
 
@@ -255,8 +260,15 @@ Your task is to provide personalized, Socratic guidance based on this specific s
         }
       } catch (err: any) {
         console.error("[Tutor Server] Error streaming from Gemini API:", err);
+        const isQuota =
+          err?.message?.includes("429") ||
+          err?.message?.includes("Resource exhausted") ||
+          err?.message?.includes("Quota");
+        const friendlyMsg = isQuota
+          ? "Weebale! Our AI mentor is currently taking a short breath due to high traffic (daily quota limit reached). Please wait a moment or explore our interactive physics and math modules while we reset!"
+          : err.message || "Gemini API error";
         yield `data: ${JSON.stringify({
-          error: { message: err.message || "Gemini API error" },
+          choices: [{ delta: { content: friendlyMsg } }],
         })}\n\n`;
       }
 
