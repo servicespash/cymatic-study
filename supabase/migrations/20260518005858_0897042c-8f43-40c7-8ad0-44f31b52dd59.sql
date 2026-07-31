@@ -47,6 +47,8 @@ CREATE TRIGGER profiles_set_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- Auto-create profile on signup
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger
 LANGUAGE plpgsql

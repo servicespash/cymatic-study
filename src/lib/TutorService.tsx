@@ -13,31 +13,7 @@ import { toast } from "sonner";
 import { HardwareBridge } from "./HardwareBridge";
 import { AudioEngine } from "./audio-engine";
 
-export type TutorVoice = "male" | "female";
-export type TutorPersona = {
-  voice: TutorVoice;
-  name: "Adams" | "Haawa";
-  pitch: number;
-  rate: number;
-  theme: { primary: string; secondary: string; glow: string };
-};
-
-const PERSONA_CONFIGS: Record<TutorVoice, TutorPersona> = {
-  female: {
-    voice: "female",
-    name: "Haawa",
-    pitch: 1.2,
-    rate: 0.85,
-    theme: { primary: "#4C1D95", secondary: "#10B981", glow: "Violet-Emerald" },
-  },
-  male: {
-    voice: "male",
-    name: "Adams",
-    pitch: 0.9,
-    rate: 1.0,
-    theme: { primary: "#1E3A8A", secondary: "#D4AF37", glow: "Blue-Gold" },
-  },
-};
+import { type TutorVoice, type TutorPersona, DEFAULT_PERSONA_CONFIGS } from "./persona-config";
 
 interface TutorServiceState {
   persona: TutorPersona;
@@ -50,7 +26,7 @@ interface TutorServiceState {
   setTtsEnabled: (b: boolean) => void;
   connectSession: () => Promise<void>;
   disconnectSession: () => void;
-  speak: (text: string) => Promise<void>;
+  speak: (text: string, options?: { force?: boolean; queue?: boolean }) => Promise<void>;
   stopSpeaking: () => Promise<void>;
 }
 
@@ -70,14 +46,21 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
     onError: (e) => toast.error(`Live Error: ${e}`),
   });
 
-  const persona = useMemo(() => PERSONA_CONFIGS[voice], [voice]);
+  const persona = useMemo(() => DEFAULT_PERSONA_CONFIGS[voice], [voice]);
 
-  const connectSession = useCallback(async () => {
-    try {
-      await liveTools.connect();
-    } catch (e) {
-      console.error("Failed to connect live session", e);
-      toast.error("Failed to connect to tutor engine");
+  const connectSession = useCallback(async (retries = 3) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        await liveTools.connect();
+        return; // Success!
+      } catch (e) {
+        console.error(`Connection attempt ${i + 1} failed`, e);
+        if (i === retries - 1) {
+          toast.error("Failed to connect to tutor engine after multiple attempts.");
+        } else {
+          await new Promise((r) => setTimeout(r, 1000 * (i + 1))); // Exponential backoff
+        }
+      }
     }
   }, [liveTools]);
 
@@ -112,6 +95,7 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
           rate: persona.rate + savedRateAdj,
           pitch: persona.pitch + savedPitchAdj,
           lang: persona.voice === "male" ? "en-GB" : "en-US",
+          voiceName: persona.voiceName,
         });
       } catch (e) {
         console.error("TTS failed", e);
@@ -125,7 +109,7 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
   }, [persona]);
 
   const speak = useCallback(
-    async (text: string) => {
+    async (text: string, options?: { force?: boolean; queue?: boolean }) => {
       if (!ttsEnabled || !text.trim()) return;
 
       const cleanText = text
@@ -135,10 +119,14 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
 
       if (!cleanText) return;
 
+      if (options?.force) {
+        await stopSpeaking();
+      }
+
       ttsQueue.current.push(cleanText);
       processQueue();
     },
-    [ttsEnabled, processQueue],
+    [ttsEnabled, processQueue, stopSpeaking],
   );
 
   const setVoice = useCallback((v: TutorVoice) => setVoiceState(v), []);
