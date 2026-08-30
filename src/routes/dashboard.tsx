@@ -67,13 +67,22 @@ import { SocraticTutorChat } from "@/components/SocraticTutorChat";
 import { SubjectPracticeReminder } from "@/components/SubjectPracticeReminder";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { DisciplineNudges } from "@/components/DisciplineNudges";
+import { RoleGate } from "@/components/RoleGate";
+import { createRouteHead } from "@/lib/seo";
 
-import { RoleGuard } from "@/components/RoleGuard";
+import { AuthRouteMiddleware } from "@/middlewares/auth-middleware";
 
 export const Route = createFileRoute("/dashboard")({
-  head: () => ({ meta: [{ title: "My Hub — Cymatic Study" }] }),
+  head: () =>
+    createRouteHead({
+      title: "My Study Hub & Dashboard",
+      description:
+        "Track study milestones, NCDC curriculum subject mastery, live term goals, and Socratic tutoring progress.",
+      path: "/dashboard",
+      keywords: ["Student Dashboard", "Cymatic Study Hub", "Uganda Education Progress", "Uganda Secondary Curriculum"],
+    }),
   component: () => (
-    <RoleGuard
+    <AuthRouteMiddleware
       allowedRoles={[
         "student",
         "teacher",
@@ -84,7 +93,7 @@ export const Route = createFileRoute("/dashboard")({
       ]}
     >
       <DashboardPage />
-    </RoleGuard>
+    </AuthRouteMiddleware>
   ),
 });
 
@@ -328,7 +337,7 @@ function DashboardPage() {
       <UserProfileCard />
 
       {/* ADMIN QUICK NAV BANNER */}
-      {isAdmin && (
+      <RoleGate.Admin>
         <Card className="border-blue-600/30 bg-gradient-to-r from-blue-950/40 via-indigo-950/20 to-black p-6 text-white shadow-xl animate-in fade-in">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1">
@@ -356,7 +365,7 @@ function DashboardPage() {
             </Button>
           </div>
         </Card>
-      )}
+      </RoleGate.Admin>
 
       {/* RENDER ACTIVE DASHBOARD ACCORDING TO ROLE */}
       {isTeacher ? (

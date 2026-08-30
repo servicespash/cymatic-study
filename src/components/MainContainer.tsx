@@ -1,25 +1,66 @@
-export function MainContainer({ displayName }: { displayName: string }) {
+import { ReactNode } from "react";
+import { ResponsiveContainer, type ContainerVariant } from "./layout/ResponsiveContainer";
+import { cn } from "@/lib/utils";
+
+export interface MainContainerProps {
+  children?: ReactNode;
+  displayName?: string;
+  variant?: ContainerVariant;
+  className?: string;
+}
+
+/**
+ * Standardized responsive layout container wrapper
+ * Backward-compatible with prompt-grid and modern children layouts
+ */
+export function MainContainer({
+  children,
+  displayName,
+  variant = "default",
+  className,
+}: MainContainerProps) {
+  if (children) {
+    return (
+      <ResponsiveContainer variant={variant} className={className}>
+        {children}
+      </ResponsiveContainer>
+    );
+  }
+
   const prompts = [
-    "Explain photosynthesis",
-    "Solve quadratics",
-    "Draft a physics report",
-    "Analyze biology trends",
+    "Explain photosynthesis in plants",
+    "Solve quadratic equations with factorization",
+    "Draft a UNEB physics laboratory report",
+    "Analyze biology ecological trends",
   ];
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-12 animate-in fade-in duration-700">
-      <h1 className="text-4xl md:text-5xl font-semibold text-zinc-100">Hello, {displayName}</h1>
+    <ResponsiveContainer
+      variant="centered"
+      className={cn("text-center space-y-10 animate-in fade-in duration-700", className)}
+    >
+      <div className="space-y-2">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
+          Hello, {displayName || "Scholar"}
+        </h1>
+        <p className="text-sm text-muted-foreground max-w-md mx-auto">
+          What concept from the Uganda Secondary Syllabus would you like to explore today?
+        </p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl w-full">
         {prompts.map((p) => (
           <button
             key={p}
-            className="p-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-left text-sm text-zinc-300 transition-colors"
+            type="button"
+            className="p-4 bg-card hover:bg-card/80 border border-border/80 rounded-xl text-left text-xs sm:text-sm font-medium text-foreground transition-all hover:border-primary/50 hover:shadow-sm"
           >
             {p}
           </button>
         ))}
       </div>
-    </div>
+    </ResponsiveContainer>
   );
 }
+
+export default MainContainer;

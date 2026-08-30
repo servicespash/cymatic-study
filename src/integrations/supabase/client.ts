@@ -43,7 +43,6 @@ function createSupabaseClient() {
     getEnv("PUBLIC_SUPABASE_URL") ||
     DEFAULT_URL;
 
-  // Filter out invalid URL-like strings that are mistakenly populated as key
   const keys = [
     getEnv("VITE_SUPABASE_ANON_KEY"),
     getEnv("VITE_SUPABASE_KEY"),
@@ -57,10 +56,6 @@ function createSupabaseClient() {
     keys.find(
       (k) => k && typeof k === "string" && !k.startsWith("http://") && !k.startsWith("https://"),
     ) || DEFAULT_KEY;
-
-  if (SUPABASE_URL === DEFAULT_URL || SUPABASE_PUBLISHABLE_KEY === DEFAULT_KEY) {
-    console.log("[Supabase] Using production fallback environment variables.");
-  }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: {

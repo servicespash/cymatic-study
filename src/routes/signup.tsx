@@ -111,7 +111,7 @@ function SignupPage() {
       if (!data.user) throw new Error("Signup did not return a user.");
 
       // Non-privileged profile patch (username/phone/display_name only)
-      const profilePatch: Partial<Database["public"]["Tables"]["profiles"]["Update"]> = {
+      const profilePatch: any = {
         username: cleanUsername || null,
         phone: cleanPhone || null,
         display_name: cleanName || null,
@@ -124,18 +124,18 @@ function SignupPage() {
       if (mode === "register-institution") {
         // Server-side: creates organization with auto-generated school_key
         // AND sets profile.role + org_id atomically (privileged update bypasses trigger).
-        const { data: orgRes, error: rpcErr } = await supabase.rpc("register_institution", {
+        const { data: orgRes, error: rpcErr } = await (supabase as any).rpc("register_institution", {
           _name: cleanSchoolName,
           _email: cleanEmail,
           _phone: cleanPhone || null,
         });
         if (rpcErr) throw rpcErr;
-        issuedSchoolId = orgRes?.school_key ?? null;
+        issuedSchoolId = (orgRes as any)?.school_key ?? (orgRes as any)?.key ?? null;
         if (!issuedSchoolId) throw new Error("Server did not return a School ID. Please retry.");
       } else if (mode === "student-teacher") {
         if (cleanSchoolId) {
           // Use SECURITY DEFINER RPC to validate & enroll (privileged columns trigger-protected).
-          const { error: enrollErr } = await supabase.rpc("enroll_self_in_school", {
+          const { error: enrollErr } = await (supabase as any).rpc("enroll_self_in_school", {
             _school_key: cleanSchoolId,
             _level: "S1",
             _phone: cleanPhone || null,
@@ -149,14 +149,14 @@ function SignupPage() {
       }
 
       // Safe non-privileged profile fields
-      await supabase.from("profiles").update(profilePatch).eq("user_id", data.user.id);
+      await (supabase as any).from("profiles").update(profilePatch).eq("user_id", data.user.id);
 
       if (referralCode) {
         if (data.session) {
-          await supabase.rpc("record_referral", { referrer_code: referralCode.trim() });
+          await (supabase as any).rpc("record_referral", { referrer_code: referralCode.trim() });
           window.localStorage.removeItem(REFERRAL_STORAGE_KEY);
         } else {
-          await supabase.rpc("record_referral", { referrer_code: referralCode.trim() });
+          await (supabase as any).rpc("record_referral", { referrer_code: referralCode.trim() });
           afterSignupInfo =
             "Your referral code is valid. Check your email to confirm your account, and the referral will be recorded once you sign in.";
         }

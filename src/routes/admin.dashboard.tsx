@@ -60,7 +60,7 @@ import {
 } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { RoleGuard } from "@/components/RoleGuard";
+import { AuthRouteMiddleware } from "@/middlewares/auth-middleware";
 import { SchoolIdInputField } from "@/components/SchoolIdInputField";
 import { SchoolIdQRCode } from "@/components/SchoolIdQRCode";
 import { InstitutionalRegistryModule } from "@/components/InstitutionalRegistryModule";
@@ -88,9 +88,9 @@ export const Route = createFileRoute("/admin/dashboard")({
   }),
   component: () => (
     <GlobalErrorBoundary fallbackTitle="Admin Dashboard Exception">
-      <RoleGuard requireAdmin>
+      <AuthRouteMiddleware requireAdmin>
         <AdminDashboard />
-      </RoleGuard>
+      </AuthRouteMiddleware>
     </GlobalErrorBoundary>
   ),
 });

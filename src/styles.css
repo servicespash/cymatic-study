@@ -520,6 +520,81 @@
   animation: flicker 0.15s infinite;
 }
 
+/* ==============================================
+ * CONTAINER QUERIES & STANDARDIZED LAYOUT PADDING
+ * Resolves scattered margins and irregular offsets across mobile/desktop
+ * ============================================== */
+
+.app-container,
+.page-container {
+  width: 100%;
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(1rem, 3.5vw, 2.5rem);
+  padding-right: clamp(1rem, 3.5vw, 2.5rem);
+  padding-top: clamp(1rem, 2.5vw, 2rem);
+  padding-bottom: clamp(1.5rem, 4vw, 3.5rem);
+  box-sizing: border-box;
+}
+
+.dashboard-container {
+  width: 100%;
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(1rem, 3vw, 2rem);
+  padding-right: clamp(1rem, 3vw, 2rem);
+  padding-top: clamp(1rem, 2vw, 1.75rem);
+  padding-bottom: clamp(1.5rem, 3vw, 3rem);
+  container-type: inline-size;
+  container-name: dashboard-main;
+}
+
+/* Container query responsive adaptations */
+@container dashboard-main (max-width: 640px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.875rem !important;
+  }
+
+  .dashboard-header-flex {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+}
+
+@container dashboard-main (min-width: 641px) and (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 1.25rem !important;
+  }
+}
+
+@container dashboard-main (min-width: 1025px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 1.5rem !important;
+  }
+}
+
+/* Consistent section and grid spacing tokens */
+.section-gap {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+.card-standard {
+  padding: clamp(1rem, 2.5vw, 1.75rem);
+  border-radius: var(--radius-xl);
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  transition: all 0.2s ease-in-out;
+}
+
 /* ==============================
  * ISOLATED PDF DOCUMENT EXPORT
  * High-contrast, UI-free printable canvas

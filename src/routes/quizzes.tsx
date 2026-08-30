@@ -15,6 +15,7 @@ import { useSubjectProgress } from "@/hooks/useSubjectProgress";
 import { WaveInterferenceQuiz } from "@/components/WaveInterferenceQuiz";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
+import { createRouteHead } from "@/lib/seo";
 
 type QuizSearch = {
   subject?: string;
@@ -22,7 +23,15 @@ type QuizSearch = {
 };
 
 export const Route = createFileRoute("/quizzes")({
-  head: () => ({ meta: [{ title: "Quizzes — Lattys Cymatic Study" }] }),
+  head: () =>
+    createRouteHead({
+      title: "Interactive NCDC Subject Quizzes & Self-Assessment",
+      description:
+        "Test your mastery of Physics, Chemistry, Biology, and Mathematics with instant grading, step-by-step solutions, and offline tracking.",
+      path: "/quizzes",
+      type: "educational_tool",
+      keywords: ["Uganda Quizzes", "UNEB Revision", "NCDC Science Quiz", "Self Assessment"],
+    }),
   validateSearch: (search: Record<string, unknown>): QuizSearch => ({
     subject: (search.subject as string) || undefined,
     topicId: (search.topicId as string) || undefined,
@@ -32,8 +41,25 @@ export const Route = createFileRoute("/quizzes")({
 
 type Phase = "setup" | "quiz" | "results";
 
-export function QuizzesPage() {
-  const { subject: initialSubject, topicId: initialTopicId } = useSearch({ from: "/quizzes" });
+export function QuizzesPage({
+  initialSubject: propSubject,
+  initialTopicId: propTopicId,
+}: {
+  initialSubject?: string;
+  initialTopicId?: string;
+} = {}) {
+  let searchSubject: string | undefined;
+  let searchTopicId: string | undefined;
+  try {
+    const search = useSearch({ from: "/quizzes", shouldThrow: false }) as any;
+    searchSubject = search?.subject;
+    searchTopicId = search?.topicId;
+  } catch {
+    // ignore
+  }
+
+  const initialSubject = propSubject || searchSubject;
+  const initialTopicId = propTopicId || searchTopicId;
   const { user, isTeacher, isAdmin } = useAuth();
   const { progress } = useSubjectProgress();
   const { persona, speak } = useTutor();

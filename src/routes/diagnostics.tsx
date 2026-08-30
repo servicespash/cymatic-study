@@ -29,7 +29,7 @@ function DiagnosticsPage() {
     async function checkTables() {
       for (const table of REQUIRED_TABLES) {
         try {
-          const { error } = await supabase.from(table).select("id").limit(1);
+          const { error } = await (supabase as any).from(table).select("id").limit(1);
           if (error) {
             if (error.code === "PGRST205" || error.message?.includes("cache")) {
               setResults((prev) => ({ ...prev, [table]: { status: "missing" } }));

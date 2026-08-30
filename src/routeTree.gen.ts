@@ -9,104 +9,45 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as VerifyDocumentRouteImport } from './routes/verify-document'
-import { Route as VerifyAssessmentRouteImport } from './routes/verify-assessment'
-import { Route as TutorRouteImport } from './routes/tutor'
-import { Route as SupportRouteImport } from './routes/support'
-import { Route as SignupRouteImport } from './routes/signup'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as QuizzesRouteImport } from './routes/quizzes'
-import { Route as ProjectsRouteImport } from './routes/projects'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as NewsRouteImport } from './routes/news'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as LessonsRouteImport } from './routes/lessons'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as CurriculumRouteImport } from './routes/curriculum'
-import { Route as ChatRouteImport } from './routes/chat'
-import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
+import { Route as AuthCallbackRouteImport } from './routes/auth-callback'
+import { Route as ChatRouteImport } from './routes/chat'
+import { Route as CurriculumRouteImport } from './routes/curriculum'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
+import { Route as LessonsRouteImport } from './routes/lessons'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as MarkingRouteImport } from './routes/marking'
+import { Route as NewsRouteImport } from './routes/news'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as ProjectsRouteImport } from './routes/projects'
+import { Route as QuizzesRouteImport } from './routes/quizzes'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as StudentRouteImport } from './routes/student'
+import { Route as SupportRouteImport } from './routes/support'
+import { Route as TeacherRouteImport } from './routes/teacher'
+import { Route as TutorRouteImport } from './routes/tutor'
+import { Route as VerifyAssessmentRouteImport } from './routes/verify-assessment'
+import { Route as VerifyDocumentRouteImport } from './routes/verify-document'
+import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
+import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as MarkProjectIdRouteImport } from './routes/mark.$projectId'
+import { Route as MarkTokenRouteImport } from './routes/mark.$token'
+import { Route as QuizzesSubjectRouteImport } from './routes/quizzes.$subject'
 import { Route as ToolsIndexRouteImport } from './routes/tools.index'
 import { Route as ToolsCategoryRouteImport } from './routes/tools.$category'
-import { Route as QuizzesSubjectRouteImport } from './routes/quizzes.$subject'
-import { Route as MarkTokenRouteImport } from './routes/mark.$token'
-import { Route as MarkProjectIdRouteImport } from './routes/mark.$projectId'
-import { Route as AdminLoginRouteImport } from './routes/admin.login'
-import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
 
-const VerifyDocumentRoute = VerifyDocumentRouteImport.update({
-  id: '/verify-document',
-  path: '/verify-document',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VerifyAssessmentRoute = VerifyAssessmentRouteImport.update({
-  id: '/verify-assessment',
-  path: '/verify-assessment',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TutorRoute = TutorRouteImport.update({
-  id: '/tutor',
-  path: '/tutor',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SupportRoute = SupportRouteImport.update({
-  id: '/support',
-  path: '/support',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const QuizzesRoute = QuizzesRouteImport.update({
-  id: '/quizzes',
-  path: '/quizzes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProjectsRoute = ProjectsRouteImport.update({
-  id: '/projects',
-  path: '/projects',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NewsRoute = NewsRouteImport.update({
-  id: '/news',
-  path: '/news',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LessonsRoute = LessonsRouteImport.update({
-  id: '/lessons',
-  path: '/lessons',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CurriculumRoute = CurriculumRouteImport.update({
-  id: '/curriculum',
-  path: '/curriculum',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChatRoute = ChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnalyticsRoute = AnalyticsRouteImport.update({
@@ -114,10 +55,130 @@ const AnalyticsRoute = AnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth-callback',
+  path: '/auth-callback',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ChatRoute = ChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CurriculumRoute = CurriculumRouteImport.update({
+  id: '/curriculum',
+  path: '/curriculum',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiagnosticsRoute = DiagnosticsRouteImport.update({
+  id: '/diagnostics',
+  path: '/diagnostics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LessonsRoute = LessonsRouteImport.update({
+  id: '/lessons',
+  path: '/lessons',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarkingRoute = MarkingRouteImport.update({
+  id: '/marking',
+  path: '/marking',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsRoute = NewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectsRoute = ProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuizzesRoute = QuizzesRouteImport.update({
+  id: '/quizzes',
+  path: '/quizzes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudentRoute = StudentRouteImport.update({
+  id: '/student',
+  path: '/student',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherRoute = TeacherRouteImport.update({
+  id: '/teacher',
+  path: '/teacher',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TutorRoute = TutorRouteImport.update({
+  id: '/tutor',
+  path: '/tutor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyAssessmentRoute = VerifyAssessmentRouteImport.update({
+  id: '/verify-assessment',
+  path: '/verify-assessment',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyDocumentRoute = VerifyDocumentRouteImport.update({
+  id: '/verify-document',
+  path: '/verify-document',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AdminRoute,
+} as any)
+const MarkProjectIdRoute = MarkProjectIdRouteImport.update({
+  id: '/mark/$projectId',
+  path: '/mark/$projectId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarkTokenRoute = MarkTokenRouteImport.update({
+  id: '/mark/$token',
+  path: '/mark/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuizzesSubjectRoute = QuizzesSubjectRouteImport.update({
+  id: '/$subject',
+  path: '/$subject',
+  getParentRoute: () => QuizzesRoute,
 } as any)
 const ToolsIndexRoute = ToolsIndexRouteImport.update({
   id: '/tools/',
@@ -129,47 +190,28 @@ const ToolsCategoryRoute = ToolsCategoryRouteImport.update({
   path: '/tools/$category',
   getParentRoute: () => rootRouteImport,
 } as any)
-const QuizzesSubjectRoute = QuizzesSubjectRouteImport.update({
-  id: '/$subject',
-  path: '/$subject',
-  getParentRoute: () => QuizzesRoute,
-} as any)
-const MarkTokenRoute = MarkTokenRouteImport.update({
-  id: '/mark/$token',
-  path: '/mark/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MarkProjectIdRoute = MarkProjectIdRouteImport.update({
-  id: '/mark/$projectId',
-  path: '/mark/$projectId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminLoginRoute = AdminLoginRouteImport.update({
-  id: '/admin/login',
-  path: '/admin/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminDashboardRoute = AdminDashboardRouteImport.update({
-  id: '/admin/dashboard',
-  path: '/admin/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
+  '/auth-callback': typeof AuthCallbackRoute
   '/chat': typeof ChatRoute
   '/curriculum': typeof CurriculumRoute
   '/dashboard': typeof DashboardRoute
+  '/diagnostics': typeof DiagnosticsRoute
   '/lessons': typeof LessonsRoute
   '/login': typeof LoginRoute
+  '/marking': typeof MarkingRoute
   '/news': typeof NewsRoute
   '/onboarding': typeof OnboardingRoute
   '/projects': typeof ProjectsRoute
   '/quizzes': typeof QuizzesRouteWithChildren
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/student': typeof StudentRoute
   '/support': typeof SupportRoute
+  '/teacher': typeof TeacherRoute
   '/tutor': typeof TutorRoute
   '/verify-assessment': typeof VerifyAssessmentRoute
   '/verify-document': typeof VerifyDocumentRoute
@@ -183,19 +225,25 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
+  '/auth-callback': typeof AuthCallbackRoute
   '/chat': typeof ChatRoute
   '/curriculum': typeof CurriculumRoute
   '/dashboard': typeof DashboardRoute
+  '/diagnostics': typeof DiagnosticsRoute
   '/lessons': typeof LessonsRoute
   '/login': typeof LoginRoute
+  '/marking': typeof MarkingRoute
   '/news': typeof NewsRoute
   '/onboarding': typeof OnboardingRoute
   '/projects': typeof ProjectsRoute
   '/quizzes': typeof QuizzesRouteWithChildren
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/student': typeof StudentRoute
   '/support': typeof SupportRoute
+  '/teacher': typeof TeacherRoute
   '/tutor': typeof TutorRoute
   '/verify-assessment': typeof VerifyAssessmentRoute
   '/verify-document': typeof VerifyDocumentRoute
@@ -210,19 +258,25 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
+  '/auth-callback': typeof AuthCallbackRoute
   '/chat': typeof ChatRoute
   '/curriculum': typeof CurriculumRoute
   '/dashboard': typeof DashboardRoute
+  '/diagnostics': typeof DiagnosticsRoute
   '/lessons': typeof LessonsRoute
   '/login': typeof LoginRoute
+  '/marking': typeof MarkingRoute
   '/news': typeof NewsRoute
   '/onboarding': typeof OnboardingRoute
   '/projects': typeof ProjectsRoute
   '/quizzes': typeof QuizzesRouteWithChildren
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/student': typeof StudentRoute
   '/support': typeof SupportRoute
+  '/teacher': typeof TeacherRoute
   '/tutor': typeof TutorRoute
   '/verify-assessment': typeof VerifyAssessmentRoute
   '/verify-document': typeof VerifyDocumentRoute
@@ -238,19 +292,25 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/analytics'
+    | '/auth-callback'
     | '/chat'
     | '/curriculum'
     | '/dashboard'
+    | '/diagnostics'
     | '/lessons'
     | '/login'
+    | '/marking'
     | '/news'
     | '/onboarding'
     | '/projects'
     | '/quizzes'
     | '/settings'
     | '/signup'
+    | '/student'
     | '/support'
+    | '/teacher'
     | '/tutor'
     | '/verify-assessment'
     | '/verify-document'
@@ -264,19 +324,25 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/analytics'
+    | '/auth-callback'
     | '/chat'
     | '/curriculum'
     | '/dashboard'
+    | '/diagnostics'
     | '/lessons'
     | '/login'
+    | '/marking'
     | '/news'
     | '/onboarding'
     | '/projects'
     | '/quizzes'
     | '/settings'
     | '/signup'
+    | '/student'
     | '/support'
+    | '/teacher'
     | '/tutor'
     | '/verify-assessment'
     | '/verify-document'
@@ -290,19 +356,25 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/analytics'
+    | '/auth-callback'
     | '/chat'
     | '/curriculum'
     | '/dashboard'
+    | '/diagnostics'
     | '/lessons'
     | '/login'
+    | '/marking'
     | '/news'
     | '/onboarding'
     | '/projects'
     | '/quizzes'
     | '/settings'
     | '/signup'
+    | '/student'
     | '/support'
+    | '/teacher'
     | '/tutor'
     | '/verify-assessment'
     | '/verify-document'
@@ -317,24 +389,28 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AnalyticsRoute: typeof AnalyticsRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   ChatRoute: typeof ChatRoute
   CurriculumRoute: typeof CurriculumRoute
   DashboardRoute: typeof DashboardRoute
+  DiagnosticsRoute: typeof DiagnosticsRoute
   LessonsRoute: typeof LessonsRoute
   LoginRoute: typeof LoginRoute
+  MarkingRoute: typeof MarkingRoute
   NewsRoute: typeof NewsRoute
   OnboardingRoute: typeof OnboardingRoute
   ProjectsRoute: typeof ProjectsRoute
   QuizzesRoute: typeof QuizzesRouteWithChildren
   SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
+  StudentRoute: typeof StudentRoute
   SupportRoute: typeof SupportRoute
+  TeacherRoute: typeof TeacherRoute
   TutorRoute: typeof TutorRoute
   VerifyAssessmentRoute: typeof VerifyAssessmentRoute
   VerifyDocumentRoute: typeof VerifyDocumentRoute
-  AdminDashboardRoute: typeof AdminDashboardRoute
-  AdminLoginRoute: typeof AdminLoginRoute
   MarkProjectIdRoute: typeof MarkProjectIdRoute
   MarkTokenRoute: typeof MarkTokenRoute
   ToolsCategoryRoute: typeof ToolsCategoryRoute
@@ -343,109 +419,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/verify-document': {
-      id: '/verify-document'
-      path: '/verify-document'
-      fullPath: '/verify-document'
-      preLoaderRoute: typeof VerifyDocumentRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/verify-assessment': {
-      id: '/verify-assessment'
-      path: '/verify-assessment'
-      fullPath: '/verify-assessment'
-      preLoaderRoute: typeof VerifyAssessmentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tutor': {
-      id: '/tutor'
-      path: '/tutor'
-      fullPath: '/tutor'
-      preLoaderRoute: typeof TutorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/support': {
-      id: '/support'
-      path: '/support'
-      fullPath: '/support'
-      preLoaderRoute: typeof SupportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/quizzes': {
-      id: '/quizzes'
-      path: '/quizzes'
-      fullPath: '/quizzes'
-      preLoaderRoute: typeof QuizzesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/projects': {
-      id: '/projects'
-      path: '/projects'
-      fullPath: '/projects'
-      preLoaderRoute: typeof ProjectsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/news': {
-      id: '/news'
-      path: '/news'
-      fullPath: '/news'
-      preLoaderRoute: typeof NewsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lessons': {
-      id: '/lessons'
-      path: '/lessons'
-      fullPath: '/lessons'
-      preLoaderRoute: typeof LessonsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/curriculum': {
-      id: '/curriculum'
-      path: '/curriculum'
-      fullPath: '/curriculum'
-      preLoaderRoute: typeof CurriculumRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chat': {
-      id: '/chat'
-      path: '/chat'
-      fullPath: '/chat'
-      preLoaderRoute: typeof ChatRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/analytics': {
@@ -455,12 +440,180 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth-callback': {
+      id: '/auth-callback'
+      path: '/auth-callback'
+      fullPath: '/auth-callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/curriculum': {
+      id: '/curriculum'
+      path: '/curriculum'
+      fullPath: '/curriculum'
+      preLoaderRoute: typeof CurriculumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/diagnostics': {
+      id: '/diagnostics'
+      path: '/diagnostics'
+      fullPath: '/diagnostics'
+      preLoaderRoute: typeof DiagnosticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lessons': {
+      id: '/lessons'
+      path: '/lessons'
+      fullPath: '/lessons'
+      preLoaderRoute: typeof LessonsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marking': {
+      id: '/marking'
+      path: '/marking'
+      fullPath: '/marking'
+      preLoaderRoute: typeof MarkingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news': {
+      id: '/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof NewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects': {
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quizzes': {
+      id: '/quizzes'
+      path: '/quizzes'
+      fullPath: '/quizzes'
+      preLoaderRoute: typeof QuizzesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/student': {
+      id: '/student'
+      path: '/student'
+      fullPath: '/student'
+      preLoaderRoute: typeof StudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher': {
+      id: '/teacher'
+      path: '/teacher'
+      fullPath: '/teacher'
+      preLoaderRoute: typeof TeacherRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tutor': {
+      id: '/tutor'
+      path: '/tutor'
+      fullPath: '/tutor'
+      preLoaderRoute: typeof TutorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify-assessment': {
+      id: '/verify-assessment'
+      path: '/verify-assessment'
+      fullPath: '/verify-assessment'
+      preLoaderRoute: typeof VerifyAssessmentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify-document': {
+      id: '/verify-document'
+      path: '/verify-document'
+      fullPath: '/verify-document'
+      preLoaderRoute: typeof VerifyDocumentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/mark/$projectId': {
+      id: '/mark/$projectId'
+      path: '/mark/$projectId'
+      fullPath: '/mark/$projectId'
+      preLoaderRoute: typeof MarkProjectIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mark/$token': {
+      id: '/mark/$token'
+      path: '/mark/$token'
+      fullPath: '/mark/$token'
+      preLoaderRoute: typeof MarkTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quizzes/$subject': {
+      id: '/quizzes/$subject'
+      path: '/$subject'
+      fullPath: '/quizzes/$subject'
+      preLoaderRoute: typeof QuizzesSubjectRouteImport
+      parentRoute: typeof QuizzesRoute
     }
     '/tools/': {
       id: '/tools/'
@@ -476,43 +629,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToolsCategoryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/quizzes/$subject': {
-      id: '/quizzes/$subject'
-      path: '/$subject'
-      fullPath: '/quizzes/$subject'
-      preLoaderRoute: typeof QuizzesSubjectRouteImport
-      parentRoute: typeof QuizzesRoute
-    }
-    '/mark/$token': {
-      id: '/mark/$token'
-      path: '/mark/$token'
-      fullPath: '/mark/$token'
-      preLoaderRoute: typeof MarkTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mark/$projectId': {
-      id: '/mark/$projectId'
-      path: '/mark/$projectId'
-      fullPath: '/mark/$projectId'
-      preLoaderRoute: typeof MarkProjectIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/login': {
-      id: '/admin/login'
-      path: '/admin/login'
-      fullPath: '/admin/login'
-      preLoaderRoute: typeof AdminLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/dashboard': {
-      id: '/admin/dashboard'
-      path: '/admin/dashboard'
-      fullPath: '/admin/dashboard'
-      preLoaderRoute: typeof AdminDashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
+
+interface AdminRouteChildren {
+  AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminLoginRoute: typeof AdminLoginRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminDashboardRoute: AdminDashboardRoute,
+  AdminLoginRoute: AdminLoginRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface QuizzesRouteChildren {
   QuizzesSubjectRoute: typeof QuizzesSubjectRoute
@@ -527,24 +657,28 @@ const QuizzesRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AnalyticsRoute: AnalyticsRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   ChatRoute: ChatRoute,
   CurriculumRoute: CurriculumRoute,
   DashboardRoute: DashboardRoute,
+  DiagnosticsRoute: DiagnosticsRoute,
   LessonsRoute: LessonsRoute,
   LoginRoute: LoginRoute,
+  MarkingRoute: MarkingRoute,
   NewsRoute: NewsRoute,
   OnboardingRoute: OnboardingRoute,
   ProjectsRoute: ProjectsRoute,
   QuizzesRoute: QuizzesRouteWithChildren,
   SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
+  StudentRoute: StudentRoute,
   SupportRoute: SupportRoute,
+  TeacherRoute: TeacherRoute,
   TutorRoute: TutorRoute,
   VerifyAssessmentRoute: VerifyAssessmentRoute,
   VerifyDocumentRoute: VerifyDocumentRoute,
-  AdminDashboardRoute: AdminDashboardRoute,
-  AdminLoginRoute: AdminLoginRoute,
   MarkProjectIdRoute: MarkProjectIdRoute,
   MarkTokenRoute: MarkTokenRoute,
   ToolsCategoryRoute: ToolsCategoryRoute,

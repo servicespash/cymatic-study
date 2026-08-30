@@ -7,37 +7,22 @@ import {
   Scripts,
   useRouterState,
 } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
-import { AuthProvider, useAuth } from "@/lib/auth-context";
-import { ThemeProvider } from "@/lib/theme-context";
-import { TutorServiceProvider } from "@/lib/TutorService";
-import { UserMoodProvider } from "@/lib/user-mood-context";
-import { CurriculumProvider } from "@/lib/curriculum-context";
-import { MediaProvider } from "@/lib/MediaContext";
 import { Navbar } from "@/components/Navbar";
 import { LivePulseIndicator } from "@/components/LivePulseIndicator";
 import { MoodOverlay } from "@/components/MoodOverlay";
 import { FloatingTutor } from "@/components/FloatingTutor";
-import { LiveBroadcastProvider } from "@/lib/live-broadcast-context";
 import { BRAND } from "@/lib/constants";
-import { syncQueue, pushNotification } from "@/lib/offline-db";
-import { buildGreeting, fetchWeatherSummary } from "@/lib/greetings";
-import { scheduleDailyNudges } from "@/lib/notifications";
-import { requestAllPermissions } from "@/lib/permissions";
-import { Preferences } from "@capacitor/preferences";
-import { supabase } from "@/integrations/supabase/client";
-import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
-import useNotifications from "@/hooks/use-notifications";
-import { AssertQueryClient } from "@/lib/assert-query-client";
-import { shouldGreet, markGreeted } from "@/lib/tutor-context";
 import { getOrganizationSchema, getPersonSchema } from "@/lib/seo";
 import { MobileInstallPrompt } from "@/components/MobileInstallPrompt";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { CymaticBackground } from "@/components/CymaticBackground";
 import { BadgeToastNotification } from "@/components/BadgeToastNotification";
+import { GlobalProviders } from "@/lib/providers";
 import { Toaster } from "@/components/ui/sonner";
+import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 
 function NotFoundComponent() {
   return (
@@ -104,68 +89,51 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-const queryClient = new QueryClient();
-
 function RootComponent() {
   useEffect(() => {
     injectSpeedInsights();
   }, []);
 
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  // Isolated layout for public marking station — no Navbar/FAB/Sync/etc.
   const isIsolated = pathname.startsWith("/mark/");
 
   if (isIsolated) {
     return (
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
+      <GlobalErrorBoundary>
+        <GlobalProviders>
           <div className="min-h-screen bg-background">
             <Outlet />
-            <Toaster />
           </div>
-        </ThemeProvider>
-      </QueryClientProvider>
+        </GlobalProviders>
+      </GlobalErrorBoundary>
     );
   }
 
   return (
-    <ThemeProvider>
-      <CymaticBackground />
-      <AuthProvider>
-        <QueryClientProvider client={queryClient}>
-          <LiveBroadcastProvider>
-            <TutorServiceProvider>
-              <LivePulseIndicator />
-              <UserMoodProvider>
-                <CurriculumProvider>
-                  <MediaProvider>
-                    <MoodOverlay />
-                    <BadgeToastNotification />
-                    <MobileInstallPrompt />
-                    <PWAInstallPrompt />
-                    <div className="min-h-screen grid grid-rows-[auto_1fr_auto] grid-cols-1 max-w-[1920px] mx-auto w-full bg-background shadow-2xl">
-                      <Navbar />
-                      <main className="flex-1 w-full max-w-7xl lg:max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                        <Outlet />
-                      </main>
-                      <footer className="border-t border-border/60 px-4 py-8 text-center text-xs text-muted-foreground pb-24">
-                        <p className="font-medium">
-                          {BRAND.name} × {BRAND.partner} — {BRAND.tagline} {BRAND.flag}
-                        </p>
-                        <p className="mt-1">
-                          Support: {BRAND.support} · © 2026 Pash Media Services
-                        </p>
-                      </footer>
-                      <FloatingTutor />
-                    </div>
-                  </MediaProvider>
-                </CurriculumProvider>
-              </UserMoodProvider>
-            </TutorServiceProvider>
-          </LiveBroadcastProvider>
-          <Toaster />
-        </QueryClientProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <GlobalErrorBoundary>
+      <GlobalProviders>
+        <CymaticBackground />
+        <LivePulseIndicator />
+        <MoodOverlay />
+        <BadgeToastNotification />
+        <MobileInstallPrompt />
+        <PWAInstallPrompt />
+        <div className="min-h-screen grid grid-rows-[auto_1fr_auto] grid-cols-1 max-w-[1920px] mx-auto w-full bg-background shadow-2xl">
+          <Navbar />
+          <main className="flex-1 w-full page-container">
+            <Outlet />
+          </main>
+          <footer className="border-t border-border/60 px-4 py-8 text-center text-xs text-muted-foreground pb-24">
+            <p className="font-medium">
+              {BRAND.name} × {BRAND.partner} — {BRAND.tagline} {BRAND.flag}
+            </p>
+            <p className="mt-1">
+              Support: {BRAND.support} · © 2026 Pash Media Services
+            </p>
+          </footer>
+          <FloatingTutor />
+        </div>
+      </GlobalProviders>
+    </GlobalErrorBoundary>
   );
 }

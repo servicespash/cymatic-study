@@ -30,12 +30,6 @@ function getGoogleGenAIClient() {
 
   return new GoogleGenAI({
     apiKey,
-    baseURL: "https://generativelanguage.googleapis.com",
-    httpOptions: {
-      headers: {
-        "User-Agent": "aistudio-build",
-      },
-    },
   });
 }
 
@@ -175,26 +169,50 @@ Your task is to provide personalized, Socratic guidance based on this specific s
     : currentMessage;
 
   let responseStreamPromise: any = null;
-  const modelsToTry = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
+  const modelsToTry = ["gemini-3.7-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"];
 
   if (!useFallback && aiClient) {
     for (const modelName of modelsToTry) {
-      try {
-        responseStreamPromise = await aiClient.models.generateContentStream({
-          model: modelName,
-          contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
-          config: {
-            systemInstruction: systemPrompt,
-          },
-        });
-        break;
-      } catch (genErr: any) {
-        console.warn(`[Tutor Server] Model ${modelName} failed:`, genErr?.message || genErr);
-        // If quota exceeded (429), try next model or fallback
-        if (modelName === modelsToTry[modelsToTry.length - 1]) {
-          useFallback = true;
+      let attempts = 0;
+      const maxAttempts = 2;
+
+      while (attempts < maxAttempts) {
+        try {
+          responseStreamPromise = await aiClient.models.generateContentStream({
+            model: modelName,
+            contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
+            config: {
+              systemInstruction: systemPrompt,
+            },
+          });
+          break;
+        } catch (genErr: any) {
+          attempts++;
+          const errStr = genErr?.message || String(genErr);
+          const isTransient =
+            errStr.includes("503") ||
+            errStr.includes("UNAVAILABLE") ||
+            errStr.includes("429") ||
+            errStr.includes("high demand") ||
+            errStr.includes("Resource exhausted");
+
+          console.warn(`[Tutor Server] Model ${modelName} attempt ${attempts} failed:`, errStr);
+
+          if (isTransient && attempts < maxAttempts) {
+            await new Promise((resolve) => setTimeout(resolve, 600));
+            continue;
+          }
+          break;
         }
       }
+
+      if (responseStreamPromise) {
+        break;
+      }
+    }
+
+    if (!responseStreamPromise) {
+      useFallback = true;
     }
   }
 
@@ -243,43 +261,64 @@ Your task is to provide personalized, Socratic guidance based on this specific s
     }
   }
 
-  return new Response(
-    (async function* () {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
       if (shouldEmitOfftopic) {
-        yield `data: ${JSON.stringify({ choices: [{ delta: { content: "<offtopic/>" } }] })}\n\n`;
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: "<offtopic/>" } }] })}\n\n`),
+        );
       }
 
       try {
+        if (!responseStreamPromise) {
+          throw new Error("Unable to establish Gemini AI stream. Please retry in a moment.");
+        }
         const responseStream = await responseStreamPromise;
         for await (const chunk of responseStream) {
           if (chunk.text) {
-            yield `data: ${JSON.stringify({
-              choices: [{ delta: { content: chunk.text } }],
-            })}\n\n`;
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  choices: [{ delta: { content: chunk.text } }],
+                })}\n\n`,
+              ),
+            );
           }
         }
       } catch (err: any) {
         console.error("[Tutor Server] Error streaming from Gemini API:", err);
-        const isQuota =
-          err?.message?.includes("429") ||
-          err?.message?.includes("Resource exhausted") ||
-          err?.message?.includes("Quota");
-        const friendlyMsg = isQuota
-          ? "Weebale! Our AI mentor is currently taking a short breath due to high traffic (daily quota limit reached). Please wait a moment or explore our interactive physics and math modules while we reset!"
-          : err.message || "Gemini API error";
-        yield `data: ${JSON.stringify({
-          choices: [{ delta: { content: friendlyMsg } }],
-        })}\n\n`;
-      }
+        const errStr = err?.message || String(err);
+        const isQuotaOrDemand =
+          errStr.includes("429") ||
+          errStr.includes("503") ||
+          errStr.includes("high demand") ||
+          errStr.includes("Resource exhausted") ||
+          errStr.includes("UNAVAILABLE") ||
+          errStr.includes("Quota");
 
-      yield "data: [DONE]\n\n";
-    })(),
-    {
-      headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
-      },
+        const friendlyMsg = isQuotaOrDemand
+          ? "Weebale for your patience! The AI mentor network is currently experiencing temporary high traffic. Please try sending your question again in just a few seconds, or review the relevant topic notes above!"
+          : errStr || "AI mentor temporary error. Please try again.";
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({
+              choices: [{ delta: { content: friendlyMsg } }],
+            })}\n\n`,
+          ),
+        );
+      } finally {
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        controller.close();
+      }
     },
-  );
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
 }

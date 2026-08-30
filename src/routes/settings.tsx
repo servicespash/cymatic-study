@@ -42,7 +42,7 @@ export const Route = createFileRoute("/settings")({
 function SettingsPage() {
   const { user, profile: authProfile, signOut } = useAuth();
   const navigate = useNavigate();
-  const { voice, setVoice, ttsEnabled, setTtsEnabled, speak } = useTutor();
+  const { voice, setVoice, ttsEnabled, setTtsEnabled, speak } = useTutor() as any;
 
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [voiceURI, setVoiceURI] = useState<string | null>(null);
@@ -216,7 +216,7 @@ function SettingsPage() {
       let profileError = null;
 
       if (profileCheck) {
-        const { error: err1 } = await supabase
+        const { error: err1 } = await (supabase as any)
           .from("profiles")
           .update({
             display_name: profile.display_name,
@@ -224,18 +224,18 @@ function SettingsPage() {
             phone: profile.phone || null,
             org_id: schoolIdToSave || null,
             school_name: schoolNameToSave || null,
-          })
+          } as any)
           .eq("user_id", user.id);
 
         if (err1 && err1.message?.toLowerCase().includes("foreign key")) {
-          const { error: err2 } = await supabase
+          const { error: err2 } = await (supabase as any)
             .from("profiles")
             .update({
               display_name: profile.display_name,
               username: profile.username || null,
               phone: profile.phone || null,
               school_name: schoolNameToSave || null,
-            })
+            } as any)
             .eq("user_id", user.id);
           profileError = err2;
         } else {
@@ -244,7 +244,7 @@ function SettingsPage() {
       } else {
         const newId =
           typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : user.id;
-        const { error: err1 } = await supabase.from("profiles").insert({
+        const { error: err1 } = await (supabase as any).from("profiles").insert({
           id: newId,
           user_id: user.id,
           display_name: profile.display_name || user.email?.split("@")[0] || "Scholar",
@@ -252,17 +252,17 @@ function SettingsPage() {
           phone: profile.phone || null,
           org_id: schoolIdToSave || null,
           school_name: schoolNameToSave || null,
-        });
+        } as any);
 
         if (err1 && err1.message?.toLowerCase().includes("foreign key")) {
-          const { error: err2 } = await supabase.from("profiles").insert({
+          const { error: err2 } = await (supabase as any).from("profiles").insert({
             id: newId,
             user_id: user.id,
             display_name: profile.display_name || user.email?.split("@")[0] || "Scholar",
             username: profile.username || null,
             phone: profile.phone || null,
             school_name: schoolNameToSave || null,
-          });
+          } as any);
           profileError = err2;
         } else {
           profileError = err1;

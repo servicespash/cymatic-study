@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth-context";
 import { MarkingDesk } from "@/components/MarkingDesk";
 import { ShieldAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { RoleGuard } from "@/components/RoleGuard";
+import { AuthRouteMiddleware } from "@/middlewares/auth-middleware";
 
 export const Route = createFileRoute("/marking")({
   head: () => ({
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/marking")({
     ],
   }),
   component: () => (
-    <RoleGuard
+    <AuthRouteMiddleware
       allowedRoles={[
         "teacher",
         "independent_teacher",
@@ -22,9 +22,10 @@ export const Route = createFileRoute("/marking")({
         "institution_admin",
         "org_admin",
       ]}
+      requireTeacher
     >
       <MarkingPage />
-    </RoleGuard>
+    </AuthRouteMiddleware>
   ),
 });
 

@@ -187,7 +187,7 @@ function ProjectsPage() {
   const loadSubmission = async () => {
     try {
       const { loadMyDraftSubmission } = await import("@/lib/project-submissions.functions");
-      const data = await loadMyDraftSubmission();
+      const data = (await loadMyDraftSubmission()) as any;
       if (data) {
         setSubmissionId(data.id);
         setStatus(data.status as "draft" | "pending" | "verified");
@@ -312,7 +312,7 @@ function ProjectsPage() {
     setIsSyncing(true);
     try {
       const { syncMyDraftSubmission } = await import("@/lib/project-submissions.functions");
-      const data = await syncMyDraftSubmission({ data: { projectData: state } });
+      const data = (await syncMyDraftSubmission({ projectData: state } as any)) as any;
       setSubmissionId(data.id);
       setStatus(data.status as "draft" | "pending" | "verified");
       toast.success("Project Synced & Locked for Teacher Evaluation");

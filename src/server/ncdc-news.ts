@@ -177,12 +177,6 @@ export async function handleNcdcNewsRequest(request: Request) {
   if (apiKey) {
     const ai = new GoogleGenAI({
       apiKey,
-      baseURL: "https://generativelanguage.googleapis.com",
-      httpOptions: {
-        headers: {
-          "User-Agent": "aistudio-build",
-        },
-      },
     });
 
     try {
@@ -199,9 +193,9 @@ export async function handleNcdcNewsRequest(request: Request) {
             ],
           },
         ],
-        tools: [{ googleSearch: {} }],
         config: {
           responseMimeType: "application/json",
+          tools: [{ googleSearch: {} }],
         },
       });
       let text = response.text || "";

@@ -26,7 +26,9 @@ function loadWranglerVars(): Record<string, string> {
     const jsoncPath = path.resolve(process.cwd(), "wrangler.jsonc");
     if (fs.existsSync(jsoncPath)) {
       const raw = fs.readFileSync(jsoncPath, "utf-8");
-      const cleaned = raw.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, "$1");
+      const cleaned = raw
+        .replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, "$1")
+        .replace(/,\s*([\]}])/g, "$1");
       const content = JSON.parse(cleaned);
       if (content.vars) {
         Object.assign(vars, content.vars);
@@ -125,6 +127,16 @@ export default defineConfig({
   base: "/",
   define: {
     "process.env.BUILD_MODE": JSON.stringify("lite"),
+    "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(
+      process.env.VITE_SUPABASE_URL ||
+        wranglerVars.VITE_SUPABASE_URL ||
+        "https://tffffvbaiccqndydsobg.supabase.co",
+    ),
+    "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(
+      process.env.VITE_SUPABASE_ANON_KEY ||
+        wranglerVars.VITE_SUPABASE_ANON_KEY ||
+        "sb_publishable_Q6c0ZU7hu-Ow6bdzbK5-ig_S74FsIK0",
+    ),
   },
   server: {
     watch: {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { RoleGuard } from "@/components/RoleGuard";
+import { AuthRouteMiddleware } from "@/middlewares/auth-middleware";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useGamificationStore } from "@/store/useGamificationStore";
@@ -29,9 +29,9 @@ import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/student")({
   component: () => (
-    <RoleGuard allowedRoles={["student", "admin", "org_admin"]}>
+    <AuthRouteMiddleware allowedRoles={["student", "admin", "org_admin"]}>
       <StudentDashboardPage />
-    </RoleGuard>
+    </AuthRouteMiddleware>
   ),
 });
 
@@ -57,13 +57,13 @@ function StudentDashboardPage() {
     async function loadStudentReports() {
       setLoadingReports(true);
       try {
-        const { data: dbSubs } = await supabase
+        const { data: dbSubs } = await (supabase as any)
           .from("project_submissions")
           .select("*")
           .order("created_at", { ascending: false });
 
         if (dbSubs && dbSubs.length > 0) {
-          const mapped: MarkedReportItem[] = dbSubs.map((s) => ({
+          const mapped: MarkedReportItem[] = (dbSubs as any[]).map((s: any) => ({
             id: s.id,
             projectTitle: s.project_title || "Continuous Assessment Project",
             subject: s.subject || "General Science",

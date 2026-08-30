@@ -34,12 +34,6 @@ export async function handleDynamicNotesRequest(request: Request) {
 
     const ai = new GoogleGenAI({
       apiKey,
-      baseURL: "https://generativelanguage.googleapis.com",
-      httpOptions: {
-        headers: {
-          "User-Agent": "aistudio-build",
-        },
-      },
     });
 
     const prompt = `You are an expert Ugandan secondary school teacher. Generate comprehensive, highly accurate study notes for a student in Senior ${level} studying ${subject}.
@@ -56,16 +50,26 @@ Example format:
   { "heading": "Key Principles", "content": "..." }
 ]`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.6-flash",
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      config: {
-        responseMimeType: "application/json",
-      },
-    });
+    let response: any = null;
+    const modelsToTry = ["gemini-3.7-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"];
 
-    let text = response.text || "";
-    if (!text) throw new Error("No response from AI service");
+    for (const modelName of modelsToTry) {
+      try {
+        response = await ai.models.generateContent({
+          model: modelName,
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          config: {
+            responseMimeType: "application/json",
+          },
+        });
+        if (response?.text) break;
+      } catch (err: any) {
+        console.warn(`[Dynamic Notes] Model ${modelName} failed:`, err?.message || err);
+      }
+    }
+
+    if (!response?.text) throw new Error("No response from AI service");
+    let text = response.text;
 
     text = text
       .replace(/```json/gi, "")

@@ -81,3 +81,5 @@ export function useSync() {
     triggerSync,
   };
 }
+
+export { useStudentProgressSync } from "./useStudentProgressSync";

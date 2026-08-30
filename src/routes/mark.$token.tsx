@@ -72,7 +72,7 @@ function MarkTokenPage() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase.rpc("get_submission_by_token", {
+      const { data, error } = await (supabase as any).rpc("get_submission_by_token", {
         _token: token,
       });
       if (error) {
@@ -80,7 +80,7 @@ function MarkTokenPage() {
       } else if (!data) {
         setError("Submission not found or link expired.");
       } else {
-        const s = data as Submission;
+        const s = data as unknown as Submission;
         setSubmission(s);
         if (s.phase1_score !== null) setP1(String(s.phase1_score));
         if (s.phase2_score !== null) setP2(String(s.phase2_score));
@@ -98,7 +98,7 @@ function MarkTokenPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const { data, error } = await supabase.rpc("submit_evaluation_by_token", {
+    const { data, error } = await (supabase as any).rpc("submit_evaluation_by_token", {
       _token: token,
       _phase1: Number(p1) || 0,
       _phase2: Number(p2) || 0,
@@ -152,7 +152,7 @@ function MarkTokenPage() {
     );
   }
 
-  const project = submission.project_data || submission.project_payload || {};
+  const project: any = submission.project_data || (submission as any).project_payload || {};
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">

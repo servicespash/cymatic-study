@@ -21,7 +21,7 @@ export async function handleAttendanceRequest(req: Request) {
 
   const { userId, sessionId, duration } = body;
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("attendance_logs")
     .insert([{ user_id: userId, session_id: sessionId, duration_minutes: duration }]);
 

@@ -310,7 +310,7 @@ function LessonsPage() {
                           <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-success">
                             Worked examples
                           </p>
-                          {note.examples.map((ex, i) => (
+                          {note.examples.map((ex: any, i: number) => (
                             <div key={i} className="mb-3 last:mb-0">
                               <p className="text-sm font-semibold">Q: {ex.problem}</p>
                               <p className="text-sm text-muted-foreground">A: {ex.solution}</p>
@@ -369,7 +369,7 @@ function LessonsPage() {
                             }
 
                             if (note?.sections && note.sections.length > 0) {
-                              note.sections.forEach((s) => {
+                              note.sections.forEach((s: any) => {
                                 pdfContent.push({
                                   sectionTitle: s.heading,
                                   body: s.content,

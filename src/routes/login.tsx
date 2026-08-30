@@ -118,7 +118,7 @@ function LoginPage() {
           return;
         }
 
-        const res = resolution as { type: string; email?: string };
+        const res = resolution as unknown as { type: string; email?: string };
 
         if (typeof res === "string") {
           emailToUse = res;
@@ -244,14 +244,22 @@ function LoginPage() {
           ...signInData.user.user_metadata,
           role: metaRole || signInData.user.user_metadata?.role,
         };
-        const decision = determineUserDashboardRoute(profileData, mergedMeta);
+        const decision = determineUserDashboardRoute(profileData as any, mergedMeta);
 
         if (decision.schoolId) {
           localStorage.setItem("cymatic_school_id", decision.schoolId);
         }
 
+        // Check if a redirect URL query param was provided by route middleware
+        const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+        const redirectTarget = searchParams.get("redirect");
+
+        const targetPath = redirectTarget && redirectTarget.startsWith("/") && redirectTarget !== "/login"
+          ? redirectTarget
+          : decision.targetPath;
+
         toast.info(`Welcome, ${decision.roleLabel}! Redirecting to ${decision.dashboardTitle}...`);
-        navigate({ to: decision.targetPath });
+        navigate({ to: targetPath as any });
       }
     } catch (err: any) {
       setSubmitting(false);

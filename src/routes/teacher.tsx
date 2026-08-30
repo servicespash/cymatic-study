@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { RoleGuard } from "@/components/RoleGuard";
+import { AuthRouteMiddleware } from "@/middlewares/auth-middleware";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -37,11 +37,12 @@ import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/teacher")({
   component: () => (
-    <RoleGuard
+    <AuthRouteMiddleware
       allowedRoles={["teacher", "independent_teacher", "instructor", "admin", "org_admin"]}
+      requireTeacher
     >
       <TeacherWorkflowPage />
-    </RoleGuard>
+    </AuthRouteMiddleware>
   ),
 });
 
@@ -178,13 +179,13 @@ function TeacherWorkflowPage() {
     async function loadSubmissions() {
       setLoadingData(true);
       try {
-        const { data: dbSubs } = await supabase
+        const { data: dbSubs } = await (supabase as any)
           .from("project_submissions")
           .select("*")
           .order("created_at", { ascending: false });
 
         if (dbSubs && dbSubs.length > 0) {
-          const mapped: StudentSubmission[] = dbSubs.map((s) => ({
+          const mapped: StudentSubmission[] = (dbSubs as any[]).map((s: any) => ({
             id: s.id,
             student_name: s.student_name || "Scholar",
             student_id: s.student_id || "STD-UG",
@@ -233,7 +234,7 @@ function TeacherWorkflowPage() {
 
     try {
       // Upsert to Supabase project_submissions
-      const { error: upsertError } = await supabase.from("project_submissions").upsert({
+      const { error: upsertError } = await (supabase as any).from("project_submissions").upsert({
         id: selectedSubmission.id,
         student_name: selectedSubmission.student_name,
         student_id: selectedSubmission.student_id,

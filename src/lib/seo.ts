@@ -209,3 +209,11 @@ export function getWebPageSchema(data: {
     ...(data.dateModified && { dateModified: data.dateModified }),
   };
 }
+
+export {
+  generateDynamicSEO,
+  createRouteHead,
+  useDynamicSEO,
+  SEOPresets,
+  type DynamicSEOPayload,
+} from "@/utils/seo-utils";

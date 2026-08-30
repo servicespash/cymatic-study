@@ -1,7 +1,10 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin")({
-  beforeLoad: () => {
-    throw redirect({ to: "/admin/dashboard" });
+  beforeLoad: ({ location }) => {
+    if (location.pathname === "/admin" || location.pathname === "/admin/") {
+      throw redirect({ to: "/admin/dashboard" });
+    }
   },
+  component: () => <Outlet />,
 });
