@@ -32,6 +32,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { toggleParticles } from "@/components/CymaticBackground";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useLanguageStore } from "@/store/useLanguageStore";
 
 export interface NavItem {
   to: string;
@@ -48,6 +49,7 @@ export function Navigation() {
   const { role, rawRole, isAdmin, isTeacher, isStudent, schoolName, schoolId } = useUserRole();
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const { language } = useLanguageStore();
 
   const [open, setOpen] = useState(false);
   const [particlesEnabled, setParticlesEnabled] = useState(true);
@@ -70,10 +72,149 @@ export function Navigation() {
     toggleParticles(nextVal);
   };
 
+  const navTranslations: Record<string, Record<string, string>> = {
+    en: {
+      "Command Center": "Command Center",
+      "Teacher Station": "Teacher Station",
+      "Student Records": "Student Records",
+      "Curriculum": "Curriculum",
+      "Analytics": "Analytics",
+      "NCDC News": "NCDC News",
+      "Lab Tools": "Lab Tools",
+      "Teacher Desk": "Teacher Desk",
+      "Marking Desk": "Marking Desk",
+      "Lessons": "Lessons",
+      "Quizzes": "Quizzes",
+      "Students": "Students",
+      "Class Stats": "Class Stats",
+      "Study Hub": "Study Hub",
+      "My Portfolio": "My Portfolio",
+      "AI Tutor": "AI Tutor",
+      "Projects": "Projects",
+      "News": "News",
+      "Tools": "Tools",
+      "Home": "Home",
+      "News & Syllabus": "News & Syllabus",
+      "Socratic AI": "Socratic AI",
+      "Science Tools": "Science Tools",
+      "Support": "Support",
+      "Settings": "Settings",
+    },
+    lg: {
+      "Command Center": "Kireeberezi",
+      "Teacher Station": "Kituo ky'Omusomesa",
+      "Student Records": "Eby'Abayizi",
+      "Curriculum": "Syllabus NCDC",
+      "Analytics": "Ripoota",
+      "NCDC News": "Amawulire NCDC",
+      "Lab Tools": "Ebyuma",
+      "Teacher Desk": "Meeza y'Omusomesa",
+      "Marking Desk": "Okugolola",
+      "Lessons": "Okusomesa",
+      "Quizzes": "Okwegeza",
+      "Students": "Abayizi",
+      "Class Stats": "Bipimo",
+      "Study Hub": "Amaka g'Okusoma",
+      "My Portfolio": "Portfolio Yange",
+      "AI Tutor": "Tutor wa AI",
+      "Projects": "Pulojekiti",
+      "News": "Amawulire",
+      "Tools": "Ebikozesebwa",
+      "Home": "Eka",
+      "News & Syllabus": "Syllabus & News",
+      "Socratic AI": "Socratic AI",
+      "Science Tools": "Sayansi n'Ebyuma",
+      "Support": "Okuyambibwa",
+      "Settings": "Entegeka",
+    },
+    nk: {
+      "Command Center": "Kireeberezi",
+      "Teacher Station": "Kituo ky'Omushomesa",
+      "Student Records": "Eby'Abashomi",
+      "Curriculum": "Syllabus NCDC",
+      "Analytics": "Ekipimo",
+      "NCDC News": "Amakuru NCDC",
+      "Lab Tools": "Ebyuma",
+      "Teacher Desk": "Meeza y'Omushomesa",
+      "Marking Desk": "Kugorora",
+      "Lessons": "Kushomesa",
+      "Quizzes": "Ebibuuzo",
+      "Students": "Abashomi",
+      "Class Stats": "Embeera y'Ekibiina",
+      "Study Hub": "Amaka g'Okushoma",
+      "My Portfolio": "Portfolio Yange",
+      "AI Tutor": "Tutor wa AI",
+      "Projects": "Pulojekiti",
+      "News": "Amakuru",
+      "Tools": "Ebikozesebwa",
+      "Home": "Eka",
+      "News & Syllabus": "Syllabus & News",
+      "Socratic AI": "Socratic AI",
+      "Science Tools": "Sayansi n'Ebyuma",
+      "Support": "Kuyambwa",
+      "Settings": "Okutebeja",
+    },
+    sw: {
+      "Command Center": "Kituo Kikuu",
+      "Teacher Station": "Kituo cha Mwalimu",
+      "Student Records": "Kumbukumbu",
+      "Curriculum": "Mtaala wa NCDC",
+      "Analytics": "Uchambuzi",
+      "NCDC News": "Habari NCDC",
+      "Lab Tools": "Zana za Maabara",
+      "Teacher Desk": "Dawati la Mwalimu",
+      "Marking Desk": "Kusahihisha",
+      "Lessons": "Masomo",
+      "Quizzes": "Chemsha Bongo",
+      "Students": "Wanafunzi",
+      "Class Stats": "Takwimu za Darasa",
+      "Study Hub": "Kituo cha Masomo",
+      "My Portfolio": "Kwingira Kwangu",
+      "AI Tutor": "Mkufunzi AI",
+      "Projects": "Miradi",
+      "News": "Habari",
+      "Tools": "Zana",
+      "Home": "Nyumbani",
+      "News & Syllabus": "Mtaala & Habari",
+      "Socratic AI": "Socratic AI",
+      "Science Tools": "Zana za Sayansi",
+      "Support": "Msaada",
+      "Settings": "Vipangilio",
+    },
+    lu: {
+      "Command Center": "Chengo mar Ruoth",
+      "Teacher Station": "Kituo mar Japuonj",
+      "Student Records": "Kumbukumbu",
+      "Curriculum": "Syllabus NCDC",
+      "Analytics": "Ripoti",
+      "NCDC News": "Milome NCDC",
+      "Lab Tools": "Gige Tiyo mag Lab",
+      "Teacher Desk": "Mesa mar Japuonj",
+      "Marking Desk": "Ng'iyo",
+      "Lessons": "Puonjruok",
+      "Quizzes": "Penjo",
+      "Students": "Jopuonj",
+      "Class Stats": "Class Stats",
+      "Study Hub": "Amaka mar Somo",
+      "My Portfolio": "Portfolio Mara",
+      "AI Tutor": "Japuonj AI",
+      "Projects": "Pulojekiti",
+      "News": "Milome",
+      "Tools": "Gige Tiyo",
+      "Home": "Dala",
+      "News & Syllabus": "Syllabus & News",
+      "Socratic AI": "Socratic AI",
+      "Science Tools": "Gige Sayansi",
+      "Support": "Konyruok",
+      "Settings": "Chengo",
+    }
+  };
+
   // Define navigational hierarchy grouped by user role
   const roleSpecificLinks: NavItem[] = useMemo(() => {
+    let rawLinks: NavItem[] = [];
     if (isAdmin) {
-      return [
+      rawLinks = [
         { to: "/admin/dashboard", label: "Command Center", icon: ShieldCheck, badge: "Admin", badgeColor: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
         { to: "/teacher", label: "Teacher Station", icon: PenTool },
         { to: "/student", label: "Student Records", icon: GraduationCap },
@@ -82,10 +223,8 @@ export function Navigation() {
         { to: "/news", label: "NCDC News", icon: Newspaper },
         { to: "/tools", label: "Lab Tools", icon: Calculator },
       ];
-    }
-
-    if (isTeacher) {
-      return [
+    } else if (isTeacher) {
+      rawLinks = [
         { to: "/teacher", label: "Teacher Desk", icon: PenTool, badge: "Faculty", badgeColor: "bg-teal-500/20 text-teal-400 border-teal-500/30" },
         { to: "/marking", label: "Marking Desk", icon: CheckCircle },
         { to: "/lessons", label: "Lessons", icon: BookOpen },
@@ -94,10 +233,8 @@ export function Navigation() {
         { to: "/analytics", label: "Class Stats", icon: LineChart },
         { to: "/news", label: "NCDC News", icon: Newspaper },
       ];
-    }
-
-    if (isStudent || user) {
-      return [
+    } else if (isStudent || user) {
+      rawLinks = [
         { to: "/dashboard", label: "Study Hub", icon: LayoutDashboard, badge: "Student", badgeColor: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" },
         { to: "/student", label: "My Portfolio", icon: GraduationCap },
         { to: "/tutor", label: "AI Tutor", icon: MessagesSquare },
@@ -107,18 +244,22 @@ export function Navigation() {
         { to: "/news", label: "News", icon: Newspaper },
         { to: "/tools", label: "Tools", icon: Calculator },
       ];
+    } else {
+      rawLinks = [
+        { to: "/", label: "Home", icon: Sparkles },
+        { to: "/news", label: "News & Syllabus", icon: Newspaper },
+        { to: "/tutor", label: "Socratic AI", icon: MessagesSquare },
+        { to: "/curriculum", label: "Curriculum", icon: BookOpen },
+        { to: "/tools", label: "Science Tools", icon: Calculator },
+        { to: "/support", label: "Support", icon: HelpCircle },
+      ];
     }
 
-    // Guest / Public links
-    return [
-      { to: "/", label: "Home", icon: Sparkles },
-      { to: "/news", label: "News & Syllabus", icon: Newspaper },
-      { to: "/tutor", label: "Socratic AI", icon: MessagesSquare },
-      { to: "/curriculum", label: "Curriculum", icon: BookOpen },
-      { to: "/tools", label: "Science Tools", icon: Calculator },
-      { to: "/support", label: "Support", icon: HelpCircle },
-    ];
-  }, [isAdmin, isTeacher, isStudent, user]);
+    return rawLinks.map((item) => ({
+      ...item,
+      label: navTranslations[language]?.[item.label] || item.label,
+    }));
+  }, [isAdmin, isTeacher, isStudent, user, language]);
 
   const userDisplayName =
     profile?.display_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Scholar";

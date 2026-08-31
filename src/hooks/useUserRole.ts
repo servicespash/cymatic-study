@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context-core";
 
-export type UserRole = "student" | "teacher" | "admin";
+export type UserRole = "student" | "teacher" | "admin" | "independent_learner" | "independent_teacher";
 
 export interface UserRoleState {
   role: UserRole;
@@ -10,6 +10,7 @@ export interface UserRoleState {
   isStudent: boolean;
   isTeacher: boolean;
   isAdmin: boolean;
+  isIndependent: boolean;
   isInstitutional: boolean;
   schoolId: string | null;
   schoolName: string | null;
@@ -32,9 +33,11 @@ export function normalizeRole(rawRole?: string | null): UserRole {
   ) {
     return "admin";
   }
+  if (r === "independent_learner") return "independent_learner";
+  if (r === "independent_teacher") return "independent_teacher";
+  
   if (
     r === "teacher" ||
-    r === "independent_teacher" ||
     r === "instructor" ||
     r === "evaluator" ||
     r === "faculty"
@@ -124,10 +127,15 @@ export function useUserRole(): UserRoleState {
           null;
       }
 
+      const isUuid = (val: string | null | undefined): boolean => {
+        if (!val) return false;
+        return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+      };
+
       const normalized = normalizeRole(fetchedRawRole);
       setRawRole(fetchedRawRole || "student");
       setRole(normalized);
-      setSchoolId(fetchedSchoolId);
+      setSchoolId(isUuid(fetchedSchoolId) ? null : fetchedSchoolId);
       setSchoolName(fetchedSchoolName);
     } catch (err: any) {
       console.warn("Secure role verification notice:", err);
@@ -148,7 +156,8 @@ export function useUserRole(): UserRoleState {
   const isStudent = role === "student";
   const isTeacher = role === "teacher";
   const isAdmin = role === "admin";
-  const isInstitutional = !!schoolId;
+  const isIndependent = role === "independent_learner" || role === "independent_teacher";
+  const isInstitutional = !isIndependent;
 
   const isAuthorized = useCallback(
     (allowedRoles: (UserRole | string)[]): boolean => {
@@ -170,6 +179,7 @@ export function useUserRole(): UserRoleState {
     isStudent,
     isTeacher,
     isAdmin,
+    isIndependent,
     isInstitutional,
     schoolId,
     schoolName,

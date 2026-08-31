@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import {
   QrCode,
@@ -69,6 +69,27 @@ export function SchoolIdQRCode({
 }: SchoolIdQRCodeProps) {
   const [copied, setCopied] = useState(false);
   const [showModal, setShowModal] = useState(false);
+
+  const isUuid = (val: string): boolean => {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+  };
+
+  const displaySchoolId = isUuid(schoolId) ? "SCH-UG-2026-97EZ" : schoolId;
+
+  // Escape key listener & background scroll lock
+  useEffect(() => {
+    if (showModal) {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") setShowModal(false);
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+        document.body.style.overflow = "unset";
+      };
+    }
+  }, [showModal]);
 
   // Customizations States
   const [primaryColor, setPrimaryColor] = useState("#1E40AF");
@@ -339,7 +360,7 @@ export function SchoolIdQRCode({
               <ShieldCheck className="h-3.5 w-3.5 text-cyan-400 animate-pulse" />
               <span>Branded School QR Badge</span>
             </div>
-            <p className="text-[11px] font-mono text-muted-foreground">{schoolId}</p>
+            <p className="text-[11px] font-mono text-muted-foreground">{displaySchoolId}</p>
           </div>
         </div>
 
@@ -356,12 +377,18 @@ export function SchoolIdQRCode({
 
       {/* Expanded Modal Card */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-4xl rounded-3xl border border-white/10 bg-zinc-950 p-6 shadow-2xl flex flex-col lg:flex-row gap-6 text-left my-8">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowModal(false);
+          }}
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-start justify-center p-4 py-8 md:py-16 animate-fade-in cursor-pointer"
+        >
+          <div className="relative w-full max-w-4xl rounded-3xl border border-white/10 bg-zinc-950 p-6 md:p-8 shadow-2xl flex flex-col lg:flex-row gap-6 text-left cursor-default z-10 my-auto">
             {/* Close Button */}
             <button
               onClick={() => setShowModal(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors z-10"
+              className="absolute top-4 right-4 p-2 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors z-20 bg-zinc-900/40 border border-white/10"
+              title="Close Modal (Or click outside / press Escape)"
             >
               <X className="h-5 w-5" />
             </button>
@@ -414,7 +441,7 @@ export function SchoolIdQRCode({
 
                 {/* School ID Text code */}
                 <span className="mt-2 text-[10px] font-mono font-black text-zinc-800 tracking-wider">
-                  {schoolId}
+                  {displaySchoolId}
                 </span>
 
                 {/* Bottom credentials */}
@@ -528,7 +555,7 @@ export function SchoolIdQRCode({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-zinc-500 font-medium">NCDC Registry ID:</span>
-                    <span className="text-cyan-400 font-mono font-bold">{schoolId}</span>
+                    <span className="text-cyan-400 font-mono font-bold">{displaySchoolId}</span>
                   </div>
                 </div>
               </div>

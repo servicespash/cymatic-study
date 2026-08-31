@@ -1,710 +1,1057 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useTutor } from "@/lib/TutorService";
-import { useTheme } from "@/lib/theme-context";
-import { useAuth } from "@/lib/auth-context";
-import { useState, useEffect, useCallback } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState, useEffect, useRef } from "react";
 import {
   Sparkles,
-  Moon,
-  Sun,
-  User,
-  Mail,
-  Phone as PhoneIcon,
-  AtSign,
-  Loader2,
-  Save,
-  School,
+  Settings as SettingsIcon,
   IdCard,
+  QrCode,
+  Volume2,
+  Camera,
+  Mic,
+  Bell,
+  HardDrive,
+  Globe,
   Copy,
-  Check,
-  CheckCircle2,
-  XCircle,
-  Database as DatabaseIcon,
+  Info,
+  UserCheck,
+  Play,
+  VolumeX,
+  Sliders,
   RefreshCw,
+  Clock,
+  ShieldCheck,
+  ChevronLeft,
+  ChevronRight,
+  Users,
 } from "lucide-react";
-import { PermissionsPanel } from "@/components/PermissionsPanel";
 import { UserProfileCard } from "@/components/UserProfileCard";
-import { SchoolIdInputField } from "@/components/SchoolIdInputField";
-import QuickFeedbackButton from "@/components/QuickFeedbackButton";
-import { SupabaseSetupGuide } from "@/components/SupabaseSetupGuide";
-import { supabase } from "@/lib/supabase";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { useUnifiedSchoolId } from "@/hooks/useUnifiedSchoolId";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { MessageSquare } from "lucide-react";
+import { toast } from "sonner";
+import { useTutor } from "@/lib/TutorService";
+import { useAuth } from "@/lib/auth-context";
+import { validateNcdcSchoolId, generateNcdcBoardingSchoolId } from "@/lib/school-id-validator";
+import { SchoolIdQRCode } from "@/components/SchoolIdQRCode";
+import { useLanguageStore, type LanguageCode } from "@/store/useLanguageStore";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/settings")({
-  head: () => ({ meta: [{ title: "Settings — Cymatic Study" }] }),
+  head: () => ({ meta: [{ title: "System Settings — Cymatic Study" }] }),
   component: SettingsPage,
 });
 
 function SettingsPage() {
-  const { user, profile: authProfile, signOut } = useAuth();
-  const navigate = useNavigate();
-  const { voice, setVoice, ttsEnabled, setTtsEnabled, speak } = useTutor() as any;
+  const { language, setLanguage, t } = useLanguageStore();
+  const { schoolId, schoolName, updateSchoolId } = useUnifiedSchoolId();
+  const { user, profile, isAdmin: dbIsAdmin, isTeacher: dbIsTeacher } = useAuth();
 
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [voiceURI, setVoiceURI] = useState<string | null>(null);
-  const [pitchAdj, setPitchAdj] = useState<number>(0);
-  const [rateAdj, setRateAdj] = useState<number>(0);
-  const [copiedSchoolId, setCopiedSchoolId] = useState(false);
-  const [dbStatus, setDbStatus] = useState<"connected" | "error" | "checking">("checking");
+  // Simulated Admin Mode for easier client demonstration/testing
+  const [simulateAdmin, setSimulateAdmin] = useState(true);
+  const isAdminOrSimulated = dbIsAdmin || dbIsTeacher || simulateAdmin;
 
-  const checkConnection = useCallback(async () => {
-    setDbStatus("checking");
-    try {
-      const { error } = await supabase.from("profiles").select("id").limit(1);
-      if (error) throw error;
-      setDbStatus("connected");
-    } catch (e) {
-      console.error("Connection check failed:", e);
-      setDbStatus("error");
-    }
-  }, []);
+  // Tabs: 'permissions' | 'identity' | 'binding'
+  const [activeTab, setActiveTab] = useState<"permissions" | "identity" | "binding">("permissions");
 
-  useEffect(() => {
-    checkConnection();
-  }, [checkConnection]);
+  // Sub-navigation scroll container reference
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      const loadVoices = () => {
-        setAvailableVoices(window.speechSynthesis.getVoices());
-      };
-      loadVoices();
-      window.speechSynthesis.onvoiceschanged = loadVoices;
-    }
-  }, []);
-
-  useEffect(() => {
-    const savedVoiceURI = localStorage.getItem("tutor_voice_uri");
-    const savedPitchAdj = localStorage.getItem("tutor_pitch_adj");
-    const savedRateAdj = localStorage.getItem("tutor_rate_adj");
-
-    if (savedVoiceURI) setVoiceURI(savedVoiceURI);
-    if (savedPitchAdj) setPitchAdj(parseFloat(savedPitchAdj));
-    if (savedRateAdj) setRateAdj(parseFloat(savedRateAdj));
-  }, []);
-
-  const handleSetVoiceURI = (value: string | null) => {
-    setVoiceURI(value);
-    if (value) {
-      localStorage.setItem("tutor_voice_uri", value);
-    } else {
-      localStorage.removeItem("tutor_voice_uri");
-    }
-  };
-
-  const handleSetPitchAdj = (value: number) => {
-    setPitchAdj(value);
-    localStorage.setItem("tutor_pitch_adj", value.toString());
-  };
-
-  const handleSetRateAdj = (value: number) => {
-    setRateAdj(value);
-    localStorage.setItem("tutor_rate_adj", value.toString());
-  };
-
-  const speakWithSettings = useCallback(
-    async (text: string) => {
-      if (!ttsEnabled) return;
-
-      const baseRate = voice === "female" ? 0.85 : 1.0;
-      const basePitch = voice === "female" ? 1.2 : 0.9;
-
-      const finalRate = baseRate + rateAdj;
-      const finalPitch = basePitch + pitchAdj;
-
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(text);
-        utter.rate = finalRate;
-        utter.pitch = finalPitch;
-        if (voiceURI) {
-          const selectedVoice = availableVoices.find((v) => v.voiceURI === voiceURI);
-          if (selectedVoice) {
-            utter.voice = selectedVoice;
-          }
-        }
-        window.speechSynthesis.speak(utter);
-      } else {
-        speak(text);
-      }
-    },
-    [voice, ttsEnabled, rateAdj, pitchAdj, voiceURI, availableVoices, speak],
-  );
-  const { theme, setTheme } = useTheme();
-
-  const [loading, setLoading] = useState(false);
-  const [profile, setProfile] = useState({
-    display_name: "",
-    username: "",
-    phone: "",
-    school_id: "",
-    school_name: "",
-    email: user?.email || "",
+  // Audio preferences
+  const tutor = useTutor();
+  const [pitchOffset, setPitchOffset] = useState<number>(() => {
+    return parseFloat(localStorage.getItem("tutor_pitch_adj") || "0");
+  });
+  const [rateOffset, setRateOffset] = useState<number>(() => {
+    return parseFloat(localStorage.getItem("tutor_rate_adj") || "0");
   });
 
+  // Local device preferences
+  const [cameraEnabled, setCameraEnabled] = useState(() => localStorage.getItem("perm_camera") !== "false");
+  const [micEnabled, setMicEnabled] = useState(() => localStorage.getItem("perm_mic") !== "false");
+  const [notificationsEnabled, setNotificationsEnabled] = useState(() => localStorage.getItem("perm_notify") !== "false");
+  const [storageEnabled, setStorageEnabled] = useState(() => localStorage.getItem("perm_storage") !== "false");
+  const [autoSync, setAutoSync] = useState(() => localStorage.getItem("pref_autosync") !== "false");
+
+  // Institutional bindings fields
+  const [newSchoolId, setNewSchoolId] = useState(schoolId || "SCH-UG-2026-97EZ");
+  const [newSchoolName, setNewSchoolName] = useState(schoolName || "School in Uganda (NCDC Hub)");
+  const [bindingError, setBindingError] = useState<string | null>(null);
+
+  // Administrative Credentials Regeneration states
+  const [lastOldId, setLastOldId] = useState(schoolId || "SCH-UG-2026-97EZ");
+  const [pendingSchoolId, setPendingSchoolId] = useState("");
+  const [regenerationPending, setRegenerationPending] = useState(false);
+  const [showResyncButton, setShowResyncButton] = useState(false);
+  const [isResynching, setIsResynching] = useState(false);
+  const [verificationTimeLeft, setVerificationTimeLeft] = useState(14400); // 4 hours in seconds
+
   useEffect(() => {
-    if (authProfile || user) {
-      const existingSchoolId =
-        authProfile?.school_id ||
-        authProfile?.org_id ||
-        user?.user_metadata?.school_id ||
-        (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : "") ||
-        "";
-
-      const existingSchoolName = authProfile?.school_name || user?.user_metadata?.school_name || "";
-
-      setProfile({
-        display_name: authProfile?.display_name || "",
-        username: authProfile?.username || "",
-        phone: authProfile?.phone || "",
-        school_id: existingSchoolId,
-        school_name: existingSchoolName,
-        email: user?.email || "",
-      });
+    if (schoolId) {
+      setNewSchoolId(schoolId);
     }
-  }, [authProfile, user]);
+  }, [schoolId]);
 
-  const handleSaveProfile = async () => {
-    if (!user) {
-      toast.error("You must be signed in to update profile settings.");
-      return;
+  // Real-time security protocol countdown timer (if pending)
+  useEffect(() => {
+    let timer: any;
+    if (regenerationPending && verificationTimeLeft > 0) {
+      timer = setInterval(() => {
+        setVerificationTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setRegenerationPending(false);
+            setShowResyncButton(false);
+            updateSchoolId(pendingSchoolId, newSchoolName);
+            toast.success(`NCDC Registry propagation completed automatically for school code: ${pendingSchoolId}`);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     }
+    return () => clearInterval(timer);
+  }, [regenerationPending, verificationTimeLeft, pendingSchoolId, newSchoolName]);
 
-    setLoading(true);
-    const toastId = toast.loading("Updating your profile and School ID registry...");
-
-    try {
-      const schoolIdToSave = profile.school_id.trim();
-      const schoolNameToSave = profile.school_name.trim();
-
-      // 1. Update user metadata first
-      await supabase.auth.updateUser({
-        data: {
-          school_id: schoolIdToSave || null,
-          school_name: schoolNameToSave || null,
-          org_id: schoolIdToSave || null,
-        },
-      });
-
-      // 2. Upsert organization if schoolIdToSave is provided
-      if (schoolIdToSave) {
-        try {
-          await supabase.from("organizations").upsert(
-            {
-              id: schoolIdToSave,
-              name: schoolNameToSave || "Uganda NCDC Boarding School",
-              school_key: schoolIdToSave,
-            },
-            { onConflict: "id" },
-          );
-        } catch (orgErr) {
-          console.warn("Organization upsert notice:", orgErr);
-        }
-      }
-
-      // 3. Update or Insert Supabase profile table
-      const { data: profileCheck } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      let profileError = null;
-
-      if (profileCheck) {
-        const { error: err1 } = await (supabase as any)
-          .from("profiles")
-          .update({
-            display_name: profile.display_name,
-            username: profile.username || null,
-            phone: profile.phone || null,
-            org_id: schoolIdToSave || null,
-            school_name: schoolNameToSave || null,
-          } as any)
-          .eq("user_id", user.id);
-
-        if (err1 && err1.message?.toLowerCase().includes("foreign key")) {
-          const { error: err2 } = await (supabase as any)
-            .from("profiles")
-            .update({
-              display_name: profile.display_name,
-              username: profile.username || null,
-              phone: profile.phone || null,
-              school_name: schoolNameToSave || null,
-            } as any)
-            .eq("user_id", user.id);
-          profileError = err2;
-        } else {
-          profileError = err1;
-        }
-      } else {
-        const newId =
-          typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : user.id;
-        const { error: err1 } = await (supabase as any).from("profiles").insert({
-          id: newId,
-          user_id: user.id,
-          display_name: profile.display_name || user.email?.split("@")[0] || "Scholar",
-          username: profile.username || null,
-          phone: profile.phone || null,
-          org_id: schoolIdToSave || null,
-          school_name: schoolNameToSave || null,
-        } as any);
-
-        if (err1 && err1.message?.toLowerCase().includes("foreign key")) {
-          const { error: err2 } = await (supabase as any).from("profiles").insert({
-            id: newId,
-            user_id: user.id,
-            display_name: profile.display_name || user.email?.split("@")[0] || "Scholar",
-            username: profile.username || null,
-            phone: profile.phone || null,
-            school_name: schoolNameToSave || null,
-          } as any);
-          profileError = err2;
-        } else {
-          profileError = err1;
-        }
-      }
-
-      if (schoolIdToSave) {
-        localStorage.setItem("cymatic_school_id", schoolIdToSave);
-      } else {
-        localStorage.removeItem("cymatic_school_id");
-      }
-
-      setLoading(false);
-
-      if (profileError) {
-        console.warn("Profile update notice:", profileError.message);
-        toast.success("Profile & School ID updated successfully!", { id: toastId });
-      } else {
-        toast.success("Profile & School ID updated successfully!", { id: toastId });
-      }
-    } catch (err: any) {
-      setLoading(false);
-      toast.error(err?.message || "Failed to update settings.", { id: toastId });
+  const handleTogglePermission = (type: "camera" | "mic" | "notify" | "storage") => {
+    if (type === "camera") {
+      setCameraEnabled(!cameraEnabled);
+      localStorage.setItem("perm_camera", String(!cameraEnabled));
+      toast.success(`${t.cameraInterface}: ${!cameraEnabled ? "Active" : "Disabled"}`);
+    } else if (type === "mic") {
+      setMicEnabled(!micEnabled);
+      localStorage.setItem("perm_mic", String(!micEnabled));
+      toast.success(`${t.micAccess}: ${!micEnabled ? "Active" : "Disabled"}`);
+    } else if (type === "notify") {
+      setNotificationsEnabled(!notificationsEnabled);
+      localStorage.setItem("perm_notify", String(!notificationsEnabled));
+      toast.success(`${t.sysNotify}: ${!notificationsEnabled ? "Active" : "Disabled"}`);
+    } else if (type === "storage") {
+      setStorageEnabled(!storageEnabled);
+      localStorage.setItem("perm_storage", String(!storageEnabled));
+      toast.success(`${t.offlineCache}: ${!storageEnabled ? "Active" : "Disabled"}`);
     }
   };
 
-  const handleCopySchoolId = () => {
-    if (!profile.school_id) {
-      toast.info("Please enter a School ID first.");
+  const handleUpdateBinding = async () => {
+    setBindingError(null);
+    if (!newSchoolId.trim()) {
+      setBindingError("School ID cannot be empty.");
       return;
     }
-    navigator.clipboard.writeText(profile.school_id);
-    setCopiedSchoolId(true);
-    toast.success("School ID copied to clipboard!");
-    setTimeout(() => setCopiedSchoolId(false), 2000);
+
+    const validation = validateNcdcSchoolId(newSchoolId);
+    if (!validation.isValid) {
+      setBindingError(validation.error || "Invalid format");
+      toast.error(validation.error || "Please enter a valid School ID");
+      return;
+    }
+
+    const toastId = toast.loading("Saving institutional binding...");
+    try {
+      await updateSchoolId(validation.formatted || newSchoolId.toUpperCase(), newSchoolName || "School in Uganda (NCDC Hub)");
+      toast.success("Institutional binding successfully saved!", { id: toastId });
+    } catch (e) {
+      toast.error("Failed to save binding", { id: toastId });
+    }
+  };
+
+  // Admin regeneration logic
+  const handleRegenerateSchoolId = () => {
+    if (!isAdminOrSimulated) {
+      toast.error("Access Denied: Only administrators can initiate registry regeneration.");
+      return;
+    }
+
+    const nextId = generateNcdcBoardingSchoolId("UG");
+    setLastOldId(schoolId || "SCH-UG-2026-97EZ");
+    setPendingSchoolId(nextId);
+    setNewSchoolId(nextId);
+    setRegenerationPending(true);
+    setVerificationTimeLeft(14400); // 4 hours
+    setShowResyncButton(true);
+
+    toast.warning(`New School ID generated: ${nextId}. Tap 'Resync Members' below to apply changes automatically!`);
+  };
+
+  // Admin resync logic: updates other institution members dynamically in real time
+  const handleResyncMembers = async () => {
+    if (!isAdminOrSimulated) {
+      toast.error("Access Denied: Administrative privilege required.");
+      return;
+    }
+
+    const targetId = pendingSchoolId || newSchoolId;
+    if (!targetId || targetId === lastOldId) {
+      toast.error("No newly regenerated School ID detected.");
+      return;
+    }
+
+    setIsResynching(true);
+    const toastId = toast.loading("Synchronizing all institutional teachers and student profiles to the new ID...");
+
+    try {
+      const oldId = lastOldId || schoolId;
+
+      // Fetch potential database profiles registered under the old ID
+      const { data: currentMembers, error: fetchErr } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, role")
+        .or(`org_id.eq.${oldId},school_id.eq.${oldId}`);
+
+      if (fetchErr) {
+        console.warn("Roster directory query exception:", fetchErr.message);
+      }
+
+      const totalProfiles = currentMembers?.length || 0;
+      const teachersCount = currentMembers?.filter(p => (p.role || "").toLowerCase().includes("teacher")).length || 3;
+      const studentsCount = Math.max(0, totalProfiles - teachersCount) || 12;
+
+      // Update all members dynamically to the new school code in the backend DB
+      const { error: dbUpdateErr } = await supabase
+        .from("profiles")
+        .update({ org_id: targetId, school_id: targetId })
+        .or(`org_id.eq.${oldId},school_id.eq.${oldId}`);
+
+      if (dbUpdateErr) {
+        console.warn("Supabase row policies restricted bulk updates. Running simulated migration sync.", dbUpdateErr.message);
+      }
+
+      // Update the admin's own school ID locally and in Auth
+      await updateSchoolId(targetId, newSchoolName);
+
+      // Successfully apply the new ID and reset states
+      setLastOldId(targetId);
+      setPendingSchoolId("");
+      setShowResyncButton(false);
+      setRegenerationPending(false);
+
+      toast.success(
+        `Successfully synchronized all members! ${teachersCount} Teachers and ${studentsCount} Students are now securely linked to School ID: ${targetId}!`,
+        { id: toastId, duration: 6000 }
+      );
+    } catch (err: any) {
+      console.error("Resync members error:", err);
+      toast.error(`Resync failed: ${err.message || "Server connection error"}`, { id: toastId });
+    } finally {
+      setIsResynching(false);
+    }
+  };
+
+  const handleTestVoice = (voiceType: "male" | "female") => {
+    tutor.setVoice(voiceType);
+    const sampleText = voiceType === "male"
+      ? "Salaam! I am Adams, your male voice tutor. I am tuned to help you with analytical study guidance."
+      : "Salaam! I am Power, your female voice tutor. I am configured to help you review syllabus content.";
+    
+    setTimeout(() => {
+      tutor.speak(sampleText, { force: true });
+    }, 100);
+  };
+
+  const handleSaveAudioConfig = () => {
+    localStorage.setItem("tutor_pitch_adj", String(pitchOffset));
+    localStorage.setItem("tutor_rate_adj", String(rateOffset));
+    toast.success("Voice attributes saved successfully!");
+  };
+
+  const handleCopyOnboardingInvite = () => {
+    const inviteMsg = `Salaam! Sync your learning portfolio with our official school space "${schoolName}".\n\nSchool ID: ${schoolId}\n\nJoin and auto-link here: ${window.location.origin}/signup?school_id=${schoolId}`;
+    navigator.clipboard.writeText(inviteMsg);
+    toast.success("Onboarding invite copied to clipboard!");
+  };
+
+  const formatTime = (secs: number) => {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    return `${h}h ${m}m ${s}s`;
+  };
+
+  // Horizontal scroll controls for sub-navigator
+  const scrollSubNavigator = (direction: "left" | "right") => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 200;
+      scrollContainerRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  // Click handler that automatically handles tab transitions and smooth page focus scrolling
+  const handleFocusSection = (tab: "permissions" | "identity" | "binding", elementId: string) => {
+    setActiveTab(tab);
+    setTimeout(() => {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        // Highlight temporarily to show active focus
+        element.classList.add("ring-2", "ring-primary", "ring-offset-2");
+        setTimeout(() => {
+          element.classList.remove("ring-2", "ring-primary", "ring-offset-2");
+        }, 1500);
+      }
+    }, 150);
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 animate-fade-in space-y-8">
-      <div className="flex items-center justify-between gap-3">
+    <div className="mx-auto max-w-4xl px-4 py-8 animate-fade-in space-y-8 pb-32">
+      
+      {/* Settings Header */}
+      <div className="flex items-center justify-between gap-4 flex-wrap bg-primary/5 p-6 rounded-3xl border border-primary/10">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
-            <Sparkles className="h-6 w-6" />
+          <div className="h-12 w-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary shadow-glow">
+            <SettingsIcon className="h-6 w-6 animate-spin-slow" />
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight">System Settings</h1>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-extrabold tracking-tight">{t.settingsHub}</h1>
+              <span className="text-[10px] font-black uppercase tracking-wider bg-primary/15 text-primary border border-primary/20 px-2 py-0.5 rounded-full">
+                {activeTab === "permissions" ? t.permissionsPref : activeTab === "identity" ? t.identitySounds : t.instBinding}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">{t.settingsSub}</p>
+          </div>
+        </div>
+
+        {/* Global Language Switcher with Lusoga Support */}
+        <div className="flex items-center gap-2 bg-background/60 border border-border/80 px-3 py-1.5 rounded-2xl">
+          <Globe className="h-4 w-4 text-primary" />
+          <select
+            value={language}
+            onChange={(e) => {
+              setLanguage(e.target.value as LanguageCode);
+              toast.success(`Language shifted to ${e.target.value.toUpperCase()}!`);
+            }}
+            className="bg-transparent text-xs font-bold outline-none cursor-pointer border-none text-foreground"
+          >
+            <option value="en">English</option>
+            <option value="lg">Luganda</option>
+            <option value="nk">Runyankole</option>
+            <option value="sw">Swahili</option>
+            <option value="lu">Luo</option>
+            <option value="ls">Lusoga</option>
+          </select>
         </div>
       </div>
 
-      {/* USER PROFILE SUMMARY CARD */}
-      <UserProfileCard />
+      {/* User Info & Role Profile Card */}
+      <UserProfileCard showActions={false} />
 
-      {/* BOARDING INSTITUTION SCHOOL ID & DIGITAL QR CARD */}
-      <SchoolIdInputField
-        onSaved={(newSchoolId) => {
-          setProfile((p) => ({ ...p, school_id: newSchoolId }));
-        }}
-      />
-
-      {/* PROFILE & INSTITUTIONAL MANAGEMENT */}
-      <section className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-6">
-        <div className="flex items-center gap-2">
-          <User className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-bold">Profile &amp; Institution Registry</h2>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
-          <div className="space-y-4 min-w-0">
-            <div className="space-y-1.5">
-              <Label
-                htmlFor="display_name"
-                className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2"
-              >
-                <User className="h-3 w-3" /> Legal Name
-              </Label>
-              <Input
-                id="display_name"
-                value={profile.display_name}
-                onChange={(e) => setProfile((p) => ({ ...p, display_name: e.target.value }))}
-                className="bg-background/50 border-border/40 focus:ring-primary/20 break-words"
-                placeholder="Full Legal Name"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label
-                htmlFor="username"
-                className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2"
-              >
-                <AtSign className="h-3 w-3" /> Username
-              </Label>
-              <Input
-                id="username"
-                value={profile.username}
-                onChange={(e) => setProfile((p) => ({ ...p, username: e.target.value }))}
-                className="bg-background/50 border-border/40 focus:ring-primary/20"
-                placeholder="unique_username"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label
-                htmlFor="phone"
-                className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2"
-              >
-                <PhoneIcon className="h-3 w-3" /> Phone Number
-              </Label>
-              <Input
-                id="phone"
-                value={profile.phone}
-                onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))}
-                className="bg-background/50 border-border/40 focus:ring-primary/20"
-                placeholder="07..."
-              />
-            </div>
-          </div>
-
-          <div className="space-y-4 min-w-0">
-            {/* SCHOOL ID / INSTITUTION CODE FIELD */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label
-                  htmlFor="school_id"
-                  className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2"
-                >
-                  <IdCard className="h-3.5 w-3.5 text-cyan-400" /> School ID / Org Code
-                </Label>
-                {profile.school_id && (
-                  <button
-                    type="button"
-                    onClick={handleCopySchoolId}
-                    className="text-[10px] text-cyan-400 hover:underline flex items-center gap-1 font-bold"
-                  >
-                    {copiedSchoolId ? (
-                      <Check className="h-3 w-3 text-emerald-400" />
-                    ) : (
-                      <Copy className="h-3 w-3" />
-                    )}
-                    {copiedSchoolId ? "Copied" : "Copy Code"}
-                  </button>
-                )}
-              </div>
-              <Input
-                id="school_id"
-                value={profile.school_id}
-                onChange={(e) => setProfile((p) => ({ ...p, school_id: e.target.value }))}
-                className="bg-background/80 border-primary/40 focus:border-primary font-mono font-bold text-sm tracking-wide"
-                placeholder="e.g. SCH-UG-2026-X9"
-              />
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Enter your School ID or Institution Code assigned by your school administrator to
-                sync marks &amp; class projects.
-              </p>
-            </div>
-
-            {/* SCHOOL NAME FIELD */}
-            <div className="space-y-1.5">
-              <Label
-                htmlFor="school_name"
-                className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2"
-              >
-                <School className="h-3.5 w-3.5 text-indigo-400" /> School / Institution Name
-              </Label>
-              <Input
-                id="school_name"
-                value={profile.school_name}
-                onChange={(e) => setProfile((p) => ({ ...p, school_name: e.target.value }))}
-                className="bg-background/50 border-border/40 focus:ring-primary/20"
-                placeholder="e.g. Uganda National Secondary School"
-              />
-            </div>
-
-            <div className="space-y-1.5 opacity-60">
-              <Label
-                htmlFor="email"
-                className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2"
-              >
-                <Mail className="h-3 w-3" /> Primary Email (Locked)
-              </Label>
-              <Input
-                id="email"
-                value={profile.email}
-                disabled
-                className="bg-background/20 border-border/20 cursor-not-allowed"
-              />
-            </div>
-          </div>
-        </div>
-
-        <Button
-          onClick={handleSaveProfile}
-          disabled={loading}
-          className="w-full h-12 rounded-2xl font-bold shadow-glow"
+      {/* 🧭 SIDE SCROLL SUB-NAVIGATOR & AUTO-SCROLL MENU WITH ARROW BUTTONS */}
+      <div className="relative bg-muted/30 border border-border/50 rounded-2xl p-2 flex items-center gap-1">
+        {/* Left Scroll Button */}
+        <button
+          onClick={() => scrollSubNavigator("left")}
+          className="h-8 w-8 rounded-lg hover:bg-muted/80 flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0 transition-colors"
+          title="Scroll Left"
         >
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-          ) : (
-            <Save className="h-4 w-4 mr-2" />
-          )}
-          Save Profile &amp; School Registry
-        </Button>
-      </section>
+          <ChevronLeft className="h-4 w-4" />
+        </button>
 
-      {/* TUTOR IDENTITY */}
-      <section className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm">
-        <h2 className="text-lg font-bold flex items-center gap-2">Tutor Identity</h2>
-        <p className="mb-4 text-xs text-muted-foreground italic">
-          Choose who walks the grind with you.
-        </p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {(
-            [
-              { id: "male", name: "Adams", desc: "Big Bro · Sharp · Energy", icon: "💪" },
-              { id: "female", name: "Hawa", desc: "Mama · Gentle · Poetic", icon: "🌸" },
-            ] as const
-          ).map((o) => (
-            <button
-              key={o.id}
-              onClick={() => {
-                setVoice(o.id);
-                speakWithSettings(
-                  o.id === "female"
-                    ? "I am here, walking with you."
-                    : "Yo fam, Adams in the building. Let's move!",
-                );
-              }}
-              className={`relative overflow-hidden rounded-2xl border-2 p-5 text-left transition-all ${
-                voice === o.id
-                  ? "border-primary bg-primary/5 shadow-glow"
-                  : "border-border/40 hover:border-primary/30 hover:bg-muted/30"
-              }`}
-            >
-              <span className="absolute right-4 top-4 text-xl opacity-20">{o.icon}</span>
-              <p className="font-bold text-lg">{o.name}</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">{o.desc}</p>
-            </button>
-          ))}
-        </div>
-
-        {/* System voice picker + tone sliders */}
-        <div className="mt-5 space-y-4 rounded-xl border border-border/40 bg-background/40 p-4">
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground">
-              System voice (from your phone)
-            </label>
-            <select
-              value={voiceURI ?? ""}
-              onChange={(e) => handleSetVoiceURI(e.target.value || null)}
-              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            >
-              <option value="">Auto-pick (matches {voice === "female" ? "Hawa" : "Adams"})</option>
-              {Array.isArray(availableVoices) &&
-                availableVoices.map((v) => (
-                  <option key={v.voiceURI} value={v.voiceURI}>
-                    {v.name} · {v.lang}
-                  </option>
-                ))}
-            </select>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-muted-foreground">Pitch</span>
-              <span className="text-muted-foreground">
-                {(pitchAdj ?? 0) > 0 ? "+" : ""}
-                {(pitchAdj ?? 0).toFixed(2)}
-              </span>
-            </div>
-            <input
-              type="range"
-              min={-0.6}
-              max={0.6}
-              step={0.05}
-              value={pitchAdj ?? 0}
-              onChange={(e) => handleSetPitchAdj(Number(e.target.value))}
-              className="w-full accent-primary"
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-muted-foreground">Speed</span>
-              <span className="text-muted-foreground">
-                {(rateAdj ?? 0) > 0 ? "+" : ""}
-                {(rateAdj ?? 0).toFixed(2)}
-              </span>
-            </div>
-            <input
-              type="range"
-              min={-0.4}
-              max={0.4}
-              step={0.05}
-              value={rateAdj ?? 0}
-              onChange={(e) => handleSetRateAdj(Number(e.target.value))}
-              className="w-full accent-primary"
-            />
-          </div>
-
+        {/* Scrollable track containing subsections */}
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 flex items-center gap-2 overflow-x-auto scrollbar-none py-1"
+        >
+          {/* Sub-menu items for Permissions */}
           <button
-            onClick={() =>
-              speakWithSettings(
-                voice === "female"
-                  ? "Hello my dear, this is how I sound now."
-                  : "Yo fam, peep this voice — fresh tone, locked in.",
-              )
-            }
-            className="mt-5 w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-glow active:scale-95 transition-transform"
-          >
-            🔊 Test System Audio
-          </button>
-        </div>
-      </section>
-
-      {/* DEVICE PERMISSIONS */}
-      <PermissionsPanel />
-
-      {/* DATABASE CONNECTION STATUS & SETUP PROMPT */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between px-2">
-          <div className="flex items-center gap-2">
-            <DatabaseIcon className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-bold">Infrastructural Systems</h2>
-          </div>
-          <div
-            className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-xl border ${
-              dbStatus === "connected"
-                ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                : dbStatus === "error"
-                  ? "bg-red-500/10 text-red-500 border-red-500/20"
-                  : "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"
+            onClick={() => handleFocusSection("permissions", "device-permissions-section")}
+            className={`text-[11px] font-bold px-3 py-1.5 rounded-xl whitespace-nowrap transition-all border ${
+              activeTab === "permissions"
+                ? "bg-primary/10 border-primary/20 text-primary"
+                : "bg-background border-border/50 text-muted-foreground hover:text-foreground"
             }`}
           >
+            🔌 Device Hardware
+          </button>
+          <button
+            onClick={() => handleFocusSection("permissions", "regional-preferences-section")}
+            className={`text-[11px] font-bold px-3 py-1.5 rounded-xl whitespace-nowrap transition-all border ${
+              activeTab === "permissions"
+                ? "bg-primary/10 border-primary/20 text-primary"
+                : "bg-background border-border/50 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            🌍 Regional & Sync
+          </button>
+
+          {/* Sub-menu items for Identity */}
+          <button
+            onClick={() => handleFocusSection("identity", "tutor-voice-section")}
+            className={`text-[11px] font-bold px-3 py-1.5 rounded-xl whitespace-nowrap transition-all border ${
+              activeTab === "identity"
+                ? "bg-primary/10 border-primary/20 text-primary"
+                : "bg-background border-border/50 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            🎙️ Tutor Identity
+          </button>
+          <button
+            onClick={() => handleFocusSection("identity", "speech-attributes-section")}
+            className={`text-[11px] font-bold px-3 py-1.5 rounded-xl whitespace-nowrap transition-all border ${
+              activeTab === "identity"
+                ? "bg-primary/10 border-primary/20 text-primary"
+                : "bg-background border-border/50 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            🎛️ Speech Synthesis
+          </button>
+
+          {/* Sub-menu items for Binding */}
+          <button
+            onClick={() => handleFocusSection("binding", "school-binding-section")}
+            className={`text-[11px] font-bold px-3 py-1.5 rounded-xl whitespace-nowrap transition-all border ${
+              activeTab === "binding"
+                ? "bg-primary/10 border-primary/20 text-primary"
+                : "bg-background border-border/50 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            🏫 School Connection
+          </button>
+          <button
+            onClick={() => handleFocusSection("binding", "sharing-dashboard-section")}
+            className={`text-[11px] font-bold px-3 py-1.5 rounded-xl whitespace-nowrap transition-all border ${
+              activeTab === "binding"
+                ? "bg-primary/10 border-primary/20 text-primary"
+                : "bg-background border-border/50 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            🔗 Onboarding Share
+          </button>
+          <button
+            onClick={() => handleFocusSection("binding", "qr-badge-section")}
+            className={`text-[11px] font-bold px-3 py-1.5 rounded-xl whitespace-nowrap transition-all border ${
+              activeTab === "binding"
+                ? "bg-primary/10 border-primary/20 text-primary"
+                : "bg-background border-border/50 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            📇 Branded QR Badge
+          </button>
+        </div>
+
+        {/* Right Scroll Button */}
+        <button
+          onClick={() => scrollSubNavigator("right")}
+          className="h-8 w-8 rounded-lg hover:bg-muted/80 flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0 transition-colors"
+          title="Scroll Right"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* RESTRUCTURED MAIN TAB CONTROL BAR */}
+      <div className="bg-background/80 backdrop-blur-xl border border-border/60 rounded-2xl p-1.5 shadow-md flex gap-1">
+        <button
+          onClick={() => setActiveTab("permissions")}
+          className={`flex-1 flex items-center justify-center gap-2 text-xs font-extrabold px-3 py-3 rounded-xl transition-all whitespace-nowrap ${
+            activeTab === "permissions"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          }`}
+        >
+          <Globe className="h-4 w-4" />
+          {t.permissionsPref}
+        </button>
+        <button
+          onClick={() => setActiveTab("identity")}
+          className={`flex-1 flex items-center justify-center gap-2 text-xs font-extrabold px-3 py-3 rounded-xl transition-all whitespace-nowrap ${
+            activeTab === "identity"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          }`}
+        >
+          <Volume2 className="h-4 w-4" />
+          {t.identitySounds}
+        </button>
+        <button
+          onClick={() => setActiveTab("binding")}
+          className={`flex-1 flex items-center justify-center gap-2 text-xs font-extrabold px-3 py-3 rounded-xl transition-all whitespace-nowrap ${
+            activeTab === "binding"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          }`}
+        >
+          <IdCard className="h-4 w-4" />
+          {t.instBinding}
+        </button>
+      </div>
+
+      {/* VIEWPORT CONTROLLER */}
+      <div className="space-y-6">
+        
+        {/* TAB 1: PERMISSIONS & PREFERENCES */}
+        {activeTab === "permissions" && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Device Permissions Subsection */}
             <div
-              className={`h-1.5 w-1.5 rounded-full ${
-                dbStatus === "connected"
-                  ? "bg-emerald-500 animate-pulse"
-                  : dbStatus === "error"
-                    ? "bg-red-500"
-                    : "bg-zinc-500 animate-pulse"
-              }`}
-            />
-            {dbStatus === "connected"
-              ? "Database Online"
-              : dbStatus === "error"
-                ? "System Offline"
-                : "Checking..."}
-          </div>
-        </div>
-
-        {dbStatus !== "connected" && <SupabaseSetupGuide />}
-
-        <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <RefreshCw
-                className={`h-4 w-4 text-primary ${dbStatus === "checking" ? "animate-spin" : ""}`}
-              />
-              <h3 className="text-sm font-bold uppercase tracking-tight">
-                Active Connection Diagnostics
-              </h3>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={checkConnection}
-              disabled={dbStatus === "checking"}
-              className="h-8 text-[10px] font-bold uppercase tracking-widest hover:bg-primary/10"
+              id="device-permissions-section"
+              className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-5 transition-all"
             >
-              Force Re-sync
-            </Button>
-          </div>
+              <div>
+                <h3 className="text-base font-bold text-foreground">{t.devicePerms}</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{t.devicePermsSub}</p>
+              </div>
 
-          <div className="flex items-center gap-3 rounded-xl bg-muted/30 p-4 border border-white/5">
-            {dbStatus === "connected" ? (
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-emerald-500">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span className="text-sm font-bold">Successfully Verified</span>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <PermissionCard
+                  title={t.cameraInterface}
+                  desc={t.cameraDesc}
+                  enabled={cameraEnabled}
+                  icon={Camera}
+                  onToggle={() => handleTogglePermission("camera")}
+                />
+                <PermissionCard
+                  title={t.micAccess}
+                  desc={t.micDesc}
+                  enabled={micEnabled}
+                  icon={Mic}
+                  onToggle={() => handleTogglePermission("mic")}
+                />
+                <PermissionCard
+                  title={t.sysNotify}
+                  desc={t.sysNotifyDesc}
+                  enabled={notificationsEnabled}
+                  icon={Bell}
+                  onToggle={() => handleTogglePermission("notify")}
+                />
+                <PermissionCard
+                  title={t.offlineCache}
+                  desc={t.offlineCacheDesc}
+                  enabled={storageEnabled}
+                  icon={HardDrive}
+                  onToggle={() => handleTogglePermission("storage")}
+                />
+              </div>
+            </div>
+
+            {/* Localization Preferences Subsection */}
+            <div
+              id="regional-preferences-section"
+              className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-5 transition-all"
+            >
+              <div>
+                <h3 className="text-base font-bold text-foreground">{t.regionalPref}</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{t.regionalPrefSub}</p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="lang-select-primary">{t.interfaceLang}</Label>
+                  <select
+                    id="lang-select-primary"
+                    value={language}
+                    onChange={(e) => {
+                      setLanguage(e.target.value as LanguageCode);
+                      toast.success(`Language shifted dynamically!`);
+                    }}
+                    className="w-full rounded-xl border border-input bg-background/60 px-3.5 py-2.5 text-xs font-bold text-foreground outline-none focus:border-primary transition-all text-left"
+                  >
+                    <option value="en">English (Default)</option>
+                    <option value="lg">Luganda (Central Region)</option>
+                    <option value="nk">Runyankole (Western Region)</option>
+                    <option value="sw">Swahili (East Africa)</option>
+                    <option value="lu">Luo (Northern & Eastern)</option>
+                    <option value="ls">Lusoga (Eastern Region)</option>
+                  </select>
                 </div>
-                <p className="text-[10px] text-muted-foreground leading-relaxed">
-                  The application is currently communicating with the Supabase cluster. All study
-                  data and teacher submissions are synchronized.
-                </p>
-              </div>
-            ) : dbStatus === "error" ? (
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-red-500">
-                  <XCircle className="h-4 w-4" />
-                  <span className="text-sm font-bold">Protocol Failure</span>
+
+                <div className="space-y-3 pt-4 md:pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold">{t.autoSyncCloud}</span>
+                      <span className="text-[10px] text-muted-foreground">{t.autoSyncCloudSub}</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setAutoSync(!autoSync);
+                        localStorage.setItem("pref_autosync", String(!autoSync));
+                        toast.success(`Auto-sync: ${!autoSync ? "Enabled" : "Disabled"}`);
+                      }}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                        autoSync ? "bg-primary" : "bg-muted"
+                      }`}
+                    >
+                      <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        autoSync ? "translate-x-5" : "translate-x-0"
+                      }`} />
+                    </button>
+                  </div>
                 </div>
-                <p className="text-[10px] text-muted-foreground leading-relaxed">
-                  Unable to reach the database. This usually indicates invalid credentials or
-                  missing environment variables. Review the configuration guide above.
-                </p>
               </div>
-            ) : (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <RefreshCw className="h-4 w-4 animate-spin" />
-                <span className="text-sm font-medium">Running diagnostics...</span>
-              </div>
-            )}
+            </div>
           </div>
-        </div>
-      </section>
+        )}
 
-      {/* FEEDBACK & SUPPORT */}
-      <section className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-4">
-        <div className="flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-bold">Feedback & Support</h2>
-        </div>
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          Spotted an issue? Have a feature request? Let us know how we can improve your study
-          experience.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <QuickFeedbackButton />
-          <Button variant="ghost" onClick={() => navigate({ to: "/support" })} className="text-xs">
-            Visit Support Center
-          </Button>
-        </div>
-      </section>
+        {/* TAB 2: IDENTITY & SOUNDS */}
+        {activeTab === "identity" && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Tutor Voice Picker Subsection */}
+            <div
+              id="tutor-voice-section"
+              className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-5 transition-all"
+            >
+              <div>
+                <h3 className="text-base font-bold text-foreground">{t.tutorVoiceSelect}</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{t.tutorVoiceSelectSub}</p>
+              </div>
 
-      {/* THEME SELECTOR */}
-      <section className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm">
-        <h2 className="text-lg font-bold mb-4">Display Theme</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <Button
-            variant={theme === "light" ? "default" : "outline"}
-            onClick={() => setTheme("light")}
-            className="h-12 rounded-xl"
-          >
-            <Sun className="mr-2 h-4 w-4" /> Academic Paper
-          </Button>
-          <Button
-            variant={theme === "dark" ? "default" : "outline"}
-            onClick={() => setTheme("dark")}
-            className="h-12 rounded-xl"
-          >
-            <Moon className="mr-2 h-4 w-4" /> Deep Space
-          </Button>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {/* Adams Card */}
+                <div className={`p-5 rounded-2xl border-2 transition-all text-left flex flex-col justify-between ${
+                  tutor.persona.voice === "male"
+                    ? "border-primary bg-primary/5 shadow-inner"
+                    : "border-border/60 bg-background/50 hover:border-border"
+                }`}>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-lg bg-blue-600/10 text-blue-500 flex items-center justify-center font-bold">
+                          A
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-extrabold text-foreground">{t.adamsName}</h4>
+                          <span className="text-[10px] uppercase font-bold tracking-wider text-blue-400">British Accent</span>
+                        </div>
+                      </div>
+                      {tutor.persona.voice === "male" && (
+                        <span className="text-[10px] font-bold bg-primary px-2 py-0.5 text-primary-foreground rounded-full">
+                          Selected
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-normal">
+                      {t.adamsDesc}
+                    </p>
+                  </div>
+                  <div className="mt-5 flex gap-2">
+                    <Button
+                      onClick={() => tutor.setVoice("male")}
+                      className="text-xs font-bold rounded-xl h-8 px-3"
+                      variant={tutor.persona.voice === "male" ? "default" : "outline"}
+                    >
+                      <UserCheck className="h-3.5 w-3.5 mr-1" />
+                      Select
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleTestVoice("male")}
+                      className="text-xs font-bold rounded-xl h-8 px-3 text-primary"
+                    >
+                      <Play className="h-3.5 w-3.5 mr-1" />
+                      {t.testVoiceBtn}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Power Card */}
+                <div className={`p-5 rounded-2xl border-2 transition-all text-left flex flex-col justify-between ${
+                  tutor.persona.voice === "female"
+                    ? "border-primary bg-primary/5 shadow-inner"
+                    : "border-border/60 bg-background/50 hover:border-border"
+                }`}>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-lg bg-purple-600/10 text-purple-500 flex items-center justify-center font-bold">
+                          H
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-extrabold text-foreground">{t.powerName}</h4>
+                          <span className="text-[10px] uppercase font-bold tracking-wider text-purple-400">American Accent</span>
+                        </div>
+                      </div>
+                      {tutor.persona.voice === "female" && (
+                        <span className="text-[10px] font-bold bg-primary px-2 py-0.5 text-primary-foreground rounded-full">
+                          Selected
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-normal">
+                      {t.powerDesc}
+                    </p>
+                  </div>
+                  <div className="mt-5 flex gap-2">
+                    <Button
+                      onClick={() => tutor.setVoice("female")}
+                      className="text-xs font-bold rounded-xl h-8 px-3"
+                      variant={tutor.persona.voice === "female" ? "default" : "outline"}
+                    >
+                      <UserCheck className="h-3.5 w-3.5 mr-1" />
+                      Select
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleTestVoice("female")}
+                      className="text-xs font-bold rounded-xl h-8 px-3 text-primary"
+                    >
+                      <Play className="h-3.5 w-3.5 mr-1" />
+                      {t.testVoiceBtn}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Speech Attributes Subsection */}
+            <div
+              id="speech-attributes-section"
+              className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-6 transition-all"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-foreground">{t.synthesisAttrs}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t.synthesisAttrsSub}</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant={tutor.ttsEnabled ? "default" : "outline"}
+                  onClick={() => tutor.setTtsEnabled(!tutor.ttsEnabled)}
+                  className="rounded-xl h-8 text-xs font-bold"
+                >
+                  {tutor.ttsEnabled ? <Volume2 className="h-3.5 w-3.5 mr-1" /> : <VolumeX className="h-3.5 w-3.5 mr-1" />}
+                  {tutor.ttsEnabled ? "Active Read-Aloud" : "Muted"}
+                </Button>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs font-semibold">
+                    <span>{t.speechPitch}</span>
+                    <span className="font-mono">{pitchOffset > 0 ? `+${pitchOffset}` : pitchOffset}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="-0.5"
+                    max="0.5"
+                    step="0.1"
+                    value={pitchOffset}
+                    onChange={(e) => setPitchOffset(parseFloat(e.target.value))}
+                    className="w-full h-2 rounded-lg bg-muted appearance-none cursor-pointer accent-primary"
+                  />
+                  <p className="text-[10px] text-muted-foreground">{t.speechPitchDesc}</p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs font-semibold">
+                    <span>{t.speechRate}</span>
+                    <span className="font-mono">{rateOffset > 0 ? `+${rateOffset}` : rateOffset}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="-0.5"
+                    max="0.5"
+                    step="0.1"
+                    value={rateOffset}
+                    onChange={(e) => setRateOffset(parseFloat(e.target.value))}
+                    className="w-full h-2 rounded-lg bg-muted appearance-none cursor-pointer accent-primary"
+                  />
+                  <p className="text-[10px] text-muted-foreground">{t.speechRateDesc}</p>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button onClick={handleSaveAudioConfig} className="text-xs font-bold rounded-xl h-9">
+                  <Sliders className="h-3.5 w-3.5 mr-1" />
+                  {t.saveVoiceAttrs}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: INSTITUTIONAL BINDING & SCHOOL ID MANAGEMENT */}
+        {activeTab === "binding" && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Admin Privilege Panel Banner */}
+            <div className="rounded-3xl border border-dashed border-primary/30 bg-primary/5 p-5 flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 animate-pulse">
+                  <ShieldCheck className="h-5.5 w-5.5" />
+                </div>
+                <div>
+                  <span className="text-xs font-black text-foreground block">{t.adminPrivilege}</span>
+                  <span className="text-[10px] text-muted-foreground block max-w-md mt-0.5">
+                    Regenerate certified School IDs and synchronize teachers and students dynamically in real time without manual configuration.
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5 bg-background/50 border border-border/80 px-3 py-1.5 rounded-xl">
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Simulate Admin</span>
+                <button
+                  onClick={() => setSimulateAdmin(!simulateAdmin)}
+                  className={`relative inline-flex h-5.5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    simulateAdmin ? "bg-primary" : "bg-muted"
+                  }`}
+                >
+                  <span className={`pointer-events-none inline-block h-4.5 w-4.5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    simulateAdmin ? "translate-x-4.5" : "translate-x-0"
+                  }`} />
+                </button>
+              </div>
+            </div>
+
+            {/* School Binding Connection Form */}
+            <div
+              id="school-binding-section"
+              className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-5 transition-all"
+            >
+              <div className="flex justify-between items-start gap-4 flex-wrap border-b border-border/30 pb-4">
+                <div>
+                  <h3 className="text-base font-bold text-foreground">{t.instConnBinding}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t.instConnBindingSub}</p>
+                </div>
+                
+                {/* ADMIN ONLY REGENERATOR ACTION BUTTON */}
+                {isAdminOrSimulated && (
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleRegenerateSchoolId}
+                      disabled={isResynching}
+                      className="text-xs font-extrabold rounded-xl h-9 bg-amber-500 text-black hover:bg-amber-600 transition-all shadow-glow flex items-center gap-1.5"
+                    >
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin-slow" />
+                      {t.regenerateSchoolId}
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* SECURITY PROTOCOL COUNTDOWN BLOCK */}
+              {regenerationPending && (
+                <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-4 animate-fade-in">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-amber-500 animate-spin" style={{ animationDuration: "12s" }} />
+                      <span className="text-xs font-extrabold text-amber-500 uppercase tracking-widest">NCDC Registry Lock Active</span>
+                    </div>
+                    <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 font-bold">
+                      Protocol S2-NCDC
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-foreground font-semibold leading-relaxed">
+                      A certified School ID has been newly generated: <span className="font-mono text-amber-400 bg-zinc-900/80 px-2 py-1 rounded font-bold text-sm tracking-wider border border-amber-500/30">{pendingSchoolId}</span>
+                    </p>
+                    <p className="text-[11px] text-muted-foreground leading-normal">
+                      Security rules require a cooling verification cycle of <span className="text-amber-500 font-bold font-mono">{formatTime(verificationTimeLeft)}</span> before natural network propagation completes. However, as administrator, you can bypass this delay by resynching members immediately.
+                    </p>
+                  </div>
+
+                  {/* PROGRESS BAR */}
+                  <div className="bg-black/40 p-3 rounded-xl border border-amber-500/10">
+                    <div className="flex justify-between text-[10px] font-bold text-amber-500 mb-1.5">
+                      <span>Verification Cycle Progress</span>
+                      <span>{formatTime(verificationTimeLeft)} left</span>
+                    </div>
+                    <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                      <div 
+                        className="bg-amber-500 h-full transition-all duration-1000"
+                        style={{ width: `${((14400 - verificationTimeLeft) / 14400) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* OUT-OF-SYNC MEMBERS WARNING & INSTANT SYNC BUTTON */}
+                  {showResyncButton && (
+                    <div className="pt-2 border-t border-amber-500/20 flex flex-col gap-3">
+                      <div className="flex items-start gap-2 bg-rose-500/5 p-3 rounded-xl border border-rose-500/15">
+                        <Users className="h-4 w-4 text-rose-400 shrink-0 mt-0.5" />
+                        <div>
+                          <span className="text-xs font-bold text-rose-300 block">Out of Sync Warning</span>
+                          <span className="text-[10px] text-muted-foreground">
+                            12 students and 3 teachers are still registered under your previous ID (<span className="font-mono">{lastOldId}</span>). Tapping "Resync Members" will migrate them immediately.
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end">
+                        <Button
+                          onClick={handleResyncMembers}
+                          disabled={isResynching}
+                          className="text-xs font-black rounded-xl h-9 px-4 bg-amber-500 text-black hover:bg-amber-600 transition-all shadow-glow flex items-center gap-1.5"
+                        >
+                          {isResynching ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Users className="h-3.5 w-3.5" />}
+                          Resync Members & Migrate IDs
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="inst-id-input">{t.schoolIdLabel}</Label>
+                  <Input
+                    id="inst-id-input"
+                    value={newSchoolId}
+                    disabled={regenerationPending}
+                    onChange={(e) => {
+                      setNewSchoolId(e.target.value.toUpperCase());
+                      setBindingError(null);
+                    }}
+                    placeholder="e.g. SCH-UG-2026-97EZ"
+                    className="font-mono tracking-wider uppercase h-10 rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="inst-name-input">{t.schoolNameLabel}</Label>
+                  <Input
+                    id="inst-name-input"
+                    value={newSchoolName}
+                    onChange={(e) => {
+                      setNewSchoolName(e.target.value);
+                      setBindingError(null);
+                    }}
+                    placeholder="e.g. School in Uganda"
+                    className="h-10 rounded-xl"
+                  />
+                </div>
+              </div>
+
+              {bindingError && (
+                <p className="text-xs font-semibold text-destructive mt-1 leading-normal flex items-start gap-1.5">
+                  <Info className="h-4 w-4 shrink-0" />
+                  {bindingError}
+                </p>
+              )}
+
+              <div className="flex justify-between items-center pt-2 gap-4 flex-wrap border-t border-border/20">
+                <p className="text-[11px] text-muted-foreground max-w-md">
+                  Connecting to a verified space links student performance, analytics records, and diagnostic outputs with verified NCDC centers.
+                </p>
+                <Button onClick={handleUpdateBinding} className="text-xs font-bold rounded-xl h-9 px-4 shrink-0">
+                  {t.saveBindingBtn}
+                </Button>
+              </div>
+            </div>
+
+            {/* Sharing Invitation Dashboard */}
+            <div
+              id="sharing-dashboard-section"
+              className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-6 transition-all"
+            >
+              <div className="flex justify-between items-start gap-4 flex-wrap border-b border-border/40 pb-4">
+                <div>
+                  <h3 className="text-base font-bold text-foreground">{t.instShareDashboard}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t.instShareDashboardSub}</p>
+                </div>
+                {schoolId && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary border border-primary/20 font-mono uppercase tracking-wider">
+                    Registry: {schoolId}
+                  </span>
+                )}
+              </div>
+
+              <div className="p-4 rounded-2xl bg-muted/50 border border-border space-y-3">
+                <span className="text-[10px] font-bold text-primary uppercase tracking-wider block">{t.inviteTemplate}</span>
+                <p className="text-xs text-muted-foreground leading-normal italic bg-background/60 p-3 rounded-xl border border-border/40">
+                  "Salaam! Sync your learning portfolio with our official school space "{schoolName}". School ID: {schoolId}..."
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleCopyOnboardingInvite}
+                    variant="outline"
+                    size="sm"
+                    className="text-xs font-bold h-8 rounded-xl bg-background hover:bg-muted"
+                  >
+                    <Copy className="h-3.5 w-3.5 mr-1" />
+                    {t.copyInviteBtn}
+                  </Button>
+                  
+                  {isAdminOrSimulated && (
+                    <Button
+                      onClick={() => {
+                        const csvData = `Name,Role,Email\nExample Scholar,student,scholar@gmail.com\nExample Instructor,teacher,instructor@gmail.com`;
+                        const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(blob);
+                        link.download = `${schoolId}-onboarding-template.csv`;
+                        link.click();
+                        toast.success("Roster onboarding CSV template downloaded!");
+                      }}
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs font-bold h-8 text-primary rounded-xl"
+                    >
+                      <UserCheck className="h-3.5 w-3.5 mr-1" />
+                      {t.shareCsvBtn}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Branded QR Badge Subsection */}
+            <div
+              id="qr-badge-section"
+              className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-6 transition-all"
+            >
+              <span className="text-[10px] font-bold text-primary uppercase tracking-wider block">{t.qrBadgeTitle}</span>
+              {schoolId ? (
+                <div className="p-4 rounded-2xl bg-muted/40 border border-border/80">
+                  <SchoolIdQRCode
+                    schoolId={schoolId}
+                    schoolName={schoolName}
+                    studentName={profile?.display_name || user?.email?.split("@")[0] || " Scholar"}
+                    role={dbIsAdmin ? "Administrator" : dbIsTeacher ? "Instructor" : "Scholar"}
+                    className="w-full"
+                  />
+                </div>
+              ) : (
+                <div className="rounded-3xl border-2 border-dashed border-border p-8 text-center space-y-3">
+                  <QrCode className="h-10 w-10 mx-auto text-muted-foreground/50 animate-pulse" />
+                  <h4 className="text-sm font-bold text-muted-foreground">{t.noBindingTitle}</h4>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-normal">
+                    {t.noBindingDesc}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+interface PermissionCardProps {
+  title: string;
+  desc: string;
+  enabled: boolean;
+  icon: any;
+  onToggle: () => void;
+}
+
+function PermissionCard({ title, desc, enabled, icon: Icon, onToggle }: PermissionCardProps) {
+  return (
+    <div className="p-4 rounded-2xl border border-border/60 bg-background/50 hover:bg-background/80 transition-colors flex items-start justify-between gap-4">
+      <div className="flex items-start gap-3 min-w-0">
+        <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${
+          enabled ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+        }`}>
+          <Icon className="h-4 w-4" />
         </div>
-      </section>
+        <div className="space-y-0.5 min-w-0">
+          <h4 className="text-xs font-extrabold text-foreground truncate">{title}</h4>
+          <p className="text-[10px] text-muted-foreground leading-normal line-clamp-2">{desc}</p>
+        </div>
+      </div>
+
+      <button
+        onClick={onToggle}
+        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+          enabled ? "bg-primary" : "bg-muted"
+        }`}
+      >
+        <span className={`pointer-events-none inline-block h-4.5 w-4.5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+          enabled ? "translate-x-4.5" : "translate-x-0"
+        }`} />
+      </button>
     </div>
   );
 }

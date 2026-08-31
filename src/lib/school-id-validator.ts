@@ -9,11 +9,7 @@ export interface SchoolIdValidationResult {
 }
 
 /**
- * Validates whether a School ID complies with the Uganda NCDC Boarding Institution standard format.
- * Acceptable formats:
- * - Standard NCDC Boarding: SCH-UG-YYYY-XXXX (e.g. SCH-UG-2026-B871)
- * - NCDC District Boarding: NCDC-[DISTRICT]-YYYY-XXXX (e.g. NCDC-KAMPALA-2026-0912)
- * - Custom Institutional Code: SCH-[INST]-YYYY-[CODE] (e.g. SCH-MAKERERE-2026-8812)
+ * Validates whether a School ID complies with the standard format: XXXX-0000 (e.g., LCSS-4128) OR SCH-UG-YYYY-XXXX (e.g., SCH-UG-2026-97EZ).
  */
 export function validateNcdcSchoolId(id: string): SchoolIdValidationResult {
   if (!id || !id.trim()) {
@@ -25,45 +21,55 @@ export function validateNcdcSchoolId(id: string): SchoolIdValidationResult {
 
   const cleanId = id.trim().toUpperCase();
 
-  // Pattern checks
-  // 1. Strict NCDC Boarding format: SCH-UG-202X-XXXX
-  const ncdcStrictRegex = /^SCH-UG-(202[0-9]|203[0-9])-[A-Z0-9]{4,10}$/;
-  // 2. Flexible NCDC Boarding/Institutional format: (SCH|NCDC|UG)-[A-Z0-9]{2,12}-(202[0-9]|203[0-9])-[A-Z0-9]{3,10}$
-  const ncdcFlexRegex = /^(SCH|NCDC|UG)-[A-Z0-9]{2,12}-(202[0-9]|203[0-9])-[A-Z0-9]{3,10}$/;
-  // 3. Simple alphanumeric code (for legacy migration)
-  const legacyRegex = /^[A-Z0-9]{3,6}-[A-Z0-9]{3,8}$/;
+  // Explicitly reject UUIDs
+  const uuidRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/i;
+  if (uuidRegex.test(cleanId)) {
+    return {
+      isValid: false,
+      error: "UUIDs are not permitted. Please use a valid alphanumeric School ID format (e.g., SCH-UG-2026-97EZ or LCSS-4128).",
+    };
+  }
 
-  if (ncdcStrictRegex.test(cleanId) || ncdcFlexRegex.test(cleanId)) {
+  // Pattern 1: standard XXXX-0000 (e.g., LCSS-4128)
+  const standardRegex = /^[A-Z]{3,4}-[0-9]{4}$/;
+  
+  // Pattern 2: Uganda School format SCH-UG-[YEAR]-[4 ALPHANUMERIC CHARACTER CODE] (e.g., SCH-UG-2026-97EZ)
+  const ugandaSchoolRegex = /^SCH-UG-[0-9]{4}-[A-Z0-9]{4}$/;
+
+  if (standardRegex.test(cleanId) || ugandaSchoolRegex.test(cleanId)) {
     return {
       isValid: true,
       formatted: cleanId,
     };
   }
 
-  if (legacyRegex.test(cleanId)) {
-    return {
-      isValid: true,
-      formatted: `SCH-${cleanId}`,
-    };
-  }
-
   return {
     isValid: false,
     error:
-      "Invalid format. NCDC Boarding Institution School IDs must follow 'SCH-UG-2026-XXXX' (e.g., SCH-UG-2026-B871).",
+      "Invalid format. School ID must follow standard 'SCH-UG-2026-97EZ' or 'XXXX-0000' style formats.",
   };
 }
 
 /**
- * Auto-generates a standard NCDC Boarding Institution School ID.
- * Example result: SCH-UG-2026-E4A9
+ * Auto-generates a standard Institution School ID.
+ * Example result: SCH-UG-2026-97EZ
  */
-export function generateNcdcBoardingSchoolId(): string {
-  const year = new Date().getFullYear();
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Omit confusing letters (O, I, 0, 1)
-  let code = "";
-  for (let i = 0; i < 4; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+export function generateNcdcBoardingSchoolId(shortName?: string): string {
+  if (shortName && shortName.toUpperCase().includes("UG")) {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // No confusing 0, 1, I, O
+    let randomSuffix = "";
+    for (let i = 0; i < 4; i++) {
+      randomSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return `SCH-UG-2026-${randomSuffix}`;
   }
-  return `SCH-UG-${year}-${code}`;
+  
+  // Default to the premium Uganda school format:
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let randomSuffix = "";
+  for (let i = 0; i < 4; i++) {
+    randomSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return `SCH-UG-2026-${randomSuffix}`;
 }
+

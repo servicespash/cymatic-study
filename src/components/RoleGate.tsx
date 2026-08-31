@@ -24,6 +24,10 @@ export interface RoleGateProps {
    */
   requireInstitutional?: boolean;
   /**
+   * Convenience flag to check if user is independent
+   */
+  requireIndependent?: boolean;
+  /**
    * Allow guest/unauthenticated users (useful for public/preview blocks)
    */
   allowGuest?: boolean;
@@ -56,6 +60,7 @@ export function RoleGate({
   requireTeacher = false,
   requireStudent = false,
   requireInstitutional = false,
+  requireIndependent = false,
   allowGuest = false,
   invert = false,
   fallback = null,
@@ -88,6 +93,12 @@ export function RoleGate({
           user?.user_metadata?.org_id,
       );
       if (!hasInstitution) return false;
+    }
+
+    // Independent check
+    if (requireIndependent) {
+        const isIndependent = normalizedCurrentRole === "independent_learner" || normalizedCurrentRole === "independent_teacher";
+        if (!isIndependent) return false;
     }
 
     // 3. Admin override & explicit check
@@ -126,6 +137,7 @@ export function RoleGate({
     requireTeacher,
     requireStudent,
     requireInstitutional,
+    requireIndependent,
     allowedRoles,
     profile,
     normalizedCurrentRole,

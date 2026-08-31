@@ -66,7 +66,7 @@ import { SchoolIdQRCode } from "@/components/SchoolIdQRCode";
 import { InstitutionalRegistryModule } from "@/components/InstitutionalRegistryModule";
 import { AdminPerformanceReportsModule } from "@/components/AdminPerformanceReportsModule";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ReleaseDashboard } from "@/components/ReleaseDashboard";
+import { TeacherApprovalTable } from "@/components/admin/TeacherApprovalTable";
 import { DeploymentStatus } from "@/components/DeploymentStatus";
 import { AdminOnboardingWorkflow } from "@/components/AdminOnboardingWorkflow";
 import { UnifiedInstitutionalDirectory } from "@/components/UnifiedInstitutionalDirectory";
@@ -1343,6 +1343,7 @@ function AdminDashboard() {
         {activeTab === "faculty" && (
           <div className="space-y-6 animate-in fade-in duration-500">
             {/* INSTITUTIONAL MEMBER REGISTRY & LINK GENERATOR */}
+            <TeacherApprovalTable />
             <InstitutionalRegistryModule />
 
             <header className="flex justify-between items-end pt-6 border-t border-white/10">
