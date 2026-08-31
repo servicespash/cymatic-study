@@ -113,7 +113,7 @@ function LessonsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
+    <div className="app-container dashboard-container space-y-8 min-h-screen bg-background text-foreground">
       <h1 className="mb-2 text-3xl font-extrabold">Explore Lessons</h1>
       <p className="mb-6 text-sm text-muted-foreground">
         Pick a subject and class to read your notes. Tap a topic to expand.

@@ -323,7 +323,7 @@ function TeacherWorkflowPage() {
     : null;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="app-container dashboard-container space-y-8 min-h-screen bg-zinc-950 text-zinc-100">
       {/* HEADER HERO */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-zinc-900 via-teal-950 to-zinc-900 p-6 md:p-8 border border-zinc-800 shadow-2xl">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">

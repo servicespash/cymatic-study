@@ -136,7 +136,7 @@ function StudentDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="app-container dashboard-container space-y-8 min-h-screen bg-zinc-950 text-zinc-100">
       {/* HEADER HERO */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-zinc-900 via-indigo-950 to-zinc-900 p-6 md:p-8 border border-zinc-800 shadow-2xl">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -178,7 +178,7 @@ function StudentDashboardPage() {
       </div>
 
       {/* METRIC CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="dashboard-grid">
         <Card className="bg-zinc-900/80 border-zinc-800 rounded-2xl">
           <CardContent className="p-5 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">

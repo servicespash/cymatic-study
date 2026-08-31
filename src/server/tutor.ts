@@ -199,7 +199,7 @@ Your task is to provide personalized, Socratic guidance based on this specific s
           console.warn(`[Tutor Server] Model ${modelName} attempt ${attempts} failed:`, errStr);
 
           if (isTransient && attempts < maxAttempts) {
-            await new Promise((resolve) => setTimeout(resolve, 600));
+            await new Promise((resolve) => setTimeout(resolve, 1500));
             continue;
           }
           break;
@@ -266,7 +266,9 @@ Your task is to provide personalized, Socratic guidance based on this specific s
     async start(controller) {
       if (shouldEmitOfftopic) {
         controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: "<offtopic/>" } }] })}\n\n`),
+          encoder.encode(
+            `data: ${JSON.stringify({ choices: [{ delta: { content: "<offtopic/>" } }] })}\n\n`,
+          ),
         );
       }
 

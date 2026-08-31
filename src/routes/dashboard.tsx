@@ -332,7 +332,7 @@ function DashboardPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 md:px-8 py-10 space-y-8">
+    <div className="app-container dashboard-container space-y-8 min-h-screen bg-background text-foreground">
       {/* USER PROFILE & SCHOOL ID BANNER */}
       <UserProfileCard />
 
@@ -396,7 +396,7 @@ function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="dashboard-grid">
             <Card className="border-zinc-800 bg-zinc-950/50 backdrop-blur-xl">
               <CardHeader className="p-4">
                 <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">

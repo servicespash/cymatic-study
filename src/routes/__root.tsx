@@ -95,7 +95,10 @@ function RootComponent() {
   }, []);
 
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const isIsolated = pathname.startsWith("/mark/");
+  const isIsolated =
+    pathname.startsWith("/mark/") ||
+    pathname.startsWith("/chat") ||
+    pathname.startsWith("/tutor");
 
   if (isIsolated) {
     return (

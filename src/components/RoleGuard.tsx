@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useUserRole, type UserRole } from "@/hooks/useUserRole";
 import { useAuth } from "@/hooks/use-auth";

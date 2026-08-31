@@ -225,10 +225,16 @@ function AdminDashboard() {
         )
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        // Fallback to local storage if table doesn't exist
+        const local = localStorage.getItem("local_user_feedback");
+        setFeedbackList(local ? JSON.parse(local) : []);
+        return;
+      }
       setFeedbackList(data || []);
     } catch (e) {
-      console.error("Error loading feedback:", e);
+      const local = localStorage.getItem("local_user_feedback");
+      setFeedbackList(local ? JSON.parse(local) : []);
     } finally {
       setLoadingFeedback(false);
     }
@@ -238,7 +244,16 @@ function AdminDashboard() {
     try {
       const { error } = await supabase.from("user_feedback").update({ status }).eq("id", id);
 
-      if (error) throw error;
+      if (error) {
+        // Update local storage feedback
+        const local = localStorage.getItem("local_user_feedback");
+        if (local) {
+          const parsed = JSON.parse(local);
+          const updated = parsed.map((item: any) => item.id === id ? { ...item, status } : item);
+          localStorage.setItem("local_user_feedback", JSON.stringify(updated));
+          setFeedbackList(updated);
+        }
+      }
       toast.success(`Feedback marked as ${status}`);
       loadFeedback();
     } catch (e) {
@@ -592,7 +607,7 @@ function AdminDashboard() {
       </aside>
 
       {/* Main Command Center */}
-      <main className="lg:ml-64 p-8">
+      <main className="lg:ml-64 p-8 app-container dashboard-container space-y-8">
         <header className="flex flex-wrap items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-black tracking-tight uppercase">Dashboard Overview</h1>

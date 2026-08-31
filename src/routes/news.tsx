@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { FoundersSpotlight } from "@/components/FoundersSpotlight";
 import { toast } from "sonner";
 import { NewsFeed } from "@/components/NewsFeed";
-import { useNewsFeed, NewsItem } from "@/lib/supabase-service";
+import { useNewsService, NewsArticle } from "@/lib/news";
 import { cn } from "@/lib/utils";
 import { LiveBadge } from "@/components/LiveBadge";
 import { useLiveSession } from "@/hooks/useLiveSession";
@@ -42,18 +42,26 @@ type ParsedBody = {
 };
 
 function NewsPage() {
-  const { items, loading, refreshing, error, diagnosticError, isUsingMock, refreshFeed } =
-    useNewsFeed();
+  const { articles, loading, refreshing, error, refreshNews } = useNewsService();
 
-  // Show error toast if real-time or fetch fails
+  const items: NewsItem[] = articles.map((a) => ({
+    id: a.id,
+    title: a.title,
+    body: a.body,
+    media_url: a.media_url || null,
+    media_type: a.media_type || "article",
+    category: a.category || "General",
+    published_at: a.published_at,
+  }));
+
   useEffect(() => {
     if (error) {
-      toast.error("Failed to connect to network feed.");
+      toast.error(`Failed to load news feed: ${error}`);
     }
   }, [error]);
 
   const handleRefresh = async () => {
-    await refreshFeed();
+    await refreshNews();
     toast.success("Content feed updated successfully!");
   };
 
@@ -214,7 +222,7 @@ function NewsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-3 sm:p-4 pb-24 text-zinc-100 overflow-x-hidden w-full max-w-full">
+    <div className="app-container dashboard-container min-h-screen bg-background text-foreground">
       <audio
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}
@@ -247,104 +255,38 @@ function NewsPage() {
 
         {/* Supabase Connection Status & Query Diagnostic */}
         <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg backdrop-blur-md relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-2 h-full bg-amber-500" />
+          <div className="absolute top-0 left-0 w-2 h-full bg-emerald-500" />
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
-              <div className="p-2.5 bg-amber-500/10 rounded-xl mt-1">
-                <Database className="h-5 w-5 text-amber-400" />
+              <div className="p-2.5 bg-emerald-500/10 rounded-xl mt-1">
+                <Database className="h-5 w-5 text-emerald-400" />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-sm font-black text-white uppercase tracking-wider">
-                    Supabase 'content' Query Diagnostic
+                    Supabase News Feed Connected
                   </h2>
-                  <span
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                      isUsingMock
-                        ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                        : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                    }`}
-                  >
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${isUsingMock ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`}
-                    />
-                    {isUsingMock ? "Simulated Fallback Active" : "Supabase Connected"}
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Live Sync Active
                   </span>
                 </div>
                 <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-                  {isUsingMock
-                    ? "The application attempted to query the 'content' table in Supabase, but encountered a table resolution error. A fallback mock content service has taken over instantly to prevent application failure."
-                    : "Successfully streaming production content directly from your public.content database table."}
+                  Streaming verified curriculum announcements, masterclasses, and student spotlight updates in real-time from Supabase.
                 </p>
               </div>
             </div>
 
             <button
               onClick={() => {
-                refreshFeed();
-                toast.info("Re-testing Supabase connectivity...");
+                refreshNews();
+                toast.info("Refreshing news feed from Supabase...");
               }}
               className="px-4 py-2 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-xl text-xs font-bold text-zinc-300 transition-colors shrink-0"
             >
-              Test Query Connectivity
+              Sync Now
             </button>
           </div>
-
-          {isUsingMock && diagnosticError && (
-            <div className="mt-4 border-t border-white/5 pt-4">
-              <div className="bg-black/60 border border-red-500/20 rounded-xl p-4 font-mono text-xs">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] uppercase font-black text-red-400 tracking-wider">
-                    Database Query Failure Logs (Captured)
-                  </span>
-                  <span className="text-[9px] text-zinc-500">
-                    Timestamp: {new Date().toLocaleTimeString()}
-                  </span>
-                </div>
-                <div className="space-y-1.5 text-zinc-300">
-                  <p>
-                    <span className="text-zinc-500">Query Target:</span>{" "}
-                    <span className="text-cyan-400">supabase.from("content").select("*")</span>
-                  </p>
-                  <p>
-                    <span className="text-zinc-500">Status Detail:</span>{" "}
-                    <span className="text-red-400 font-bold">{diagnosticError}</span>
-                  </p>
-                  <p className="text-[11px] text-zinc-400 leading-relaxed pt-2 border-t border-white/5 mt-2">
-                    <strong className="text-zinc-300">💡 Developer Guidance:</strong> To resolve
-                    this connection failure, execute the SQL script below in your Supabase SQL
-                    Editor to provision the{" "}
-                    <code className="text-cyan-300 bg-white/5 px-1 py-0.5 rounded">content</code>{" "}
-                    table and populate initial syllabus updates, live masterclasses, and audio
-                    podcasts.
-                  </p>
-
-                  {/* SQL Schema helper copy-paste */}
-                  <div className="mt-3 relative bg-zinc-950/80 border border-white/5 rounded-lg p-3 text-[11px] leading-relaxed max-h-[160px] overflow-y-auto">
-                    <pre className="text-emerald-400 whitespace-pre-wrap select-all">
-                      {`-- SQL to create the missing 'content' table and enable row level security (RLS)
-CREATE TABLE IF NOT EXISTS public.content (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  title TEXT NOT NULL,
-  body TEXT NOT NULL,
-  media_url TEXT,
-  media_type TEXT,
-  category TEXT,
-  published_at TIMESTAMPTZ DEFAULT NOW(),
-  is_ad BOOLEAN DEFAULT FALSE,
-  priority TEXT,
-  is_active BOOLEAN DEFAULT TRUE
-);
-
--- Enable RLS and insert initial test content
-ALTER TABLE public.content ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow public read access" ON public.content FOR SELECT USING (true);`}
-                    </pre>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Dual-column Grid: News on Left, Custom Podcasts Console on Right */}

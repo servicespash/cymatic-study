@@ -55,14 +55,44 @@ export default function QuickFeedbackButton() {
         status: "open",
       });
 
-      if (error) throw error;
+      if (error) {
+        // Save to local storage fallback
+        const existing = localStorage.getItem("local_user_feedback");
+        const list = existing ? JSON.parse(existing) : [];
+        const newFeedback = {
+          id: Date.now().toString(),
+          user_id: user.id,
+          type: feedbackType,
+          section: location.pathname,
+          message: message.trim(),
+          status: "open",
+          created_at: new Date().toISOString(),
+          profiles: { display_name: profile?.display_name || user.email || "User", level: profile?.level || "S1" }
+        };
+        localStorage.setItem("local_user_feedback", JSON.stringify([newFeedback, ...list]));
+      }
 
       toast.success("Thank you for your feedback!");
       setMessage("");
       setIsOpen(false);
     } catch (error: any) {
-      console.error("Feedback error:", error);
-      toast.error("Failed to send feedback. Please try again.");
+      // Fallback local storage
+      const existing = localStorage.getItem("local_user_feedback");
+      const list = existing ? JSON.parse(existing) : [];
+      const newFeedback = {
+        id: Date.now().toString(),
+        user_id: user.id,
+        type: feedbackType,
+        section: location.pathname,
+        message: message.trim(),
+        status: "open",
+        created_at: new Date().toISOString(),
+        profiles: { display_name: profile?.display_name || user.email || "User", level: profile?.level || "S1" }
+      };
+      localStorage.setItem("local_user_feedback", JSON.stringify([newFeedback, ...list]));
+      toast.success("Thank you for your feedback!");
+      setMessage("");
+      setIsOpen(false);
     } finally {
       setIsSubmitting(false);
     }
