@@ -69,7 +69,9 @@ export class DataService {
   /**
    * Fetch news_broadcasts with sorting by published_at
    */
-  static async fetchNewsBroadcasts(_options?: DataServiceOptions): Promise<{ data: NewsBroadcastRecord[]; error: any }> {
+  static async fetchNewsBroadcasts(
+    _options?: DataServiceOptions,
+  ): Promise<{ data: NewsBroadcastRecord[]; error: any }> {
     const { data, error } = await this.fetchTable<NewsBroadcastRecord>("news_broadcasts", "*", {
       column: "published_at",
       ascending: false,
@@ -137,7 +139,9 @@ export class DataService {
    */
   static async upsertRecord<T>(tableName: string, record: Partial<T>, onConflict?: string) {
     try {
-      const query = supabase.from(tableName).upsert(record as any, onConflict ? { onConflict } : undefined);
+      const query = supabase
+        .from(tableName)
+        .upsert(record as any, onConflict ? { onConflict } : undefined);
       const { data, error } = await query.select();
       if (error) throw error;
       return { data, error: null };

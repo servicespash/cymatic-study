@@ -87,7 +87,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
           is_bookmarked: isBookmarked,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: "user_id,content_id" }
+        { onConflict: "user_id,content_id" },
       );
       toast.success(nextLiked ? "Broadcast liked!" : "Like removed");
     } catch (err) {
@@ -116,7 +116,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
           is_bookmarked: nextBookmarked,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: "user_id,content_id" }
+        { onConflict: "user_id,content_id" },
       );
       toast.success(nextBookmarked ? "Broadcast bookmarked!" : "Bookmark removed");
     } catch (err) {
@@ -198,10 +198,10 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
           <MiniAudioPlayer src={item.media_url} title={item.title} />
         </div>
       )}
-      
+
       {!item.media_url && !isPodcast && (
         <div className="relative aspect-[21/9] overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center p-6 text-zinc-400">
-           <BookOpen className="h-12 w-12 opacity-20" />
+          <BookOpen className="h-12 w-12 opacity-20" />
         </div>
       )}
 

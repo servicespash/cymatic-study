@@ -6,7 +6,7 @@ export const BRAND = {
     "Cymatic Education Uganda",
     "Cymatic NLSC",
     "Lattys Study",
-    "Cymatic Study"
+    "Cymatic Study",
   ],
   partner: "Pash Media",
   tagline: "Educate. Together we elevate. One love ✌️",

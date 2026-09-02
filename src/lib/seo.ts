@@ -48,16 +48,18 @@ export function generateMetaTags(seo: SEOMetadata) {
     author = DEFAULT_AUTHOR,
   } = seo;
 
-  const combinedKeywords = Array.from(new Set([
-    ...keywords,
-    ...BRAND.aliases,
-    "Uganda Secondary School Notes",
-    "NCDC New Curriculum S1-S4",
-    "UNEB Practice Quizzes",
-    "Uganda O-Level Study",
-    "Uganda A-Level Study",
-    "Socratic Tutoring Uganda"
-  ]));
+  const combinedKeywords = Array.from(
+    new Set([
+      ...keywords,
+      ...BRAND.aliases,
+      "Uganda Secondary School Notes",
+      "NCDC New Curriculum S1-S4",
+      "UNEB Practice Quizzes",
+      "Uganda O-Level Study",
+      "Uganda A-Level Study",
+      "Socratic Tutoring Uganda",
+    ]),
+  );
 
   const meta = [
     { charSet: "utf-8" },
@@ -71,7 +73,10 @@ export function generateMetaTags(seo: SEOMetadata) {
     { name: "keywords", content: combinedKeywords.join(", ") },
 
     // Search Engine Crawlability directives (GEO + SEO optimized)
-    { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" },
+    {
+      name: "robots",
+      content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    },
     { name: "googlebot", content: "index, follow, max-snippet:-1" },
 
     // Open Graph
@@ -147,7 +152,8 @@ export function getOrganizationSchema(): JSONLDSchema {
     alternateName: BRAND.aliases,
     url: BASE_URL,
     logo: `${BASE_URL}/logo.png`,
-    description: "Interactive study companion for Uganda Secondary Curriculum (NCDC Aligned) supporting Lattys Cymatic Study, Cymatic Study Uganda, Cymatic Education Uganda, Cymatic NLSC, and Lattys Study.",
+    description:
+      "Interactive study companion for Uganda Secondary Curriculum (NCDC Aligned) supporting Lattys Cymatic Study, Cymatic Study Uganda, Cymatic Education Uganda, Cymatic NLSC, and Lattys Study.",
     sameAs: ["https://www.cymatichub.xyz", "https://resonance.cymatichub.xyz"],
     contactPoint: {
       "@type": "ContactPoint",
@@ -173,20 +179,22 @@ export function getAllCoursesSchemas(): JSONLDSchema[] {
       schemas.push({
         "@context": "https://schema.org",
         "@type": "Course",
-        "name": `${classLevel} ${subject.title} — ${BRAND.name}`,
-        "description": `Comprehensive curriculum and study materials for ${classLevel} ${subject.title}. ${subject.description} Fully aligned with Uganda National Curriculum Development Centre (NCDC) and UNEB standards. Supports all dynamic classes.`,
-        "courseCode": `${subject.category.toUpperCase()}-${classLevel.replace("Senior ", "S")}`,
-        "provider": {
+        name: `${classLevel} ${subject.title} — ${BRAND.name}`,
+        description: `Comprehensive curriculum and study materials for ${classLevel} ${subject.title}. ${subject.description} Fully aligned with Uganda National Curriculum Development Centre (NCDC) and UNEB standards. Supports all dynamic classes.`,
+        courseCode: `${subject.category.toUpperCase()}-${classLevel.replace("Senior ", "S")}`,
+        provider: {
           "@type": "Organization",
-          "name": BRAND.name,
-          "alternateName": BRAND.aliases,
-          "url": BASE_URL,
+          name: BRAND.name,
+          alternateName: BRAND.aliases,
+          url: BASE_URL,
         },
-        "educationalLevel": isALevel ? "Advanced Secondary Education (UACE)" : "Lower Secondary Education (UCE)",
-        "about": {
+        educationalLevel: isALevel
+          ? "Advanced Secondary Education (UACE)"
+          : "Lower Secondary Education (UCE)",
+        about: {
           "@type": "Thing",
-          "name": `${subject.title} Curriculum Uganda`
-        }
+          name: `${subject.title} Curriculum Uganda`,
+        },
       });
     });
   });

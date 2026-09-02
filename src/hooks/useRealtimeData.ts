@@ -4,10 +4,10 @@ import { db } from "@/lib/db";
 import { z } from "zod";
 
 export function useRealtimeData<T>(
-  table: 'news' | 'news_broadcasts' | 'profiles' | 'submissions' | 'reports',
+  table: "news" | "news_broadcasts" | "profiles" | "submissions" | "reports",
   schema: z.ZodObject<any>,
-  event: 'INSERT' | 'UPDATE' | 'DELETE' | '*' = '*',
-  dependencies: any[] = []
+  event: "INSERT" | "UPDATE" | "DELETE" | "*" = "*",
+  dependencies: any[] = [],
 ) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -34,14 +34,14 @@ export function useRealtimeData<T>(
         setLoading(true);
         const { data: remoteData, error } = await supabase.from(table).select("*");
         if (error) throw error;
-        
+
         if (remoteData) {
           // Validate with Zod
           const validatedData = remoteData.map((item) => schema.parse(item));
           setData(validatedData as T[]);
-          
+
           // Persist to cache
-          await db.transaction('rw', (db as any)[table], async () => {
+          await db.transaction("rw", (db as any)[table], async () => {
             await (db as any)[table].clear();
             await (db as any)[table].bulkAdd(validatedData);
           });
@@ -58,32 +58,30 @@ export function useRealtimeData<T>(
     // Setup subscription
     const channel = supabase
       .channel(`public:${table}`)
-      .on(
-        'postgres_changes',
-        { event, schema: 'public', table },
-        (payload) => {
-          if (event === 'INSERT' || payload.eventType === 'INSERT') {
-            try {
-              const validated = schema.parse(payload.new);
-              setData((prev) => [...prev, validated as T]);
-              (db as any)[table].add(validated);
-            } catch (e) {
-              console.error("Validation error on insert:", e);
-            }
-          } else if (event === 'UPDATE' || payload.eventType === 'UPDATE') {
-            try {
-              const validated = schema.parse(payload.new);
-              setData((prev) => prev.map((item: any) => (item.id === validated.id ? validated : item)));
-              (db as any)[table].put(validated);
-            } catch (e) {
-              console.error("Validation error on update:", e);
-            }
-          } else if (event === 'DELETE' || payload.eventType === 'DELETE') {
-            setData((prev) => prev.filter((item: any) => item.id !== payload.old.id));
-            (db as any)[table].delete(payload.old.id);
+      .on("postgres_changes", { event, schema: "public", table }, (payload) => {
+        if (event === "INSERT" || payload.eventType === "INSERT") {
+          try {
+            const validated = schema.parse(payload.new);
+            setData((prev) => [...prev, validated as T]);
+            (db as any)[table].add(validated);
+          } catch (e) {
+            console.error("Validation error on insert:", e);
           }
+        } else if (event === "UPDATE" || payload.eventType === "UPDATE") {
+          try {
+            const validated = schema.parse(payload.new);
+            setData((prev) =>
+              prev.map((item: any) => (item.id === validated.id ? validated : item)),
+            );
+            (db as any)[table].put(validated);
+          } catch (e) {
+            console.error("Validation error on update:", e);
+          }
+        } else if (event === "DELETE" || payload.eventType === "DELETE") {
+          setData((prev) => prev.filter((item: any) => item.id !== payload.old.id));
+          (db as any)[table].delete(payload.old.id);
         }
-      )
+      })
       .subscribe();
 
     return () => {

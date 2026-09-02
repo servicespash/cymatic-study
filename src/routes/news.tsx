@@ -47,11 +47,17 @@ import { NewsItemSchema } from "@/lib/schema";
 // ... (keep imports)
 
 function NewsPage() {
-  const { data: items, loading, error } = useRealtimeData<NewsItem>('news_broadcasts', NewsItemSchema, '*');
+  const {
+    data: items,
+    loading,
+    error,
+  } = useRealtimeData<NewsItem>("news_broadcasts", NewsItemSchema, "*");
   const refreshing = false; // Real-time doesn't need explicit refresh
 
-  const refreshNews = async () => { /* no-op in real-time */ };
-// ... (keep rest)
+  const refreshNews = async () => {
+    /* no-op in real-time */
+  };
+  // ... (keep rest)
 
   useEffect(() => {
     if (error) {

@@ -94,14 +94,20 @@ export function InstitutionalRegistryModule() {
             return {
               id: p.id,
               name: p.display_name || "Scholar",
-              email: p.user_id ? `${p.user_id.slice(0, 8)}@cymaticstudy.ug` : "user@cymaticstudy.ug",
+              email: p.user_id
+                ? `${p.user_id.slice(0, 8)}@cymaticstudy.ug`
+                : "user@cymaticstudy.ug",
               role: isTeacher ? "teacher" : "student",
               level: p.level || undefined,
               stream: p.stream || undefined,
               subject: isTeacher ? p.tutor_persona || "Science & STEM" : undefined,
-              registryCode: p.referral_code || `${isTeacher ? "TCH" : "STD"}-${currentSchoolId.slice(-4)}-${p.id.slice(-4)}`,
+              registryCode:
+                p.referral_code ||
+                `${isTeacher ? "TCH" : "STD"}-${currentSchoolId.slice(-4)}-${p.id.slice(-4)}`,
               status: "active",
-              created_at: p.created_at ? p.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
+              created_at: p.created_at
+                ? p.created_at.split("T")[0]
+                : new Date().toISOString().split("T")[0],
             };
           });
           setRoster(mapped);

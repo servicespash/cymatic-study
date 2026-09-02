@@ -79,9 +79,7 @@ function TeacherWorkflowPage() {
 
   const [submissions, setSubmissions] = useState<StudentSubmission[]>([]);
 
-  const [selectedSubmission, setSelectedSubmission] = useState<StudentSubmission | null>(
-    null,
-  );
+  const [selectedSubmission, setSelectedSubmission] = useState<StudentSubmission | null>(null);
   const [activeModeTab, setActiveModeTab] = useState<"grading" | "manager">("grading");
   const [selectedLevel, setSelectedLevel] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");

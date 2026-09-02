@@ -115,7 +115,7 @@ export function useNewsService() {
         () => {
           console.log("Real-time news broadcast update detected! Refreshing news feed...");
           loadNews(true);
-        }
+        },
       )
       .subscribe();
 
