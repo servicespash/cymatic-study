@@ -77,137 +77,139 @@ export function Navigation() {
       "Command Center": "Command Center",
       "Teacher Station": "Teacher Station",
       "Student Records": "Student Records",
-      "Curriculum": "Curriculum",
-      "Analytics": "Analytics",
+      Curriculum: "Curriculum",
+      Analytics: "Analytics",
       "NCDC News": "NCDC News",
       "Lab Tools": "Lab Tools",
       "Teacher Desk": "Teacher Desk",
       "Marking Desk": "Marking Desk",
-      "Lessons": "Lessons",
-      "Quizzes": "Quizzes",
-      "Students": "Students",
+      Lessons: "Lessons",
+      Quizzes: "Quizzes",
+      Students: "Students",
       "Class Stats": "Class Stats",
       "Study Hub": "Study Hub",
       "My Portfolio": "My Portfolio",
       "AI Tutor": "AI Tutor",
-      "Projects": "Projects",
-      "News": "News",
-      "Tools": "Tools",
-      "Home": "Home",
+      Projects: "Projects",
+      News: "News",
+      Tools: "Tools",
+      Home: "Home",
       "News & Syllabus": "News & Syllabus",
       "Socratic AI": "Socratic AI",
       "Science Tools": "Science Tools",
-      "Support": "Support",
-      "Settings": "Settings",
+      Support: "Support",
+      Settings: "Settings",
+      "Help Hub": "Help Hub",
     },
     lg: {
       "Command Center": "Kireeberezi",
       "Teacher Station": "Kituo ky'Omusomesa",
       "Student Records": "Eby'Abayizi",
-      "Curriculum": "Syllabus NCDC",
-      "Analytics": "Ripoota",
+      Curriculum: "Syllabus NCDC",
+      Analytics: "Ripoota",
       "NCDC News": "Amawulire NCDC",
       "Lab Tools": "Ebyuma",
       "Teacher Desk": "Meeza y'Omusomesa",
       "Marking Desk": "Okugolola",
-      "Lessons": "Okusomesa",
-      "Quizzes": "Okwegeza",
-      "Students": "Abayizi",
+      Lessons: "Okusomesa",
+      Quizzes: "Okwegeza",
+      Students: "Abayizi",
       "Class Stats": "Bipimo",
       "Study Hub": "Amaka g'Okusoma",
       "My Portfolio": "Portfolio Yange",
       "AI Tutor": "Tutor wa AI",
-      "Projects": "Pulojekiti",
-      "News": "Amawulire",
-      "Tools": "Ebikozesebwa",
-      "Home": "Eka",
+      Projects: "Pulojekiti",
+      News: "Amawulire",
+      Tools: "Ebikozesebwa",
+      Home: "Eka",
       "News & Syllabus": "Syllabus & News",
       "Socratic AI": "Socratic AI",
       "Science Tools": "Sayansi n'Ebyuma",
-      "Support": "Okuyambibwa",
-      "Settings": "Entegeka",
+      Support: "Okuyambibwa",
+      Settings: "Entegeka",
+      "Help Hub": "Ggwanika ly'Entegeka",
     },
     nk: {
       "Command Center": "Kireeberezi",
       "Teacher Station": "Kituo ky'Omushomesa",
       "Student Records": "Eby'Abashomi",
-      "Curriculum": "Syllabus NCDC",
-      "Analytics": "Ekipimo",
+      Curriculum: "Syllabus NCDC",
+      Analytics: "Ekipimo",
       "NCDC News": "Amakuru NCDC",
       "Lab Tools": "Ebyuma",
       "Teacher Desk": "Meeza y'Omushomesa",
       "Marking Desk": "Kugorora",
-      "Lessons": "Kushomesa",
-      "Quizzes": "Ebibuuzo",
-      "Students": "Abashomi",
+      Lessons: "Kushomesa",
+      Quizzes: "Ebibuuzo",
+      Students: "Abashomi",
       "Class Stats": "Embeera y'Ekibiina",
       "Study Hub": "Amaka g'Okushoma",
       "My Portfolio": "Portfolio Yange",
       "AI Tutor": "Tutor wa AI",
-      "Projects": "Pulojekiti",
-      "News": "Amakuru",
-      "Tools": "Ebikozesebwa",
-      "Home": "Eka",
+      Projects: "Pulojekiti",
+      News: "Amakuru",
+      Tools: "Ebikozesebwa",
+      Home: "Eka",
       "News & Syllabus": "Syllabus & News",
       "Socratic AI": "Socratic AI",
       "Science Tools": "Sayansi n'Ebyuma",
-      "Support": "Kuyambwa",
-      "Settings": "Okutebeja",
+      Support: "Kuyambwa",
+      Settings: "Okutebeja",
     },
     sw: {
       "Command Center": "Kituo Kikuu",
       "Teacher Station": "Kituo cha Mwalimu",
       "Student Records": "Kumbukumbu",
-      "Curriculum": "Mtaala wa NCDC",
-      "Analytics": "Uchambuzi",
+      Curriculum: "Mtaala wa NCDC",
+      Analytics: "Uchambuzi",
       "NCDC News": "Habari NCDC",
       "Lab Tools": "Zana za Maabara",
       "Teacher Desk": "Dawati la Mwalimu",
       "Marking Desk": "Kusahihisha",
-      "Lessons": "Masomo",
-      "Quizzes": "Chemsha Bongo",
-      "Students": "Wanafunzi",
+      Lessons: "Masomo",
+      Quizzes: "Chemsha Bongo",
+      Students: "Wanafunzi",
       "Class Stats": "Takwimu za Darasa",
       "Study Hub": "Kituo cha Masomo",
       "My Portfolio": "Kwingira Kwangu",
       "AI Tutor": "Mkufunzi AI",
-      "Projects": "Miradi",
-      "News": "Habari",
-      "Tools": "Zana",
-      "Home": "Nyumbani",
+      Projects: "Miradi",
+      News: "Habari",
+      Tools: "Zana",
+      Home: "Nyumbani",
       "News & Syllabus": "Mtaala & Habari",
       "Socratic AI": "Socratic AI",
       "Science Tools": "Zana za Sayansi",
-      "Support": "Msaada",
-      "Settings": "Vipangilio",
+      Support: "Msaada",
+      Settings: "Vipangilio",
     },
     lu: {
       "Command Center": "Chengo mar Ruoth",
       "Teacher Station": "Kituo mar Japuonj",
       "Student Records": "Kumbukumbu",
-      "Curriculum": "Syllabus NCDC",
-      "Analytics": "Ripoti",
+      Curriculum: "Syllabus NCDC",
+      Analytics: "Ripoti",
       "NCDC News": "Milome NCDC",
       "Lab Tools": "Gige Tiyo mag Lab",
       "Teacher Desk": "Mesa mar Japuonj",
       "Marking Desk": "Ng'iyo",
-      "Lessons": "Puonjruok",
-      "Quizzes": "Penjo",
-      "Students": "Jopuonj",
+      Lessons: "Puonjruok",
+      Quizzes: "Penjo",
+      Students: "Jopuonj",
       "Class Stats": "Class Stats",
       "Study Hub": "Amaka mar Somo",
       "My Portfolio": "Portfolio Mara",
       "AI Tutor": "Japuonj AI",
-      "Projects": "Pulojekiti",
-      "News": "Milome",
-      "Tools": "Gige Tiyo",
-      "Home": "Dala",
+      Projects: "Pulojekiti",
+      News: "Milome",
+      Tools: "Gige Tiyo",
+      Home: "Dala",
       "News & Syllabus": "Syllabus & News",
       "Socratic AI": "Socratic AI",
       "Science Tools": "Gige Sayansi",
-      "Support": "Konyruok",
-      "Settings": "Chengo",
-    }
+      Support: "Konyruok",
+      Settings: "Chengo",
+    },
   };
 
   // Define navigational hierarchy grouped by user role
@@ -215,27 +217,47 @@ export function Navigation() {
     let rawLinks: NavItem[] = [];
     if (isAdmin) {
       rawLinks = [
-        { to: "/admin/dashboard", label: "Command Center", icon: ShieldCheck, badge: "Admin", badgeColor: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
+        {
+          to: "/admin/dashboard",
+          label: "Command Center",
+          icon: ShieldCheck,
+          badge: "Admin",
+          badgeColor: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+        },
         { to: "/teacher", label: "Teacher Station", icon: PenTool },
         { to: "/student", label: "Student Records", icon: GraduationCap },
         { to: "/curriculum", label: "Curriculum", icon: BookOpen },
         { to: "/analytics", label: "Analytics", icon: LineChart },
         { to: "/news", label: "NCDC News", icon: Newspaper },
         { to: "/tools", label: "Lab Tools", icon: Calculator },
+        { to: "/help-settings", label: "Help Hub", icon: HelpCircle },
       ];
     } else if (isTeacher) {
       rawLinks = [
-        { to: "/teacher", label: "Teacher Desk", icon: PenTool, badge: "Faculty", badgeColor: "bg-teal-500/20 text-teal-400 border-teal-500/30" },
+        {
+          to: "/teacher",
+          label: "Teacher Desk",
+          icon: PenTool,
+          badge: "Faculty",
+          badgeColor: "bg-teal-500/20 text-teal-400 border-teal-500/30",
+        },
         { to: "/marking", label: "Marking Desk", icon: CheckCircle },
         { to: "/lessons", label: "Lessons", icon: BookOpen },
         { to: "/quizzes", label: "Quizzes", icon: Lightbulb },
         { to: "/student", label: "Students", icon: GraduationCap },
         { to: "/analytics", label: "Class Stats", icon: LineChart },
         { to: "/news", label: "NCDC News", icon: Newspaper },
+        { to: "/help-settings", label: "Help Hub", icon: HelpCircle },
       ];
     } else if (isStudent || user) {
       rawLinks = [
-        { to: "/dashboard", label: "Study Hub", icon: LayoutDashboard, badge: "Student", badgeColor: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" },
+        {
+          to: "/dashboard",
+          label: "Study Hub",
+          icon: LayoutDashboard,
+          badge: "Student",
+          badgeColor: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+        },
         { to: "/student", label: "My Portfolio", icon: GraduationCap },
         { to: "/tutor", label: "AI Tutor", icon: MessagesSquare },
         { to: "/quizzes", label: "Quizzes", icon: Lightbulb },
@@ -243,6 +265,7 @@ export function Navigation() {
         { to: "/projects", label: "Projects", icon: FileCode },
         { to: "/news", label: "News", icon: Newspaper },
         { to: "/tools", label: "Tools", icon: Calculator },
+        { to: "/help-settings", label: "Help Hub", icon: HelpCircle },
       ];
     } else {
       rawLinks = [
@@ -252,6 +275,7 @@ export function Navigation() {
         { to: "/curriculum", label: "Curriculum", icon: BookOpen },
         { to: "/tools", label: "Science Tools", icon: Calculator },
         { to: "/support", label: "Support", icon: HelpCircle },
+        { to: "/help-settings", label: "Help Hub", icon: HelpCircle },
       ];
     }
 
@@ -262,11 +286,21 @@ export function Navigation() {
   }, [isAdmin, isTeacher, isStudent, user, language]);
 
   const userDisplayName =
-    profile?.display_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Scholar";
-  const orgName = schoolName || profile?.school_name || user?.user_metadata?.school_name || "Uganda Secondary";
+    profile?.display_name ||
+    user?.user_metadata?.full_name ||
+    user?.email?.split("@")[0] ||
+    "Scholar";
+  const orgName =
+    schoolName || profile?.school_name || user?.user_metadata?.school_name || "Uganda Secondary";
   const orgCode = schoolId || profile?.school_id || profile?.org_id || null;
 
-  const roleLabel = isAdmin ? "Administrator" : isTeacher ? "Faculty Teacher" : isStudent ? "Student" : "Guest";
+  const roleLabel = isAdmin
+    ? "Administrator"
+    : isTeacher
+      ? "Faculty Teacher"
+      : isStudent
+        ? "Student"
+        : "Guest";
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur-xl transition-all">
@@ -311,7 +345,12 @@ export function Navigation() {
                 <Icon className="h-3.5 w-3.5" />
                 <span>{label}</span>
                 {badge && (
-                  <span className={cn("text-[9px] font-extrabold px-1.5 py-0.5 rounded border leading-none", badgeColor)}>
+                  <span
+                    className={cn(
+                      "text-[9px] font-extrabold px-1.5 py-0.5 rounded border leading-none",
+                      badgeColor,
+                    )}
+                  >
                     {badge}
                   </span>
                 )}
@@ -325,7 +364,9 @@ export function Navigation() {
           <button
             type="button"
             onClick={handleToggleParticles}
-            aria-label={particlesEnabled ? "Disable resonance particles" : "Enable resonance particles"}
+            aria-label={
+              particlesEnabled ? "Disable resonance particles" : "Enable resonance particles"
+            }
             className={cn(
               "inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card/60 transition-transform hover:scale-105 hover:bg-muted text-xs",
               particlesEnabled ? "text-cyan-400" : "text-muted-foreground",
@@ -416,7 +457,9 @@ export function Navigation() {
                     {userDisplayName.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-foreground leading-tight">{userDisplayName}</p>
+                    <p className="text-xs font-bold text-foreground leading-tight">
+                      {userDisplayName}
+                    </p>
                     <p className="text-[10px] text-muted-foreground">
                       Role: <span className="font-semibold text-primary">{roleLabel}</span>
                       {orgCode && ` • ${orgCode}`}
@@ -480,7 +523,12 @@ export function Navigation() {
                         <span>{label}</span>
                       </div>
                       {badge && (
-                        <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded border", badgeColor)}>
+                        <span
+                          className={cn(
+                            "text-[9px] font-bold px-1.5 py-0.5 rounded border",
+                            badgeColor,
+                          )}
+                        >
                           {badge}
                         </span>
                       )}

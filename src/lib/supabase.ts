@@ -107,7 +107,10 @@ export async function safeSupabaseQuery<T>(
 /**
  * Health check helper to verify Supabase connectivity
  */
-export async function checkSupabaseConnection(): Promise<{ connected: boolean; latencyMs: number }> {
+export async function checkSupabaseConnection(): Promise<{
+  connected: boolean;
+  latencyMs: number;
+}> {
   const start = performance.now();
   try {
     const { error } = await supabase.from("profiles").select("user_id").limit(1);

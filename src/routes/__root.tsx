@@ -15,7 +15,8 @@ import { LivePulseIndicator } from "@/components/LivePulseIndicator";
 import { MoodOverlay } from "@/components/MoodOverlay";
 import { FloatingTutor } from "@/components/FloatingTutor";
 import { BRAND } from "@/lib/constants";
-import { getOrganizationSchema, getPersonSchema } from "@/lib/seo";
+import { getOrganizationSchema, getPersonSchema, getAllCoursesSchemas } from "@/lib/seo";
+import { buildAllNCDCCourses } from "@/lib/schema";
 import { MobileInstallPrompt } from "@/components/MobileInstallPrompt";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { CymaticBackground } from "@/components/CymaticBackground";
@@ -52,6 +53,12 @@ export const Route = createRootRoute({
   head: () => {
     const orgSchema = getOrganizationSchema();
     const personSchema = getPersonSchema();
+    const courseSchemas = getAllCoursesSchemas();
+    const ncdcCourses = buildAllNCDCCourses();
+
+    // Dynamically compile key terms for all platforms to leverage in indexing
+    const brandKeywords = BRAND.aliases.join(", ");
+
     return {
       meta: [
         { charSet: "utf-8" },
@@ -61,6 +68,18 @@ export const Route = createRootRoute({
         },
         { name: "theme-color", content: "#0a1628" },
         { name: "author", content: "Isabirye Latif" },
+        {
+          name: "keywords",
+          content: `${brandKeywords}, Uganda Secondary Curriculum, S1-S6 Notes, Uganda National Curriculum, NCDC study guide, UNEB revision`,
+        },
+        {
+          name: "robots",
+          content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+        },
+        {
+          name: "googlebot",
+          content: "index, follow, max-snippet:-1",
+        },
       ],
       links: [{ rel: "stylesheet", href: appCss }],
       scripts: [
@@ -69,7 +88,7 @@ export const Route = createRootRoute({
         },
         {
           type: "application/ld+json",
-          children: JSON.stringify([orgSchema, personSchema]),
+          children: JSON.stringify([orgSchema, personSchema, ...courseSchemas, ...ncdcCourses]),
         },
       ],
     };
@@ -90,15 +109,79 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
   useEffect(() => {
     injectSpeedInsights();
   }, []);
 
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useEffect(() => {
+    let title = "Lattys Cymatic Study — Uganda Secondary Curriculum Study Companion";
+    let desc = "Interactive study companion for Uganda Secondary Curriculum (NCDC Aligned)";
+    let robots = "index, follow, max-image-preview:large";
+
+    if (pathname === "/" || pathname === "/dashboard") {
+      title = "Lattys Cymatic Study — Uganda NCDC Curriculum S1-S6";
+      desc =
+        "Access Senior 1-6 lessons, worksheets, and Socratic revision tools under Lattys Cymatic Study. Part of the CymaticHub and CymaticStudy digital learning network.";
+      robots = "index, follow, max-image-preview:large";
+    } else if (
+      pathname.startsWith("/lessons") ||
+      pathname.startsWith("/curriculum") ||
+      pathname.startsWith("/student") ||
+      pathname.startsWith("/quizzes") ||
+      pathname.startsWith("/projects")
+    ) {
+      title = "Cymatic Study Uganda — Interactive Secondary School Subjects & Worksheets";
+      desc =
+        "Curriculum modules and practice worksheets for Physics, Chemistry, Biology, and Math mapped to NCDC guidelines. Organized under the CymaticStudy brand hierarchy.";
+      robots = "index, follow";
+    } else if (pathname.startsWith("/help-settings")) {
+      title = "Cymatic Hub — Help & Settings Quality Support Hub";
+      desc =
+        "Collapsible zero-click FAQ answers, content E-E-A-T verification desks, and student/author portfolio inputs. Managed by CymaticHub.";
+      robots = "index, follow";
+    } else if (
+      pathname.startsWith("/teacher") ||
+      pathname.startsWith("/marking") ||
+      pathname.startsWith("/verify") ||
+      pathname.startsWith("/support") ||
+      pathname.startsWith("/settings") ||
+      pathname.startsWith("/admin")
+    ) {
+      title = "Cymatic Education Uganda — National Support, Teacher Grading & E-E-A-T Quality Desk";
+      desc =
+        "Empowering schools and teachers with automatic competency-based grading, support resources, and authorized content verification portfolios under CymaticHub.";
+      robots = "noindex, nofollow"; // Differentiate locale-specific workspace settings and administrative tools from search index
+    } else if (pathname.startsWith("/tutor") || pathname.startsWith("/chat")) {
+      title = "Socratic AI Tutoring Assistant | Lattys Cymatic Study";
+      desc =
+        "Empathetic guides helping secondary learners understand complex STEM concepts through inquiry. Powered by CymaticStudy.";
+      robots = "index, follow";
+    }
+
+    // Append primary brand tag to maintain consistent hierarchy
+    const finalTitle = title.includes("Cymatic") ? title : `${title} | CymaticStudy`;
+    document.title = finalTitle;
+
+    // Inject Description Meta
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute("content", desc);
+    }
+
+    // Inject Robots Meta
+    let metaRobots = document.querySelector('meta[name="robots"]');
+    if (!metaRobots) {
+      metaRobots = document.createElement("meta");
+      metaRobots.setAttribute("name", "robots");
+      document.head.appendChild(metaRobots);
+    }
+    metaRobots.setAttribute("content", robots);
+  }, [pathname]);
+
   const isIsolated =
-    pathname.startsWith("/mark/") ||
-    pathname.startsWith("/chat") ||
-    pathname.startsWith("/tutor");
+    pathname.startsWith("/mark/") || pathname.startsWith("/chat") || pathname.startsWith("/tutor");
 
   if (isIsolated) {
     return (
@@ -130,9 +213,7 @@ function RootComponent() {
             <p className="font-medium">
               {BRAND.name} × {BRAND.partner} — {BRAND.tagline} {BRAND.flag}
             </p>
-            <p className="mt-1">
-              Support: {BRAND.support} · © 2026 Pash Media Services
-            </p>
+            <p className="mt-1">Support: {BRAND.support} · © 2026 Pash Media Services</p>
           </footer>
           <FloatingTutor />
         </div>

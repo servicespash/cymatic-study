@@ -62,9 +62,7 @@ export function SupabaseLivePulseHeader({ onStatusChange }: SupabaseLivePulsePro
             <span className="relative w-2 h-2 rounded-full bg-amber-600"></span>
           </>
         )}
-        {status === "error" && (
-          <span className="relative w-2 h-2 rounded-full bg-rose-500"></span>
-        )}
+        {status === "error" && <span className="relative w-2 h-2 rounded-full bg-rose-500"></span>}
       </div>
 
       <span className="font-medium text-muted-foreground flex items-center gap-1.5">
@@ -72,8 +70,8 @@ export function SupabaseLivePulseHeader({ onStatusChange }: SupabaseLivePulsePro
         {status === "healthy"
           ? `Supabase Live ${latency ? `(${latency}ms)` : ""}`
           : status === "pending"
-          ? "Syncing Auth..."
-          : "Connection Degraded"}
+            ? "Syncing Auth..."
+            : "Connection Degraded"}
       </span>
 
       <button

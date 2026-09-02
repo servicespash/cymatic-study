@@ -6,7 +6,29 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", ".output", ".vinxi", "node_modules"] },
+  {
+    ignores: [
+      "dist",
+      ".output",
+      ".vinxi",
+      "node_modules",
+      "supabase/**/*",
+      "cloudflare-hyperdrive-worker/**/*",
+      "scripts/**/*",
+      "vitest.config.ts",
+      "capacitor.config.ts",
+      "wrangler.json",
+      "wrangler.jsonc",
+      "wrangler.toml",
+      "check_table.js",
+      "list-columns.js",
+      "list-tables.js",
+      "test-db.js",
+      "supabase-diagnostic.js",
+      "supabase-admin-diagnostic.js",
+      "supabase-schema-audit.js",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended, eslintPluginPrettier],
     files: ["**/*.{ts,tsx}"],

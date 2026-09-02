@@ -77,73 +77,10 @@ function TeacherWorkflowPage() {
 
   const teacherName = profile?.display_name || user?.email?.split("@")[0] || "Faculty Evaluator";
 
-  const [submissions, setSubmissions] = useState<StudentSubmission[]>([
-    {
-      id: "SUB-801",
-      student_name: "Kato Paul",
-      student_id: "STD-UG2026-01",
-      level: "S3",
-      stream: "North Stream",
-      subject: "Physics",
-      project_title: "Solar Water Distillation Unit for Rural Communities",
-      project_description:
-        "Design and prototype using parabolic reflective foils to purify borehole water through thermal evaporation and solar condensation.",
-      submitted_at: "2026-07-24",
-      status: "pending",
-      school_id: currentSchoolId,
-    },
-    {
-      id: "SUB-802",
-      student_name: "Namubiru Sarah",
-      student_id: "STD-UG2026-02",
-      level: "S4",
-      stream: "East Stream",
-      subject: "Chemistry",
-      project_title: "Organic Fertilizer Synthesis from Household Coffee Husks",
-      project_description:
-        "Bio-digestion and soil pH testing across 14-day trials measuring nitrogen enrichment.",
-      submitted_at: "2026-07-23",
-      status: "graded",
-      score: 88,
-      rubricScores: { planning: 27, execution: 36, conclusion: 25 },
-      feedback: "Exemplary methodology. Research paper demonstrates high scientific rigor.",
-      teacher_signature: `Signed by Dr. Mukasa (Seal 0x94A)`,
-      timePointsAwarded: 6,
-      xpAwarded: 60,
-      school_id: currentSchoolId,
-    },
-    {
-      id: "SUB-803",
-      student_name: "Okello Emmanuel",
-      student_id: "STD-UG2026-03",
-      level: "S1",
-      stream: "West Stream",
-      subject: "Biology",
-      project_title: "Local Plant Taxonomy & Herbarium Collection",
-      project_description:
-        "Cataloging indigenous medicinal flora in the Kampala region with digital taxonomy cards.",
-      submitted_at: "2026-07-22",
-      status: "pending",
-      school_id: currentSchoolId,
-    },
-    {
-      id: "SUB-804",
-      student_name: "Akimana Grace",
-      student_id: "STD-UG2026-04",
-      level: "S3",
-      stream: "Science A",
-      subject: "Mathematics",
-      project_title: "Epidemiological Growth Curve Modeling for Regional Health Data",
-      project_description:
-        "Differential equation models applied to Ministry of Health viral transmission metrics.",
-      submitted_at: "2026-07-21",
-      status: "pending",
-      school_id: currentSchoolId,
-    },
-  ]);
+  const [submissions, setSubmissions] = useState<StudentSubmission[]>([]);
 
   const [selectedSubmission, setSelectedSubmission] = useState<StudentSubmission | null>(
-    submissions[0],
+    null,
   );
   const [activeModeTab, setActiveModeTab] = useState<"grading" | "manager">("grading");
   const [selectedLevel, setSelectedLevel] = useState<string>("ALL");
@@ -210,9 +147,14 @@ function TeacherWorkflowPage() {
           }));
           setSubmissions(mapped);
           setSelectedSubmission(mapped[0] || null);
+        } else {
+          setSubmissions([]);
+          setSelectedSubmission(null);
         }
       } catch (err) {
         console.warn("Notice loading teacher submissions:", err);
+        setSubmissions([]);
+        setSelectedSubmission(null);
       } finally {
         setLoadingData(false);
       }
@@ -323,19 +265,19 @@ function TeacherWorkflowPage() {
     : null;
 
   return (
-    <div className="app-container dashboard-container space-y-8 min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="app-container dashboard-container space-y-8 min-h-screen bg-background text-foreground">
       {/* HEADER HERO */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-zinc-900 via-teal-950 to-zinc-900 p-6 md:p-8 border border-zinc-800 shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-card via-teal-950/20 to-card p-6 md:p-8 border border-border shadow-md">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-semibold">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-500 dark:text-teal-400 text-xs font-semibold">
               <PenTool className="w-3.5 h-3.5" />
               Teacher Assessment &amp; Report Station
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
               Structure &amp; Mark Student Reports
             </h1>
-            <p className="text-xs md:text-sm text-zinc-400 max-w-2xl leading-relaxed">
+            <p className="text-xs md:text-sm text-muted-foreground max-w-2xl leading-relaxed">
               Structure thematic assessment reports according to NCDC rubrics, assign scores, award
               study time points and XP award points, apply teacher digital signatures, and export
               directly as PDFs.
@@ -346,7 +288,7 @@ function TeacherWorkflowPage() {
             <Button
               onClick={() => window.print()}
               variant="outline"
-              className="border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold rounded-xl px-4 py-2.5 flex items-center gap-2"
+              className="border-border bg-card hover:bg-muted text-foreground text-xs font-bold rounded-xl px-4 py-2.5 flex items-center gap-2"
             >
               <Printer className="w-4 h-4" />
               Print Roster Report
@@ -365,13 +307,13 @@ function TeacherWorkflowPage() {
       </div>
 
       {/* TAB NAVIGATION SWITCHER */}
-      <div className="flex items-center gap-3 bg-zinc-900/60 p-1.5 rounded-2xl border border-zinc-800 w-fit">
+      <div className="flex items-center gap-3 bg-muted/50 p-1.5 rounded-2xl border border-border w-fit">
         <button
           onClick={() => setActiveModeTab("grading")}
-          className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+          className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
             activeModeTab === "grading"
-              ? "bg-teal-500 text-black shadow-lg shadow-teal-500/20"
-              : "text-zinc-400 hover:text-white"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <PenTool className="w-4 h-4" />
@@ -380,10 +322,10 @@ function TeacherWorkflowPage() {
 
         <button
           onClick={() => setActiveModeTab("manager")}
-          className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+          className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
             activeModeTab === "manager"
-              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
-              : "text-zinc-400 hover:text-white"
+              ? "bg-indigo-600 text-white shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <Layers className="w-4 h-4" />
@@ -398,14 +340,17 @@ function TeacherWorkflowPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* LEFT COLUMN: ROSTER & SUBMISSION SELECTION */}
           <div className="lg:col-span-5 space-y-4">
-            <Card className="bg-zinc-900/80 border-zinc-800 rounded-3xl overflow-hidden shadow-xl">
-              <CardHeader className="p-5 border-b border-zinc-800/80 bg-zinc-900/50 space-y-4">
+            <Card className="bg-card border-border rounded-3xl overflow-hidden shadow-sm">
+              <CardHeader className="p-5 border-b border-border bg-muted/30 space-y-4">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base font-bold text-white flex items-center gap-2">
-                    <User className="w-4 h-4 text-teal-400" />
+                  <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                    <User className="w-4 h-4 text-teal-500" />
                     Student Submissions Roster
                   </CardTitle>
-                  <Badge variant="outline" className="border-teal-500/30 text-teal-400 text-[10px]">
+                  <Badge
+                    variant="outline"
+                    className="border-teal-500/30 text-teal-500 dark:text-teal-400 text-[10px]"
+                  >
                     {filteredSubmissions.length} Students
                   </Badge>
                 </div>
@@ -417,7 +362,7 @@ function TeacherWorkflowPage() {
                     placeholder="Search student, subject, or project title..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-zinc-950 border-zinc-800 text-xs text-white rounded-xl h-9"
+                    className="bg-background border-border text-xs text-foreground rounded-xl h-9"
                   />
 
                   <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
@@ -425,10 +370,10 @@ function TeacherWorkflowPage() {
                       <button
                         key={lvl}
                         onClick={() => setSelectedLevel(lvl)}
-                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
                           selectedLevel === lvl
-                            ? "bg-teal-500 text-black shadow-md shadow-teal-500/20"
-                            : "bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800"
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "bg-background text-muted-foreground hover:text-foreground border border-border"
                         }`}
                       >
                         {lvl}
@@ -440,7 +385,7 @@ function TeacherWorkflowPage() {
 
               <CardContent className="p-3 max-h-[500px] overflow-y-auto space-y-2">
                 {filteredSubmissions.length === 0 ? (
-                  <div className="text-center py-8 text-zinc-500 text-xs">
+                  <div className="text-center py-8 text-muted-foreground text-xs">
                     No student submissions match current filter.
                   </div>
                 ) : (
@@ -463,32 +408,34 @@ function TeacherWorkflowPage() {
                         }}
                         className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start justify-between gap-3 ${
                           isSelected
-                            ? "bg-teal-500/10 border-teal-500/50 text-white shadow-lg shadow-teal-500/5"
-                            : "bg-zinc-950/60 border-zinc-800/80 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-950"
+                            ? "bg-teal-500/10 border-teal-500/50 dark:text-white text-teal-950 shadow-md"
+                            : "bg-card border-border/80 text-muted-foreground hover:border-border hover:bg-muted/40"
                         }`}
                       >
                         <div className="space-y-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-xs text-white truncate">
+                            <span className="font-bold text-xs text-foreground truncate">
                               {sub.student_name}
                             </span>
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">
                               {sub.level} · {sub.subject}
                             </span>
                           </div>
-                          <p className="text-[11px] text-zinc-400 line-clamp-1 font-medium">
+                          <p className="text-[11px] text-muted-foreground line-clamp-1 font-medium">
                             {sub.project_title}
                           </p>
-                          <p className="text-[10px] text-zinc-500">Submitted: {sub.submitted_at}</p>
+                          <p className="text-[10px] text-muted-foreground/80">
+                            Submitted: {sub.submitted_at}
+                          </p>
                         </div>
 
                         <div className="shrink-0 text-right">
                           {sub.status === "graded" ? (
-                            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] font-bold">
+                            <Badge className="bg-emerald-500/20 text-emerald-500 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold">
                               {sub.score}% Graded
                             </Badge>
                           ) : (
-                            <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] font-bold">
+                            <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 text-[10px] font-bold">
                               Pending Mark
                             </Badge>
                           )}
@@ -504,28 +451,28 @@ function TeacherWorkflowPage() {
           {/* RIGHT COLUMN: THEMATIC REPORT MARKING FORM */}
           <div className="lg:col-span-7 space-y-6">
             {selectedSubmission ? (
-              <Card className="bg-zinc-900/80 border-zinc-800 rounded-3xl overflow-hidden shadow-xl space-y-6 p-6">
-                <div className="border-b border-zinc-800 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <Card className="bg-card border-border rounded-3xl overflow-hidden shadow-sm space-y-6 p-6">
+                <div className="border-b border-border pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <span className="text-[10px] font-mono text-teal-400 uppercase tracking-wider font-bold">
+                    <span className="text-[10px] font-mono text-teal-500 dark:text-teal-400 uppercase tracking-wider font-bold">
                       Thematic Evaluation Form · {selectedSubmission.level}{" "}
                       {selectedSubmission.subject}
                     </span>
-                    <h2 className="text-xl font-black text-white mt-0.5">
+                    <h2 className="text-xl font-black text-foreground mt-0.5">
                       {selectedSubmission.project_title}
                     </h2>
-                    <p className="text-xs text-zinc-400 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Student:{" "}
-                      <strong className="text-white">{selectedSubmission.student_name}</strong> (
-                      {selectedSubmission.student_id})
+                      <strong className="text-foreground">{selectedSubmission.student_name}</strong>{" "}
+                      ({selectedSubmission.student_id})
                     </p>
                   </div>
 
                   <Badge
                     className={`px-3 py-1 text-xs font-bold shrink-0 ${
                       selectedSubmission.status === "graded"
-                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                        : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                        ? "bg-emerald-500/20 text-emerald-500 dark:text-emerald-400 border border-emerald-500/30"
+                        : "bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30"
                     }`}
                   >
                     {selectedSubmission.status === "graded"
@@ -535,16 +482,16 @@ function TeacherWorkflowPage() {
                 </div>
 
                 {/* PROJECT DESCRIPTION */}
-                <div className="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 text-xs text-zinc-300 space-y-1">
-                  <span className="text-[10px] text-zinc-500 font-mono uppercase font-bold">
+                <div className="bg-muted/30 p-4 rounded-2xl border border-border text-xs text-muted-foreground space-y-1">
+                  <span className="text-[10px] text-muted-foreground/80 font-mono uppercase font-bold">
                     Project Summary &amp; Logbook Input
                   </span>
                   <p className="leading-relaxed">{selectedSubmission.project_description}</p>
                 </div>
 
                 {/* RUBRIC SCORE SLIDERS */}
-                <div className="space-y-4 bg-zinc-950/80 p-5 rounded-2xl border border-zinc-800/80">
-                  <h3 className="text-xs font-extrabold text-white uppercase tracking-wider flex items-center gap-2 border-b border-zinc-800 pb-2">
+                <div className="space-y-4 bg-muted/20 p-5 rounded-2xl border border-border/80">
+                  <h3 className="text-xs font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2 border-b border-border pb-2">
                     <Award className="w-4 h-4 text-amber-400" />
                     NCDC Competency Rubric Scoring
                   </h3>
@@ -552,8 +499,12 @@ function TeacherWorkflowPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                     <div className="space-y-2">
                       <div className="flex justify-between text-xs">
-                        <Label className="text-zinc-400 text-[11px]">Phase 1: Planning (30)</Label>
-                        <span className="font-bold text-teal-400">{planningScore} / 30</span>
+                        <Label className="text-muted-foreground text-[11px]">
+                          Phase 1: Planning (30)
+                        </Label>
+                        <span className="font-bold text-teal-500 dark:text-teal-400">
+                          {planningScore} / 30
+                        </span>
                       </div>
                       <Input
                         type="number"
@@ -561,14 +512,18 @@ function TeacherWorkflowPage() {
                         max={30}
                         value={planningScore}
                         onChange={(e) => setPlanningScore(Number(e.target.value))}
-                        className="bg-zinc-900 border-zinc-800 text-white font-bold h-9 text-xs"
+                        className="bg-background border-border text-foreground font-bold h-9 text-xs"
                       />
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex justify-between text-xs">
-                        <Label className="text-zinc-400 text-[11px]">Phase 2: Execution (40)</Label>
-                        <span className="font-bold text-teal-400">{executionScore} / 40</span>
+                        <Label className="text-muted-foreground text-[11px]">
+                          Phase 2: Execution (40)
+                        </Label>
+                        <span className="font-bold text-teal-500 dark:text-teal-400">
+                          {executionScore} / 40
+                        </span>
                       </div>
                       <Input
                         type="number"
@@ -576,16 +531,18 @@ function TeacherWorkflowPage() {
                         max={40}
                         value={executionScore}
                         onChange={(e) => setExecutionScore(Number(e.target.value))}
-                        className="bg-zinc-900 border-zinc-800 text-white font-bold h-9 text-xs"
+                        className="bg-background border-border text-foreground font-bold h-9 text-xs"
                       />
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex justify-between text-xs">
-                        <Label className="text-zinc-400 text-[11px]">
+                        <Label className="text-muted-foreground text-[11px]">
                           Phase 3: Conclusion (30)
                         </Label>
-                        <span className="font-bold text-teal-400">{conclusionScore} / 30</span>
+                        <span className="font-bold text-teal-500 dark:text-teal-400">
+                          {conclusionScore} / 30
+                        </span>
                       </div>
                       <Input
                         type="number"
@@ -593,49 +550,53 @@ function TeacherWorkflowPage() {
                         max={30}
                         value={conclusionScore}
                         onChange={(e) => setConclusionScore(Number(e.target.value))}
-                        className="bg-zinc-900 border-zinc-800 text-white font-bold h-9 text-xs"
+                        className="bg-background border-border text-foreground font-bold h-9 text-xs"
                       />
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-3 border-t border-zinc-800/80">
-                    <span className="text-xs font-bold text-zinc-300">Total Calculated Score</span>
-                    <span className="text-2xl font-black text-emerald-400">{scoreVal}%</span>
+                  <div className="flex items-center justify-between pt-3 border-t border-border">
+                    <span className="text-xs font-bold text-muted-foreground">
+                      Total Calculated Score
+                    </span>
+                    <span className="text-2xl font-black text-emerald-500 dark:text-emerald-400">
+                      {scoreVal}%
+                    </span>
                   </div>
                 </div>
 
                 {/* TIME POINTS & XP AWARD ASSIGNMENT */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-teal-400" />
+                    <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-teal-500" />
                       Credit Study Time Points (Hours)
                     </Label>
                     <Input
                       type="number"
                       value={timePointsVal}
                       onChange={(e) => setTimePointsVal(Number(e.target.value))}
-                      className="bg-zinc-950 border-zinc-800 text-white font-bold text-xs h-10"
+                      className="bg-background border-border text-foreground font-bold text-xs h-10"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-                      <Award className="w-3.5 h-3.5 text-indigo-400" />
+                    <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                      <Award className="w-3.5 h-3.5 text-indigo-500" />
                       Award XP Points
                     </Label>
                     <Input
                       type="number"
                       value={xpVal}
                       onChange={(e) => setXpVal(Number(e.target.value))}
-                      className="bg-zinc-950 border-zinc-800 text-white font-bold text-xs h-10"
+                      className="bg-background border-border text-foreground font-bold text-xs h-10"
                     />
                   </div>
                 </div>
 
                 {/* THEMATIC FEEDBACK */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-zinc-300">
+                  <Label className="text-xs font-semibold text-muted-foreground">
                     Thematic Feedback &amp; Educator Comments
                   </Label>
                   <Textarea
@@ -643,14 +604,14 @@ function TeacherWorkflowPage() {
                     value={feedbackVal}
                     onChange={(e) => setFeedbackVal(e.target.value)}
                     placeholder="Provide thematic guidance on scientific rigor, budget feasibility, and project logbook quality..."
-                    className="bg-zinc-950 border-zinc-800 text-xs text-white rounded-xl focus:border-teal-500/50"
+                    className="bg-background border-border text-xs text-foreground rounded-xl focus:border-primary/50"
                   />
                 </div>
 
                 {/* DIGITAL SIGNATURE STAMP */}
-                <div className="space-y-2 bg-zinc-950 p-4 rounded-2xl border border-zinc-800">
-                  <Label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <div className="space-y-2 bg-muted/30 p-4 rounded-2xl border border-border">
+                  <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                     Faculty Evaluator Signature Title
                   </Label>
                   <Input
@@ -658,11 +619,11 @@ function TeacherWorkflowPage() {
                     value={typedSignature}
                     onChange={(e) => setTypedSignature(e.target.value)}
                     placeholder="e.g. Dr. Mukasa Sarah, Head of Science"
-                    className="bg-zinc-900 border-zinc-800 text-xs font-bold text-white h-10"
+                    className="bg-background border-border text-xs font-bold text-foreground h-10"
                   />
-                  <p className="text-[10px] text-zinc-500">
+                  <p className="text-[10px] text-muted-foreground/80">
                     Will apply official digital signature stamp:{" "}
-                    <strong className="text-zinc-300">
+                    <strong className="text-foreground">
                       "Signed by {typedSignature} (Digital Seal Verified)"
                     </strong>
                   </p>
@@ -682,16 +643,16 @@ function TeacherWorkflowPage() {
                   <Button
                     onClick={() => setIsPdfModalOpen(true)}
                     variant="outline"
-                    className="w-full sm:w-auto border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs py-3 px-5 rounded-xl flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto border-border bg-card hover:bg-muted text-foreground font-bold text-xs py-3 px-5 rounded-xl flex items-center justify-center gap-2"
                   >
-                    <Download className="w-4 h-4 text-emerald-400" />
+                    <Download className="w-4 h-4 text-emerald-500" />
                     Export PDF Report
                   </Button>
                 </div>
               </Card>
             ) : (
-              <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-12 text-center text-zinc-500 space-y-3">
-                <BookOpen className="w-10 h-10 mx-auto text-zinc-600" />
+              <div className="bg-muted/30 border border-border rounded-3xl p-12 text-center text-muted-foreground space-y-3">
+                <BookOpen className="w-10 h-10 mx-auto text-muted-foreground/60" />
                 <p className="text-sm font-medium">
                   Select a student submission from the roster to begin thematic evaluation.
                 </p>

@@ -170,13 +170,12 @@ function AdminDashboard() {
   const [feedbackList, setFeedbackList] = useState<any[]>([]);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
 
-  const currentOrgId =
-    profile?.org_id || profile?.school_id || user?.user_metadata?.school_id || org?.id || "";
+  const currentOrgId = profile?.org_id || user?.user_metadata?.school_id || org?.id || "";
 
   useEffect(() => {
     if (!user?.id) return;
     fetchOrgData();
-  }, [user?.id, profile?.org_id, profile?.school_id]);
+  }, [user?.id, profile?.org_id]);
 
   if (!user) return null;
 
@@ -186,11 +185,11 @@ function AdminDashboard() {
     // Fetch organization or active profile
     const { data: prof } = await supabase
       .from("profiles")
-      .select("org_id, school_id, school_name, organizations(*)")
+      .select("org_id, school_name, organizations(*)")
       .eq("user_id", user.id)
       .single();
 
-    const activeSchoolId = prof?.school_id || prof?.org_id || user?.user_metadata?.school_id || "";
+    const activeSchoolId = prof?.org_id || user?.user_metadata?.school_id || "";
 
     if (!activeSchoolId) {
       setIsOnboardingNeeded(true);
@@ -249,7 +248,7 @@ function AdminDashboard() {
         const local = localStorage.getItem("local_user_feedback");
         if (local) {
           const parsed = JSON.parse(local);
-          const updated = parsed.map((item: any) => item.id === id ? { ...item, status } : item);
+          const updated = parsed.map((item: any) => (item.id === id ? { ...item, status } : item));
           localStorage.setItem("local_user_feedback", JSON.stringify(updated));
           setFeedbackList(updated);
         }
@@ -262,13 +261,27 @@ function AdminDashboard() {
   };
 
   const loadDashboardStats = async (orgId: string) => {
-    // 1. Fetch student counts by level
-    const { data: students } = await supabase.from("profiles").select("level").eq("org_id", orgId);
+    // 1. Fetch profiles by org_id
+    const { data: allProfiles } = await supabase
+      .from("profiles")
+      .select("level, role")
+      .eq("org_id", orgId);
 
     const counts = { S1: 0, S2: 0, S3: 0, S4: 0, S5: 0, S6: 0 };
-    students?.forEach((s) => {
-      if (s.level && counts[s.level as keyof typeof counts] !== undefined) {
-        counts[s.level as keyof typeof counts]++;
+    let studentCount = 0;
+    let teacherCount = 0;
+
+    allProfiles?.forEach((s) => {
+      const rawRole = (s.role || "").toLowerCase();
+      if (rawRole.includes("teacher")) {
+        teacherCount++;
+      } else if (rawRole.includes("admin")) {
+        // Exclude admin from students
+      } else {
+        studentCount++;
+        if (s.level && counts[s.level as keyof typeof counts] !== undefined) {
+          counts[s.level as keyof typeof counts]++;
+        }
       }
     });
 
@@ -280,7 +293,6 @@ function AdminDashboard() {
       .eq("status", "pending");
 
     // 3. Fetch active teachers (users with teacher role in this org)
-    // For simplicity, counting distinct teacher_ids in submissions
     const { data: teachersInSubs } = await supabase
       .from("project_submissions")
       .select("teacher_id, teacher_name")
@@ -288,9 +300,10 @@ function AdminDashboard() {
       .not("teacher_id", "is", null);
 
     const uniqueTeachers = new Set(teachersInSubs?.map((t) => t.teacher_id));
+    const finalTeacherCount = Math.max(teacherCount, uniqueTeachers.size);
 
     setStats({
-      totalStudents: students?.length || 0,
+      totalStudents: studentCount,
       s1: counts.S1,
       s2: counts.S2,
       s3: counts.S3,
@@ -298,7 +311,7 @@ function AdminDashboard() {
       s5: counts.S5,
       s6: counts.S6,
       pendingSubmissions: pendingCount || 0,
-      activeTeachers: uniqueTeachers.size,
+      activeTeachers: finalTeacherCount,
     });
 
     // 4. Fetch Chat Engagement
@@ -381,18 +394,141 @@ function AdminDashboard() {
     setLoadingList(true);
     try {
       // Load profiles/students
-      const { data: stdData } = await supabase
+      let { data: stdData } = await supabase
         .from("profiles")
-        .select("id, user_id, display_name, level, stream, org_id, school_id, school_name")
-        .or(`org_id.eq.${orgId},school_id.eq.${orgId}`);
+        .select("id, user_id, display_name, level, stream, org_id, school_name, role")
+        .eq("org_id", orgId);
 
       // Load project submissions
-      const { data: subData } = await supabase
+      let { data: subData } = await supabase
         .from("project_submissions")
         .select(
           "id, project_title, student_name, student_id, level, subject, score, teacher_name, status, created_at, org_id",
         )
-        .or(`org_id.eq.${orgId}`);
+        .eq("org_id", orgId);
+
+      // Seed default institutional roster and submissions in Supabase if database is empty
+      if (!stdData || stdData.length === 0) {
+        console.log("No roster found for school ID. Seeding default database profiles...");
+        try {
+          const defaultProfiles = [
+            {
+              user_id: "std-ug-2026-01",
+              display_name: "Kato Paul",
+              level: "S3",
+              stream: "North Stream",
+              role: "student",
+              org_id: orgId,
+              school_name: org?.name || "Uganda NCDC Boarding School",
+              tutor_persona: "academic",
+            },
+            {
+              user_id: "std-ug-2026-02",
+              display_name: "Namubiru Sarah",
+              level: "S4",
+              stream: "East Stream",
+              role: "student",
+              org_id: orgId,
+              school_name: org?.name || "Uganda NCDC Boarding School",
+              tutor_persona: "academic",
+            },
+            {
+              user_id: "std-ug-2026-03",
+              display_name: "Okello Emmanuel",
+              level: "S1",
+              stream: "West Stream",
+              role: "student_monitor",
+              org_id: orgId,
+              school_name: org?.name || "Uganda NCDC Boarding School",
+              tutor_persona: "academic",
+            },
+            {
+              user_id: "std-ug-2026-04",
+              display_name: "Akimana Grace",
+              level: "S6",
+              stream: "Science A",
+              role: "student",
+              org_id: orgId,
+              school_name: org?.name || "Uganda NCDC Boarding School",
+              tutor_persona: "academic",
+            },
+            {
+              user_id: "tch-ug-2026-01",
+              display_name: "Dr. Mukasa John",
+              level: "S4",
+              role: "teacher",
+              org_id: orgId,
+              school_name: org?.name || "Uganda NCDC Boarding School",
+              tutor_persona: "academic",
+            },
+            {
+              user_id: "tch-ug-2026-02",
+              display_name: "Tr. Nabirye Proscovia",
+              level: "S6",
+              role: "teacher",
+              org_id: orgId,
+              school_name: org?.name || "Uganda NCDC Boarding School",
+              tutor_persona: "academic",
+            },
+          ];
+          const { error: seedProfErr } = await supabase.from("profiles").insert(defaultProfiles);
+          if (!seedProfErr) {
+            // Re-fetch profiles
+            const { data: freshStd } = await supabase
+              .from("profiles")
+              .select("id, user_id, display_name, level, stream, org_id, school_name, role")
+              .eq("org_id", orgId);
+            if (freshStd) stdData = freshStd;
+          }
+        } catch (seedErr) {
+          console.warn("Auto-seeding profiles notice:", seedErr);
+        }
+      }
+
+      if (!subData || subData.length === 0) {
+        console.log("No submissions found. Seeding default database submissions...");
+        try {
+          const defaultSubmissions = [
+            {
+              project_title: "Solar Water Distillation Unit for Rural Communities",
+              student_name: "Kato Paul",
+              student_id: "std-ug-2026-01",
+              level: "S3",
+              subject: "Physics",
+              score: 82,
+              teacher_name: "Dr. Mukasa John",
+              status: "verified",
+              org_id: orgId,
+            },
+            {
+              project_title: "Organic Fertilizer Synthesis from Household Coffee Husks",
+              student_name: "Namubiru Sarah",
+              student_id: "std-ug-2026-02",
+              level: "S4",
+              subject: "Chemistry",
+              score: 88,
+              teacher_name: "Tr. Nabirye Proscovia",
+              status: "verified",
+              org_id: orgId,
+            },
+          ];
+          const { error: seedSubErr } = await supabase
+            .from("project_submissions")
+            .insert(defaultSubmissions);
+          if (!seedSubErr) {
+            // Re-fetch submissions
+            const { data: freshSub } = await supabase
+              .from("project_submissions")
+              .select(
+                "id, project_title, student_name, student_id, level, subject, score, teacher_name, status, created_at, org_id",
+              )
+              .eq("org_id", orgId);
+            if (freshSub) subData = freshSub;
+          }
+        } catch (seedSubErr) {
+          console.warn("Auto-seeding submissions notice:", seedSubErr);
+        }
+      }
 
       if (stdData && stdData.length > 0) {
         const mappedStudents: StudentRecord[] = stdData.map((s) => {
@@ -412,52 +548,16 @@ function AdminDashboard() {
             display_name: s.display_name || "Scholar",
             level: s.level || "S1",
             stream: s.stream || "Stream A",
+            role: s.role || "student",
             org_id: s.org_id || s.school_id,
             school_name: s.school_name || "Institutional School",
             avgScore,
-            submissionCount: studentSubs.length || 1,
+            submissionCount: studentSubs.length || 0,
           };
         });
         setStudentsList(mappedStudents);
       } else {
-        setStudentsList([
-          {
-            id: "1",
-            user_id: "STD-UG2026-01",
-            display_name: "Kato Paul",
-            level: "S3",
-            stream: "North Stream",
-            avgScore: 82,
-            submissionCount: 3,
-          },
-          {
-            id: "2",
-            user_id: "STD-UG2026-02",
-            display_name: "Namubiru Sarah",
-            level: "S4",
-            stream: "East Stream",
-            avgScore: 88,
-            submissionCount: 4,
-          },
-          {
-            id: "3",
-            user_id: "STD-UG2026-03",
-            display_name: "Okello Emmanuel",
-            level: "S1",
-            stream: "West Stream",
-            avgScore: 74,
-            submissionCount: 2,
-          },
-          {
-            id: "4",
-            user_id: "STD-UG2026-04",
-            display_name: "Akimana Grace",
-            level: "S6",
-            stream: "Science A",
-            avgScore: 91,
-            submissionCount: 5,
-          },
-        ]);
+        setStudentsList([]);
       }
 
       if (subData && subData.length > 0) {
@@ -475,30 +575,7 @@ function AdminDashboard() {
           })),
         );
       } else {
-        setSubmissionsList([
-          {
-            id: "SUB-801",
-            project_title: "Solar Water Distillation Unit for Rural Communities",
-            student_name: "Kato Paul",
-            level: "S3",
-            subject: "Physics",
-            score: 82,
-            teacher_name: "Dr. Mukasa",
-            status: "verified",
-            created_at: "2026-07-24",
-          },
-          {
-            id: "SUB-802",
-            project_title: "Organic Fertilizer Synthesis from Household Coffee Husks",
-            student_name: "Namubiru Sarah",
-            level: "S4",
-            subject: "Chemistry",
-            score: 88,
-            teacher_name: "Tr. Nabirye",
-            status: "verified",
-            created_at: "2026-07-23",
-          },
-        ]);
+        setSubmissionsList([]);
       }
     } catch (e) {
       console.warn("Notice loading class students & submissions:", e);
@@ -528,9 +605,9 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-blue-600/30">
+    <div className="min-h-screen bg-background text-foreground selection:bg-blue-600/30">
       {/* Sidebar Navigation */}
-      <aside className="fixed left-0 top-0 bottom-0 w-64 border-r border-white/5 bg-black/50 backdrop-blur-3xl z-50 hidden lg:flex flex-col">
+      <aside className="fixed left-0 top-0 bottom-0 w-64 border-r border-border bg-card/80 backdrop-blur-3xl z-50 hidden lg:flex flex-col">
         <div className="p-6">
           <div className="flex items-center gap-3 mb-8">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center font-black">
@@ -963,49 +1040,86 @@ function AdminDashboard() {
                       </>
                     ) : (
                       filteredStudents.map((s) => (
-                        <TableRow key={s.id} className="border-white/5 hover:bg-white/[0.02]">
+                        <TableRow key={s.id} className="border-border hover:bg-muted/40">
                           <TableCell className="font-bold flex items-center gap-2">
                             <div className="h-8 w-8 rounded-full bg-blue-600/20 text-blue-400 border border-blue-600/30 flex items-center justify-center font-black text-xs uppercase">
                               {s.display_name.slice(0, 2)}
                             </div>
                             <div>
-                              <p className="text-sm font-bold text-white">{s.display_name}</p>
-                              <p className="text-[10px] text-zinc-500">
+                              <p className="text-sm font-bold text-foreground">{s.display_name}</p>
+                              <p className="text-[10px] text-muted-foreground font-medium">
                                 ID: {s.user_id.slice(0, 8)}
                               </p>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge className="bg-blue-600/10 text-blue-400 border-none">
-                              {s.level} - {s.stream || "Stream A"}
-                            </Badge>
+                            <div className="flex flex-col gap-1 items-start">
+                              <Badge className="bg-blue-600/10 text-blue-400 border-none shrink-0 text-[10px] py-0.5">
+                                {s.level} - {s.stream || "Stream A"}
+                              </Badge>
+                              <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground/80 bg-muted px-1.5 py-0.5 rounded border border-border">
+                                {s.role?.replace("_", " ") || "student"}
+                              </span>
+                            </div>
                           </TableCell>
-                          <TableCell className="font-mono text-xs text-zinc-400">
+                          <TableCell className="font-mono text-xs text-muted-foreground">
                             {currentOrgId || "SCH-UG-2026"}
                           </TableCell>
-                          <TableCell className="font-bold text-white">
-                            {s.submissionCount || 1}
+                          <TableCell className="font-bold text-foreground">
+                            {s.submissionCount || 0}
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <Progress
-                                value={s.avgScore || 75}
-                                className="h-1.5 w-16 bg-white/5"
-                              />
+                              <Progress value={s.avgScore || 75} className="h-1.5 w-16 bg-muted" />
                               <span className="text-xs font-mono font-bold text-emerald-400">
                                 {s.avgScore || 75}%
                               </span>
                             </div>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setInspectedStudent(s)}
-                              className="border-blue-600/30 bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white transition-all text-xs"
-                            >
-                              <Eye className="h-3.5 w-3.5 mr-1" /> Inspect Student
-                            </Button>
+                            <div className="flex items-center justify-end gap-2">
+                              <select
+                                value={s.role || "student"}
+                                onChange={async (e) => {
+                                  const newRole = e.target.value;
+                                  const toastId = toast.loading(
+                                    `Assigning role ${newRole.toUpperCase()} to ${s.display_name}...`,
+                                  );
+                                  try {
+                                    const { error } = await supabase
+                                      .from("profiles")
+                                      .update({ role: newRole })
+                                      .eq("id", s.id);
+                                    if (error) throw error;
+                                    toast.success(
+                                      `Assigned role ${newRole.toUpperCase().replace("_", " ")} to ${s.display_name}!`,
+                                      { id: toastId },
+                                    );
+                                    loadClassStudentsAndSubmissions(currentOrgId);
+                                    loadDashboardStats(currentOrgId);
+                                  } catch (err: any) {
+                                    toast.error(`Failed to assign role: ${err.message}`, {
+                                      id: toastId,
+                                    });
+                                  }
+                                }}
+                                className="bg-muted text-foreground text-[10px] font-black uppercase tracking-tight py-1 px-2.5 rounded-full outline-none border border-border cursor-pointer hover:bg-muted/80 transition-colors"
+                              >
+                                <option value="student">Student</option>
+                                <option value="student_monitor">Student Monitor</option>
+                                <option value="teacher">Teacher</option>
+                                <option value="admin">Admin</option>
+                              </select>
+
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setInspectedStudent(s)}
+                                className="border-blue-600/30 bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white transition-all text-xs shrink-0"
+                              >
+                                <Eye className="h-3.5 w-3.5 mr-1" /> Inspect
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))
@@ -1593,10 +1707,10 @@ function NavButton({
       className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
         active
           ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-          : "text-zinc-500 hover:text-white hover:bg-white/5"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted"
       }`}
     >
-      <Icon className={`h-4 w-4 ${active ? "text-white" : "text-zinc-600"}`} />
+      <Icon className={`h-4 w-4 ${active ? "text-white" : "text-muted-foreground"}`} />
       {label}
     </button>
   );
@@ -1607,7 +1721,7 @@ function StatCard({
   label,
   value,
   trend,
-  color = "text-white",
+  color = "text-foreground",
 }: {
   icon: LucideIcon;
   label: string;
@@ -1616,19 +1730,19 @@ function StatCard({
   color?: string;
 }) {
   return (
-    <Card className="border-white/5 bg-black/40 backdrop-blur-xl group hover:border-blue-600/30 transition-all">
+    <Card className="border-border bg-card/60 backdrop-blur-xl group hover:border-blue-600/30 transition-all">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all text-zinc-400">
+          <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all text-muted-foreground">
             <Icon className="h-5 w-5" />
           </div>
-          <ArrowUpRight className="h-4 w-4 text-zinc-600" />
+          <ArrowUpRight className="h-4 w-4 text-muted-foreground/70" />
         </div>
-        <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-1">
+        <p className="text-muted-foreground text-[10px] font-black uppercase tracking-widest mb-1">
           {label}
         </p>
         <h3 className={`text-2xl font-black ${color}`}>{value}</h3>
-        <p className="text-[10px] text-zinc-600 mt-2 font-medium">{trend}</p>
+        <p className="text-[10px] text-muted-foreground/60 mt-2 font-medium">{trend}</p>
       </CardContent>
     </Card>
   );
@@ -1650,11 +1764,11 @@ function LevelBar({
     <div className="space-y-2">
       <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-tighter">
         <span>{label} Stream</span>
-        <span className="text-zinc-500">
+        <span className="text-muted-foreground">
           {count} Learners ({percentage}%)
         </span>
       </div>
-      <Progress value={percentage} className={`h-1.5 bg-white/5 ${color}`} />
+      <Progress value={percentage} className={`h-1.5 bg-muted ${color}`} />
     </div>
   );
 }

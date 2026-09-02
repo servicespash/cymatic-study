@@ -79,7 +79,12 @@ export const Route = createFileRoute("/dashboard")({
       description:
         "Track study milestones, NCDC curriculum subject mastery, live term goals, and Socratic tutoring progress.",
       path: "/dashboard",
-      keywords: ["Student Dashboard", "Cymatic Study Hub", "Uganda Education Progress", "Uganda Secondary Curriculum"],
+      keywords: [
+        "Student Dashboard",
+        "Cymatic Study Hub",
+        "Uganda Education Progress",
+        "Uganda Secondary Curriculum",
+      ],
     }),
   component: () => (
     <AuthRouteMiddleware
@@ -157,10 +162,9 @@ function DashboardPage() {
           isAdmin,
         });
         let query = supabase.from("profiles").select("*");
-        if (profile?.school_id) {
-          query = query.eq("school_id", profile.school_id);
-        } else if (profile?.org_id) {
-          query = query.eq("org_id", profile.org_id);
+        const targetId = profile?.org_id || profile?.school_id;
+        if (targetId) {
+          query = query.eq("org_id", targetId);
         } else if (profile?.school_name) {
           query = query.eq("school_name", profile.school_name);
         }

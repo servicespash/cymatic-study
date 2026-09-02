@@ -48,21 +48,24 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
 
   const persona = useMemo(() => DEFAULT_PERSONA_CONFIGS[voice], [voice]);
 
-  const connectSession = useCallback(async (retries = 3) => {
-    for (let i = 0; i < retries; i++) {
-      try {
-        await liveTools.connect();
-        return; // Success!
-      } catch (e) {
-        console.error(`Connection attempt ${i + 1} failed`, e);
-        if (i === retries - 1) {
-          toast.error("Failed to connect to tutor engine after multiple attempts.");
-        } else {
-          await new Promise((r) => setTimeout(r, 1000 * (i + 1))); // Exponential backoff
+  const connectSession = useCallback(
+    async (retries = 3) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          await liveTools.connect();
+          return; // Success!
+        } catch (e) {
+          console.error(`Connection attempt ${i + 1} failed`, e);
+          if (i === retries - 1) {
+            toast.error("Failed to connect to tutor engine after multiple attempts.");
+          } else {
+            await new Promise((r) => setTimeout(r, 1000 * (i + 1))); // Exponential backoff
+          }
         }
       }
-    }
-  }, [liveTools]);
+    },
+    [liveTools],
+  );
 
   const disconnectSession = useCallback(() => {
     liveTools.disconnect();

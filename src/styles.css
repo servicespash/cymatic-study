@@ -543,19 +543,58 @@
   max-width: 1600px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: clamp(1rem, 3vw, 2rem);
-  padding-right: clamp(1rem, 3vw, 2rem);
+  padding-left: clamp(0.75rem, 2.5vw, 2rem);
+  padding-right: clamp(0.75rem, 2.5vw, 2rem);
   padding-top: clamp(1rem, 2vw, 1.75rem);
   padding-bottom: clamp(1.5rem, 3vw, 3rem);
+  box-sizing: border-box;
+  overflow-x: hidden;
   container-type: inline-size;
   container-name: dashboard-main;
+}
+
+.dashboard-grid {
+  display: grid;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.dashboard-grid > * {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Container query responsive adaptations */
 @container dashboard-main (max-width: 640px) {
   .dashboard-grid {
+    display: grid;
     grid-template-columns: 1fr !important;
+    padding: 0 !important;
     gap: 0.875rem !important;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .dashboard-grid > * {
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .dashboard-grid .relative.aspect-video,
+  .dashboard-grid .relative.aspect-\[21\/9\] {
+    min-height: 180px;
+    max-height: 240px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .dashboard-header-flex {
@@ -567,15 +606,19 @@
 
 @container dashboard-main (min-width: 641px) and (max-width: 1024px) {
   .dashboard-grid {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 1.25rem !important;
+    min-width: 0;
   }
 }
 
 @container dashboard-main (min-width: 1025px) {
   .dashboard-grid {
+    display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 1.5rem !important;
+    min-width: 0;
   }
 }
 

@@ -73,51 +73,50 @@ export function InstitutionalRegistryModule() {
   const [subject, setSubject] = useState("Physics");
   const [isAdding, setIsAdding] = useState(false);
 
-  // Initial Mock & Live Roster
-  const [roster, setRoster] = useState<RegistryMember[]>([
-    {
-      id: "REG-01",
-      name: "Dr. Alex Mukasa",
-      email: "mukasa.physics@school.ac.ug",
-      role: "teacher",
-      subject: "Physics & STEM",
-      registryCode: `REG-TCH-${currentSchoolId.slice(-6)}-901`,
-      status: "active",
-      created_at: "2026-07-20",
-    },
-    {
-      id: "REG-02",
-      name: "Tr. Sarah Nabirye",
-      email: "sarah.nabirye@school.ac.ug",
-      role: "teacher",
-      subject: "Chemistry & Biology",
-      registryCode: `REG-TCH-${currentSchoolId.slice(-6)}-902`,
-      status: "active",
-      created_at: "2026-07-21",
-    },
-    {
-      id: "REG-03",
-      name: "Kato Paul",
-      email: "kato.paul@student.ac.ug",
-      role: "student",
-      level: "S3",
-      stream: "North Stream",
-      registryCode: `STD-${currentSchoolId.slice(-6)}-801`,
-      status: "active",
-      created_at: "2026-07-22",
-    },
-    {
-      id: "REG-04",
-      name: "Okello Emmanuel",
-      email: "okello.e@student.ac.ug",
-      role: "student",
-      level: "S1",
-      stream: "West Stream",
-      registryCode: `STD-${currentSchoolId.slice(-6)}-802`,
-      status: "invited",
-      created_at: "2026-07-24",
-    },
-  ]);
+  const [roster, setRoster] = useState<RegistryMember[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
+
+  // Fetch live institutional roster from profiles on mount
+  React.useEffect(() => {
+    async function loadRoster() {
+      setLoadingData(true);
+      try {
+        const { data: dbProfiles, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("org_id", currentSchoolId);
+
+        if (error) throw error;
+
+        if (dbProfiles && dbProfiles.length > 0) {
+          const mapped: RegistryMember[] = dbProfiles.map((p) => {
+            const isTeacher = p.role === "teacher" || p.role === "instructor";
+            return {
+              id: p.id,
+              name: p.display_name || "Scholar",
+              email: p.user_id ? `${p.user_id.slice(0, 8)}@cymaticstudy.ug` : "user@cymaticstudy.ug",
+              role: isTeacher ? "teacher" : "student",
+              level: p.level || undefined,
+              stream: p.stream || undefined,
+              subject: isTeacher ? p.tutor_persona || "Science & STEM" : undefined,
+              registryCode: p.referral_code || `${isTeacher ? "TCH" : "STD"}-${currentSchoolId.slice(-4)}-${p.id.slice(-4)}`,
+              status: "active",
+              created_at: p.created_at ? p.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
+            };
+          });
+          setRoster(mapped);
+        } else {
+          setRoster([]);
+        }
+      } catch (err) {
+        console.warn("Notice loading institutional roster:", err);
+        setRoster([]);
+      } finally {
+        setLoadingData(false);
+      }
+    }
+    loadRoster();
+  }, [currentSchoolId]);
 
   const [activeFilter, setActiveFilter] = useState<"ALL" | "teacher" | "student">("ALL");
   const [searchTerm, setSearchTerm] = useState("");

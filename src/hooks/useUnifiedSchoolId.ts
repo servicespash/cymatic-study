@@ -19,9 +19,9 @@ export function useUnifiedSchoolId() {
     (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : null) ||
     "";
 
-  const schoolId = (isUuid(rawSchoolId) || !rawSchoolId) ? "SCH-UG-2026-97EZ" : rawSchoolId;
+  const schoolId = isUuid(rawSchoolId) || !rawSchoolId ? "" : rawSchoolId;
 
-  const schoolName = profile?.school_name || user?.user_metadata?.school_name || "School in Uganda (NCDC Hub)";
+  const schoolName = profile?.school_name || user?.user_metadata?.school_name || "";
 
   const updateSchoolId = async (newSchoolId: string, newSchoolName: string) => {
     if (!user) return;
@@ -38,7 +38,7 @@ export function useUnifiedSchoolId() {
         .from("profiles")
         .update({ org_id: newSchoolId, school_name: newSchoolName })
         .eq("user_id", user.id);
-      
+
       localStorage.setItem("cymatic_school_id", newSchoolId);
       toast.success("School ID updated successfully!");
     } catch (err) {

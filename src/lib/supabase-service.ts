@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { MOCK_CONTENT_DATA } from "./mock-content-data";
 
 export type NewsItem = {
   id: string;
@@ -72,8 +71,8 @@ export function useNewsFeed() {
       setError(err instanceof Error ? err : new Error(errorMsg));
       setIsUsingMock(true);
 
-      // Load fallback items from Mock Content Data Service
-      setItems(MOCK_CONTENT_DATA);
+      // Fallback to empty array in case of connection failure
+      setItems([]);
     } finally {
       setLoading(false);
       setRefreshing(false);

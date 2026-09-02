@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context-core";
 
-export type UserRole = "student" | "teacher" | "admin" | "independent_learner" | "independent_teacher";
+export type UserRole =
+  "student" | "teacher" | "admin" | "independent_learner" | "independent_teacher";
 
 export interface UserRoleState {
   role: UserRole;
@@ -35,13 +36,8 @@ export function normalizeRole(rawRole?: string | null): UserRole {
   }
   if (r === "independent_learner") return "independent_learner";
   if (r === "independent_teacher") return "independent_teacher";
-  
-  if (
-    r === "teacher" ||
-    r === "instructor" ||
-    r === "evaluator" ||
-    r === "faculty"
-  ) {
+
+  if (r === "teacher" || r === "instructor" || r === "evaluator" || r === "faculty") {
     return "teacher";
   }
   return "student";
@@ -80,7 +76,9 @@ export function useUserRole(): UserRoleState {
 
       // 1. Attempt secure RPC call if configured on Supabase backend
       try {
-        const { data: rpcRole, error: rpcError } = await (supabase.rpc as any)("get_current_user_role");
+        const { data: rpcRole, error: rpcError } = await (supabase.rpc as any)(
+          "get_current_user_role",
+        );
         if (!rpcError && rpcRole && typeof rpcRole === "string") {
           fetchedRawRole = rpcRole;
         }
@@ -105,10 +103,7 @@ export function useUserRole(): UserRoleState {
 
       // 3. Fallback to auth metadata
       if (!fetchedRawRole) {
-        fetchedRawRole =
-          profile?.role ||
-          user.user_metadata?.role ||
-          "student";
+        fetchedRawRole = profile?.role || user.user_metadata?.role || "student";
       }
 
       if (!fetchedSchoolId) {
@@ -121,10 +116,7 @@ export function useUserRole(): UserRoleState {
       }
 
       if (!fetchedSchoolName) {
-        fetchedSchoolName =
-          profile?.school_name ||
-          user.user_metadata?.school_name ||
-          null;
+        fetchedSchoolName = profile?.school_name || user.user_metadata?.school_name || null;
       }
 
       const isUuid = (val: string | null | undefined): boolean => {

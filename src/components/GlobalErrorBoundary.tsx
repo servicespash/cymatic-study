@@ -40,7 +40,10 @@ const ERROR_STORAGE_KEY = "cymatic_error_logs_v2";
  */
 function PandaApologyMascot() {
   return (
-    <div className="relative flex flex-col items-center justify-center select-none" id="panda-apology-mascot">
+    <div
+      className="relative flex flex-col items-center justify-center select-none"
+      id="panda-apology-mascot"
+    >
       <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-500 hover:scale-105">
         {/* Soft Ambient Glow */}
         <div className="absolute -inset-3 bg-gradient-to-tr from-amber-500/20 via-primary/20 to-rose-500/20 rounded-full blur-2xl animate-pulse opacity-70" />
@@ -62,7 +65,15 @@ function PandaApologyMascot() {
           </g>
 
           {/* Panda Head Base */}
-          <ellipse cx="100" cy="110" rx="68" ry="60" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="3" />
+          <ellipse
+            cx="100"
+            cy="110"
+            rx="68"
+            ry="60"
+            fill="#f8fafc"
+            stroke="#e2e8f0"
+            strokeWidth="3"
+          />
 
           {/* Apologetic / Bowing Eyebrows */}
           <path

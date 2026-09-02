@@ -31,9 +31,15 @@ export function DashboardLayout({ children, activeSection }: DashboardLayoutProp
 
   const currentRole = role;
   const userDisplayName =
-    profile?.display_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Scholar";
+    profile?.display_name ||
+    user?.user_metadata?.full_name ||
+    user?.email?.split("@")[0] ||
+    "Scholar";
   const orgName =
-    schoolName || profile?.school_name || user?.user_metadata?.school_name || "Uganda Secondary Curriculum";
+    schoolName ||
+    profile?.school_name ||
+    user?.user_metadata?.school_name ||
+    "Uganda Secondary Curriculum";
   const orgId = schoolId || profile?.school_id || profile?.org_id || "SCH-UG-2026";
 
   const getRoleConfig = () => {
@@ -95,7 +101,10 @@ export function DashboardLayout({ children, activeSection }: DashboardLayoutProp
                 <span className="text-sm font-extrabold text-foreground tracking-tight">
                   {userDisplayName}
                 </span>
-                <Badge variant="outline" className={`text-[10px] font-bold uppercase tracking-wider ${config.badgeColor}`}>
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] font-bold uppercase tracking-wider ${config.badgeColor}`}
+                >
                   {config.portalName}
                 </Badge>
                 {isGuestMode && (
@@ -109,9 +118,7 @@ export function DashboardLayout({ children, activeSection }: DashboardLayoutProp
                   <Building2 className="w-3.5 h-3.5 text-primary/70" />
                   {orgName}
                 </span>
-                <span className="font-mono text-[11px] text-primary font-semibold">
-                  [{orgId}]
-                </span>
+                <span className="font-mono text-[11px] text-primary font-semibold">[{orgId}]</span>
               </div>
             </div>
           </div>

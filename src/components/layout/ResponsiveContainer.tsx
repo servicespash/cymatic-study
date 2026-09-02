@@ -33,9 +33,7 @@ export function ResponsiveContainer({
     centered: "max-w-lg mx-auto w-full flex flex-col items-center justify-center min-h-[70vh]",
   };
 
-  const paddingClasses = noPadding
-    ? ""
-    : "px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8";
+  const paddingClasses = noPadding ? "" : "px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8";
 
   return (
     <Component

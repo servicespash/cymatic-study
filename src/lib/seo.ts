@@ -3,6 +3,9 @@
  * Provides consistent OpenGraph, Twitter, canonical, and JSON-LD support.
  */
 
+import { BRAND } from "@/lib/constants";
+import { curriculumSubjects } from "@/data/curriculumSubjects";
+
 export interface SEOMetadata {
   title: string;
   description: string;
@@ -45,6 +48,17 @@ export function generateMetaTags(seo: SEOMetadata) {
     author = DEFAULT_AUTHOR,
   } = seo;
 
+  const combinedKeywords = Array.from(new Set([
+    ...keywords,
+    ...BRAND.aliases,
+    "Uganda Secondary School Notes",
+    "NCDC New Curriculum S1-S4",
+    "UNEB Practice Quizzes",
+    "Uganda O-Level Study",
+    "Uganda A-Level Study",
+    "Socratic Tutoring Uganda"
+  ]));
+
   const meta = [
     { charSet: "utf-8" },
     {
@@ -54,7 +68,11 @@ export function generateMetaTags(seo: SEOMetadata) {
     { title },
     { name: "description", content: description },
     { name: "author", content: author },
-    ...(keywords.length > 0 ? [{ name: "keywords", content: keywords.join(", ") }] : []),
+    { name: "keywords", content: combinedKeywords.join(", ") },
+
+    // Search Engine Crawlability directives (GEO + SEO optimized)
+    { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" },
+    { name: "googlebot", content: "index, follow, max-snippet:-1" },
 
     // Open Graph
     { property: "og:title", content: ogTitle },
@@ -112,6 +130,7 @@ export function getPersonSchema(): JSONLDSchema {
     worksFor: {
       "@type": "Organization",
       name: "Latty's Cymatic Study",
+      alternateName: BRAND.aliases,
     },
     email: "latifisabirye123@gmail.com",
   };
@@ -125,9 +144,10 @@ export function getOrganizationSchema(): JSONLDSchema {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "Latty's Cymatic Study",
+    alternateName: BRAND.aliases,
     url: BASE_URL,
     logo: `${BASE_URL}/logo.png`,
-    description: "Interactive study companion for Uganda Secondary Curriculum (NCDC Aligned)",
+    description: "Interactive study companion for Uganda Secondary Curriculum (NCDC Aligned) supporting Lattys Cymatic Study, Cymatic Study Uganda, Cymatic Education Uganda, Cymatic NLSC, and Lattys Study.",
     sameAs: ["https://www.cymatichub.xyz", "https://resonance.cymatichub.xyz"],
     contactPoint: {
       "@type": "ContactPoint",
@@ -135,6 +155,43 @@ export function getOrganizationSchema(): JSONLDSchema {
       email: "cymatichubevolution@gmail.com",
     },
   };
+}
+
+/**
+ * Dynamic course and curriculum schemas for ALL subjects and ALL classes
+ */
+export function getAllCoursesSchemas(): JSONLDSchema[] {
+  const schemas: JSONLDSchema[] = [];
+
+  curriculumSubjects.forEach((subject) => {
+    const isALevel = subject.level.includes("A-Level");
+    const classes = isALevel
+      ? ["Senior 5", "Senior 6"]
+      : ["Senior 1", "Senior 2", "Senior 3", "Senior 4"];
+
+    classes.forEach((classLevel) => {
+      schemas.push({
+        "@context": "https://schema.org",
+        "@type": "Course",
+        "name": `${classLevel} ${subject.title} — ${BRAND.name}`,
+        "description": `Comprehensive curriculum and study materials for ${classLevel} ${subject.title}. ${subject.description} Fully aligned with Uganda National Curriculum Development Centre (NCDC) and UNEB standards. Supports all dynamic classes.`,
+        "courseCode": `${subject.category.toUpperCase()}-${classLevel.replace("Senior ", "S")}`,
+        "provider": {
+          "@type": "Organization",
+          "name": BRAND.name,
+          "alternateName": BRAND.aliases,
+          "url": BASE_URL,
+        },
+        "educationalLevel": isALevel ? "Advanced Secondary Education (UACE)" : "Lower Secondary Education (UCE)",
+        "about": {
+          "@type": "Thing",
+          "name": `${subject.title} Curriculum Uganda`
+        }
+      });
+    });
+  });
+
+  return schemas;
 }
 
 /**

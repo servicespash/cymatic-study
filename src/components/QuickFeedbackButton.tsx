@@ -67,7 +67,10 @@ export default function QuickFeedbackButton() {
           message: message.trim(),
           status: "open",
           created_at: new Date().toISOString(),
-          profiles: { display_name: profile?.display_name || user.email || "User", level: profile?.level || "S1" }
+          profiles: {
+            display_name: profile?.display_name || user.email || "User",
+            level: profile?.level || "S1",
+          },
         };
         localStorage.setItem("local_user_feedback", JSON.stringify([newFeedback, ...list]));
       }
@@ -87,7 +90,10 @@ export default function QuickFeedbackButton() {
         message: message.trim(),
         status: "open",
         created_at: new Date().toISOString(),
-        profiles: { display_name: profile?.display_name || user.email || "User", level: profile?.level || "S1" }
+        profiles: {
+          display_name: profile?.display_name || user.email || "User",
+          level: profile?.level || "S1",
+        },
       };
       localStorage.setItem("local_user_feedback", JSON.stringify([newFeedback, ...list]));
       toast.success("Thank you for your feedback!");

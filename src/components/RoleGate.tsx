@@ -88,17 +88,19 @@ export function RoleGate({
     if (requireInstitutional) {
       const hasInstitution = Boolean(
         profile?.school_id ||
-          profile?.org_id ||
-          user?.user_metadata?.school_id ||
-          user?.user_metadata?.org_id,
+        profile?.org_id ||
+        user?.user_metadata?.school_id ||
+        user?.user_metadata?.org_id,
       );
       if (!hasInstitution) return false;
     }
 
     // Independent check
     if (requireIndependent) {
-        const isIndependent = normalizedCurrentRole === "independent_learner" || normalizedCurrentRole === "independent_teacher";
-        if (!isIndependent) return false;
+      const isIndependent =
+        normalizedCurrentRole === "independent_learner" ||
+        normalizedCurrentRole === "independent_teacher";
+      if (!isIndependent) return false;
     }
 
     // 3. Admin override & explicit check
@@ -179,9 +181,7 @@ RoleGate.Student = function RoleGateStudent(
   return <RoleGate {...props} requireStudent />;
 };
 
-RoleGate.Guest = function RoleGateGuest(
-  props: Omit<RoleGateProps, "allowGuest" | "invert">,
-) {
+RoleGate.Guest = function RoleGateGuest(props: Omit<RoleGateProps, "allowGuest" | "invert">) {
   return <RoleGate {...props} allowGuest invert={false} />;
 };
 
@@ -213,9 +213,9 @@ export function useRoleAccess(options?: {
   const isStudent = normalizedCurrentRole === "student";
   const isInstitutional = Boolean(
     profile?.school_id ||
-      profile?.org_id ||
-      user?.user_metadata?.school_id ||
-      user?.user_metadata?.org_id,
+    profile?.org_id ||
+    user?.user_metadata?.school_id ||
+    user?.user_metadata?.org_id,
   );
 
   const hasAccess = useMemo(() => {
@@ -243,7 +243,9 @@ export function useRoleAccess(options?: {
 
     if (options.allowedRoles && options.allowedRoles.length > 0) {
       const normalized = options.allowedRoles.map((r) => normalizeRole(r));
-      return normalized.includes(normalizedCurrentRole) || (isAdmin && normalized.includes("teacher"));
+      return (
+        normalized.includes(normalizedCurrentRole) || (isAdmin && normalized.includes("teacher"))
+      );
     }
 
     return true;

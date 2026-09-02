@@ -136,19 +136,19 @@ function StudentDashboardPage() {
   };
 
   return (
-    <div className="app-container dashboard-container space-y-8 min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="app-container dashboard-container space-y-8 min-h-screen bg-background text-foreground">
       {/* HEADER HERO */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-zinc-900 via-indigo-950 to-zinc-900 p-6 md:p-8 border border-zinc-800 shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-card via-indigo-950/20 to-card p-6 md:p-8 border border-border shadow-md">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold">
               <GraduationCap className="w-3.5 h-3.5" />
               Student Academic Portfolio Hub
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
               {studentName}'s Study Workflow
             </h1>
-            <p className="text-xs md:text-sm text-zinc-400 max-w-2xl leading-relaxed">
+            <p className="text-xs md:text-sm text-muted-foreground max-w-2xl leading-relaxed">
               Track your study time points, award points (XP), marked project reports, and official
               NCDC study progress. Print or export verified portfolio reports directly to PDF.
             </p>
@@ -168,7 +168,7 @@ function StudentDashboardPage() {
                 setIsExportPdfOpen(true);
               }}
               variant="outline"
-              className="border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold rounded-xl px-4 py-2.5 flex items-center gap-2"
+              className="border-border bg-card hover:bg-muted text-foreground text-xs font-bold rounded-xl px-4 py-2.5 flex items-center gap-2"
             >
               <Download className="w-4 h-4 text-emerald-400" />
               Export Branded PDF
@@ -179,83 +179,89 @@ function StudentDashboardPage() {
 
       {/* METRIC CARDS */}
       <div className="dashboard-grid">
-        <Card className="bg-zinc-900/80 border-zinc-800 rounded-2xl">
+        <Card className="bg-card border-border rounded-2xl">
           <CardContent className="p-5 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
               <Clock className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                 Study Time Points
               </p>
-              <p className="text-2xl font-black text-white mt-0.5">{totalHours} Hours</p>
-              <p className="text-[10px] text-zinc-500 mt-0.5">
+              <p className="text-2xl font-black text-foreground mt-0.5">{totalHours} Hours</p>
+              <p className="text-[10px] text-muted-foreground/80 mt-0.5">
                 Logged in Socratic chat &amp; tasks
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900/80 border-zinc-800 rounded-2xl">
+        <Card className="bg-card border-border rounded-2xl">
           <CardContent className="p-5 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
               <Award className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                 Award Points (XP)
               </p>
-              <p className="text-2xl font-black text-white mt-0.5">{xp} XP</p>
-              <p className="text-[10px] text-zinc-500 mt-0.5">Tier {level} Academic Scholar</p>
+              <p className="text-2xl font-black text-foreground mt-0.5">{xp} XP</p>
+              <p className="text-[10px] text-muted-foreground/80 mt-0.5">
+                Tier {level} Academic Scholar
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900/80 border-zinc-800 rounded-2xl">
+        <Card className="bg-card border-border rounded-2xl">
           <CardContent className="p-5 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
               <CheckCircle2 className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                 Marked Reports
               </p>
-              <p className="text-2xl font-black text-white mt-0.5">
+              <p className="text-2xl font-black text-foreground mt-0.5">
                 {markedReports.length} Projects
               </p>
-              <p className="text-[10px] text-zinc-500 mt-0.5">Evaluated with rubric scores</p>
+              <p className="text-[10px] text-muted-foreground/80 mt-0.5">
+                Evaluated with rubric scores
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900/80 border-zinc-800 rounded-2xl">
+        <Card className="bg-card border-border rounded-2xl">
           <CardContent className="p-5 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
               <Sparkles className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                 Remediated Gaps
               </p>
-              <p className="text-2xl font-black text-white mt-0.5">
+              <p className="text-2xl font-black text-foreground mt-0.5">
                 {completedGaps.length} Mastered
               </p>
-              <p className="text-[10px] text-zinc-500 mt-0.5">Diagnostic checkpoints clear</p>
+              <p className="text-[10px] text-muted-foreground/80 mt-0.5">
+                Diagnostic checkpoints clear
+              </p>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* MARKED STUDY REPORTS SECTION */}
-      <Card className="bg-zinc-900/80 border-zinc-800 rounded-3xl overflow-hidden shadow-xl">
-        <CardHeader className="border-b border-zinc-800/80 bg-zinc-900/50 p-6">
+      <Card className="bg-card border-border rounded-3xl overflow-hidden shadow-sm">
+        <CardHeader className="border-b border-border bg-muted/30 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+              <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
                 <FileText className="w-5 h-5 text-indigo-400" />
                 Marked Study Reports &amp; Faculty Evaluations
               </CardTitle>
-              <CardDescription className="text-xs text-zinc-400 mt-1">
+              <CardDescription className="text-xs text-muted-foreground mt-1">
                 Your graded project submissions, rubric breakdown, time points earned, and teacher
                 signatures.
               </CardDescription>
@@ -264,7 +270,7 @@ function StudentDashboardPage() {
               onClick={handlePrintPortfolio}
               size="sm"
               variant="outline"
-              className="border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold rounded-xl gap-2"
+              className="border-border bg-muted hover:bg-muted/80 text-foreground text-xs font-semibold rounded-xl gap-2"
             >
               <Printer className="w-3.5 h-3.5" />
               Print All Reports
@@ -274,7 +280,7 @@ function StudentDashboardPage() {
 
         <CardContent className="p-6 space-y-4">
           {markedReports.length === 0 ? (
-            <div className="text-center py-12 text-zinc-500 text-sm">
+            <div className="text-center py-12 text-muted-foreground text-sm">
               No marked reports available yet. Submit project workflows in the Project Sandbox to
               receive teacher evaluations.
             </div>
@@ -282,20 +288,22 @@ function StudentDashboardPage() {
             markedReports.map((report) => (
               <div
                 key={report.id}
-                className="p-5 rounded-2xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 transition-all space-y-4"
+                className="p-5 rounded-2xl bg-muted/20 border border-border hover:border-border/80 transition-all space-y-4"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800/80 pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/80 pb-3">
                   <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-indigo-400 bg-indigo-950/60 px-2.5 py-0.5 rounded-md border border-indigo-500/20">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-indigo-400 bg-indigo-950/20 px-2.5 py-0.5 rounded-md border border-indigo-500/20">
                       {report.subject} Assessment
                     </span>
-                    <h3 className="text-base font-bold text-white mt-1">{report.projectTitle}</h3>
+                    <h3 className="text-base font-bold text-foreground mt-1">
+                      {report.projectTitle}
+                    </h3>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <div className="text-right">
-                      <span className="text-xs text-zinc-400 block">Overall Score</span>
-                      <span className="text-xl font-black text-emerald-400">{report.score}%</span>
+                      <span className="text-xs text-muted-foreground block">Overall Score</span>
+                      <span className="text-xl font-black text-emerald-500">{report.score}%</span>
                     </div>
                     <Button
                       onClick={() => {
@@ -303,7 +311,7 @@ function StudentDashboardPage() {
                         setIsExportPdfOpen(true);
                       }}
                       size="sm"
-                      className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold rounded-xl px-3"
+                      className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 text-xs font-bold rounded-xl px-3"
                     >
                       <Download className="w-3.5 h-3.5 mr-1" />
                       PDF
@@ -313,28 +321,28 @@ function StudentDashboardPage() {
 
                 {/* Rubric Breakdown */}
                 {report.rubricScores && (
-                  <div className="grid grid-cols-3 gap-2 bg-zinc-900/60 p-3 rounded-xl border border-zinc-800/50 text-xs">
+                  <div className="grid grid-cols-3 gap-2 bg-muted/40 p-3 rounded-xl border border-border/50 text-xs">
                     <div>
-                      <span className="text-zinc-500 text-[10px] uppercase block">
+                      <span className="text-muted-foreground text-[10px] uppercase block">
                         Planning &amp; Design
                       </span>
-                      <span className="font-bold text-zinc-200">
+                      <span className="font-bold text-foreground">
                         {report.rubricScores.planning} / 30
                       </span>
                     </div>
                     <div>
-                      <span className="text-zinc-500 text-[10px] uppercase block">
+                      <span className="text-muted-foreground text-[10px] uppercase block">
                         Practical Execution
                       </span>
-                      <span className="font-bold text-zinc-200">
+                      <span className="font-bold text-foreground">
                         {report.rubricScores.execution} / 40
                       </span>
                     </div>
                     <div>
-                      <span className="text-zinc-500 text-[10px] uppercase block">
+                      <span className="text-muted-foreground text-[10px] uppercase block">
                         Conclusion &amp; Output
                       </span>
-                      <span className="font-bold text-zinc-200">
+                      <span className="font-bold text-foreground">
                         {report.rubricScores.conclusion} / 30
                       </span>
                     </div>
@@ -343,23 +351,24 @@ function StudentDashboardPage() {
 
                 {/* Feedback & Teacher Signature */}
                 {report.feedback && (
-                  <p className="text-xs text-zinc-300 italic bg-zinc-900/40 p-3 rounded-xl border border-zinc-800/40">
+                  <p className="text-xs text-muted-foreground italic bg-muted/30 p-3 rounded-xl border border-border/40">
                     "{report.feedback}"
                   </p>
                 )}
 
-                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-zinc-400 pt-1">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground pt-1">
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
                     <span>
-                      Evaluated by: <strong className="text-white">{report.teacherName}</strong>
+                      Evaluated by:{" "}
+                      <strong className="text-foreground">{report.teacherName}</strong>
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-amber-400 font-semibold">
+                    <span className="text-amber-500 dark:text-amber-400 font-semibold">
                       +{report.awardPointsEarned || 50} Award XP
                     </span>
-                    <span className="text-teal-400 font-semibold">
+                    <span className="text-teal-600 dark:text-teal-400 font-semibold">
                       +{report.timePointsEarned || 5} Study Hours Credited
                     </span>
                   </div>

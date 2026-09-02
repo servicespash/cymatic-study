@@ -35,48 +35,50 @@ export function useAuth() {
   const isStudent = role === "student";
   const isTeacher = role === "teacher";
   const isAdmin = role === "admin";
-  const isInstitutional = !!(profile?.school_id || profile?.org_id || user?.user_metadata?.school_id);
+  const isInstitutional = !!(
+    profile?.school_id ||
+    profile?.org_id ||
+    user?.user_metadata?.school_id
+  );
   const isGuestMode = !loading && !user;
 
   // Sign In with password or OTP magic link
-  const signIn = useCallback(
-    async ({ email, password, redirectTo }: SignInCredentials) => {
-      try {
-        if (password) {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-          if (error) {
-            notifications.authError(error);
-            return { data: null, error };
-          }
-          notifications.authSuccess(
-            data.user?.user_metadata?.full_name || email.split("@")[0],
-            data.user?.user_metadata?.role || "student",
-          );
-          return { data, error: null };
-        } else {
-          const { data, error } = await supabase.auth.signInWithOtp({
-            email,
-            options: {
-              emailRedirectTo: redirectTo || (typeof window !== "undefined" ? window.location.origin : undefined),
-            },
-          });
-          if (error) {
-            notifications.authError(error);
-            return { data: null, error };
-          }
-          notifications.info("Magic link sent", "Check your email for the instant login link.");
-          return { data, error: null };
+  const signIn = useCallback(async ({ email, password, redirectTo }: SignInCredentials) => {
+    try {
+      if (password) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) {
+          notifications.authError(error);
+          return { data: null, error };
         }
-      } catch (err: any) {
-        notifications.authError(err);
-        return { data: null, error: err };
+        notifications.authSuccess(
+          data.user?.user_metadata?.full_name || email.split("@")[0],
+          data.user?.user_metadata?.role || "student",
+        );
+        return { data, error: null };
+      } else {
+        const { data, error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo:
+              redirectTo || (typeof window !== "undefined" ? window.location.origin : undefined),
+          },
+        });
+        if (error) {
+          notifications.authError(error);
+          return { data: null, error };
+        }
+        notifications.info("Magic link sent", "Check your email for the instant login link.");
+        return { data, error: null };
       }
-    },
-    [],
-  );
+    } catch (err: any) {
+      notifications.authError(err);
+      return { data: null, error: err };
+    }
+  }, []);
 
   // Sign Up with custom metadata and role attribution
   const signUp = useCallback(
@@ -124,7 +126,10 @@ export function useAuth() {
             notifications.authError(error);
             return { data: null, error };
           }
-          notifications.info("Confirmation email sent", "Check your inbox to complete your account setup.");
+          notifications.info(
+            "Confirmation email sent",
+            "Check your inbox to complete your account setup.",
+          );
           return { data, error: null };
         }
       } catch (err: any) {

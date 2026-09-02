@@ -32,45 +32,25 @@ export async function fetchNewsArticles(forceRefresh = false): Promise<NewsArtic
   }
 
   try {
-    // Try querying 'news' table first
-    let { data, error } = await supabase
-      .from("news")
+    // Query 'news_broadcasts' table directly
+    const { data, error } = await supabase
+      .from("news_broadcasts")
       .select("*")
       .order("published_at", { ascending: false });
 
-    if (error || !data || data.length === 0) {
-      // Fallback to 'content' table if 'news' table is empty or missing
-      const contentRes = await supabase
-        .from("content")
-        .select("*")
-        .order("published_at", { ascending: false });
-      
-      if (contentRes.error) throw contentRes.error;
-      data = (contentRes.data || []).map((item: any) => ({
-        id: item.id,
-        title: item.title,
-        body: item.body,
-        summary: item.body?.slice(0, 150) + "...",
-        media_url: item.media_url,
-        media_type: item.media_type,
-        category: item.category || "General",
-        published_at: item.published_at || new Date().toISOString(),
-        author: item.speaker || "Editorial Desk",
-        is_featured: item.priority === "high" || false,
-      }));
-    }
+    if (error) throw error;
 
     const articles: NewsArticle[] = (data || []).map((item: any) => ({
       id: item.id,
       title: item.title,
-      body: item.body || item.summary || "",
-      summary: item.summary || item.body?.slice(0, 150) + "..." || "",
-      media_url: item.media_url || item.image_url || null,
+      body: item.body || "",
+      summary: item.body?.slice(0, 150) + "..." || "",
+      media_url: item.media_url || null,
       media_type: item.media_type || "article",
       category: item.category || "Education",
-      published_at: item.published_at || item.created_at || new Date().toISOString(),
-      author: item.author || item.speaker || "NCDC Official",
-      is_featured: item.is_featured || item.priority === "high" || false,
+      published_at: item.published_at || new Date().toISOString(),
+      author: item.media_provider || "NCDC Broadcast Desk",
+      is_featured: item.priority === "high" || false,
     }));
 
     try {
@@ -81,7 +61,7 @@ export async function fetchNewsArticles(forceRefresh = false): Promise<NewsArtic
 
     return articles;
   } catch (err) {
-    console.warn("Supabase news fetch failed, falling back to cache or mock:", err);
+    console.warn("Supabase news_broadcasts fetch failed, falling back to cache:", err);
     try {
       const cached = localStorage.getItem(CACHE_KEY);
       if (cached) {
@@ -89,29 +69,8 @@ export async function fetchNewsArticles(forceRefresh = false): Promise<NewsArtic
       }
     } catch (e) {}
 
-    // Ultimate robust fallback
-    return [
-      {
-        id: "fallback-1",
-        title: "NCDC National Competence Curriculum Update 2026",
-        body: "New educational guidelines emphasizing practical skill acquisition and digital science integration across secondary institutions.",
-        summary: "New educational guidelines emphasizing practical skill acquisition across secondary institutions.",
-        category: "Curriculum",
-        published_at: new Date().toISOString(),
-        author: "Ministry of Education",
-        is_featured: true,
-      },
-      {
-        id: "fallback-2",
-        title: "Cymatic Wave Science & Audio Resonance Workshop",
-        body: "Students across S1-S4 explore standing wave resonance patterns using Chladni plates and real-time frequency analysis.",
-        summary: "Students explore standing wave resonance patterns using Chladni plates and frequency analysis.",
-        category: "Science",
-        published_at: new Date(Date.now() - 86400000).toISOString(),
-        author: "Latty's Cymatic Desk",
-        is_featured: false,
-      },
-    ];
+    // Ultimate fallback
+    return [];
   }
 }
 
@@ -142,6 +101,27 @@ export function useNewsService() {
 
   useEffect(() => {
     loadNews();
+
+    // Subscribe to real-time updates for news broadcasts in Supabase
+    const channel = supabase
+      .channel("news-broadcasts-realtime-sync")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "news_broadcasts",
+        },
+        () => {
+          console.log("Real-time news broadcast update detected! Refreshing news feed...");
+          loadNews(true);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [loadNews]);
 
   return {

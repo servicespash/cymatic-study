@@ -23,6 +23,7 @@ import { useSubjectProgress } from "@/hooks/useSubjectProgress";
 import { SpacedRepetitionModule } from "@/components/SpacedRepetitionModule";
 import { PageFlipBook } from "@/components/PageFlipBook";
 import { ScienceConceptIllustrator } from "@/components/ScienceConceptIllustrator";
+import { SemanticHeading } from "@/components/SEO/SemanticHeading";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/lessons")({
@@ -114,8 +115,14 @@ function LessonsPage() {
 
   return (
     <div className="app-container dashboard-container space-y-8 min-h-screen bg-background text-foreground">
-      <h1 className="mb-2 text-3xl font-extrabold">Explore Lessons</h1>
-      <p className="mb-6 text-sm text-muted-foreground">
+      <SemanticHeading
+        level={1}
+        text="Explore Curriculum Lessons"
+        searchQuestion="What subjects and classes are covered under Uganda's New Lower Secondary Curriculum (NLSC)?"
+        zeroClickAnswer="Uganda's New Lower Secondary Curriculum (NLSC) spans Senior 1 to Senior 4 classes (UCE Lower Secondary) and Senior 5-6 (UACE Advanced), covering core subjects including Mathematics, Physics, Chemistry, Biology, Geography, History, Kiswahili, Luganda, and ICT. Lattys Cymatic Study provides fully aligned Socratic interactive notes, UNEB-style revision worksheets, and offline performance tracking."
+        id="curriculum-lessons-heading"
+      />
+      <p className="mb-6 text-sm text-muted-foreground -mt-4">
         Pick a subject and class to read your notes. Tap a topic to expand.
       </p>
 

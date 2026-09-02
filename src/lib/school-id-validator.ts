@@ -26,13 +26,14 @@ export function validateNcdcSchoolId(id: string): SchoolIdValidationResult {
   if (uuidRegex.test(cleanId)) {
     return {
       isValid: false,
-      error: "UUIDs are not permitted. Please use a valid alphanumeric School ID format (e.g., SCH-UG-2026-97EZ or LCSS-4128).",
+      error:
+        "UUIDs are not permitted. Please use a valid alphanumeric School ID format (e.g., SCH-UG-2026-97EZ or LCSS-4128).",
     };
   }
 
   // Pattern 1: standard XXXX-0000 (e.g., LCSS-4128)
   const standardRegex = /^[A-Z]{3,4}-[0-9]{4}$/;
-  
+
   // Pattern 2: Uganda School format SCH-UG-[YEAR]-[4 ALPHANUMERIC CHARACTER CODE] (e.g., SCH-UG-2026-97EZ)
   const ugandaSchoolRegex = /^SCH-UG-[0-9]{4}-[A-Z0-9]{4}$/;
 
@@ -63,7 +64,7 @@ export function generateNcdcBoardingSchoolId(shortName?: string): string {
     }
     return `SCH-UG-2026-${randomSuffix}`;
   }
-  
+
   // Default to the premium Uganda school format:
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let randomSuffix = "";
@@ -72,4 +73,3 @@ export function generateNcdcBoardingSchoolId(shortName?: string): string {
   }
   return `SCH-UG-2026-${randomSuffix}`;
 }
-

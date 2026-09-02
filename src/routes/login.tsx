@@ -251,12 +251,15 @@ function LoginPage() {
         }
 
         // Check if a redirect URL query param was provided by route middleware
-        const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+        const searchParams = new URLSearchParams(
+          typeof window !== "undefined" ? window.location.search : "",
+        );
         const redirectTarget = searchParams.get("redirect");
 
-        const targetPath = redirectTarget && redirectTarget.startsWith("/") && redirectTarget !== "/login"
-          ? redirectTarget
-          : decision.targetPath;
+        const targetPath =
+          redirectTarget && redirectTarget.startsWith("/") && redirectTarget !== "/login"
+            ? redirectTarget
+            : decision.targetPath;
 
         toast.info(`Welcome, ${decision.roleLabel}! Redirecting to ${decision.dashboardTitle}...`);
         navigate({ to: targetPath as any });

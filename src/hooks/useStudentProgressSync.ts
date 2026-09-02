@@ -80,8 +80,16 @@ export function useStudentProgressSync(): UseStudentProgressSyncReturn {
       const [pList, acts, unSyncedAttempts, unSyncedPoints] = await Promise.all([
         dbGetAllSubjectProgress(),
         dbGetRecentActivities(12),
-        db.attempts.where("synced").equals(0).count().catch(() => 0),
-        db.points.where("synced").equals(0).count().catch(() => 0),
+        db.attempts
+          .where("synced")
+          .equals(0)
+          .count()
+          .catch(() => 0),
+        db.points
+          .where("synced")
+          .equals(0)
+          .count()
+          .catch(() => 0),
       ]);
 
       setProgressList(pList || []);
@@ -184,7 +192,10 @@ export function useStudentProgressSync(): UseStudentProgressSyncReturn {
   const recordProgression = useCallback(
     async (subject: string, percentage: number) => {
       await dbUpdateSubjectProgress(subject, percentage);
-      await dbLogRecentActivity("lesson", `Updated mastery in ${subject} to ${Math.round(percentage)}%`);
+      await dbLogRecentActivity(
+        "lesson",
+        `Updated mastery in ${subject} to ${Math.round(percentage)}%`,
+      );
       await refreshLocalData();
 
       if (typeof navigator !== "undefined" && navigator.onLine) {

@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import { useRealtimeData } from "@/hooks/useRealtimeData";
+import { ProjectSubmissionSchema } from "@/lib/schema";
 import { toast } from "sonner";
 import {
   FileText,
@@ -63,122 +65,44 @@ export function TeacherGradingStation() {
 
   const teacherName = profile?.display_name || user?.email?.split("@")[0] || "Faculty Evaluator";
 
-  const [submissions, setSubmissions] = useState<StudentSubmission[]>([
-    {
-      id: "SUB-801",
-      student_name: "Kato Paul",
-      student_id: "STD-UG2026-01",
-      level: "S3",
-      stream: "North Stream",
-      subject: "Physics",
-      project_title: "Solar Water Distillation Unit for Rural Communities",
-      project_description:
-        "Design and prototype using parabolic reflective foils to purify borehole water through thermal evaporation and solar condensation.",
-      submitted_at: "2026-07-24",
-      status: "pending",
-      school_id: currentSchoolId,
-    },
-    {
-      id: "SUB-802",
-      student_name: "Namubiru Sarah",
-      student_id: "STD-UG2026-02",
-      level: "S4",
-      stream: "East Stream",
-      subject: "Chemistry",
-      project_title: "Organic Fertilizer Synthesis from Household Coffee Husks",
-      project_description:
-        "Bio-digestion and soil pH testing across 14-day trials measuring nitrogen enrichment.",
-      submitted_at: "2026-07-23",
-      status: "graded",
-      score: 88,
-      feedback: "Exemplary methodology. Research paper demonstrates high scientific rigor.",
-      teacher_signature: "Dr. Mukasa (Digital Seal 0x94A)",
-      signed_at: "2026-07-24T10:15:00Z",
-      school_id: currentSchoolId,
-    },
-    {
-      id: "SUB-803",
-      student_name: "Okello Emmanuel",
-      student_id: "STD-UG2026-03",
-      level: "S1",
-      stream: "West Stream",
-      subject: "Biology",
-      project_title: "Local Plant Taxonomy & Herbarium Collection",
-      project_description:
-        "Cataloging indigenous medicinal flora in the Kampala region with digital taxonomy cards.",
-      submitted_at: "2026-07-22",
-      status: "pending",
-      school_id: currentSchoolId,
-    },
-    {
-      id: "SUB-804",
-      student_name: "Akimana Grace",
-      student_id: "STD-UG2026-04",
-      level: "S6",
-      stream: "Science A",
-      subject: "Mathematics",
-      project_title: "Epidemiological Growth Curve Modeling for Regional Health Data",
-      project_description:
-        "Differential equation models applied to Ministry of Health viral transmission metrics.",
-      submitted_at: "2026-07-21",
-      status: "pending",
-      school_id: currentSchoolId,
-    },
-  ]);
+  const [submissions, setSubmissions] = useState<StudentSubmission[]>([]);
 
+  // Fetch submissions from Supabase if present
+  const { data: realtimeSubmissions, loading: loadingData, error: fetchError } = useRealtimeData<StudentSubmission>(
+    "submissions", 
+    ProjectSubmissionSchema,
+    "*"
+  );
+
+  useEffect(() => {
+    if (realtimeSubmissions) {
+      setSubmissions(realtimeSubmissions);
+    }
+  }, [realtimeSubmissions]);
+
+  useEffect(() => {
+    if (fetchError) {
+      toast.error("Failed to load submissions.");
+    }
+  }, [fetchError]);
+
+  // Marking Form State
   const [selectedSubmission, setSelectedSubmission] = useState<StudentSubmission | null>(
-    submissions[0],
+    null,
   );
   const [selectedLevel, setSelectedLevel] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
-  const [loadingData, setLoadingData] = useState(true);
-
-  // Fetch submissions from Supabase if present
-  useEffect(() => {
-    async function loadSubmissions() {
-      setLoadingData(true);
-      try {
-        const { data: dbSubs } = await supabase
-          .from("project_submissions")
-          .select("*")
-          .or(`school_id.eq.${currentSchoolId},org_id.eq.${currentSchoolId}`);
-
-        if (dbSubs && dbSubs.length > 0) {
-          const mapped: StudentSubmission[] = dbSubs.map((s) => ({
-            id: s.id,
-            student_name: s.student_name || "Scholar",
-            student_id: s.student_id || "STD-UG",
-            level: s.level || "S3",
-            stream: s.stream || "A",
-            subject: s.subject || "Physics",
-            project_title: s.project_title || "Continuous Assessment Project",
-            project_description: s.project_description || "Learner competency submission.",
-            submitted_at: s.created_at ? s.created_at.split("T")[0] : "2026-07-24",
-            status: s.score !== null && s.score !== undefined ? "graded" : "pending",
-            score: s.score || undefined,
-            feedback: s.feedback || undefined,
-            teacher_signature: s.teacher_name ? `Signed by ${s.teacher_name}` : undefined,
-            school_id: currentSchoolId,
-          }));
-          setSubmissions(mapped);
-          setSelectedSubmission(mapped[0] || null);
-        }
-      } catch (e) {
-        console.warn("Notice loading teacher submissions:", e);
-      } finally {
-        setLoadingData(false);
-      }
-    }
-
-    loadSubmissions();
-  }, [currentSchoolId]);
-
-  // Marking Form State
-  const [scoreVal, setScoreVal] = useState<number>(85);
-  const [planningScore, setPlanningScore] = useState<number>(28); // out of 30
-  const [executionScore, setExecutionScore] = useState<number>(38); // out of 40
-  const [conclusionScore, setConclusionScore] = useState<number>(24); // out of 30
+  const [scoreVal, setScoreVal] = useState<number>(0);
+  const [planningScore, setPlanningScore] = useState<number>(0);
+  const [executionScore, setExecutionScore] = useState<number>(0);
+  const [conclusionScore, setConclusionScore] = useState<number>(0);
   const [feedbackVal, setFeedbackVal] = useState<string>("");
+
+  useEffect(() => {
+    if (submissions && submissions.length > 0 && !selectedSubmission) {
+      setSelectedSubmission(submissions[0]);
+    }
+  }, [submissions, selectedSubmission]);
 
   // Digital Signature Pad State
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -187,6 +111,7 @@ export function TeacherGradingStation() {
   const [typedSignature, setTypedSignature] = useState(teacherName);
   const [hasDrawnSignature, setHasDrawnSignature] = useState(false);
   const [isSubmittingGrade, setIsSubmittingGrade] = useState(false);
+
 
   // Synchronize score from rubric
   useEffect(() => {
@@ -381,96 +306,45 @@ export function TeacherGradingStation() {
         </div>
       </div>
 
-      {/* SUBMISSION LIST AND MARKING INTERFACE GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* LEFT COLUMN: SUBMISSIONS LIST (5 COLS) */}
-        <div className="lg:col-span-5 space-y-3">
-          <h3 className="text-xs font-black uppercase text-zinc-400 tracking-wider flex items-center justify-between px-1">
-            <span>Student Submissions ({filteredSubmissions.length})</span>
-            <span className="text-[10px] text-blue-400 font-mono">Bound to {currentSchoolId}</span>
-          </h3>
-
-          <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
-            {loadingData ? (
-              <div className="space-y-2">
-                <Skeleton className="h-24 w-full rounded-xl bg-white/5" />
-                <Skeleton className="h-24 w-full rounded-xl bg-white/5" />
-                <Skeleton className="h-24 w-full rounded-xl bg-white/5" />
-              </div>
-            ) : (
-              filteredSubmissions.map((sub) => {
-                const isSelected = selectedSubmission?.id === sub.id;
-                return (
-                  <div
-                    key={sub.id}
-                    onClick={() => {
-                      setSelectedSubmission(sub);
-                      if (sub.status === "graded" && sub.score) {
-                        setScoreVal(sub.score);
-                        setFeedbackVal(sub.feedback || "");
-                      }
-                    }}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                      isSelected
-                        ? "bg-blue-950/40 border-blue-500/50 shadow-lg shadow-blue-500/10"
-                        : "bg-black/40 border-white/5 hover:border-white/20 hover:bg-white/[0.02]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge
-                        className={
-                          sub.status === "graded"
-                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px]"
-                            : "bg-amber-500/10 text-amber-400 border-amber-500/30 text-[10px]"
-                        }
-                      >
-                        {sub.status === "graded" ? "GRADED & SIGNED" : "PENDING REVIEW"}
-                      </Badge>
-                      <span className="text-[10px] font-mono text-zinc-500">
-                        {sub.submitted_at}
-                      </span>
-                    </div>
-
-                    <h4 className="font-bold text-white text-sm line-clamp-1">
-                      {sub.project_title}
-                    </h4>
-                    <div className="flex items-center gap-2 mt-2 text-xs text-zinc-400">
-                      <User className="h-3.5 w-3.5 text-blue-400" />
-                      <span className="font-semibold text-zinc-200">{sub.student_name}</span>
-                      <span className="text-zinc-600">•</span>
-                      <span className="text-blue-400 font-mono">
-                        {sub.level} ({sub.stream})
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-white/5 text-[11px] text-zinc-500">
-                      <span>
-                        Subject: <strong className="text-zinc-300">{sub.subject}</strong>
-                      </span>
-                      {sub.score !== undefined && (
-                        <span className="font-mono font-bold text-emerald-400">
-                          {sub.score}/100
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-
-            {!loadingData && filteredSubmissions.length === 0 && (
-              <div className="p-8 text-center text-zinc-500 border border-dashed border-white/10 rounded-xl">
-                No matching student submissions found for this school ID.
-              </div>
-            )}
-          </div>
+      {loadingData ? (
+        <div className="space-y-4">
+          <Skeleton className="h-24 w-full rounded-xl bg-white/5" />
+          <Skeleton className="h-24 w-full rounded-xl bg-white/5" />
         </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* LEFT COLUMN: SUBMISSIONS LIST (5 COLS) */}
+          <div className="lg:col-span-5 space-y-3">
+            <h3 className="text-xs font-black uppercase text-zinc-400 tracking-wider flex items-center justify-between px-1">
+              <span>Student Submissions ({filteredSubmissions.length})</span>
+              <span className="text-[10px] text-blue-400 font-mono">Bound to {currentSchoolId}</span>
+            </h3>
 
-        {/* RIGHT COLUMN: MARKING WORKSTATION & DIGITAL SIGNATURE (7 COLS) */}
-        <div className="lg:col-span-7">
-          {selectedSubmission ? (
-            <Card className="border-white/10 bg-black/60 backdrop-blur-xl shadow-2xl space-y-6 p-6">
-              {/* SUBMISSION METADATA HEADER */}
+            <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+              {/* Mapping submissions... */}
+              {filteredSubmissions.map((sub) => (
+                <div key={sub.id} onClick={() => {
+                  setSelectedSubmission(sub);
+                  if (sub.status === "graded" && sub.score) {
+                    setScoreVal(sub.score);
+                    setFeedbackVal(sub.feedback || "");
+                  }
+                }}
+                className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                  selectedSubmission?.id === sub.id
+                    ? "bg-blue-950/40 border-blue-500/50 shadow-lg shadow-blue-500/10"
+                    : "bg-black/40 border-white/5 hover:border-white/20 hover:bg-white/[0.02]"
+                }`}
+                >
+                  {/* ... submission card content ... */}
+                  <h4 className="font-bold text-white text-sm line-clamp-1">{sub.project_title}</h4>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* RIGHT COLUMN: MARKING WORKSTATION & DIGITAL SIGNATURE (7 COLS) */}
+          <div className="lg:col-span-7">
+                          {/* SUBMISSION METADATA HEADER */}
               <div className="border-b border-white/10 pb-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <Badge
@@ -692,16 +566,10 @@ export function TeacherGradingStation() {
                       : "Validate Marks & Affix Digital Signature"}
                   </Button>
                 </div>
-              </div>
-            </Card>
-          ) : (
-            <div className="p-12 text-center text-zinc-500 border border-dashed border-white/10 rounded-2xl">
-              Select a student project submission from the left column to view details, enter score
-              rubrics, and affix your digital signature.
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

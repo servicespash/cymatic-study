@@ -28,18 +28,23 @@ export const Route = createFileRoute("/signup")({
   component: SignupPage,
 });
 
-type Mode = "register-institution" | "join-teacher" | "join-student" | "independent_learner" | "independent_teacher";
+type Mode =
+  | "register-institution"
+  | "join-teacher"
+  | "join-student"
+  | "independent_learner"
+  | "independent_teacher";
 
 const REFERRAL_STORAGE_KEY = "cymatic_signup_referral_code";
 
 function SignupPage() {
   const navigate = useNavigate();
   useRoleRedirect();
-  
+
   // Multi-step state: step 1 = Choose Path, step 2 = Fill Details
   const [step, setStep] = useState<1 | 2>(1);
   const [mode, setMode] = useState<Mode>("join-student");
-  
+
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -113,11 +118,16 @@ function SignupPage() {
     }
 
     try {
-      const mappedRole = 
-        mode === "register-institution" ? "admin" :
-        mode === "join-teacher" ? "teacher" :
-        mode === "join-student" ? "student" :
-        mode === "independent_teacher" ? "independent_teacher" : "independent_learner";
+      const mappedRole =
+        mode === "register-institution"
+          ? "admin"
+          : mode === "join-teacher"
+            ? "teacher"
+            : mode === "join-student"
+              ? "student"
+              : mode === "independent_teacher"
+                ? "independent_teacher"
+                : "independent_learner";
 
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: cleanEmail,
@@ -151,11 +161,14 @@ function SignupPage() {
       let issuedSchoolId: string | null = null;
 
       if (mode === "register-institution") {
-        const { data: orgRes, error: rpcErr } = await (supabase as any).rpc("register_institution", {
-          _name: cleanSchoolName,
-          _email: cleanEmail,
-          _phone: cleanPhone || null,
-        });
+        const { data: orgRes, error: rpcErr } = await (supabase as any).rpc(
+          "register_institution",
+          {
+            _name: cleanSchoolName,
+            _email: cleanEmail,
+            _phone: cleanPhone || null,
+          },
+        );
         if (rpcErr) throw rpcErr;
         issuedSchoolId = (orgRes as any)?.school_key ?? (orgRes as any)?.key ?? null;
         if (!issuedSchoolId) throw new Error("Server did not return a School ID. Please retry.");
@@ -167,7 +180,9 @@ function SignupPage() {
             _phone: cleanPhone || null,
           });
           if (enrollErr) {
-            setInfo(`We couldn't link to School ID "${cleanSchoolId}". You can bind manually later inside Settings.`);
+            setInfo(
+              `We couldn't link to School ID "${cleanSchoolId}". You can bind manually later inside Settings.`,
+            );
           }
         }
       }
@@ -180,7 +195,8 @@ function SignupPage() {
           window.localStorage.removeItem(REFERRAL_STORAGE_KEY);
         } else {
           await (supabase as any).rpc("record_referral", { referrer_code: referralCode.trim() });
-          afterSignupInfo = "Referral code recorded. Check your email to confirm your account and sync your referral status.";
+          afterSignupInfo =
+            "Referral code recorded. Check your email to confirm your account and sync your referral status.";
         }
       }
 
@@ -200,7 +216,8 @@ function SignupPage() {
           navigate({ to: "/dashboard" });
         }
       } else {
-        const msg = afterSignupInfo ?? "Success! Check your email to confirm your account and join the Hub.";
+        const msg =
+          afterSignupInfo ?? "Success! Check your email to confirm your account and join the Hub.";
         setInfo(msg);
         toast.success(msg, { id: toastId });
       }
@@ -222,13 +239,18 @@ function SignupPage() {
           </div>
           <h1 className="text-2xl font-black tracking-tight">Institution Registered</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Share this professional <strong className="text-foreground">School ID</strong> with your teachers and
-            students so they can securely link their profiles to <strong className="text-foreground">{schoolName.trim()}</strong>.
+            Share this professional <strong className="text-foreground">School ID</strong> with your
+            teachers and students so they can securely link their profiles to{" "}
+            <strong className="text-foreground">{schoolName.trim()}</strong>.
           </p>
 
           <div className="mt-6 rounded-2xl border-2 border-dashed border-primary/60 bg-primary/5 p-5 text-center">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Institution Code</p>
-            <p className="mt-2 font-mono text-3xl font-black tracking-widest text-foreground">{generatedSchoolId}</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+              Institution Code
+            </p>
+            <p className="mt-2 font-mono text-3xl font-black tracking-widest text-foreground">
+              {generatedSchoolId}
+            </p>
             <button
               type="button"
               onClick={async () => {
@@ -262,7 +284,6 @@ function SignupPage() {
   return (
     <div className="mx-auto flex min-h-[calc(100vh-9rem)] max-w-lg items-center px-4 py-10">
       <div className="w-full animate-fade-in-up rounded-3xl border border-border/60 bg-card/80 p-8 shadow-card backdrop-blur">
-        
         {step === 1 ? (
           <div>
             <div className="mb-6 flex items-center gap-3">
@@ -271,11 +292,15 @@ function SignupPage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold">Select Your Path</h1>
-                <p className="text-xs text-muted-foreground">Choose how you wish to register on the Cymatic Study Hub</p>
+                <p className="text-xs text-muted-foreground">
+                  Choose how you wish to register on the Cymatic Study Hub
+                </p>
               </div>
             </div>
 
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Institutional Roles</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+              Institutional Roles
+            </h3>
             <div className="grid gap-3 mb-6">
               <PathCard
                 title="Student Registry Path"
@@ -297,7 +322,9 @@ function SignupPage() {
               />
             </div>
 
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Independent Paths</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+              Independent Paths
+            </h3>
             <div className="grid gap-3">
               <PathCard
                 title="Independent Global Learner"
@@ -315,7 +342,9 @@ function SignupPage() {
 
             <p className="mt-6 text-center text-xs text-muted-foreground">
               Already have an account?{" "}
-              <Link to="/login" className="font-semibold text-primary hover:underline">Sign in</Link>
+              <Link to="/login" className="font-semibold text-primary hover:underline">
+                Sign in
+              </Link>
             </p>
           </div>
         ) : (
@@ -338,17 +367,23 @@ function SignupPage() {
               <div>
                 <h1 className="text-xl font-bold">Account Details</h1>
                 <p className="text-xs text-muted-foreground">
-                  {mode === "register-institution" && "Provide institutional details to generate your School ID."}
-                  {mode === "join-teacher" && "Sign up and link directly to your school's verified space."}
-                  {mode === "join-student" && "Complete details and enter your student credentials."}
-                  {(mode === "independent_learner" || mode === "independent_teacher") && "Provide details to establish your independent workspace."}
+                  {mode === "register-institution" &&
+                    "Provide institutional details to generate your School ID."}
+                  {mode === "join-teacher" &&
+                    "Sign up and link directly to your school's verified space."}
+                  {mode === "join-student" &&
+                    "Complete details and enter your student credentials."}
+                  {(mode === "independent_learner" || mode === "independent_teacher") &&
+                    "Provide details to establish your independent workspace."}
                 </p>
               </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <Field
-                label={mode === "register-institution" ? "Administrator Full Name" : "Your Full Name"}
+                label={
+                  mode === "register-institution" ? "Administrator Full Name" : "Your Full Name"
+                }
                 value={name}
                 onChange={setName}
                 type="text"
@@ -368,12 +403,18 @@ function SignupPage() {
               )}
 
               <Field
-                label={mode === "register-institution" ? "Official Institution Email" : "Your Email Address"}
+                label={
+                  mode === "register-institution"
+                    ? "Official Institution Email"
+                    : "Your Email Address"
+                }
                 value={email}
                 onChange={setEmail}
                 type="email"
                 required
-                placeholder={mode === "register-institution" ? "admin@yourschool.ac.ug" : "you@example.com"}
+                placeholder={
+                  mode === "register-institution" ? "admin@yourschool.ac.ug" : "you@example.com"
+                }
               />
 
               <Field
@@ -396,7 +437,9 @@ function SignupPage() {
                     placeholder="e.g. Cymatic Secondary Academy"
                   />
                   <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
-                    Your institutional space will generate a clean alphanumeric code (e.g. <span className="font-semibold text-primary">CSAA-1234</span>) that binds students and teachers directly to your database silo.
+                    Your institutional space will generate a clean alphanumeric code (e.g.{" "}
+                    <span className="font-semibold text-primary">CSAA-1234</span>) that binds
+                    students and teachers directly to your database silo.
                   </p>
                 </div>
               )}
@@ -428,7 +471,8 @@ function SignupPage() {
                     className="w-full rounded-lg border border-input bg-background/60 px-3.5 py-2.5 text-sm text-foreground outline-none transition-smooth focus:border-primary focus:ring-2 focus:ring-primary/30 font-mono tracking-wider uppercase"
                   />
                   <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
-                    Must follow format <span className="font-semibold">XXXX-0000</span>. Ask your administrator for the alphanumeric code.
+                    Must follow format <span className="font-semibold">XXXX-0000</span>. Ask your
+                    administrator for the alphanumeric code.
                   </p>
                 </div>
               )}
@@ -478,14 +522,20 @@ function SignupPage() {
                 disabled={submitting}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02] disabled:opacity-60"
               >
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
+                {submitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <UserPlus className="h-4 w-4" />
+                )}
                 {mode === "register-institution" ? "Register Institution" : "Create Account"}
               </button>
             </form>
 
             <p className="mt-6 text-center text-xs text-muted-foreground">
               Already have an account?{" "}
-              <Link to="/login" className="font-semibold text-primary hover:underline">Sign in</Link>
+              <Link to="/login" className="font-semibold text-primary hover:underline">
+                Sign in
+              </Link>
             </p>
           </div>
         )}

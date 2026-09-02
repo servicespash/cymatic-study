@@ -71,9 +71,12 @@ export const AUTH_CONTENT = {
     submitButton: "Initialize Account",
   },
   roleDescriptions: {
-    student: "Access interactive syllabus notes, Socratic AI tutor, auto-graded quizzes, and practice logs.",
-    teacher: "Grade student assessments, mark CBC activities of integration, monitor class progress, and set quizzes.",
-    admin: "Manage school license keys, register teaching staff, oversee institutional analytics, and configure syllabi.",
+    student:
+      "Access interactive syllabus notes, Socratic AI tutor, auto-graded quizzes, and practice logs.",
+    teacher:
+      "Grade student assessments, mark CBC activities of integration, monitor class progress, and set quizzes.",
+    admin:
+      "Manage school license keys, register teaching staff, oversee institutional analytics, and configure syllabi.",
   },
 };
 
@@ -82,13 +85,15 @@ export const ROLE_CONFIGS: Record<UserRole, RoleDashboardData> = {
     title: "Student Learning Hub",
     badge: "Student Portal",
     subtitle: "Competence-Based study tracks, interactive labs, and Socratic AI guidance.",
-    portalDescription: "Work on daily syllabus missions, earn competence badges, and prepare for UNEB assessments.",
+    portalDescription:
+      "Work on daily syllabus missions, earn competence badges, and prepare for UNEB assessments.",
     primaryAction: { label: "Launch AI Tutor", to: "/tutor" },
     secondaryAction: { label: "Take Quick Quiz", to: "/quizzes" },
     quickActions: [
       {
         title: "Socratic AI Tutor",
-        description: "Guided inquiry and step-by-step concept explanations across all O-Level subjects.",
+        description:
+          "Guided inquiry and step-by-step concept explanations across all O-Level subjects.",
         to: "/tutor",
         iconName: "Sparkles",
         badge: "Adaptive",
@@ -110,7 +115,8 @@ export const ROLE_CONFIGS: Record<UserRole, RoleDashboardData> = {
       },
       {
         title: "Project Portfolios",
-        description: "Document Activities of Integration (AOI) and upload community project evidence.",
+        description:
+          "Document Activities of Integration (AOI) and upload community project evidence.",
         to: "/projects",
         iconName: "FileCode",
         accentColor: "blue",
@@ -127,14 +133,17 @@ export const ROLE_CONFIGS: Record<UserRole, RoleDashboardData> = {
   teacher: {
     title: "Faculty Assessment & Grading Hub",
     badge: "Educator Workspace",
-    subtitle: "Evaluate student Activities of Integration (AOI), monitor progress, and guide student achievement.",
-    portalDescription: "Review student submissions against 3-point NCDC rubrics and generate continuous assessment scores.",
+    subtitle:
+      "Evaluate student Activities of Integration (AOI), monitor progress, and guide student achievement.",
+    portalDescription:
+      "Review student submissions against 3-point NCDC rubrics and generate continuous assessment scores.",
     primaryAction: { label: "Open Marking Desk", to: "/marking" },
     secondaryAction: { label: "View Class Roster", to: "/student" },
     quickActions: [
       {
         title: "Marking & Evaluation Desk",
-        description: "Grade student project submissions with criteria-based rubric scoring (Score 1-3).",
+        description:
+          "Grade student project submissions with criteria-based rubric scoring (Score 1-3).",
         to: "/marking",
         iconName: "CheckCircle",
         badge: "Pending Tasks",
@@ -142,14 +151,16 @@ export const ROLE_CONFIGS: Record<UserRole, RoleDashboardData> = {
       },
       {
         title: "Curriculum Alignment Guide",
-        description: "Check syllabus coverage, competency learning outcomes, and assessment guides.",
+        description:
+          "Check syllabus coverage, competency learning outcomes, and assessment guides.",
         to: "/curriculum",
         iconName: "BookOpen",
         accentColor: "emerald",
       },
       {
         title: "Class Analytics & Reports",
-        description: "Inspect performance curves, identify knowledge gaps, and export printable continuous assessment reports.",
+        description:
+          "Inspect performance curves, identify knowledge gaps, and export printable continuous assessment reports.",
         to: "/analytics",
         iconName: "LineChart",
         accentColor: "indigo",
@@ -163,7 +174,12 @@ export const ROLE_CONFIGS: Record<UserRole, RoleDashboardData> = {
       },
     ],
     defaultMetrics: [
-      { id: "pending_submissions", label: "Pending Evaluations", value: 14, change: "Requires review" },
+      {
+        id: "pending_submissions",
+        label: "Pending Evaluations",
+        value: 14,
+        change: "Requires review",
+      },
       { id: "marked_this_term", label: "Activities Graded", value: 142 },
       { id: "class_average", label: "Curriculum Mastery", value: "78.4%" },
       { id: "active_students", label: "Monitored Students", value: 86 },
@@ -173,14 +189,17 @@ export const ROLE_CONFIGS: Record<UserRole, RoleDashboardData> = {
   admin: {
     title: "Institutional Command Center",
     badge: "Administration",
-    subtitle: "Manage school infrastructure, faculty credentials, syllabus compliance, and audit logs.",
-    portalDescription: "Deploy school ID keys, monitor student engagement metrics, and supervise curriculum delivery.",
+    subtitle:
+      "Manage school infrastructure, faculty credentials, syllabus compliance, and audit logs.",
+    portalDescription:
+      "Deploy school ID keys, monitor student engagement metrics, and supervise curriculum delivery.",
     primaryAction: { label: "Institutional Console", to: "/admin/dashboard" },
     secondaryAction: { label: "Staff Roster", to: "/teacher" },
     quickActions: [
       {
         title: "Institutional Administration",
-        description: "Configure school branding, verify teacher accounts, and issue student login codes.",
+        description:
+          "Configure school branding, verify teacher accounts, and issue student login codes.",
         to: "/admin/dashboard",
         iconName: "ShieldCheck",
         badge: "System Core",
@@ -195,7 +214,8 @@ export const ROLE_CONFIGS: Record<UserRole, RoleDashboardData> = {
       },
       {
         title: "National Curriculum Audit",
-        description: "Track alignment with latest Ministry of Education circulars and NCDC guidelines.",
+        description:
+          "Track alignment with latest Ministry of Education circulars and NCDC guidelines.",
         to: "/curriculum",
         iconName: "BookOpen",
         accentColor: "indigo",

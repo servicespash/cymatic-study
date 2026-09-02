@@ -120,7 +120,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ contentId }) => 
   };
 
   return (
-    <div className="h-full flex flex-col min-h-0 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-hidden">
+    <div className="flex flex-col min-h-0 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-hidden">
       <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/50">
         <div className="flex items-center gap-2">
           <MessageCircle className="h-4 w-4 text-primary" />

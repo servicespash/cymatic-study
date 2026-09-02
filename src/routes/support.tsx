@@ -11,6 +11,7 @@ import {
   Wallet,
   Phone,
   MessageSquarePlus,
+  Sparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { BRAND } from "@/lib/constants";
@@ -128,6 +129,8 @@ function SupportPage() {
             </div>
           </div>
         </div>
+
+
 
         <div className="mb-10 text-center">
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10 text-primary shadow-glow">

@@ -1,10 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { useUserRole } from '@/hooks/useUserRole';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle, XCircle } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useUserRole } from "@/hooks/useUserRole";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { CheckCircle, XCircle } from "lucide-react";
 
 export function TeacherApprovalTable() {
   const { schoolId } = useUserRole();
@@ -20,15 +27,15 @@ export function TeacherApprovalTable() {
   async function fetchPendingTeachers() {
     setLoading(true);
     const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('org_id', schoolId)
-      .eq('role', 'teacher')
-      .eq('is_verified', false);
+      .from("profiles")
+      .select("*")
+      .eq("org_id", schoolId)
+      .eq("role", "teacher")
+      .eq("is_verified", false);
 
     if (error) {
-      console.error('Error fetching pending teachers:', error);
-      toast.error('Failed to load pending teachers');
+      console.error("Error fetching pending teachers:", error);
+      toast.error("Failed to load pending teachers");
     } else {
       setPendingTeachers(data || []);
     }
@@ -37,14 +44,14 @@ export function TeacherApprovalTable() {
 
   async function handleApprove(userId: string) {
     const { error } = await supabase
-      .from('profiles')
+      .from("profiles")
       .update({ is_verified: true })
-      .eq('user_id', userId);
+      .eq("user_id", userId);
 
     if (error) {
-      toast.error('Failed to approve teacher');
+      toast.error("Failed to approve teacher");
     } else {
-      toast.success('Teacher approved successfully');
+      toast.success("Teacher approved successfully");
       fetchPendingTeachers();
     }
   }
@@ -65,7 +72,7 @@ export function TeacherApprovalTable() {
         <TableBody>
           {pendingTeachers.map((teacher) => (
             <TableRow key={teacher.user_id}>
-              <TableCell>{teacher.full_name || 'N/A'}</TableCell>
+              <TableCell>{teacher.full_name || "N/A"}</TableCell>
               <TableCell>{teacher.email}</TableCell>
               <TableCell>
                 <Button variant="ghost" size="sm" onClick={() => handleApprove(teacher.user_id)}>

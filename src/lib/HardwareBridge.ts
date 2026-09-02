@@ -3,7 +3,10 @@ import { Preferences } from "@capacitor/preferences";
 import { Capacitor } from "@capacitor/core";
 
 export const HardwareBridge = {
-  async ttsSpeak(text: string, options: { rate: number; pitch: number; lang: string; voiceName?: string }): Promise<void> {
+  async ttsSpeak(
+    text: string,
+    options: { rate: number; pitch: number; lang: string; voiceName?: string },
+  ): Promise<void> {
     if (Capacitor.isNativePlatform()) {
       await TextToSpeech.speak({
         text,
@@ -20,22 +23,30 @@ export const HardwareBridge = {
         const utter = new SpeechSynthesisUtterance(text);
         utter.rate = options.rate;
         utter.pitch = options.pitch;
-        
+
         // Find best matching voice if available
         if (window.speechSynthesis.getVoices) {
           const voices = window.speechSynthesis.getVoices();
           // Prioritize by voiceName if provided, then by lang
-          const voice = voices.find(v => (options.voiceName && v.name === options.voiceName) || v.lang.startsWith(options.lang) || v.lang === options.lang);
+          const voice = voices.find(
+            (v) =>
+              (options.voiceName && v.name === options.voiceName) ||
+              v.lang.startsWith(options.lang) ||
+              v.lang === options.lang,
+          );
           if (voice) utter.voice = voice;
         }
 
         // Safety timeout to prevent getting stuck
         const wordsCount = text.split(/\s+/).length;
         const estimatedDurationMs = (wordsCount / (options.rate || 1)) * 60 * 1000 * 2; // generous estimate
-        const timeoutId = setTimeout(() => {
-          console.warn("Speech synthesis safety timeout reached.");
-          resolve();
-        }, Math.max(5000, estimatedDurationMs));
+        const timeoutId = setTimeout(
+          () => {
+            console.warn("Speech synthesis safety timeout reached.");
+            resolve();
+          },
+          Math.max(5000, estimatedDurationMs),
+        );
 
         utter.onend = () => {
           clearTimeout(timeoutId);
@@ -45,7 +56,7 @@ export const HardwareBridge = {
         utter.onerror = (event) => {
           clearTimeout(timeoutId);
           // If interrupted by cancel(), just resolve
-          if (event.error === 'interrupted') {
+          if (event.error === "interrupted") {
             resolve();
           } else {
             reject(new Error(`Speech synthesis error: ${event.error}`));

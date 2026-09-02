@@ -18,9 +18,7 @@ export interface NotificationOptions {
 export const notifications = {
   // Authentication Success
   authSuccess: (displayName?: string, role?: UserRole | string, schoolName?: string) => {
-    const roleLabel = role
-      ? role.charAt(0).toUpperCase() + role.slice(1)
-      : "User";
+    const roleLabel = role ? role.charAt(0).toUpperCase() + role.slice(1) : "User";
     const name = displayName || "Scholar";
 
     toast.success(`Welcome back, ${name}!`, {
@@ -81,9 +79,7 @@ export const notifications = {
     currentRole: string = "student",
     redirectTarget?: string,
   ) => {
-    const required = Array.isArray(requiredRole)
-      ? requiredRole.join(" or ")
-      : requiredRole;
+    const required = Array.isArray(requiredRole) ? requiredRole.join(" or ") : requiredRole;
 
     toast.warning("Access Restricted", {
       description: `This section requires ${required} permissions. Your current role is "${currentRole}". Redirecting to your dashboard...`,
@@ -158,9 +154,10 @@ export async function scheduleDailyNudges(persona: "Adams" | "Haawa" = "Adams") 
         notifications: [
           {
             title: `Study Session with ${persona}`,
-            body: persona === "Adams"
-              ? "Focus on the target. 30 minutes of deep study elevates your standing."
-              : "Keep up the momentum! Reviewing your syllabus goals today.",
+            body:
+              persona === "Adams"
+                ? "Focus on the target. 30 minutes of deep study elevates your standing."
+                : "Keep up the momentum! Reviewing your syllabus goals today.",
             id: 101,
             schedule: { at: new Date(Date.now() + 1000 * 60 * 60 * 4) },
           },

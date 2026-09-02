@@ -185,12 +185,15 @@ export async function fetchAndAggregatePerformanceData(
 
 export function AdminPerformanceReportsModule() {
   const { user, profile } = useAuth();
-  const currentSchoolId = useMemo(() =>
-    profile?.school_id ||
-    profile?.org_id ||
-    user?.user_metadata?.school_id ||
-    (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : "") ||
-    "SCH-UG-2026", [profile, user]);
+  const currentSchoolId = useMemo(
+    () =>
+      profile?.school_id ||
+      profile?.org_id ||
+      user?.user_metadata?.school_id ||
+      (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : "") ||
+      "SCH-UG-2026",
+    [profile, user],
+  );
 
   const schoolName = profile?.school_name || "Uganda NCDC Boarding Institution";
 
@@ -219,7 +222,9 @@ export function AdminPerformanceReportsModule() {
     try {
       const { data: dbSubmissions } = await supabase
         .from("project_submissions")
-        .select("id, student_name, student_id, level, stream, subject, project_title, score, status, teacher_name, created_at")
+        .select(
+          "id, student_name, student_id, level, stream, subject, project_title, score, status, teacher_name, created_at",
+        )
         .or(`org_id.eq.${currentSchoolId},school_id.eq.${currentSchoolId}`);
 
       const fallbackAverages = {

@@ -65,28 +65,35 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     identitySounds: "Identity & Sounds",
     instBinding: "Institutional Binding",
     devicePerms: "Device Permissions",
-    devicePermsSub: "Control how the study portal accesses hardware features in your active session.",
+    devicePermsSub:
+      "Control how the study portal accesses hardware features in your active session.",
     cameraInterface: "Camera Interface",
-    cameraDesc: "Required for document uploads, scanning school badges, and interactive assessments.",
+    cameraDesc:
+      "Required for document uploads, scanning school badges, and interactive assessments.",
     micAccess: "Microphone Access",
-    micDesc: "Used for speaking directly to your tutor, recording voice answers, and reading aloud.",
+    micDesc:
+      "Used for speaking directly to your tutor, recording voice answers, and reading aloud.",
     sysNotify: "System Notifications",
     sysNotifyDesc: "Sends revision reminders, quiz updates, and important announcements.",
     offlineCache: "Offline Caching",
     offlineCacheDesc: "Persists textbooks, notes, and study guides in offline storage.",
     regionalPref: "Regional & Localization Preferences",
-    regionalPrefSub: "Select your preferred default interface language for study topics and syllabus guides.",
+    regionalPrefSub:
+      "Select your preferred default interface language for study topics and syllabus guides.",
     interfaceLang: "Interface Language",
     autoSyncCloud: "Auto-Sync to Cloud",
     autoSyncCloudSub: "Save self-assessments instantly when online",
     saveSettings: "Save Settings",
     tutorVoiceSelect: "Select Tutor Voice & Identity",
-    tutorVoiceSelectSub: "Switch between distinct tutor profiles. Test their voice output instantly.",
+    tutorVoiceSelectSub:
+      "Switch between distinct tutor profiles. Test their voice output instantly.",
     testVoiceBtn: "Test Voice",
     adamsName: "Adams (Male)",
-    adamsDesc: "Pitched lower at a robust, deliberate pace. Designed for systematic explanations of curriculum logic and science exercises.",
+    adamsDesc:
+      "Pitched lower at a robust, deliberate pace. Designed for systematic explanations of curriculum logic and science exercises.",
     powerName: "Power / Haawa (Female)",
-    powerDesc: "Pitched higher, carrying a supportive, modern tone. Tuned for reviewing syllabus frameworks and evaluations.",
+    powerDesc:
+      "Pitched higher, carrying a supportive, modern tone. Tuned for reviewing syllabus frameworks and evaluations.",
     synthesisAttrs: "Speech Synthesis Attributes",
     synthesisAttrsSub: "Customize default speed and pitch variables for text-to-speech feedback.",
     speechPitch: "Speech Pitch Offset",
@@ -95,18 +102,21 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     speechRateDesc: "Speed up or slow down verbal tutor read-aloud responses.",
     saveVoiceAttrs: "Save Voice Attributes",
     instConnBinding: "Institutional Connection & Binding",
-    instConnBindingSub: "Link your account to an NCDC accredited school registry by entering their alphanumeric School ID.",
+    instConnBindingSub:
+      "Link your account to an NCDC accredited school registry by entering their alphanumeric School ID.",
     schoolIdLabel: "School ID / Code",
     schoolNameLabel: "School / Institution Name",
     saveBindingBtn: "Save Institutional Binding",
     instShareDashboard: "Institutional Sharing Dashboard",
-    instShareDashboardSub: "Deploy invite links, sync continuous files, and export physical credentials.",
+    instShareDashboardSub:
+      "Deploy invite links, sync continuous files, and export physical credentials.",
     inviteTemplate: "Invite Message Template",
     copyInviteBtn: "Copy Invite Details",
     shareCsvBtn: "Share All Onboard CSV",
     qrBadgeTitle: "Branded School QR Badge",
     noBindingTitle: "No Institutional Binding Established",
-    noBindingDesc: "You are exploring as an independent learner. Enter your school's code in the binder form above to generate your digital QR Badge.",
+    noBindingDesc:
+      "You are exploring as an independent learner. Enter your school's code in the binder form above to generate your digital QR Badge.",
     regenerateSchoolId: "Regenerate School ID",
     regeneratePending: "Security protocol initiated. Verification pending...",
     verifyProgress: "Estimated verification time: ~4 hours (Protocol S2-NCDC)",
@@ -135,12 +145,15 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     autoSyncCloudSub: "Tereka ebibuuzo byo butereevu nga oli ku mutimbagano",
     saveSettings: "Tereka Entegeka",
     tutorVoiceSelect: "Londa Iloloboozi n'Obw'ennyini bwa Tutor",
-    tutorVoiceSelectSub: "Kyusa wakati w'amaloboozi ag'enjawulo ga tutor. Gezaako amaloboozi ago mbulereevu.",
+    tutorVoiceSelectSub:
+      "Kyusa wakati w'amaloboozi ag'enjawulo ga tutor. Gezaako amaloboozi ago mbulereevu.",
     testVoiceBtn: "Gezaako Eddoboozi",
     adamsName: "Adams (Omusajja)",
-    adamsDesc: "Nga eddoboozi liri wansi, nga lya nkalakkalira. Lyategekebwa okunnyonnyola ebikwata ku mikutu gwa ssaayansi.",
+    adamsDesc:
+      "Nga eddoboozi liri wansi, nga lya nkalakkalira. Lyategekebwa okunnyonnyola ebikwata ku mikutu gwa ssaayansi.",
     powerName: "Power / Haawa (Omukazi)",
-    powerDesc: "Nga eddoboozi liri waggulu, nga lya kutegeera ne mbeera ey'omulembe. Lyategekebwa okuddamu emikutu.",
+    powerDesc:
+      "Nga eddoboozi liri waggulu, nga lya kutegeera ne mbeera ey'omulembe. Lyategekebwa okuddamu emikutu.",
     synthesisAttrs: "Entegeka y'Eddoboozi ery'Omulembe",
     synthesisAttrsSub: "Kyusa mu bipimo by'okwogera butereevu okuva mu kyuma.",
     speechPitch: "Ekipimo ky'Eddoboozi",
@@ -149,7 +162,8 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     speechRateDesc: "Yongeza kana weesize emisinde gy'okwogera gwa tutor.",
     saveVoiceAttrs: "Tereka Ekipimo ky'Eddoboozi",
     instConnBinding: "Okugatta n'Okukwasaganya Essomero",
-    instConnBindingSub: "Gatta akawunti yo ku ssomero erikkiriziddwa NCDC nga oyingiza namba y'Essomero.",
+    instConnBindingSub:
+      "Gatta akawunti yo ku ssomero erikkiriziddwa NCDC nga oyingiza namba y'Essomero.",
     schoolIdLabel: "Namba y'Essomero / Koodi",
     schoolNameLabel: "Erinnya ly'Essomero / Kituo",
     saveBindingBtn: "Tereka Okugatta ku Ssomero",
@@ -160,7 +174,8 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     shareCsvBtn: "Gabana Onboard CSV",
     qrBadgeTitle: "Bbaajis y'Essomero eya QR",
     noBindingTitle: "Tewali Ssomero Lyagattiddwa",
-    noBindingDesc: "Onoonyereza nga omuyizi ayetongodde. Yingiza koodi y'essomero waggulu okufuna QR bbaajis yo.",
+    noBindingDesc:
+      "Onoonyereza nga omuyizi ayetongodde. Yingiza koodi y'essomero waggulu okufuna QR bbaajis yo.",
     regenerateSchoolId: "Kyusa Namba y'Essomero",
     regeneratePending: "Okukyusa namba y'essomero kutandise. Okukakasa kulindiriddwa...",
     verifyProgress: "Ekiseera eky'okukakasa: ~Esawa 4 (Entegeka S2-NCDC)",
@@ -203,7 +218,8 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     speechRateDesc: "Yongera emisinde y'okwogera kwa tutor waawe.",
     saveVoiceAttrs: "Biika Ekipimo kw'Eraka",
     instConnBinding: "Okugatta n'Okukwasana n'Eishomero",
-    instConnBindingSub: "Gatta akawunti yawe ku ishomero erikirizibwe NCDC oyingize namba y'eishomero.",
+    instConnBindingSub:
+      "Gatta akawunti yawe ku ishomero erikirizibwe NCDC oyingize namba y'eishomero.",
     schoolIdLabel: "Namba y'Eishomero / Koodi",
     schoolNameLabel: "Eina ry'Eishomero / Kituo",
     saveBindingBtn: "Biika Okugatta kuishomero",
@@ -214,7 +230,8 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     shareCsvBtn: "Gabana Onboard CSV",
     qrBadgeTitle: "Bbaajis y'Eishomero eya QR",
     noBindingTitle: "Tihariho Ishomero Ryagattiddwa",
-    noBindingDesc: "Onoonyereza nga omushomi oyetongodde. Yingiza koodi y'ishomero waggulu okufuna QR bbaajis yawe.",
+    noBindingDesc:
+      "Onoonyereza nga omushomi oyetongodde. Yingiza koodi y'ishomero waggulu okufuna QR bbaajis yawe.",
     regenerateSchoolId: "Kyusa Namba y'Eishomero",
     regeneratePending: "Okukyusa kutandise. Okukakasa kurindiriddwa...",
     verifyProgress: "Ekiseera eky'okukakasa: ~Esawa 4 (Entegeka S2-NCDC)",
@@ -246,9 +263,11 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     tutorVoiceSelectSub: "Badilisha wasifu wa wakufunzi. Jaribu sauti zao mara moja.",
     testVoiceBtn: "Jaribu Sauti",
     adamsName: "Adams (Kiume)",
-    adamsDesc: "Sauti nzito yenye mwendo wa utulivu. Inafaa kwa maelezo ya kina ya sayansi na mantiki ya mtaala.",
+    adamsDesc:
+      "Sauti nzito yenye mwendo wa utulivu. Inafaa kwa maelezo ya kina ya sayansi na mantiki ya mtaala.",
     powerName: "Power / Haawa (Kike)",
-    powerDesc: "Sauti ya juu, yenye sauti ya kisasa na inayofariji. Inafaa kwa kupitia miongozo ya mtaala.",
+    powerDesc:
+      "Sauti ya juu, yenye sauti ya kisasa na inayofariji. Inafaa kwa kupitia miongozo ya mtaala.",
     synthesisAttrs: "Tabia za Sauti za Kidijiti",
     synthesisAttrsSub: "Badilisha kasi na sauti kwa ajili ya usomaji wa kiotomatiki.",
     speechPitch: "Kiwango cha Sauti",
@@ -257,18 +276,21 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     speechRateDesc: "Ongeza au punguza kasi ya usomaji vya mkufunzi.",
     saveVoiceAttrs: "Hifadhi Tabia za Sauti",
     instConnBinding: "Muunganisho na Usajili wa Shule",
-    instConnBindingSub: "Unganisha akaunti yako na shule iliyosajiliwa na NCDC kwa kuingiza Msimbo wa Shule.",
+    instConnBindingSub:
+      "Unganisha akaunti yako na shule iliyosajiliwa na NCDC kwa kuingiza Msimbo wa Shule.",
     schoolIdLabel: "Msimbo / ID ya Shule",
     schoolNameLabel: "Jina la Shule / Kituo",
     saveBindingBtn: "Hifadhi Muunganisho wa Shule",
     instShareDashboard: "Sehemu ya Kushiriki ya Shule",
-    instShareDashboardSub: "Tuma viungo vya mwaliko, sawazisha faili, na uandikishe beji ya kidijiti.",
+    instShareDashboardSub:
+      "Tuma viungo vya mwaliko, sawazisha faili, na uandikishe beji ya kidijiti.",
     inviteTemplate: "Mwaliko wa Kujiunga",
     copyInviteBtn: "Nakili Maelezo ya Mwaliko",
     shareCsvBtn: "Shiriki CSV ya Kusajili",
     qrBadgeTitle: "Beji ya Shule yenye QR",
     noBindingTitle: "Hakuna Shule Iliyounganishwa",
-    noBindingDesc: "Unasoma kama mwanafunzi huru. Weka msimbo wa shule yako hapo juu ili kupata beji ya QR.",
+    noBindingDesc:
+      "Unasoma kama mwanafunzi huru. Weka msimbo wa shule yako hapo juu ili kupata beji ya QR.",
     regenerateSchoolId: "Tengeneza Upya ID ya Shule",
     regeneratePending: "Itifaki ya usalama imeanzishwa. Uhakiki unasubiriwa...",
     verifyProgress: "Kadirio la muda wa uhakiki: ~Saa 4 (Itifaki S2-NCDC)",
@@ -322,7 +344,8 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     shareCsvBtn: "Share Onboard CSV",
     qrBadgeTitle: "Bbaajis mar Skul mar QR",
     noBindingTitle: "Onge Skul Motudere",
-    noBindingDesc: "Isomo kaka ng'at ma oyetongore. Ket code mar skul mari malo kae mondo iyier QR bbaajis mari.",
+    noBindingDesc:
+      "Isomo kaka ng'at ma oyetongore. Ket code mar skul mari malo kae mondo iyier QR bbaajis mari.",
     regenerateSchoolId: "Yier Namba Manyien mar Skul",
     regeneratePending: "Ratiro mar ritruok ochakore. Ng'iyo piny pod ritore...",
     verifyProgress: "Kadirio mar saawa mag ratiro: ~Saawa 4 (Itifaki S2-NCDC)",
@@ -330,7 +353,8 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
   },
   ls: {
     settingsHub: "Ebisito by'Entegeka y'Okusoma",
-    settingsSub: "Tegeka emisinde gy'okusoma, amaloboozi ga tutor, n'okusika emiwendo gya ssomero lyo",
+    settingsSub:
+      "Tegeka emisinde gy'okusoma, amaloboozi ga tutor, n'okusika emiwendo gya ssomero lyo",
     permissionsPref: "Okukkiriza n'Eby'okulonda",
     identitySounds: "Obuntu n'Amaloboozi",
     instBinding: "Okusiba ku Ssomero Lyo",
@@ -343,7 +367,8 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     sysNotify: "Okulabula kw'Entegeka",
     sysNotifyDesc: "Kusindika kujjukiza, ebibuuzo n'ebirango eby'omugaso mu kusoma.",
     offlineCache: "Okutereka ku Kyuma Kyokka",
-    offlineCacheDesc: "Kutereka ebitabo n'ebisomwa ku kyuma kyo n'okusomera ku lwa wecca nga tewali mutimbagano.",
+    offlineCacheDesc:
+      "Kutereka ebitabo n'ebisomwa ku kyuma kyo n'okusomera ku lwa wecca nga tewali mutimbagano.",
     regionalPref: "Entegeka y'Ebyalo n'Olulimi",
     regionalPrefSub: "Londa olulimi lw'oyagala okukozesa okusoma ebisomwa n'emikutu gya syllabus.",
     interfaceLang: "Olulimi lw'Entegeka",
@@ -351,12 +376,15 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     autoSyncCloudSub: "Tereka ebibuuzo n'ebitabo butereevu nga oli ku mutimbagano",
     saveSettings: "Tereka Entegeka",
     tutorVoiceSelect: "Londa Eddoboozi n'Obuntu bwa Tutor",
-    tutorVoiceSelectSub: "Kyusa wakati w'amaloboozi ag'enjawulo ga tutor. Gezaako amaloboozi ago mbulereevu.",
+    tutorVoiceSelectSub:
+      "Kyusa wakati w'amaloboozi ag'enjawulo ga tutor. Gezaako amaloboozi ago mbulereevu.",
     testVoiceBtn: "Gezaako Eddoboozi",
     adamsName: "Adams (Omusajja)",
-    adamsDesc: "Nga eddoboozi liri wansi, nga lya nkalakkalira. Lyategekebwa okunnyonnyola ebikwata ku mikutu gwa ssaayansi ne syllabus.",
+    adamsDesc:
+      "Nga eddoboozi liri wansi, nga lya nkalakkalira. Lyategekebwa okunnyonnyola ebikwata ku mikutu gwa ssaayansi ne syllabus.",
     powerName: "Power / Haawa (Omukazi)",
-    powerDesc: "Nga eddoboozi liri waggulu, nga lya kutegeera ne mbeera ey'omulembe. Lyategekebwa okuddamu.",
+    powerDesc:
+      "Nga eddoboozi liri waggulu, nga lya kutegeera ne mbeera ey'omulembe. Lyategekebwa okuddamu.",
     synthesisAttrs: "Ebisito by'Eddoboozi ery'Omulembe",
     synthesisAttrsSub: "Kyusa mu bipimo by'okwogera butereevu n'emisinde gy'eddoboozi.",
     speechPitch: "Ekipimo ky'Eddoboozi",
@@ -365,7 +393,8 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     speechRateDesc: "Yongeza kaba weesize emisinde gy'okwogera gwa tutor wo.",
     saveVoiceAttrs: "Tereka Ekipimo ky'Eddoboozi",
     instConnBinding: "Okusiba n'Okugatta ku Ssomero",
-    instConnBindingSub: "Gatta akawunti yo ku ssomero erikkiriziddwa NCDC nga oyingiza namba y'Essomero lyo.",
+    instConnBindingSub:
+      "Gatta akawunti yo ku ssomero erikkiriziddwa NCDC nga oyingiza namba y'Essomero lyo.",
     schoolIdLabel: "Namba y'Essomero / Koodi",
     schoolNameLabel: "Erinnya ly'Essomero / Kituo",
     saveBindingBtn: "Tereka Okusiba ku Ssomero",
@@ -376,7 +405,8 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     shareCsvBtn: "Gabana Onboard CSV",
     qrBadgeTitle: "Bbaajis y'Essomero eya QR",
     noBindingTitle: "Tewali Ssomero Lyagattiddwa",
-    noBindingDesc: "Onoonyereza nga omuyizi ayetongodde. Yingiza koodi y'essomero waggulu okufuna QR bbaajis yo.",
+    noBindingDesc:
+      "Onoonyereza nga omuyizi ayetongodde. Yingiza koodi y'essomero waggulu okufuna QR bbaajis yo.",
     regenerateSchoolId: "Kyusa Namba y'Essomero",
     regeneratePending: "Okukyusa kutandise mu mbeera y'obukuumi. Okukakasa kulindiriddwa...",
     verifyProgress: "Ekiseera eky'okukakasa: ~Esawa 4 (Protocol S2-NCDC)",
@@ -392,8 +422,12 @@ interface LanguageStore {
 
 export const useLanguageStore = create<LanguageStore>((set) => {
   // Initialize from localStorage or default to english
-  const savedLang = (typeof window !== "undefined" ? localStorage.getItem("app_lang") : "en") as LanguageCode;
-  const initialLang = (["en", "lg", "nk", "sw", "lu", "ls"].includes(savedLang) ? savedLang : "en") as LanguageCode;
+  const savedLang = (
+    typeof window !== "undefined" ? localStorage.getItem("app_lang") : "en"
+  ) as LanguageCode;
+  const initialLang = (
+    ["en", "lg", "nk", "sw", "lu", "ls"].includes(savedLang) ? savedLang : "en"
+  ) as LanguageCode;
 
   return {
     language: initialLang,

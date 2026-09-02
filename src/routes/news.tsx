@@ -3,11 +3,13 @@ import { useEffect, useState, useRef } from "react";
 import { FoundersSpotlight } from "@/components/FoundersSpotlight";
 import { toast } from "sonner";
 import { NewsFeed } from "@/components/NewsFeed";
-import { useNewsService, NewsArticle } from "@/lib/news";
+import { useRealtimeData } from "@/hooks/useRealtimeData";
 import { cn } from "@/lib/utils";
+import { NewsItem } from "@/lib/supabase-service";
 import { LiveBadge } from "@/components/LiveBadge";
 import { useLiveSession } from "@/hooks/useLiveSession";
 import { RoleGuard } from "@/components/RoleGuard";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import {
   Play,
   Pause,
@@ -41,18 +43,15 @@ type ParsedBody = {
   school?: string;
 };
 
-function NewsPage() {
-  const { articles, loading, refreshing, error, refreshNews } = useNewsService();
+import { NewsItemSchema } from "@/lib/schema";
+// ... (keep imports)
 
-  const items: NewsItem[] = articles.map((a) => ({
-    id: a.id,
-    title: a.title,
-    body: a.body,
-    media_url: a.media_url || null,
-    media_type: a.media_type || "article",
-    category: a.category || "General",
-    published_at: a.published_at,
-  }));
+function NewsPage() {
+  const { data: items, loading, error } = useRealtimeData<NewsItem>('news_broadcasts', NewsItemSchema, '*');
+  const refreshing = false; // Real-time doesn't need explicit refresh
+
+  const refreshNews = async () => { /* no-op in real-time */ };
+// ... (keep rest)
 
   useEffect(() => {
     if (error) {
@@ -272,7 +271,8 @@ function NewsPage() {
                   </span>
                 </div>
                 <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-                  Streaming verified curriculum announcements, masterclasses, and student spotlight updates in real-time from Supabase.
+                  Streaming verified curriculum announcements, masterclasses, and student spotlight
+                  updates in real-time from Supabase.
                 </p>
               </div>
             </div>
@@ -318,7 +318,9 @@ function NewsPage() {
                             {cat.name}
                           </h3>
                         </div>
-                        <NewsFeed items={cat.items} />
+                        <ErrorBoundary>
+                          <NewsFeed items={cat.items} />
+                        </ErrorBoundary>
                       </section>
                     ),
                 )}

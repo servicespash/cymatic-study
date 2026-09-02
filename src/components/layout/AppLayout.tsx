@@ -68,7 +68,12 @@ export function AppLayout({
   const RoleIcon = roleMeta.icon;
 
   return (
-    <div className={cn("min-h-[calc(100vh-4rem)] w-full flex flex-col bg-background text-foreground", className)}>
+    <div
+      className={cn(
+        "min-h-[calc(100vh-4rem)] w-full flex flex-col bg-background text-foreground",
+        className,
+      )}
+    >
       <ResponsiveContainer variant={variant} className={containerClassName}>
         {/* Optional Role Context Banner */}
         {showRoleHeader && user && (
@@ -82,7 +87,10 @@ export function AppLayout({
                   <span className="text-xs font-bold text-foreground">
                     {profile?.display_name || user.email?.split("@")[0]}
                   </span>
-                  <Badge variant="outline" className={cn("text-[10px] font-bold uppercase", roleMeta.badgeColor)}>
+                  <Badge
+                    variant="outline"
+                    className={cn("text-[10px] font-bold uppercase", roleMeta.badgeColor)}
+                  >
                     {roleMeta.label}
                   </Badge>
                 </div>
@@ -124,7 +132,9 @@ export function AppLayout({
               )}
             </div>
 
-            {actions && <div className="flex flex-wrap items-center gap-2 sm:self-center">{actions}</div>}
+            {actions && (
+              <div className="flex flex-wrap items-center gap-2 sm:self-center">{actions}</div>
+            )}
           </header>
         )}
 

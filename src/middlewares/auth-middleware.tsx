@@ -3,7 +3,15 @@ import { useNavigate, useRouterState, redirect } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { normalizeRole, type UserRole } from "@/hooks/useUserRole";
 import { notifications } from "@/lib/notifications";
-import { ShieldAlert, Lock, LogIn, RefreshCw, GraduationCap, LayoutDashboard, ArrowRight } from "lucide-react";
+import {
+  ShieldAlert,
+  Lock,
+  LogIn,
+  RefreshCw,
+  GraduationCap,
+  LayoutDashboard,
+  ArrowRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface AuthMiddlewareOptions {
@@ -60,7 +68,10 @@ export function useAuthRouteGuard(options: AuthMiddlewareOptions = {}): AuthGuar
   const searchStr = useRouterState({ select: (s) => s.location.searchStr });
 
   // Stable key for allowedRoles to prevent re-renders when passed as inline array literal
-  const allowedRolesKey = useMemo(() => (allowedRoles ? [...allowedRoles].sort().join(",") : ""), [allowedRoles]);
+  const allowedRolesKey = useMemo(
+    () => (allowedRoles ? [...allowedRoles].sort().join(",") : ""),
+    [allowedRoles],
+  );
 
   // Determine user's correct dashboard destination based on their verified role
   const correctDashboard = useMemo(() => {
@@ -145,12 +156,16 @@ export function useAuthRouteGuard(options: AuthMiddlewareOptions = {}): AuthGuar
     // A. Unauthenticated user accessing a protected route
     if (!user && !allowGuest) {
       const fullPath = searchStr ? `${pathname}${searchStr}` : pathname;
-      const redirectQuery = fullPath && fullPath !== "/login" ? `?redirect=${encodeURIComponent(fullPath)}` : "";
+      const redirectQuery =
+        fullPath && fullPath !== "/login" ? `?redirect=${encodeURIComponent(fullPath)}` : "";
       const target = `${fallbackPath}${redirectQuery}`;
 
       if (lastRedirectRef.current !== target && pathname !== fallbackPath) {
         lastRedirectRef.current = target;
-        notifications.warning("Sign-in Required", "Please sign in with your credentials to access this dashboard.");
+        notifications.warning(
+          "Sign-in Required",
+          "Please sign in with your credentials to access this dashboard.",
+        );
         navigate({ to: target as any });
       }
       return;
@@ -251,8 +266,9 @@ export function AuthRouteMiddleware({
               Access Restricted
             </h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              This station requires <strong className="text-foreground">{requiredRoleName}</strong> access.
-              Your account is currently signed in as a <strong className="text-foreground">{role}</strong>.
+              This station requires <strong className="text-foreground">{requiredRoleName}</strong>{" "}
+              access. Your account is currently signed in as a{" "}
+              <strong className="text-foreground">{role}</strong>.
             </p>
           </div>
 
@@ -327,17 +343,25 @@ export function createRouterAuthGuard(options: AuthMiddlewareOptions = {}) {
   return async ({ location }: { location: { pathname: string; searchStr?: string } }) => {
     // Dynamic import supabase to check session synchronously or asynchronously
     const { supabase } = await import("@/lib/supabase");
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
     if (!session?.user && !allowGuest) {
-      const fullPath = location.searchStr ? `${location.pathname}${location.searchStr}` : location.pathname;
-      const redirectQuery = fullPath && fullPath !== "/login" ? `?redirect=${encodeURIComponent(fullPath)}` : "";
+      const fullPath = location.searchStr
+        ? `${location.pathname}${location.searchStr}`
+        : location.pathname;
+      const redirectQuery =
+        fullPath && fullPath !== "/login" ? `?redirect=${encodeURIComponent(fullPath)}` : "";
       throw redirect({
         to: `${fallbackPath}${redirectQuery}` as any,
       });
     }
 
-    if (session?.user && (allowedRoles.length > 0 || requireAdmin || requireTeacher || requireStudent)) {
+    if (
+      session?.user &&
+      (allowedRoles.length > 0 || requireAdmin || requireTeacher || requireStudent)
+    ) {
       let rawRole = session.user.user_metadata?.role || "student";
 
       try {
