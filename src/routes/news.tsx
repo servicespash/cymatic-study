@@ -4,6 +4,7 @@ import { FoundersSpotlight } from "@/components/FoundersSpotlight";
 import { toast } from "sonner";
 import { NewsFeed } from "@/components/NewsFeed";
 import { useRealtimeData } from "@/hooks/useRealtimeData";
+import { useUserRole } from "@/hooks/useUserRole";
 import { cn } from "@/lib/utils";
 import { NewsItem } from "@/lib/supabase-service";
 import { LiveBadge } from "@/components/LiveBadge";
@@ -47,11 +48,18 @@ import { NewsItemSchema } from "@/lib/schema";
 // ... (keep imports)
 
 function NewsPage() {
+  const { organizationId } = useUserRole();
   const {
     data: items,
     loading,
     error,
-  } = useRealtimeData<NewsItem>("news_broadcasts", NewsItemSchema, "*");
+  } = useRealtimeData<NewsItem>(
+    "news_broadcasts",
+    NewsItemSchema,
+    "*",
+    [organizationId],
+    organizationId
+  );
   const refreshing = false; // Real-time doesn't need explicit refresh
 
   const refreshNews = async () => {

@@ -13,7 +13,7 @@ export interface UiAction {
     hapticType?: HapticType;
     widgetType?: WidgetType;
     widgetId?: string;
-    data?: Record<string, any>;
+    data?: Record<string, unknown>;
     message?: string;
   };
 }

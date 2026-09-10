@@ -9,6 +9,8 @@ export interface RouteDecision {
   isInstitutional: boolean;
   schoolId: string | null;
   dashboardTitle: string;
+  isAuthorized: boolean;
+  mismatchReason?: string;
 }
 
 /**
@@ -19,24 +21,42 @@ export function determineUserDashboardRoute(
   userMetadata?: Record<string, any>,
 ): RouteDecision {
   const rawRole = (profile?.role || userMetadata?.role || "student").toLowerCase();
+  const profileSchoolId = profile?.school_id || profile?.org_id;
+  const metaSchoolId = userMetadata?.school_id || userMetadata?.org_id;
+  
   const schoolId =
-    profile?.school_id ||
-    profile?.org_id ||
-    userMetadata?.school_id ||
-    userMetadata?.org_id ||
+    profileSchoolId ||
+    metaSchoolId ||
     (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : null) ||
     null;
 
   const isInstitutional = Boolean(schoolId && schoolId.trim().length > 0);
+  
+  // VALIDATION: Strict school_id check for institutional users
+  const isInstitutionalRole = ["admin", "org_admin", "teacher", "instructor", "faculty"].includes(rawRole);
+  let isAuthorized = true;
+  let mismatchReason: string | undefined;
+
+  if (isInstitutionalRole && !schoolId) {
+    isAuthorized = false;
+    mismatchReason = "Institutional role detected without valid School ID or Organization linkage.";
+  }
+
+  if (profileSchoolId && metaSchoolId && profileSchoolId !== metaSchoolId) {
+    // Optional: Log potential role/org mismatch
+    console.warn("Security Notice: Profile school_id does not match Auth metadata school_id.");
+  }
 
   // 1. Institutional Administrator
   if (rawRole === "admin" || rawRole === "org_admin" || rawRole === "administrator") {
     return {
-      targetPath: "/admin/dashboard",
+      targetPath: isAuthorized ? "/admin/dashboard" : "/onboarding",
       roleLabel: "Institutional Administrator",
       isInstitutional: true,
       schoolId,
       dashboardTitle: "Institutional Admin Console",
+      isAuthorized,
+      mismatchReason,
     };
   }
 
@@ -48,11 +68,13 @@ export function determineUserDashboardRoute(
     rawRole === "faculty"
   ) {
     return {
-      targetPath: "/dashboard",
+      targetPath: isAuthorized ? "/dashboard" : "/onboarding",
       roleLabel: isInstitutional ? "Institutional Educator" : "Independent Educator",
       isInstitutional,
       schoolId,
       dashboardTitle: "Teacher Evaluation & Marking Station",
+      isAuthorized,
+      mismatchReason,
     };
   }
 
@@ -63,6 +85,7 @@ export function determineUserDashboardRoute(
     isInstitutional,
     schoolId,
     dashboardTitle: isInstitutional ? "Institutional Student Hub" : "Personal Learning Workspace",
+    isAuthorized: true, // Students are usually authorized to see dashboard even if not institutional
   };
 }
 

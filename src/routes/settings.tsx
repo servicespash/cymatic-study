@@ -47,9 +47,10 @@ export const Route = createFileRoute("/settings")({
 function SettingsPage() {
   const { language, setLanguage, t } = useLanguageStore();
   const { schoolId, schoolName, updateSchoolId } = useUnifiedSchoolId();
-  const { user, profile, isAdmin: dbIsAdmin, isTeacher: dbIsTeacher } = useAuth();
+  const { user, profile, isAdmin, isTeacher, isStudent } = useAuth();
 
-  const isAdminOrSimulated = dbIsAdmin || dbIsTeacher;
+  const canEditInstitutionalSettings = isAdmin; // Only admin can edit school ID etc.
+  const canEditTeacherSettings = isAdmin || isTeacher; // Teacher might edit some things
 
   // Tabs: 'permissions' | 'identity' | 'binding'
   const [activeTab, setActiveTab] = useState<"permissions" | "identity" | "binding">("permissions");
@@ -202,7 +203,7 @@ function SettingsPage() {
 
   // Admin regeneration logic
   const handleRegenerateSchoolId = () => {
-    if (!isAdminOrSimulated) {
+    if (!canEditInstitutionalSettings) {
       toast.error("Access Denied: Only administrators can initiate registry regeneration.");
       return;
     }
@@ -222,7 +223,7 @@ function SettingsPage() {
 
   // Admin resync logic: updates other institution members dynamically in real time
   const handleResyncMembers = async () => {
-    if (!isAdminOrSimulated) {
+    if (!canEditInstitutionalSettings) {
       toast.error("Access Denied: Administrative privilege required.");
       return;
     }
@@ -519,13 +520,15 @@ function SettingsPage() {
             <Volume2 className="h-4 w-4" />
             <span>{t.identitySounds}</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="binding"
-            className="rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 py-3 transition-all cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
-          >
-            <IdCard className="h-4 w-4" />
-            <span>{t.instBinding}</span>
-          </TabsTrigger>
+          {canEditInstitutionalSettings && (
+            <TabsTrigger
+              value="binding"
+              className="rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 py-3 transition-all cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
+            >
+              <IdCard className="h-4 w-4" />
+              <span>{t.instBinding}</span>
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {/* VIEWPORT CONTROLLER */}
@@ -835,51 +838,51 @@ function SettingsPage() {
 
           {/* TAB 3: INSTITUTIONAL BINDING & SCHOOL ID MANAGEMENT */}
           <TabsContent value="binding" className="space-y-6 outline-none">
-            <div className="space-y-6 animate-fade-in">
-              {/* Admin Privilege Panel Banner */}
-              <div className="rounded-3xl border border-dashed border-primary/30 bg-primary/5 p-5 flex items-center justify-between flex-wrap gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                    <ShieldCheck className="h-5.5 w-5.5" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-black text-foreground block">
-                      {t.adminPrivilege}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground block max-w-2xl mt-0.5">
-                      Authorized administrative session active. Regenerate certified School IDs and
-                      synchronize teachers and students dynamically in real time.
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* School Binding Connection Form */}
-              <div
-                id="school-binding-section"
-                className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-5 transition-all"
-              >
-                <div className="flex justify-between items-start gap-4 flex-wrap border-b border-border/30 pb-4">
-                  <div>
-                    <h3 className="text-base font-bold text-foreground">{t.instConnBinding}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">{t.instConnBindingSub}</p>
-                  </div>
-
-                  {/* ADMIN ONLY REGENERATOR ACTION BUTTON */}
-                  {isAdminOrSimulated && (
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={handleRegenerateSchoolId}
-                        disabled={isResynching}
-                        className="text-xs font-extrabold rounded-xl h-9 bg-amber-500 text-black hover:bg-amber-600 transition-all shadow-glow flex items-center gap-1.5"
-                      >
-                        <RefreshCw className="h-3.5 w-3.5 animate-spin-slow" />
-                        {t.regenerateSchoolId}
-                      </Button>
+              <div className="space-y-6 animate-fade-in">
+                {/* Admin Privilege Panel Banner */}
+                <div className="rounded-3xl border border-dashed border-primary/30 bg-primary/5 p-5 flex items-center justify-between flex-wrap gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <ShieldCheck className="h-5.5 w-5.5" />
                     </div>
-                  )}
+                    <div>
+                      <span className="text-xs font-black text-foreground block">
+                        {t.adminPrivilege}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground block max-w-2xl mt-0.5">
+                        Authorized administrative session active. Regenerate certified School IDs and
+                        synchronize teachers and students dynamically in real time.
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
+                {/* School Binding Connection Form */}
+                <div
+                  id="school-binding-section"
+                  className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-5 transition-all"
+                >
+                  <div className="flex justify-between items-start gap-4 flex-wrap border-b border-border/30 pb-4">
+                    <div>
+                      <h3 className="text-base font-bold text-foreground">{t.instConnBinding}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">{t.instConnBindingSub}</p>
+                    </div>
+
+                    {/* ADMIN ONLY REGENERATOR ACTION BUTTON */}
+                    {canEditInstitutionalSettings && (
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={handleRegenerateSchoolId}
+                          disabled={isResynching}
+                          className="text-xs font-extrabold rounded-xl h-9 bg-amber-500 text-black hover:bg-amber-600 transition-all shadow-glow flex items-center gap-1.5"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5 animate-spin-slow" />
+                          {t.regenerateSchoolId}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  
                 {/* SECURITY PROTOCOL COUNTDOWN BLOCK */}
                 {regenerationPending && (
                   <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-4 animate-fade-in">
@@ -1057,7 +1060,7 @@ function SettingsPage() {
                       {t.copyInviteBtn}
                     </Button>
 
-                    {isAdminOrSimulated && (
+                    {isAdmin && (
                       <Button
                         onClick={() => {
                           const csvData = `Name,Role,Email\nExample Scholar,student,scholar@gmail.com\nExample Instructor,teacher,instructor@gmail.com`;
@@ -1096,7 +1099,7 @@ function SettingsPage() {
                       studentName={
                         profile?.display_name || user?.email?.split("@")[0] || " Scholar"
                       }
-                      role={dbIsAdmin ? "Administrator" : dbIsTeacher ? "Instructor" : "Scholar"}
+                      role={isAdmin ? "Administrator" : isTeacher ? "Instructor" : "Scholar"}
                       className="w-full"
                     />
                   </div>

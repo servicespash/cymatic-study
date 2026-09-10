@@ -104,6 +104,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ contentId }) => 
           content_id: contentId,
           user_id: user.id,
           content: commentText,
+          organization_id: profile?.organization_id || profile?.org_id,
         });
         if (error) throw error;
       } else {

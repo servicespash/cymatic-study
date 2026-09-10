@@ -130,12 +130,6 @@ export function StudentActivityDashboard() {
                       ? new Date(sub.lastInteracted).toLocaleDateString()
                       : "Never"}
                   </span>
-                  <button
-                    onClick={() => handleSimulateStudy(sub.subject)}
-                    className="text-[9px] font-bold text-zinc-400 hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
-                  >
-                    <PlusCircle className="w-3 h-3" /> Study +12%
-                  </button>
                 </div>
               </div>
             </motion.div>

@@ -2,14 +2,26 @@ import { TextToSpeech } from "@capacitor-community/text-to-speech";
 import { Preferences } from "@capacitor/preferences";
 import { Capacitor } from "@capacitor/core";
 
+export function sanitizeText(text: string): string {
+  return text
+    .replace(/\*\*/g, "")
+    .replace(/\/\//g, ", ")
+    .replace(/["'`]/g, "")
+    .replace(/_/g, " ")
+    .replace(/[#*]/g, "")
+    .trim();
+}
+
 export const HardwareBridge = {
   async ttsSpeak(
     text: string,
     options: { rate: number; pitch: number; lang: string; voiceName?: string },
   ): Promise<void> {
+    const sanitizedText = sanitizeText(text);
+
     if (Capacitor.isNativePlatform()) {
       await TextToSpeech.speak({
-        text,
+        text: sanitizedText,
         lang: options.lang,
         rate: options.rate,
         pitch: options.pitch,
@@ -20,7 +32,7 @@ export const HardwareBridge = {
       return new Promise<void>((resolve, reject) => {
         window.speechSynthesis.cancel(); // Clear any ongoing speech
 
-        const utter = new SpeechSynthesisUtterance(text);
+        const utter = new SpeechSynthesisUtterance(sanitizedText);
         utter.rate = options.rate;
         utter.pitch = options.pitch;
 

@@ -39,14 +39,21 @@ import { toast } from "sonner";
 import { Share } from "@capacitor/share";
 import { Capacitor } from "@capacitor/core";
 import { Camera as CapCamera, CameraResultType } from "@capacitor/camera";
+import { sanitizeText } from "@/lib/HardwareBridge";
 
 const AI_TUTOR_MARKER = "__AI_TUTOR__";
 
 export interface ChatMessage {
   id: string;
-  sender: "user" | "tutor";
+  sender: string;
   text: string;
+  content?: string;
   created_at: string;
+  user_id?: string;
+  profiles?: any;
+  file_url?: string;
+  file_type?: string;
+  file_name?: string;
 }
 
 export const Route = createFileRoute("/chat")({
@@ -122,8 +129,7 @@ function ChatRoomPage() {
   const loadMessages = async () => {
     setLoadingMessages(true);
 
-    let query = supabase
-      .from("chat_messages")
+    let query = (supabase.from as any)("chat_messages")
       .select("*, profiles(display_name, avatar_url)")
       .order("created_at", { ascending: true })
       .limit(50);
@@ -325,7 +331,7 @@ function ChatRoomPage() {
         user_id: user.id,
         org_id: chatContext.orgId,
         level: chatContext.level,
-        content: `${AI_TUTOR_MARKER}${replyText}`,
+        content: `${AI_TUTOR_MARKER}${sanitizeText(replyText)}`,
       });
       if (insertErr) throw insertErr;
     } catch (e: any) {

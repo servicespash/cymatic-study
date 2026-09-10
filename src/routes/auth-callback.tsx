@@ -72,6 +72,15 @@ function AuthCallbackPage() {
 
           const decision = determineUserDashboardRoute(profile, currentUser.user_metadata);
 
+          if (!decision.isAuthorized) {
+            console.warn("Unauthorized access attempt:", decision.mismatchReason);
+            if (isMounted) {
+              setStatus("error");
+              setErrorMessage(decision.mismatchReason || "Unauthorized role or institutional mismatch.");
+            }
+            return;
+          }
+
           if (decision.schoolId) {
             localStorage.setItem("cymatic_school_id", decision.schoolId);
           }

@@ -32,14 +32,12 @@ export function useAuth() {
   const rawRole = profile?.role || user?.user_metadata?.role || "student";
   const role: UserRole = normalizeRole(rawRole);
 
+  const organizationId = core.organizationId;
+
   const isStudent = role === "student";
   const isTeacher = role === "teacher";
   const isAdmin = role === "admin";
-  const isInstitutional = !!(
-    profile?.school_id ||
-    profile?.org_id ||
-    user?.user_metadata?.school_id
-  );
+  const isInstitutional = !!organizationId;
   const isGuestMode = !loading && !user;
 
   // Sign In with password or OTP magic link
@@ -171,6 +169,7 @@ export function useAuth() {
       isAdmin,
       isInstitutional,
       isGuestMode,
+      organizationId,
       signIn,
       signUp,
       signOut,
@@ -188,6 +187,7 @@ export function useAuth() {
       isAdmin,
       isInstitutional,
       isGuestMode,
+      organizationId,
       signIn,
       signUp,
       signOut,

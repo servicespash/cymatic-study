@@ -72,7 +72,13 @@ export function TeacherGradingStation() {
     data: realtimeSubmissions,
     loading: loadingData,
     error: fetchError,
-  } = useRealtimeData<StudentSubmission>("submissions", ProjectSubmissionSchema, "*");
+  } = useRealtimeData<StudentSubmission>(
+    "submissions",
+    ProjectSubmissionSchema,
+    "*",
+    [currentSchoolId],
+    currentSchoolId,
+  );
 
   useEffect(() => {
     if (realtimeSubmissions) {

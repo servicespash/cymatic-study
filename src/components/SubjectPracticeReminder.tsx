@@ -173,14 +173,6 @@ export function SubjectPracticeReminder() {
               <Clock className="h-4 w-4" /> Revisit Reminder (Over 48 Hours Inactive)
             </h4>
             <div className="flex items-center gap-2">
-              {/* Simulator button */}
-              <button
-                onClick={handleSimulateInactivity}
-                title="Reset simulation of >48h gaps"
-                className="text-[10px] text-zinc-500 hover:text-zinc-300 font-semibold flex items-center gap-1 bg-zinc-950 px-2 py-1 rounded border border-zinc-900 transition-all"
-              >
-                <RefreshCw className="h-3 w-3" /> Test Gap
-              </button>
               <button
                 onClick={() => setIsDismissed(true)}
                 className="text-[11px] text-zinc-500 hover:text-zinc-300 font-bold"

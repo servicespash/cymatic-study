@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useGamificationStore } from "@/store/useGamificationStore";
 import { PrintableSummary, MarkedReportItem } from "@/components/PrintableSummary";
 import { ExportPdfModal } from "@/components/ExportPdfModal";
+import { useUnifiedSchoolId } from "@/hooks/useUnifiedSchoolId";
 import {
   FileText,
   Printer,
@@ -36,14 +37,14 @@ export const Route = createFileRoute("/student")({
 });
 
 function StudentDashboardPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, organizationId } = useAuth();
   const { xp, level, badges, completedGaps, completedTasks } = useGamificationStore();
+  const { schoolId, schoolName: unifiedSchoolName } = useUnifiedSchoolId();
 
-  const studentName = profile?.display_name || user?.email?.split("@")[0] || "Scholar Learner";
-  const schoolName =
-    user?.user_metadata?.school_name || profile?.school_id || "Cymatic Secondary Academy";
-  const className = "Senior 3 (S3 - West Stream)";
-  const unebIndex = "U2026/089/STD";
+  const studentName = profile?.display_name || user?.email?.split("@")[0] || "Scholar";
+  const schoolName = unifiedSchoolName || profile?.school_name || "Unknown Institution";
+  const className = (profile as any)?.level || "N/A";
+  const unebIndex = (profile as any)?.uneb_index || "N/A";
 
   const [markedReports, setMarkedReports] = useState<MarkedReportItem[]>([]);
   const [loadingReports, setLoadingReports] = useState(true);
@@ -52,69 +53,46 @@ function StudentDashboardPage() {
     null,
   );
 
-  // Load marked project submissions for this student from Supabase or local storage fallback
+  // Load marked project submissions for this student from Supabase
   useEffect(() => {
     async function loadStudentReports() {
+      if (!user?.id) return;
       setLoadingReports(true);
       try {
-        const { data: dbSubs } = await (supabase as any)
-          .from("project_submissions")
-          .select("*")
-          .order("created_at", { ascending: false });
+        const orgIdToUse = schoolId || organizationId;
+        
+        let query = (supabase.from as any)("project_submissions").select("*").eq("student_id", user.id);
+        
+        if (orgIdToUse) {
+          query = query.eq("organization_id", orgIdToUse);
+        }
+
+        const { data: dbSubs, error } = await query.order("created_at", { ascending: false });
+
+        if (error) throw error;
 
         if (dbSubs && dbSubs.length > 0) {
           const mapped: MarkedReportItem[] = (dbSubs as any[]).map((s: any) => ({
             id: s.id,
-            projectTitle: s.project_title || "Continuous Assessment Project",
-            subject: s.subject || "General Science",
-            score: s.score ?? 85,
+            projectTitle: s.project_title || "Untitled Project",
+            subject: s.subject || "Unspecified Subject",
+            score: s.score ?? 0,
             rubricScores: {
-              planning: Math.round((s.score || 85) * 0.3),
-              execution: Math.round((s.score || 85) * 0.4),
-              conclusion: Math.round((s.score || 85) * 0.3),
+              planning: Math.round((s.score || 0) * 0.3),
+              execution: Math.round((s.score || 0) * 0.4),
+              conclusion: Math.round((s.score || 0) * 0.3),
             },
-            feedback: s.feedback || "Good research methodology and practical execution.",
-            teacherName: s.teacher_name || "Faculty Evaluator",
-            teacherTitle: "Subject Specialist",
+            feedback: s.feedback || "No feedback provided.",
+            teacherName: s.teacher_name || "Unknown Evaluator",
+            teacherTitle: "Instructor",
             teacherSignature: s.teacher_name ? `Digital Seal ${s.teacher_name}` : "Verified Stamp",
-            markedAt: s.created_at || "2026-07-24",
-            timePointsEarned: 5,
-            awardPointsEarned: 50,
+            markedAt: s.created_at || new Date().toISOString().split("T")[0],
+            timePointsEarned: s.time_points || 0,
+            awardPointsEarned: s.award_points || 0,
           }));
           setMarkedReports(mapped);
         } else {
-          // Default sample marked reports for initial view
-          setMarkedReports([
-            {
-              id: "RPT-101",
-              projectTitle: "Solar Thermal Water Purifier Prototype",
-              subject: "Physics",
-              score: 88,
-              rubricScores: { planning: 27, execution: 36, conclusion: 25 },
-              feedback:
-                "Exemplary thermal insulation design. Excellent understanding of solar radiation principles.",
-              teacherName: "Mr. Okello David",
-              teacherTitle: "Head of Physics Department",
-              teacherSignature: "Signed by Mr. Okello (Seal 0x88F)",
-              markedAt: "2026-07-24",
-              timePointsEarned: 6,
-              awardPointsEarned: 60,
-            },
-            {
-              id: "RPT-102",
-              projectTitle: "Soil pH Remediation with Coffee Husk Biochar",
-              subject: "Chemistry",
-              score: 92,
-              rubricScores: { planning: 28, execution: 38, conclusion: 26 },
-              feedback: "Highly practical agriculture chemistry application. Solid data analysis.",
-              teacherName: "Dr. Mukasa Sarah",
-              teacherTitle: "Senior Lecturer",
-              teacherSignature: "Signed by Dr. Mukasa (Seal 0x94A)",
-              markedAt: "2026-07-22",
-              timePointsEarned: 8,
-              awardPointsEarned: 80,
-            },
-          ]);
+          setMarkedReports([]);
         }
       } catch (err) {
         console.warn("Could not load student reports:", err);
@@ -124,7 +102,7 @@ function StudentDashboardPage() {
     }
 
     loadStudentReports();
-  }, []);
+  }, [user?.id, organizationId]);
 
   // Calculate study time points
   const totalHours = ((completedTasks.length * 20 + markedReports.length * 45 + 120) / 60).toFixed(

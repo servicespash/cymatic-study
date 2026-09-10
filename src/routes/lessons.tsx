@@ -388,7 +388,7 @@ function LessonsPage() {
                               pdfContent.push({
                                 sectionTitle: "Worked Classroom Examples",
                                 body: note.examples.map(
-                                  (ex) => `Q: ${ex.problem}\nA: ${ex.solution}`,
+                                  (ex: any) => `Q: ${ex.problem}\nA: ${ex.solution}`,
                                 ),
                               });
                             }

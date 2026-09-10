@@ -208,12 +208,55 @@ function LoginPage() {
           }
         }
 
-        // Sync school ID & role to user metadata and profiles table immediately
+        // Fetch existing profile to validate school membership strictly
+        const { data: existingProfile } = await supabase
+          .from("profiles")
+          .select("org_id, role, school_name")
+          .eq("user_id", signInData.user.id)
+          .maybeSingle();
+
+        let resolvedOrgId = existingProfile?.org_id;
+        let resolvedSchoolKey = schoolId.trim();
+
+        if (schoolId.trim()) {
+          try {
+            const { data: orgMatch } = await supabase
+              .from("organizations")
+              .select("id, school_key, name")
+              .or(`school_key.ilike.${schoolId.trim()},id.eq.${schoolId.trim()}`)
+              .maybeSingle();
+
+            if (orgMatch) {
+              resolvedOrgId = orgMatch.id;
+              resolvedSchoolKey = orgMatch.school_key || schoolId.trim();
+
+              // Strict membership validation for non-admin roles (Students & Teachers)
+              const userRole = metaRole || existingProfile?.role || "student";
+              if (userRole !== "admin" && userRole !== "org_admin" && existingProfile?.org_id) {
+                if (existingProfile.org_id !== orgMatch.id) {
+                  setSubmitting(false);
+                  const mismatchMsg = `School ID mismatch: The School ID "${schoolId.trim()}" does not match your registered institution. Please sign in with your correct school credentials.`;
+                  setError(mismatchMsg);
+                  toast.error(mismatchMsg, { id: toastId });
+                  await supabase.auth.signOut();
+                  return;
+                }
+              }
+            } else {
+              // If school ID not found in database registry, warn or handle securely
+              console.warn("Entered school ID not found in organizations registry:", schoolId.trim());
+            }
+          } catch (valErr) {
+            console.warn("School validation exception:", valErr);
+          }
+        }
+
+        // Sync verified school ID & role to user metadata and profiles table
         try {
           const updateData: Record<string, any> = {};
-          if (schoolId.trim()) {
-            updateData.school_id = schoolId.trim();
-            updateData.org_id = schoolId.trim();
+          if (resolvedOrgId) {
+            updateData.school_id = resolvedSchoolKey;
+            updateData.org_id = resolvedOrgId;
           }
           if (metaRole) {
             updateData.role = metaRole;
@@ -224,7 +267,7 @@ function LoginPage() {
             await supabase
               .from("profiles")
               .update({
-                org_id: schoolId.trim() || undefined,
+                org_id: resolvedOrgId || undefined,
                 role: metaRole || undefined,
               })
               .eq("user_id", signInData.user.id);

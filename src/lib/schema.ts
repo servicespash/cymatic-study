@@ -64,15 +64,27 @@ export interface ProjectSubmission {
   teacher_name: string | null;
 }
 
-export const ReportSchema = z.object({
+export const OrganizationSchema = z.object({
   id: z.string(),
-  title: z.string(),
-  category: z.string(),
-  content: z.string(),
-  created_at: z.string(),
+  name: z.string(),
+  type: z.string().optional(),
+  created_at: z.string().optional(),
 });
 
-export type Report = z.infer<typeof ReportSchema>;
+export const DashboardTaskSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  subject: z.string(),
+  description: z.string(),
+  task_type: z.string(),
+  points: z.number(),
+  tutor_explanation: z.string().optional().nullable(),
+  created_by: z.string().optional().nullable(),
+  organization_id: z.string().optional().nullable(),
+  created_at: z.string().optional(),
+});
+
+export type DashboardTask = z.infer<typeof DashboardTaskSchema>;
 
 export const ContentInteractionSchema = z.object({
   id: z.string().optional(),

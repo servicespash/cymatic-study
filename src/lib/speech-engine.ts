@@ -47,9 +47,18 @@ export const speakText = async (text: string, personaName: "Adams" | "Haawa") =>
     currentAudio = null;
   }
 
+  // Sanitize text to prevent reading out markdown characters and create natural pauses
+  const sanitizedText = text
+    .replace(/\*\*/g, "") // Remove bold markers
+    .replace(/\/\//g, ", ") // Replace // with a comma for a slight pause
+    .replace(/["'`]/g, "") // Remove quotes and backticks
+    .replace(/_/g, " ") // Replace underscores with spaces
+    .replace(/[#*]/g, "") // Remove other markdown characters
+    .trim();
+
   // Try High-Fidelity Edge TTS first (via Server Function)
   try {
-    const response: any = await generateTts({ text, persona: personaName });
+    const response: any = await generateTts({ text: sanitizedText, persona: personaName });
     if (response && "audioData" in response) {
       const audioSrc = `data:audio/mp3;base64,${response.audioData}`;
       currentAudio = new Audio(audioSrc);
@@ -66,7 +75,7 @@ export const speakText = async (text: string, personaName: "Adams" | "Haawa") =>
     const mod = await loadTts();
     if (!mod) return;
     await mod.TextToSpeech.speak({
-      text,
+      text: sanitizedText,
       lang: "en-US",
       rate: persona.rate,
       pitch: persona.pitch,
@@ -78,7 +87,7 @@ export const speakText = async (text: string, personaName: "Adams" | "Haawa") =>
 
   if (!hasSpeechSynthesis()) return;
 
-  const utterance = new SpeechSynthesisUtterance(text);
+  const utterance = new SpeechSynthesisUtterance(sanitizedText);
   const voices = window.speechSynthesis.getVoices();
 
   let targetVoice: SpeechSynthesisVoice | undefined;

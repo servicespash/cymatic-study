@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 import { MarkedReportItem } from "@/components/PrintableSummary";
 import { ReportPrintView } from "@/components/ReportPrintView";
 import { ExportPdfModal } from "@/components/ExportPdfModal";
@@ -36,9 +37,43 @@ export interface StudentProfile {
 }
 
 export function ReportManager() {
+  const { profile } = useAuth();
   const [students, setStudents] = useState<StudentProfile[]>([]);
-
   const [selectedStudent, setSelectedStudent] = useState<StudentProfile | null>(null);
+  const [curatedReports, setCuratedReports] = useState<MarkedReportItem[]>([]);
+
+  useEffect(() => {
+    async function fetchStudents() {
+      let query = supabase
+        .from("profiles")
+        .select("user_id, display_name, school_name, role, org_id")
+        .eq("role", "student");
+
+      const currentOrgId = profile?.org_id;
+      if (currentOrgId) {
+        query = query.eq("org_id", currentOrgId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Error fetching students:", error);
+        return;
+      }
+
+      if (data) {
+        const mapped: StudentProfile[] = data.map((d: any) => ({
+          id: d.user_id,
+          name: d.display_name || "Unknown Student",
+          className: "S4 Physics",
+          unebIndex: `U${Math.floor(Math.random() * 9000) + 1000}/089/STD`,
+          schoolName: d.school_name || "National Curriculum Center",
+        }));
+        setStudents(mapped);
+      }
+    }
+    fetchStudents();
+  }, []);
 
   useEffect(() => {
     if (students.length > 0 && !selectedStudent) {
@@ -64,8 +99,6 @@ export function ReportManager() {
     "Excellent research logbook and clear experimental trial data.",
   );
   const [teacherName, setTeacherName] = useState("Mr. Okello David");
-
-  const { data: curatedReports } = useRealtimeData<Report>("reports", ReportSchema, "*");
 
   const [isExportPdfOpen, setIsExportPdfOpen] = useState(false);
 

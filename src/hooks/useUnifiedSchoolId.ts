@@ -9,7 +9,7 @@ const isUuid = (val: string | null | undefined): boolean => {
 };
 
 export function useUnifiedSchoolId() {
-  const { profile, schoolId: userRoleSchoolId } = useUserRole();
+  const { profile, schoolId: userRoleSchoolId, isAdmin } = useUserRole();
   const { user } = useAuth();
 
   const rawSchoolId =
@@ -25,6 +25,10 @@ export function useUnifiedSchoolId() {
 
   const updateSchoolId = async (newSchoolId: string, newSchoolName: string) => {
     if (!user) return;
+    if (!isAdmin) {
+        toast.error("Unauthorized: Only admins can update institutional settings.");
+        return;
+    }
     if (isUuid(newSchoolId)) {
       toast.error("UUIDs are not permitted as School IDs.");
       return;

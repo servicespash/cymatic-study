@@ -271,7 +271,7 @@ export function useProjectSubmissionSync(userId: string | undefined) {
 
   // Function to sync a project to Supabase
   const syncProject = useCallback(
-    async (project: Project, orgId?: string) => {
+    async (project: Project, organizationId?: string) => {
       if (!userId) return null;
 
       setSyncing(true);
@@ -281,7 +281,7 @@ export function useProjectSubmissionSync(userId: string | undefined) {
           .upsert({
             id: project.submissionId || undefined,
             student_id: userId,
-            org_id: orgId,
+            organization_id: organizationId,
             project_data: project as any,
             status: project.status,
           })

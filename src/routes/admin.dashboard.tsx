@@ -107,6 +107,7 @@ interface StudentRecord {
   created_at?: string;
   submissionCount?: number;
   avgScore?: number;
+  role?: string;
 }
 
 interface SubmissionRecord {
@@ -120,6 +121,8 @@ interface SubmissionRecord {
   status: string;
   created_at: string;
 }
+
+import { ReleaseDashboard } from "@/components/ReleaseDashboard";
 
 function AdminDashboard() {
   const { user, profile } = useAuth();
@@ -261,11 +264,11 @@ function AdminDashboard() {
   };
 
   const loadDashboardStats = async (orgId: string) => {
-    // 1. Fetch profiles by org_id
+    // 1. Fetch profiles by org_id or school_id
     const { data: allProfiles } = await supabase
       .from("profiles")
       .select("level, role")
-      .eq("org_id", orgId);
+      .or(`org_id.eq.${orgId},school_id.eq.${orgId}`);
 
     const counts = { S1: 0, S2: 0, S3: 0, S4: 0, S5: 0, S6: 0 };
     let studentCount = 0;
@@ -394,142 +397,18 @@ function AdminDashboard() {
     setLoadingList(true);
     try {
       // Load profiles/students
-      let { data: stdData } = await supabase
-        .from("profiles")
-        .select("id, user_id, display_name, level, stream, org_id, school_name, role")
-        .eq("org_id", orgId);
+      let { data: stdData } = await (supabase.from("profiles") as any)
+        .select("id, user_id, display_name, level, stream, org_id, school_id, school_name, role")
+        .or(`org_id.eq.${orgId},school_id.eq.${orgId}`);
 
       // Load project submissions
-      let { data: subData } = await supabase
-        .from("project_submissions")
+      let { data: subData } = await (supabase.from("project_submissions") as any)
         .select(
           "id, project_title, student_name, student_id, level, subject, score, teacher_name, status, created_at, org_id",
         )
         .eq("org_id", orgId);
 
-      // Seed default institutional roster and submissions in Supabase if database is empty
-      if (!stdData || stdData.length === 0) {
-        console.log("No roster found for school ID. Seeding default database profiles...");
-        try {
-          const defaultProfiles = [
-            {
-              user_id: "std-ug-2026-01",
-              display_name: "Kato Paul",
-              level: "S3",
-              stream: "North Stream",
-              role: "student",
-              org_id: orgId,
-              school_name: org?.name || "Uganda NCDC Boarding School",
-              tutor_persona: "academic",
-            },
-            {
-              user_id: "std-ug-2026-02",
-              display_name: "Namubiru Sarah",
-              level: "S4",
-              stream: "East Stream",
-              role: "student",
-              org_id: orgId,
-              school_name: org?.name || "Uganda NCDC Boarding School",
-              tutor_persona: "academic",
-            },
-            {
-              user_id: "std-ug-2026-03",
-              display_name: "Okello Emmanuel",
-              level: "S1",
-              stream: "West Stream",
-              role: "student_monitor",
-              org_id: orgId,
-              school_name: org?.name || "Uganda NCDC Boarding School",
-              tutor_persona: "academic",
-            },
-            {
-              user_id: "std-ug-2026-04",
-              display_name: "Akimana Grace",
-              level: "S6",
-              stream: "Science A",
-              role: "student",
-              org_id: orgId,
-              school_name: org?.name || "Uganda NCDC Boarding School",
-              tutor_persona: "academic",
-            },
-            {
-              user_id: "tch-ug-2026-01",
-              display_name: "Dr. Mukasa John",
-              level: "S4",
-              role: "teacher",
-              org_id: orgId,
-              school_name: org?.name || "Uganda NCDC Boarding School",
-              tutor_persona: "academic",
-            },
-            {
-              user_id: "tch-ug-2026-02",
-              display_name: "Tr. Nabirye Proscovia",
-              level: "S6",
-              role: "teacher",
-              org_id: orgId,
-              school_name: org?.name || "Uganda NCDC Boarding School",
-              tutor_persona: "academic",
-            },
-          ];
-          const { error: seedProfErr } = await supabase.from("profiles").insert(defaultProfiles);
-          if (!seedProfErr) {
-            // Re-fetch profiles
-            const { data: freshStd } = await supabase
-              .from("profiles")
-              .select("id, user_id, display_name, level, stream, org_id, school_name, role")
-              .eq("org_id", orgId);
-            if (freshStd) stdData = freshStd;
-          }
-        } catch (seedErr) {
-          console.warn("Auto-seeding profiles notice:", seedErr);
-        }
-      }
-
-      if (!subData || subData.length === 0) {
-        console.log("No submissions found. Seeding default database submissions...");
-        try {
-          const defaultSubmissions = [
-            {
-              project_title: "Solar Water Distillation Unit for Rural Communities",
-              student_name: "Kato Paul",
-              student_id: "std-ug-2026-01",
-              level: "S3",
-              subject: "Physics",
-              score: 82,
-              teacher_name: "Dr. Mukasa John",
-              status: "verified",
-              org_id: orgId,
-            },
-            {
-              project_title: "Organic Fertilizer Synthesis from Household Coffee Husks",
-              student_name: "Namubiru Sarah",
-              student_id: "std-ug-2026-02",
-              level: "S4",
-              subject: "Chemistry",
-              score: 88,
-              teacher_name: "Tr. Nabirye Proscovia",
-              status: "verified",
-              org_id: orgId,
-            },
-          ];
-          const { error: seedSubErr } = await supabase
-            .from("project_submissions")
-            .insert(defaultSubmissions);
-          if (!seedSubErr) {
-            // Re-fetch submissions
-            const { data: freshSub } = await supabase
-              .from("project_submissions")
-              .select(
-                "id, project_title, student_name, student_id, level, subject, score, teacher_name, status, created_at, org_id",
-              )
-              .eq("org_id", orgId);
-            if (freshSub) subData = freshSub;
-          }
-        } catch (seedSubErr) {
-          console.warn("Auto-seeding submissions notice:", seedSubErr);
-        }
-      }
-
+      // No auto-seeding of fake mock records; respect real institutional data integrity
       if (stdData && stdData.length > 0) {
         const mappedStudents: StudentRecord[] = stdData.map((s) => {
           const studentSubs =

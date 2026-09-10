@@ -22,6 +22,8 @@ export interface VelocityData {
 }
 
 export interface TeacherBottleneck {
-  teacher_name: string;
-  pending_count: number;
+  name: string;
+  verified: number;
+  pending: number;
+  ratio: number;
 }

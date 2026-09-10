@@ -30,7 +30,7 @@ export interface UICommandEvent extends BaseEvent {
   type: "ui_command";
   payload: {
     action: "open_widget" | "trigger_haptic" | "show_notification";
-    data: any;
+    data: unknown;
   };
 }
 

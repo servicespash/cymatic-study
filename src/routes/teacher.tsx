@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ExportPdfModal } from "@/components/ExportPdfModal";
 import { PrintableSummary, MarkedReportItem } from "@/components/PrintableSummary";
 import { ReportManager } from "@/components/ReportManager";
+import { useUnifiedSchoolId } from "@/hooks/useUnifiedSchoolId";
 import {
   FileText,
   CheckCircle,
@@ -71,14 +72,12 @@ export interface StudentSubmission {
 }
 
 function TeacherWorkflowPage() {
-  const { user, profile } = useAuth();
-  const currentSchoolId =
-    profile?.school_id || profile?.org_id || user?.user_metadata?.school_id || "SCH-UG-2026";
-
+  const { user, profile, organizationId } = useAuth();
+  const { schoolId: unifiedSchoolId } = useUnifiedSchoolId();
+  const currentSchoolId = unifiedSchoolId || organizationId || (profile as any)?.org_id || profile?.school_id || "";
   const teacherName = profile?.display_name || user?.email?.split("@")[0] || "Faculty Evaluator";
 
   const [submissions, setSubmissions] = useState<StudentSubmission[]>([]);
-
   const [selectedSubmission, setSelectedSubmission] = useState<StudentSubmission | null>(null);
   const [activeModeTab, setActiveModeTab] = useState<"grading" | "manager">("grading");
   const [selectedLevel, setSelectedLevel] = useState<string>("ALL");
@@ -114,34 +113,48 @@ function TeacherWorkflowPage() {
     async function loadSubmissions() {
       setLoadingData(true);
       try {
-        const { data: dbSubs } = await (supabase as any)
+        let query = (supabase as any)
           .from("project_submissions")
           .select("*")
           .order("created_at", { ascending: false });
 
+        if (currentSchoolId) {
+          query = query.eq("organization_id", currentSchoolId);
+        }
+
+        const { data: dbSubs, error: fetchError } = await query;
+
+        if (fetchError) {
+          if (fetchError.code === "PGRST205") {
+            console.warn("[Teacher] project_submissions table missing. Please run migrations.");
+          } else {
+            throw fetchError;
+          }
+        }
+
         if (dbSubs && dbSubs.length > 0) {
           const mapped: StudentSubmission[] = (dbSubs as any[]).map((s: any) => ({
             id: s.id,
-            student_name: s.student_name || "Scholar",
-            student_id: s.student_id || "STD-UG",
-            level: s.level || "S3",
-            stream: s.stream || "A",
-            subject: s.subject || "Physics",
-            project_title: s.project_title || "Continuous Assessment Project",
-            project_description: s.project_description || "Learner competency submission.",
-            submitted_at: s.created_at ? s.created_at.split("T")[0] : "2026-07-24",
+            student_name: s.student_name || "Unknown Student",
+            student_id: s.student_id || "STD-UNKNOWN",
+            level: s.level || "Unspecified",
+            stream: s.stream || "Unspecified",
+            subject: s.subject || "Unspecified",
+            project_title: s.project_title || "Untitled Assessment",
+            project_description: s.project_description || "No description provided.",
+            submitted_at: s.created_at ? s.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
             status: s.score !== null && s.score !== undefined ? "graded" : "pending",
             score: s.score || undefined,
             rubricScores: {
-              planning: Math.round((s.score || 80) * 0.3),
-              execution: Math.round((s.score || 80) * 0.4),
-              conclusion: Math.round((s.score || 80) * 0.3),
+              planning: Math.round((s.score || 0) * 0.3),
+              execution: Math.round((s.score || 0) * 0.4),
+              conclusion: Math.round((s.score || 0) * 0.3),
             },
             feedback: s.feedback || undefined,
             teacher_signature: s.teacher_name ? `Signed by ${s.teacher_name}` : undefined,
-            timePointsAwarded: 5,
-            xpAwarded: 50,
-            school_id: currentSchoolId,
+            timePointsAwarded: s.time_points || 5,
+            xpAwarded: s.award_points || 50,
+            school_id: s.org_id || s.school_id || currentSchoolId,
           }));
           setSubmissions(mapped);
           setSelectedSubmission(mapped[0] || null);
@@ -186,7 +199,7 @@ function TeacherWorkflowPage() {
         score: scoreVal,
         feedback: feedbackVal,
         teacher_name: typedSignature.trim(),
-        school_id: currentSchoolId,
+        organization_id: currentSchoolId,
         status: "graded",
       });
 

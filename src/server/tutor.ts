@@ -2,6 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 import { type ChatMessage, type TutorRequest } from "../types/tutor-api";
 import { getEnrichedGroundingPrompt } from "../lib/developer-grounding";
+import { sanitizeTutorResponse } from "../utils/tutor-sanitization";
 
 function getSupabaseRouteClient() {
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -68,9 +69,9 @@ CREATOR & SITE ARCHITECTURE AWARENESS:
 - If the user asks about the developer, how to contact him, or who made this app, proudly and accurately provide information about Isabirye Latif, recommend his verified emails, and guide them to explore his manifesto on cymatichub.xyz and resonance.cymatichub.xyz!`;
 
 export async function handleTutorRequest(request: Request) {
-  let user: any = null;
-  let profile: any = null;
-  let progress: any = null;
+  let user: unknown = null;
+  let profile: unknown = null;
+  let progress: unknown = null;
 
   // 1. Authenticate (fail-safe)
   try {
@@ -90,7 +91,7 @@ export async function handleTutorRequest(request: Request) {
         const { data: userProfile } = await supabase
           .from("profiles")
           .select("*")
-          .eq("user_id", user.id)
+          .eq("user_id", authUser.id)
           .maybeSingle();
         profile = userProfile;
       }
@@ -100,7 +101,7 @@ export async function handleTutorRequest(request: Request) {
   }
 
   const body = (await request.json().catch(() => ({}))) as TutorRequest;
-  const { messages, userName = profile?.full_name || "learner", subject = "general" } = body;
+  const { messages, userName = (profile as any)?.full_name || "learner", subject = "general" } = body;
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return new Response(JSON.stringify({ error: "No messages provided" }), { status: 400 });
@@ -113,7 +114,7 @@ export async function handleTutorRequest(request: Request) {
       const { data: userProgress } = await supabase
         .from("curriculum_progress")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", (user as any).id)
         .eq("subject", subject);
       progress = userProgress;
     } catch (e) {
@@ -156,20 +157,14 @@ Your task is to provide personalized, Socratic guidance based on this specific s
     useFallback = true;
   }
 
-  // Format previous messages for context
-  const historyText = sanitizedMessages
-    .slice(0, -1)
-    .map((m) => `${m.role === "user" ? "Student" : "Tutor"}: ${m.content}`)
-    .join("\n\n");
+  // Format previous messages for context using native roles
+  const contents = sanitizedMessages.map((m) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  }));
 
-  const currentMessage = sanitizedMessages[sanitizedMessages.length - 1]?.content || "";
-
-  const finalPrompt = historyText
-    ? `Below is the conversation history so far. Review it carefully, then respond to the Student's latest query at the end.\n\n=== CONVERSATION HISTORY ===\n${historyText}\n============================\n\nStudent's latest query: ${currentMessage}`
-    : currentMessage;
-
-  let responseStreamPromise: any = null;
-  const modelsToTry = ["gemini-3.7-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"];
+  let responseStreamPromise: Promise<any> | null = null;
+  const modelsToTry = ["gemini-3.1-flash-lite", "gemini-2.5-flash", "gemini-2.0-flash"];
 
   if (!useFallback && aiClient) {
     for (const modelName of modelsToTry) {
@@ -178,17 +173,19 @@ Your task is to provide personalized, Socratic guidance based on this specific s
 
       while (attempts < maxAttempts) {
         try {
-          responseStreamPromise = await aiClient.models.generateContentStream({
+          responseStreamPromise = aiClient.models.generateContentStream({
             model: modelName,
-            contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
+            contents,
             config: {
               systemInstruction: systemPrompt,
             },
           });
+          // Wait for the stream to establish
+          await responseStreamPromise;
           break;
-        } catch (genErr: any) {
+        } catch (genErr: unknown) {
           attempts++;
-          const errStr = genErr?.message || String(genErr);
+          const errStr = (genErr as Error)?.message || String(genErr);
           const isTransient =
             errStr.includes("503") ||
             errStr.includes("UNAVAILABLE") ||
@@ -240,7 +237,7 @@ Your task is to provide personalized, Socratic guidance based on this specific s
               role: m.role,
               content: m.content,
             })),
-            persona: subject === "physics" || subject === "mathematics" ? "male" : "female",
+            persona: subject === "physics" || subject === "mathematics" ? "Adams" : "Haawa",
             userName,
             subject,
           }),
@@ -279,18 +276,20 @@ Your task is to provide personalized, Socratic guidance based on this specific s
         const responseStream = await responseStreamPromise;
         for await (const chunk of responseStream) {
           if (chunk.text) {
+            // Sanitize response: strip out collateral character sequences like //**
+            const sanitizedText = sanitizeTutorResponse(chunk.text);
             controller.enqueue(
               encoder.encode(
                 `data: ${JSON.stringify({
-                  choices: [{ delta: { content: chunk.text } }],
+                  choices: [{ delta: { content: sanitizedText } }],
                 })}\n\n`,
               ),
             );
           }
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("[Tutor Server] Error streaming from Gemini API:", err);
-        const errStr = err?.message || String(err);
+        const errStr = (err as Error)?.message || String(err);
         const isQuotaOrDemand =
           errStr.includes("429") ||
           errStr.includes("503") ||

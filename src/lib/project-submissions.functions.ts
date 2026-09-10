@@ -249,6 +249,12 @@ export async function loadMyDraftSubmission() {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("org_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
   try {
     const { data, error } = await supabase
       .from("project_submissions")
@@ -256,6 +262,7 @@ export async function loadMyDraftSubmission() {
         "id,status,project_data,phase1_score,phase2_score,phase3_score,phase4_score,total_competency_score,teacher_name,teacher_comments,verified_at,is_verified",
       )
       .eq("student_user_id", user.id)
+      .eq("org_id", profile?.org_id ?? null)
       .order("updated_at", { ascending: false })
       .limit(1)
       .maybeSingle();

@@ -44,24 +44,7 @@ export function StaffManagementTable() {
       if (queryError) {
         console.error("Error fetching staff profiles:", queryError.message);
         setError(queryError.message);
-        // Fallback mock data if RLS or schema cache error occurs
-        setStaff([
-          {
-            user_id: "mock-1",
-            full_name: "Dr. Sarah Namubiru",
-            email: "sarah.namubiru@school.ac.ug",
-            role: "head_teacher",
-            school_id: "UG-SCH-001",
-          },
-          {
-            user_id: "mock-2",
-            full_name: "Mr. Kato John",
-            email: "kato.john@school.ac.ug",
-            role: "teacher",
-            school_id: "UG-SCH-001",
-          },
-        ]);
-        toast.warning("Loaded fallback staff records due to database policy restriction.");
+        setStaff([]);
       } else {
         setStaff(data || []);
       }

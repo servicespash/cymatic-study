@@ -13,7 +13,7 @@ export interface UserRoleState {
   isAdmin: boolean;
   isIndependent: boolean;
   isInstitutional: boolean;
-  schoolId: string | null;
+  organizationId: string | null;
   schoolName: string | null;
   loading: boolean;
   error: string | null;
@@ -51,7 +51,7 @@ export function useUserRole(): UserRoleState {
   const { user, profile, loading: authLoading } = useAuth();
   const [role, setRole] = useState<UserRole>("student");
   const [rawRole, setRawRole] = useState<string>("student");
-  const [schoolId, setSchoolId] = useState<string | null>(null);
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [schoolName, setSchoolName] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +60,7 @@ export function useUserRole(): UserRoleState {
     if (!user) {
       setRole("student");
       setRawRole("student");
-      setSchoolId(null);
+      setOrganizationId(null);
       setSchoolName(null);
       setLoading(false);
       return;
@@ -71,7 +71,7 @@ export function useUserRole(): UserRoleState {
 
     try {
       let fetchedRawRole: string | null = null;
-      let fetchedSchoolId: string | null = null;
+      let fetchedOrganizationId: string | null = null;
       let fetchedSchoolName: string | null = null;
 
       // 1. Attempt secure RPC call if configured on Supabase backend
@@ -90,13 +90,13 @@ export function useUserRole(): UserRoleState {
       if (!fetchedRawRole) {
         const { data: profData, error: profError } = await supabase
           .from("profiles")
-          .select("role, org_id, school_id, school_name")
+          .select("role, organization_id, school_name")
           .eq("user_id", user.id)
           .maybeSingle();
 
         if (!profError && profData) {
           fetchedRawRole = profData.role || null;
-          fetchedSchoolId = profData.school_id || profData.org_id || null;
+          fetchedOrganizationId = profData.organization_id || null;
           fetchedSchoolName = profData.school_name || null;
         }
       }
@@ -106,28 +106,18 @@ export function useUserRole(): UserRoleState {
         fetchedRawRole = profile?.role || user.user_metadata?.role || "student";
       }
 
-      if (!fetchedSchoolId) {
-        fetchedSchoolId =
-          profile?.school_id ||
-          profile?.org_id ||
-          user.user_metadata?.school_id ||
+      if (!fetchedOrganizationId) {
+        fetchedOrganizationId =
+          profile?.organization_id ||
+          user.user_metadata?.organization_id ||
           user.user_metadata?.org_id ||
           null;
       }
 
-      if (!fetchedSchoolName) {
-        fetchedSchoolName = profile?.school_name || user.user_metadata?.school_name || null;
-      }
-
-      const isUuid = (val: string | null | undefined): boolean => {
-        if (!val) return false;
-        return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
-      };
-
       const normalized = normalizeRole(fetchedRawRole);
       setRawRole(fetchedRawRole || "student");
       setRole(normalized);
-      setSchoolId(isUuid(fetchedSchoolId) ? null : fetchedSchoolId);
+      setOrganizationId(fetchedOrganizationId);
       setSchoolName(fetchedSchoolName);
     } catch (err: any) {
       console.warn("Secure role verification notice:", err);
@@ -173,7 +163,7 @@ export function useUserRole(): UserRoleState {
     isAdmin,
     isIndependent,
     isInstitutional,
-    schoolId,
+    organizationId,
     schoolName,
     loading: authLoading || loading,
     error,

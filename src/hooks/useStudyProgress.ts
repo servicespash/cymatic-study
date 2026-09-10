@@ -64,7 +64,7 @@ export function getDefaultSubjectProgress(userId = "guest"): StudyProgress[] {
  * with background synchronization, optimistic updates, and offline/guest fallbacks.
  */
 export function useStudyProgress() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [progress, setProgress] = useState<StudyProgress[]>(() =>
     getDefaultSubjectProgress(user?.id || "guest"),
   );
@@ -123,11 +123,20 @@ export function useStudyProgress() {
         return;
       }
 
+      const currentSchoolId = profile?.org_id;
+
       // Query learning progress from Supabase
-      const { data, error: supabaseError } = await supabase
+      let query = supabase
         .from("curriculum_progress")
         .select("*")
         .eq("user_id", user.id);
+
+      if (currentSchoolId) {
+        // Only apply if the table has these columns
+        query = query.eq("org_id", currentSchoolId);
+      }
+
+      const { data, error: supabaseError } = await query;
 
       if (supabaseError) {
         throw supabaseError;
@@ -221,6 +230,11 @@ export function useStudyProgress() {
           completed_percentage: clampedPercentage,
           updated_at: now,
         };
+
+        if (profile?.school_id || profile?.org_id) {
+          (payload as any).school_id = profile.school_id || profile.org_id;
+          (payload as any).org_id = profile.school_id || profile.org_id;
+        }
 
         if (existingItem?.id) {
           payload.id = existingItem.id;

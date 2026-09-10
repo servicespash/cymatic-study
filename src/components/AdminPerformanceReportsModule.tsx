@@ -65,7 +65,7 @@ export async function fetchAndAggregatePerformanceData(
   const { data: dbSubmissions } = await supabase
     .from("project_submissions")
     .select("*")
-    .or(`org_id.eq.${currentSchoolId},school_id.eq.${currentSchoolId}`);
+    .eq("organization_id", currentSchoolId);
 
   if (dbSubmissions && dbSubmissions.length > 0) {
     const mapped: StudentPerformanceReportItem[] = dbSubmissions.map((s) => ({
@@ -111,88 +111,19 @@ export async function fetchAndAggregatePerformanceData(
     return { reportsData: mapped, classAverages: calculatedAverages };
   }
 
-  // Fallback mock dataset if database returns empty
-  const fallbackReports: StudentPerformanceReportItem[] = [
-    {
-      id: "REP-101",
-      studentName: "Kato Paul",
-      studentId: "STD-UG2026-01",
-      level: "S3",
-      stream: "North Stream",
-      subject: "Physics",
-      projectTitle: "Solar Water Distillation Unit for Rural Communities",
-      score: 82,
-      status: "GRADED & SIGNED",
-      teacherSignature: "Dr. Mukasa (Official Stamp 0x94A)",
-      submittedAt: "2026-07-24",
-    },
-    {
-      id: "REP-102",
-      studentName: "Namubiru Sarah",
-      studentId: "STD-UG2026-02",
-      level: "S4",
-      stream: "East Stream",
-      subject: "Chemistry",
-      projectTitle: "Organic Fertilizer Synthesis from Household Coffee Husks",
-      score: 88,
-      status: "GRADED & SIGNED",
-      teacherSignature: "Tr. Nabirye (Handwritten Seal 0x31B)",
-      submittedAt: "2026-07-23",
-    },
-    {
-      id: "REP-103",
-      studentName: "Okello Emmanuel",
-      studentId: "STD-UG2026-03",
-      level: "S1",
-      stream: "West Stream",
-      subject: "Biology",
-      projectTitle: "Local Plant Taxonomy & Herbarium Collection",
-      score: 76,
-      status: "GRADED & SIGNED",
-      teacherSignature: "Dr. Mukasa (Verified ID)",
-      submittedAt: "2026-07-22",
-    },
-    {
-      id: "REP-104",
-      studentName: "Akimana Grace",
-      studentId: "STD-UG2026-04",
-      level: "S6",
-      stream: "Science A",
-      subject: "Mathematics",
-      projectTitle: "Epidemiological Growth Curve Modeling for Regional Health Data",
-      score: 94,
-      status: "GRADED & SIGNED",
-      teacherSignature: "Prof. Ssemwanga (Digital Seal 0x82C)",
-      submittedAt: "2026-07-21",
-    },
-    {
-      id: "REP-105",
-      studentName: "Tumusiime Brian",
-      studentId: "STD-UG2026-05",
-      level: "S2",
-      stream: "Central Stream",
-      subject: "Physics",
-      projectTitle: "Hydroelectric Turbine Prototype using Recycled Plastics",
-      score: 80,
-      status: "GRADED & SIGNED",
-      teacherSignature: "Dr. Mukasa (Handwritten Seal)",
-      submittedAt: "2026-07-20",
-    },
-  ];
-
-  return { reportsData: fallbackReports, classAverages: fallbackAverages };
+  return { reportsData: [], classAverages: fallbackAverages };
 }
 
 export function AdminPerformanceReportsModule() {
-  const { user, profile } = useAuth();
+  const { user, profile, organizationId } = useAuth();
   const currentSchoolId = useMemo(
     () =>
-      profile?.school_id ||
-      profile?.org_id ||
-      user?.user_metadata?.school_id ||
+      organizationId ||
+      profile?.organization_id ||
+      user?.user_metadata?.organization_id ||
       (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : "") ||
       "SCH-UG-2026",
-    [profile, user],
+    [profile, user, organizationId],
   );
 
   const schoolName = profile?.school_name || "Uganda NCDC Boarding Institution";
@@ -225,7 +156,7 @@ export function AdminPerformanceReportsModule() {
         .select(
           "id, student_name, student_id, level, stream, subject, project_title, score, status, teacher_name, created_at",
         )
-        .or(`org_id.eq.${currentSchoolId},school_id.eq.${currentSchoolId}`);
+        .eq("organization_id", currentSchoolId);
 
       const fallbackAverages = {
         S1: { avg: 76, count: 18 },
@@ -280,75 +211,7 @@ export function AdminPerformanceReportsModule() {
         setReportsData(mapped);
         setClassAverages(calculatedAverages);
       } else {
-        // Fallback mock dataset if database returns empty
-        const fallbackReports: StudentPerformanceReportItem[] = [
-          {
-            id: "REP-101",
-            studentName: "Kato Paul",
-            studentId: "STD-UG2026-01",
-            level: "S3",
-            stream: "North Stream",
-            subject: "Physics",
-            projectTitle: "Solar Water Distillation Unit for Rural Communities",
-            score: 82,
-            status: "GRADED & SIGNED",
-            teacherSignature: "Dr. Mukasa (Official Stamp 0x94A)",
-            submittedAt: "2026-07-24",
-          },
-          {
-            id: "REP-102",
-            studentName: "Namubiru Sarah",
-            studentId: "STD-UG2026-02",
-            level: "S4",
-            stream: "East Stream",
-            subject: "Chemistry",
-            projectTitle: "Organic Fertilizer Synthesis from Household Coffee Husks",
-            score: 88,
-            status: "GRADED & SIGNED",
-            teacherSignature: "Tr. Nabirye (Handwritten Seal 0x31B)",
-            submittedAt: "2026-07-23",
-          },
-          {
-            id: "REP-103",
-            studentName: "Okello Emmanuel",
-            studentId: "STD-UG2026-03",
-            level: "S1",
-            stream: "West Stream",
-            subject: "Biology",
-            projectTitle: "Local Plant Taxonomy & Herbarium Collection",
-            score: 76,
-            status: "GRADED & SIGNED",
-            teacherSignature: "Dr. Mukasa (Verified ID)",
-            submittedAt: "2026-07-22",
-          },
-          {
-            id: "REP-104",
-            studentName: "Akimana Grace",
-            studentId: "STD-UG2026-04",
-            level: "S6",
-            stream: "Science A",
-            subject: "Mathematics",
-            projectTitle: "Epidemiological Growth Curve Modeling for Regional Health Data",
-            score: 94,
-            status: "GRADED & SIGNED",
-            teacherSignature: "Prof. Ssemwanga (Digital Seal 0x82C)",
-            submittedAt: "2026-07-21",
-          },
-          {
-            id: "REP-105",
-            studentName: "Tumusiime Brian",
-            studentId: "STD-UG2026-05",
-            level: "S2",
-            stream: "Central Stream",
-            subject: "Physics",
-            projectTitle: "Hydroelectric Turbine Prototype using Recycled Plastics",
-            score: 80,
-            status: "GRADED & SIGNED",
-            teacherSignature: "Dr. Mukasa (Handwritten Seal)",
-            submittedAt: "2026-07-20",
-          },
-        ];
-        setReportsData(fallbackReports);
+        setReportsData([]);
         setClassAverages(fallbackAverages);
       }
     } catch (err) {

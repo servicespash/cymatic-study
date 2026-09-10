@@ -26,11 +26,11 @@ import { toast } from "sonner";
 interface ExportPdfModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
   subject?: string;
-  docType: "study_chart" | "lesson_notes" | "quiz";
+  docType?: "study_chart" | "lesson_notes" | "quiz";
   showAnswers?: boolean;
-  content: {
+  content?: {
     sectionTitle: string;
     body:
       | string
@@ -43,11 +43,11 @@ interface ExportPdfModalProps {
 export function ExportPdfModal({
   isOpen,
   onClose,
-  title,
+  title = "Academic Study Summary",
   subject = "General",
-  docType,
+  docType = "study_chart",
   showAnswers = false,
-  content,
+  content = [],
 }: ExportPdfModalProps) {
   const [isBW, setIsBW] = useState(false);
   const [paperSize, setPaperSize] = useState<"a4" | "letter">("a4");
@@ -68,11 +68,11 @@ export function ExportPdfModal({
         if (user) {
           const { data: profile } = await supabase
             .from("profiles")
-            .select("full_name")
+            .select("display_name")
             .eq("user_id", user.id)
             .single();
-          if (profile?.full_name) {
-            setUserName(profile.full_name);
+          if (profile?.display_name) {
+            setUserName(profile.display_name);
           } else if (user.email) {
             setUserName(user.email.split("@")[0]);
           }

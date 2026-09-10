@@ -24,7 +24,7 @@ interface UserProfileCardProps {
 }
 
 export function UserProfileCard({ className = "", showActions = true }: UserProfileCardProps) {
-  const { user, profile, signOut, isInstitutional, isTeacher, isAdmin } = useAuth();
+  const { user, profile, signOut, isInstitutional, isTeacher, isAdmin, organizationId } = useAuth();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -49,7 +49,7 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
   }
 
   const schoolId =
-    profile?.school_id || profile?.org_id || localStorage.getItem("cymatic_school_id");
+    profile?.organization_id || profile?.school_id || localStorage.getItem("cymatic_school_id");
   const schoolName = profile?.school_name || "Uganda NCDC Member School";
   const displayName =
     profile?.display_name || profile?.full_name || user.email?.split("@")[0] || "Scholar";
@@ -61,6 +61,8 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
       : isInstitutional
         ? "Institutional Scholar"
         : "Independent Scholar";
+
+  const displaySchoolId = organizationId || schoolId;
 
   const handleCopySchoolId = () => {
     if (!schoolId) {
@@ -121,7 +123,7 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
             <div className="pt-1.5 flex items-center gap-2 text-xs">
               <Building className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
               <span className="text-foreground/90 font-medium truncate">
-                {schoolId ? schoolName : "Independent / Custom School"}
+                {displaySchoolId ? schoolName : "Independent / Custom School"}
               </span>
             </div>
           </div>
@@ -137,12 +139,12 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
                   School ID
                 </span>
                 <span className="text-xs font-mono font-bold text-foreground">
-                  {schoolId || "Not Configured"}
+                  {displaySchoolId || "Not Configured"}
                 </span>
               </div>
             </div>
 
-            {schoolId ? (
+            {displaySchoolId ? (
               <button
                 onClick={handleCopySchoolId}
                 className="h-8 px-2.5 rounded-xl bg-background border border-border hover:border-primary/40 text-xs font-semibold flex items-center gap-1 transition-colors"

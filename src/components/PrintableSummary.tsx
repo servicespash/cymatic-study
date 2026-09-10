@@ -63,17 +63,17 @@ export function PrintableSummary({
         if (user) {
           const { data: profile } = await supabase
             .from("profiles")
-            .select("full_name, school_id, org_id")
+            .select("display_name, org_id")
             .eq("user_id", user.id)
             .maybeSingle();
 
           if (!customStudentName) {
-            if (profile?.full_name) setDisplayName(profile.full_name);
+            if (profile?.display_name) setDisplayName(profile.display_name);
             else if (user.email) setDisplayName(user.email.split("@")[0]);
           }
 
           if (!customSchoolName) {
-            const sch = user.user_metadata?.school_name || profile?.school_id || profile?.org_id;
+            const sch = user.user_metadata?.school_name || profile?.org_id;
             if (sch) setSchoolName(sch);
           }
         }

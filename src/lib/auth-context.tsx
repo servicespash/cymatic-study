@@ -42,9 +42,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       const activeUser = currentUser || userRef.current;
-      const metaSchoolId =
-        activeUser?.user_metadata?.school_id ||
+      const metaOrgId =
+        activeUser?.user_metadata?.organization_id ||
         activeUser?.user_metadata?.org_id ||
+        activeUser?.user_metadata?.school_id ||
         (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : null);
 
       const metaSchoolName =
@@ -55,31 +56,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data) {
-        let schoolIdToUse = data.org_id || data.school_id || metaSchoolId || null;
+        let organizationIdToUse = data.organization_id || metaOrgId || null;
         let schoolNameToUse = data.school_name || metaSchoolName || null;
         const role = data.role || "student";
 
+        // STRICT VERIFICATION: Verify assigned organization_id matches context
+        if (data.organization_id && metaOrgId && data.organization_id !== metaOrgId) {
+          console.error(`SECURITY WARNING: Organizational mismatch detected for user ${userId}. Claimed: ${metaOrgId}, Actual: ${data.organization_id}`);
+          setLoading(false);
+          signOut();
+          notifications.error(
+            "Security Mismatch",
+            "Access denied. Your account record does not match the current institutional context."
+          );
+          return;
+        }
+
+        // VALIDATION: Ensure institutional roles have a valid organization_id
+        const isInstitutionalRole = ["teacher", "admin", "org_admin"].includes(role);
+        if (isInstitutionalRole && !organizationIdToUse) {
+          console.warn("Institutional user missing organization_id validation.");
+        }
+
         // Auto-generate for admin/org_admin if missing
-        if ((role === "admin" || role === "org_admin") && !schoolIdToUse) {
-          schoolIdToUse = `SCH-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+        if ((role === "admin" || role === "org_admin") && !organizationIdToUse) {
+          organizationIdToUse = `SCH-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
           if (!schoolNameToUse) {
             schoolNameToUse = `${data.display_name || "Admin"}'s Academy`;
           }
           supabase
             .from("profiles")
             .update({
-              school_id: schoolIdToUse,
-              org_id: schoolIdToUse,
+              organization_id: organizationIdToUse,
               school_name: schoolNameToUse,
             })
             .eq("user_id", userId)
             .then(({ error: updateErr }) => {
-              if (updateErr) console.warn("Error auto-updating admin school ID:", updateErr);
+              if (updateErr) console.warn("Error auto-updating admin organization ID:", updateErr);
             });
         }
 
-        if (schoolIdToUse && typeof window !== "undefined") {
-          localStorage.setItem("cymatic_school_id", schoolIdToUse);
+        if (organizationIdToUse && typeof window !== "undefined") {
+          localStorage.setItem("cymatic_school_id", organizationIdToUse);
         }
 
         const constructedProfile: UserProfile = {
@@ -87,9 +105,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           display_name: data.display_name || activeUser?.email?.split("@")[0] || "Scholar",
           avatar_url: data.avatar_url,
           role: role,
-          org_id: schoolIdToUse,
+          organization_id: organizationIdToUse,
           school_name: schoolNameToUse,
-          school_id: schoolIdToUse,
+          school_id: organizationIdToUse,
           teacher_license_id: data.teacher_license_id,
           full_name: data.display_name,
           username: data.username || activeUser?.email?.split("@")[0] || null,
@@ -97,20 +115,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
         setProfile(constructedProfile);
       } else {
-        let schoolIdToUse = metaSchoolId || null;
+        let organizationIdToUse = metaOrgId || null;
         let schoolNameToUse = metaSchoolName || null;
         const role = activeUser?.user_metadata?.role || "student";
 
-        if ((role === "admin" || role === "org_admin") && !schoolIdToUse) {
-          schoolIdToUse = `SCH-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+        if ((role === "admin" || role === "org_admin") && !organizationIdToUse) {
+          organizationIdToUse = `SCH-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
           schoolNameToUse = `${activeUser?.user_metadata?.full_name || "Admin"}'s Academy`;
 
           supabase
             .from("profiles")
             .upsert({
               user_id: userId,
-              school_id: schoolIdToUse,
-              org_id: schoolIdToUse,
+              organization_id: organizationIdToUse,
               school_name: schoolNameToUse,
               role: role,
               display_name:
@@ -120,12 +137,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             })
             .then(({ error: upsertErr }) => {
               if (upsertErr)
-                console.warn("Error upserting admin profile with generated school ID:", upsertErr);
+                console.warn("Error upserting admin profile with generated organization ID:", upsertErr);
             });
         }
 
-        if (schoolIdToUse && typeof window !== "undefined") {
-          localStorage.setItem("cymatic_school_id", schoolIdToUse);
+        if (organizationIdToUse && typeof window !== "undefined") {
+          localStorage.setItem("cymatic_school_id", organizationIdToUse);
         }
 
         const fallbackProfile: UserProfile = {
@@ -134,9 +151,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             activeUser?.user_metadata?.full_name || activeUser?.email?.split("@")[0] || "Scholar",
           avatar_url: activeUser?.user_metadata?.avatar_url || null,
           role: role,
-          org_id: schoolIdToUse,
+          organization_id: organizationIdToUse,
           school_name: schoolNameToUse,
-          school_id: schoolIdToUse,
+          school_id: organizationIdToUse,
           teacher_license_id: null,
           full_name: activeUser?.user_metadata?.full_name || null,
           username: activeUser?.email?.split("@")[0] || null,
@@ -210,13 +227,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const rawRole = profile?.role || user?.user_metadata?.role || "student";
   const role: UserRole = normalizeRole(rawRole);
 
-  const schoolId = profile?.school_id || profile?.org_id || user?.user_metadata?.school_id || null;
+  const organizationId = profile?.organization_id || user?.user_metadata?.organization_id || user?.user_metadata?.org_id || null;
   const schoolName = profile?.school_name || user?.user_metadata?.school_name || null;
 
   const isStudent = role === "student";
   const isTeacher = role === "teacher";
   const isAdmin = role === "admin";
-  const isInstitutional = !!schoolId;
+  const isInstitutional = !!organizationId;
   const isGuestMode = !loading && !user;
 
   const hasRole = useCallback(
@@ -250,7 +267,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isTeacher,
       isAdmin,
       isGuestMode,
-      schoolId,
+      organizationId,
       schoolName,
       signOut,
       refreshProfile,
@@ -269,7 +286,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isTeacher,
       isAdmin,
       isGuestMode,
-      schoolId,
+      organizationId,
       schoolName,
       signOut,
       refreshProfile,

@@ -5,15 +5,18 @@ import type { UserRole } from "@/hooks/useUserRole";
 export interface UserProfile {
   user_id: string;
   display_name: string | null;
-  avatar_url: string | null;
+  avatar_url?: string | null;
   role: string | null;
-  org_id: string | null;
-  school_name: string | null;
-  school_id: string | null;
-  teacher_license_id: string | null;
-  full_name: string | null;
-  username: string | null;
-  phone: string | null;
+  organization_id?: string | null;
+  org_id?: string | null;
+  school_name?: string | null;
+  school_id?: string | null;
+  teacher_license_id?: string | null;
+  full_name?: string | null;
+  username?: string | null;
+  phone?: string | null;
+  level?: string | null;
+  uneb_index?: string | null;
 }
 
 export type AuthCtx = {
@@ -28,7 +31,7 @@ export type AuthCtx = {
   isTeacher: boolean;
   isAdmin: boolean;
   isGuestMode: boolean;
-  schoolId: string | null;
+  organizationId: string | null;
   schoolName: string | null;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -48,7 +51,7 @@ export const Ctx = createContext<AuthCtx>({
   isTeacher: false,
   isAdmin: false,
   isGuestMode: false,
-  schoolId: null,
+  organizationId: null,
   schoolName: null,
   signOut: async () => {},
   refreshProfile: async () => {},

@@ -118,6 +118,10 @@ function SignupPage() {
     }
 
     try {
+      // Role locking check: check if a profile already exists for this email
+      // Note: Supabase auth.signUp already checks for existing users, 
+      // but we want to be explicit about role-locking.
+      
       const mappedRole =
         mode === "register-institution"
           ? "admin"
@@ -146,7 +150,12 @@ function SignupPage() {
         },
       });
 
-      if (signUpError) throw signUpError;
+      if (signUpError) {
+        if (signUpError.message.toLowerCase().includes("already registered")) {
+          throw new Error("This email is already active in use. Each account is locked to its original role (Admin, Teacher, or Student). To change roles, please contact system support or use a different institutional email.");
+        }
+        throw signUpError;
+      }
       if (!data.user) throw new Error("Signup did not return a user.");
 
       // Safe non-privileged profile values update
@@ -174,15 +183,45 @@ function SignupPage() {
         if (!issuedSchoolId) throw new Error("Server did not return a School ID. Please retry.");
       } else if (mode === "join-teacher" || mode === "join-student") {
         if (cleanSchoolId) {
-          const { error: enrollErr } = await (supabase as any).rpc("enroll_self_in_school", {
-            _school_key: cleanSchoolId,
-            _level: "S1",
-            _phone: cleanPhone || null,
-          });
-          if (enrollErr) {
-            setInfo(
-              `We couldn't link to School ID "${cleanSchoolId}". You can bind manually later inside Settings.`,
-            );
+          try {
+            const { data: orgData } = await (supabase as any).rpc("lookup_organization_by_key", {
+              _school_key: cleanSchoolId,
+            });
+            let resolvedOrgId = null;
+            let resolvedOrgName = null;
+            if (orgData && orgData.length > 0) {
+              resolvedOrgId = orgData[0].id;
+              resolvedOrgName = orgData[0].name;
+            } else {
+              const { data: orgDirect } = await supabase
+                .from("organizations")
+                .select("id, name")
+                .ilike("school_key", cleanSchoolId)
+                .maybeSingle();
+              if (orgDirect) {
+                resolvedOrgId = orgDirect.id;
+                resolvedOrgName = orgDirect.name;
+              }
+            }
+
+            if (resolvedOrgId) {
+              profilePatch.org_id = resolvedOrgId;
+              profilePatch.school_name = resolvedOrgName;
+            }
+
+            const { error: enrollErr } = await (supabase as any).rpc("enroll_self_in_school", {
+              _school_key: cleanSchoolId,
+              _level: "S1",
+              _phone: cleanPhone || null,
+            });
+            if (enrollErr) {
+              console.warn("Enroll RPC notice:", enrollErr);
+            }
+            if (typeof window !== "undefined") {
+              localStorage.setItem("cymatic_school_id", cleanSchoolId);
+            }
+          } catch (enrollEx) {
+            console.warn("School enrollment exception:", enrollEx);
           }
         }
       }
@@ -210,7 +249,7 @@ function SignupPage() {
 
       if (data.session) {
         toast.success("Account created successfully!", { id: toastId });
-        if (mappedRole === "admin" || mappedRole === "org_admin") {
+        if (mappedRole === "admin") {
           navigate({ to: "/admin/dashboard" });
         } else {
           navigate({ to: "/dashboard" });
