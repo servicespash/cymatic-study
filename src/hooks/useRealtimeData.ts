@@ -23,7 +23,7 @@ export function useRealtimeData<T>(
     | "submissions"
     | "reports"
     | "project_submissions"
-    | "dashboard_tasks",
+    | "daily_tasks",
   schema: z.ZodObject<any>,
   event: "INSERT" | "UPDATE" | "DELETE" | "*" = "*",
   dependencies: any[] = [],

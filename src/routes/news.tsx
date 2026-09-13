@@ -1,27 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, useRef } from "react";
+import { useEffect } from "react";
 import { FoundersSpotlight } from "@/components/FoundersSpotlight";
 import { toast } from "sonner";
 import { NewsFeed } from "@/components/NewsFeed";
-import { useRealtimeData } from "@/hooks/useRealtimeData";
-import { useUserRole } from "@/hooks/useUserRole";
-import { cn } from "@/lib/utils";
-import { NewsItem } from "@/lib/supabase-service";
-import { LiveBadge } from "@/components/LiveBadge";
-import { useLiveSession } from "@/hooks/useLiveSession";
+import { useNewsFeed } from "@/lib/supabase-service";
 import { RoleGuard } from "@/components/RoleGuard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import {
-  Play,
-  Pause,
-  SkipForward,
-  SkipBack,
-  Volume2,
-  VolumeX,
-  Radio,
-  RefreshCw,
-  Database,
-} from "lucide-react";
+import { RefreshCw, Database } from "lucide-react";
 
 export const Route = createFileRoute("/news")({
   head: () => ({ meta: [{ title: "News & Podcasts — Latty's Cymatic Study" }] }),
@@ -32,524 +17,59 @@ export const Route = createFileRoute("/news")({
   ),
 });
 
-// Represents the parsed JSON body for rich media types
-type ParsedBody = {
-  description?: string;
-  subject?: string;
-  speaker?: string;
-  instructor?: string;
-  duration?: string;
-  scheduled_at?: string;
-  achievement?: string;
-  school?: string;
-};
-
-import { NewsItemSchema } from "@/lib/schema";
-// ... (keep imports)
-
 function NewsPage() {
-  const { organizationId } = useUserRole();
-  const {
-    data: items,
-    loading,
-    error,
-  } = useRealtimeData<NewsItem>(
-    "news_broadcasts",
-    NewsItemSchema,
-    "*",
-    [organizationId],
-    organizationId,
-  );
-  const refreshing = false; // Real-time doesn't need explicit refresh
-
-  const refreshNews = async () => {
-    /* no-op in real-time */
-  };
-  // ... (keep rest)
+  const { items, loading, error, refreshFeed } = useNewsFeed();
 
   useEffect(() => {
     if (error) {
-      toast.error(`Failed to load news feed: ${error}`);
+      toast.error(`Failed to load news feed: ${error.message}`);
     }
   }, [error]);
 
-  const handleRefresh = async () => {
-    await refreshNews();
-    toast.success("Content feed updated successfully!");
-  };
-
-  // Podcast Player State
-  const [currentPodIndex, setCurrentPodIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(0.8);
-  const [isMuted, setIsMuted] = useState(false);
-
-  const audioRef = useRef<HTMLAudioElement>(null);
-
-  // Extract podcasts from items
-  const podcastEpisodes = items
-    .filter((item) =>
-      ["podcast", "audio", "audiobook", "video_podcast"].includes(item.media_type || ""),
-    )
-    .map((item) => {
-      let parsed: ParsedBody = {};
-      try {
-        parsed = JSON.parse(item.body);
-      } catch (e) {
-        parsed = { description: item.body };
-      }
-      return {
-        id: item.id,
-        title: item.title,
-        subject: parsed.subject || "General",
-        description: parsed.description || "",
-        audioUrl: item.media_url || "",
-        mediaType: item.media_type,
-        duration: parsed.duration || "0:00",
-        speaker: parsed.speaker || "Unknown",
-        category: item.category,
-      };
-    });
-
-  const activePodcast = podcastEpisodes[currentPodIndex] || null;
-  const isLiveActive =
-    useLiveSession(activePodcast?.audioUrl) || activePodcast?.category === "live";
-
-  // Audio Side Effects
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = isMuted ? 0 : volume;
-    }
-  }, [volume, isMuted]);
-
-  useEffect(() => {
-    if (audioRef.current && activePodcast) {
-      audioRef.current.src = activePodcast.audioUrl;
-      audioRef.current.load();
-      if (isPlaying) {
-        audioRef.current.play().catch((err) => console.log("Play deferred:", err));
-      } else {
-        audioRef.current.pause();
-      }
-    }
-  }, [currentPodIndex, activePodcast]);
-
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
-    }
-  };
-
-  const handleLoadedMetadata = () => {
-    if (audioRef.current) {
-      setDuration(audioRef.current.duration || 0);
-    }
-  };
-
-  const handlePlayPause = () => {
-    if (audioRef.current && activePodcast) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current
-          .play()
-          .then(() => setIsPlaying(true))
-          .catch((err) => console.log("Play deferred:", err));
-      }
-    }
-  };
-
-  const handleNext = () => {
-    if (podcastEpisodes.length === 0) return;
-    setCurrentPodIndex((prev) => (prev + 1) % podcastEpisodes.length);
-    setCurrentTime(0);
-    setIsPlaying(true);
-  };
-
-  const handlePrev = () => {
-    if (podcastEpisodes.length === 0) return;
-    setCurrentPodIndex((prev) => (prev - 1 + podcastEpisodes.length) % podcastEpisodes.length);
-    setCurrentTime(0);
-    setIsPlaying(true);
-  };
-
-  const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const time = parseFloat(e.target.value);
-    if (audioRef.current) {
-      audioRef.current.currentTime = time;
-      setCurrentTime(time);
-    }
-  };
-
-  const formatTime = (time: number) => {
-    if (isNaN(time)) return "0:00";
-    const mins = Math.floor(time / 60);
-    const secs = Math.floor(time % 60);
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-  };
-
-  // Helper to format JSON bodies for NewsFeed cards
-  const formatItemsForFeed = (feedItems: NewsItem[]) => {
-    return feedItems.map((item) => {
-      let bodyText = item.body;
-      try {
-        const parsed: ParsedBody = JSON.parse(item.body);
-        bodyText = parsed.description || item.body;
-      } catch (e) {
-        // Not JSON, leave as is
-      }
-      return { ...item, body: bodyText };
-    });
-  };
-
-  const curriculumItems = formatItemsForFeed(
-    items.filter((i) => i.media_type === "curriculum_update"),
-  );
-  const liveSessionItems = formatItemsForFeed(items.filter((i) => i.media_type === "live_session"));
-  const studentShoutoutItems = formatItemsForFeed(
-    items.filter((i) => i.media_type === "student_shoutout"),
-  );
-  const generalNewsItems = formatItemsForFeed(
-    items.filter(
-      (i) =>
-        ![
-          "curriculum_update",
-          "live_session",
-          "student_shoutout",
-          "podcast",
-          "audio",
-          "audiobook",
-          "video_podcast",
-        ].includes(i.media_type || ""),
-    ),
-  );
-
-  const categorizedFeeds = [
-    { name: "General Announcements", items: generalNewsItems },
-    { name: "Curriculum Updates", items: curriculumItems },
-    { name: "Live Sessions", items: liveSessionItems },
-    { name: "Student Spotlights", items: studentShoutoutItems },
-  ];
-
   return (
     <div className="app-container dashboard-container min-h-screen bg-background text-foreground">
-      <audio
-        ref={audioRef}
-        onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={handleLoadedMetadata}
-        onEnded={handleNext}
-      />
-
       <div className="mx-auto max-w-7xl w-full min-w-0">
-        {/* Header */}
         <div className="mb-6 sm:mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white break-words">
-              Cymatic Spotlight &amp; Podium Podcasts
+              Cymatic Spotlight
             </h1>
             <p className="text-xs sm:text-sm text-zinc-400 mt-1 leading-relaxed">
-              Stay ahead with real-time NCDC curriculum news and premium audio masterclasses.
+              Real-time curriculum news and updates.
             </p>
           </div>
           <button
-            onClick={handleRefresh}
-            disabled={refreshing || loading}
+            onClick={refreshFeed}
+            disabled={loading}
             className="flex items-center justify-center gap-2 rounded-xl bg-cyan-500/10 px-4 py-2.5 text-xs sm:text-sm font-bold text-cyan-400 hover:bg-cyan-500/20 transition-colors border border-cyan-500/20 disabled:opacity-50 shrink-0 self-start md:self-auto"
           >
-            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-            {refreshing ? "Refreshing Feed..." : "Refresh Feed"}
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            Refresh Feed
           </button>
         </div>
 
         <FoundersSpotlight />
 
-        {/* Supabase Connection Status & Query Diagnostic */}
-        <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg backdrop-blur-md relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-2 h-full bg-emerald-500" />
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <div className="p-2.5 bg-emerald-500/10 rounded-xl mt-1">
-                <Database className="h-5 w-5 text-emerald-400" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-sm font-black text-white uppercase tracking-wider">
-                    Supabase News Feed Connected
-                  </h2>
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    Live Sync Active
-                  </span>
-                </div>
-                <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-                  Streaming verified curriculum announcements, masterclasses, and student spotlight
-                  updates in real-time from Supabase.
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                refreshNews();
-                toast.info("Refreshing news feed from Supabase...");
-              }}
-              className="px-4 py-2 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-xl text-xs font-bold text-zinc-300 transition-colors shrink-0"
-            >
-              Sync Now
-            </button>
-          </div>
-        </div>
-
-        {/* Dual-column Grid: News on Left, Custom Podcasts Console on Right */}
-        <div className="grid gap-6 sm:gap-8 lg:grid-cols-3 mt-6 sm:mt-8 min-w-0">
-          {/* Left Column: News Feed */}
-          <div className="lg:col-span-2 space-y-8 sm:space-y-12 min-w-0">
+        <div className="grid gap-6 sm:gap-8 mt-6 sm:mt-8 min-w-0">
+          <div className="space-y-8 sm:space-y-12 min-w-0">
             <div className="flex items-center gap-3 mb-2 px-1">
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
-                NCDC Broadcast News &amp; Updates
+                Live News & Updates
               </h2>
             </div>
 
             {loading && (
               <div className="flex flex-col items-center justify-center p-12 bg-white/5 rounded-3xl border border-white/10">
                 <span className="h-8 w-8 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent" />
-                <p className="text-sm text-zinc-400 mt-4">Tuning the frequency, please wait...</p>
+                <p className="text-sm text-zinc-400 mt-4">Tuning the frequency...</p>
               </div>
             )}
 
             {!loading && (
-              <div className="space-y-10">
-                {categorizedFeeds.map(
-                  (cat) =>
-                    cat.items.length > 0 && (
-                      <section key={cat.name} className="flex flex-col gap-4">
-                        <div className="flex items-center gap-2 pb-2 border-b border-white/10">
-                          <h3 className="text-base font-black text-white tracking-tight">
-                            {cat.name}
-                          </h3>
-                        </div>
-                        <ErrorBoundary>
-                          <NewsFeed items={cat.items} />
-                        </ErrorBoundary>
-                      </section>
-                    ),
-                )}
-
-                {categorizedFeeds.every((cat) => cat.items.length === 0) && (
-                  <div className="text-center p-12 bg-zinc-900/50 rounded-2xl border border-dashed border-zinc-800">
-                    <p className="text-sm font-semibold text-zinc-400">No content found</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Right Column: Custom Interactive Podcasts Console */}
-          <div className="space-y-8 lg:sticky lg:top-24 h-fit">
-            <div className="flex items-center gap-3 px-1">
-              <div className="p-2 bg-cyan-500/10 rounded-lg">
-                <Radio className="h-4 w-4 text-cyan-400 animate-pulse" />
-              </div>
-              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
-                Podium Podcasts
-              </h2>
-            </div>
-
-            {activePodcast ? (
-              <>
-                {/* Spotify-styled Premium Player UI */}
-                <div className="glass rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl flex flex-col gap-5 relative overflow-hidden backdrop-blur-md">
-                  <div className="absolute top-0 right-0 h-32 w-32 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-
-                  {/* Title & Cover */}
-                  <div className="flex items-start gap-4">
-                    {activePodcast.mediaType === "video_podcast" ? (
-                      <div className="relative h-24 w-full shrink-0 rounded-2xl bg-black overflow-hidden shadow-md">
-                        <video
-                          src={activePodcast.audioUrl}
-                          className="h-full w-full object-cover"
-                          onPlay={() => setIsPlaying(true)}
-                          onPause={() => setIsPlaying(false)}
-                          controls
-                        />
-                        {isLiveActive && <LiveBadge className="absolute top-2 left-2 z-10" />}
-                      </div>
-                    ) : (
-                      <div className="relative h-16 w-16 shrink-0 rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-600 flex items-center justify-center shadow-md">
-                        <Radio className="h-8 w-8 text-white" />
-                        {isLiveActive && (
-                          <LiveBadge className="absolute -top-2 -left-2 z-10 scale-75" />
-                        )}
-                        {isPlaying && (
-                          <div className="absolute inset-0 flex items-end justify-center gap-0.5 pb-2 pointer-events-none bg-black/40 rounded-2xl">
-                            <span className="h-3 w-1 bg-cyan-400 animate-[bounce_0.6s_infinite]" />
-                            <span className="h-5 w-1 bg-cyan-400 animate-[bounce_0.6s_infinite_0.15s]" />
-                            <span className="h-4 w-1 bg-cyan-400 animate-[bounce_0.6s_infinite_0.3s]" />
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {activePodcast.mediaType !== "video_podcast" && (
-                      <div className="min-w-0">
-                        <span className="inline-block rounded-full bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
-                          {activePodcast.subject}
-                        </span>
-                        <h3 className="text-base font-black text-white truncate mt-1">
-                          {activePodcast.title}
-                        </h3>
-                        <p className="text-xs text-zinc-400 truncate">
-                          Hosted by {activePodcast.speaker}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {activePodcast.mediaType === "video_podcast" && (
-                    <div className="min-w-0">
-                      <span className="inline-block rounded-full bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
-                        {activePodcast.subject}
-                      </span>
-                      <h3 className="text-base font-black text-white truncate mt-1">
-                        {activePodcast.title}
-                      </h3>
-                      <p className="text-xs text-zinc-400 truncate">
-                        Hosted by {activePodcast.speaker}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Description */}
-                  <p className="text-xs text-zinc-400 leading-relaxed bg-black/20 rounded-xl p-3 border border-white/5">
-                    {activePodcast.description}
-                  </p>
-
-                  {/* Timeline controls */}
-                  {activePodcast.mediaType !== "video_podcast" && (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-[10px] text-zinc-500 font-bold">
-                        <span>{formatTime(currentTime)}</span>
-                        <span>{activePodcast.duration}</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="0"
-                        max={duration || 100}
-                        value={currentTime}
-                        onChange={handleSeekChange}
-                        className="w-full accent-cyan-400 cursor-pointer h-1 rounded-lg bg-zinc-800"
-                      />
-                    </div>
-                  )}
-
-                  {/* Interactive buttons */}
-                  <div className="flex items-center justify-between px-2">
-                    {activePodcast.mediaType !== "video_podcast" && (
-                      <button
-                        onClick={() => setIsMuted(!isMuted)}
-                        className="text-zinc-400 hover:text-white transition-colors"
-                        title={isMuted ? "Unmute" : "Mute"}
-                      >
-                        {isMuted ? (
-                          <VolumeX className="h-5 w-5 text-red-400" />
-                        ) : (
-                          <Volume2 className="h-5 w-5" />
-                        )}
-                      </button>
-                    )}
-
-                    <div
-                      className={cn(
-                        "flex items-center gap-4",
-                        activePodcast.mediaType === "video_podcast" && "mx-auto",
-                      )}
-                    >
-                      <button
-                        onClick={handlePrev}
-                        className="text-zinc-400 hover:text-white transition-colors"
-                        title="Previous Episode"
-                      >
-                        <SkipBack className="h-5 w-5" />
-                      </button>
-
-                      {activePodcast.mediaType !== "video_podcast" && (
-                        <button
-                          onClick={handlePlayPause}
-                          className="h-12 w-12 flex items-center justify-center rounded-full bg-cyan-500 text-black hover:scale-105 hover:bg-cyan-400 transition-all shadow-lg"
-                          title={isPlaying ? "Pause" : "Play"}
-                        >
-                          {isPlaying ? (
-                            <Pause className="h-6 w-6" />
-                          ) : (
-                            <Play className="h-6 w-6 ml-0.5" />
-                          )}
-                        </button>
-                      )}
-
-                      <button
-                        onClick={handleNext}
-                        className="text-zinc-400 hover:text-white transition-colors"
-                        title="Next Episode"
-                      >
-                        <SkipForward className="h-5 w-5" />
-                      </button>
-                    </div>
-
-                    <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
-                      EP {currentPodIndex + 1}/{podcastEpisodes.length}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Playlist Queue */}
-                <div className="glass rounded-3xl border border-white/10 bg-white/5 p-5 shadow-xl flex flex-col gap-3">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-1">
-                    Playlist Queue
-                  </h3>
-                  <div className="space-y-2 max-h-[300px] overflow-y-auto scrollbar-none">
-                    {podcastEpisodes.map((pod, index) => {
-                      const isActive = index === currentPodIndex;
-                      return (
-                        <button
-                          key={`${pod.id}-${index}`}
-                          onClick={() => {
-                            setCurrentPodIndex(index);
-                            setIsPlaying(true);
-                          }}
-                          className={`w-full text-left p-3 rounded-2xl flex items-center justify-between gap-3 transition-all border ${
-                            isActive
-                              ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400"
-                              : "bg-white/5 border-transparent hover:bg-white/10 hover:border-white/5 text-zinc-300"
-                          }`}
-                        >
-                          <div className="min-w-0 flex items-center gap-3">
-                            <span className="text-xs text-zinc-500 font-bold shrink-0">
-                              0{index + 1}
-                            </span>
-                            <div className="min-w-0">
-                              <p className="text-xs font-black truncate">{pod.title}</p>
-                              <p className="text-[10px] text-zinc-500 truncate mt-0.5">
-                                {pod.speaker} · {pod.subject}
-                              </p>
-                            </div>
-                          </div>
-                          <span className="text-[10px] font-bold text-zinc-500 shrink-0 uppercase tracking-tight">
-                            {pod.duration}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="glass rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl flex flex-col items-center justify-center min-h-[300px]">
-                <Radio className="h-12 w-12 text-zinc-600 mb-4" />
-                <p className="text-sm font-semibold text-zinc-400">No podcasts available yet.</p>
-              </div>
+              <ErrorBoundary>
+                <NewsFeed items={items} />
+              </ErrorBoundary>
             )}
           </div>
         </div>

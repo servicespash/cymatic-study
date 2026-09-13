@@ -408,6 +408,13 @@ function TutorPageContent() {
             <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)}>
               <Menu className="h-6 w-6 text-zinc-400" />
             </Button>
+            <Button
+              variant="ghost"
+              onClick={() => (window.location.href = "/dashboard")}
+              className="text-sm text-zinc-500 hover:text-red-400 font-medium"
+            >
+              Exit
+            </Button>
             <h1 className="text-xl font-semibold tracking-tight text-white/90">Cymatic Study</h1>
           </div>
 

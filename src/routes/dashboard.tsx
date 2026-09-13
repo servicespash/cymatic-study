@@ -99,7 +99,7 @@ function DashboardPage() {
 
   const loadTasks = async () => {
     try {
-      let query = supabase.from("dashboard_tasks").select("*");
+      let query = supabase.from("daily_tasks").select("*");
 
       if (organizationId) {
         query = query.or(`organization_id.is.null,organization_id.eq.${organizationId}`);
@@ -235,7 +235,7 @@ function DashboardPage() {
     }
 
     try {
-      const { error } = await supabase.from("dashboard_tasks" as any).insert({
+      const { error } = await supabase.from("daily_tasks" as any).insert({
         title: manualTitle,
         subject: manualSubject,
         description: manualDesc,

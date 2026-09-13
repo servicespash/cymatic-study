@@ -291,28 +291,37 @@ export function SocraticTutorChat() {
               </div>
             </div>
           </div>
-          <div className="relative">
-            <Button variant="ghost" size="icon" onClick={() => setIsSettingsOpen(!isSettingsOpen)}>
-              <Settings className="w-6 h-6" />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => (window.location.href = "/dashboard")}
+              className="text-xs text-zinc-500 hover:text-red-400"
+            >
+              Exit
             </Button>
-            {isSettingsOpen && (
-              <div className="absolute right-0 top-12 w-48 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl p-2 z-50">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-xs"
-                  onClick={() => setIsExportModalOpen(true)}
-                >
-                  <Download className="w-4 h-4 mr-2" /> Download Chat PDF
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-xs"
-                  onClick={() => window.print()}
-                >
-                  <Printer className="w-4 h-4 mr-2" /> Print Chat
-                </Button>
-              </div>
-            )}
+            <div className="relative">
+              <Button variant="ghost" size="icon" onClick={() => setIsSettingsOpen(!isSettingsOpen)}>
+                <Settings className="w-6 h-6" />
+              </Button>
+              {isSettingsOpen && (
+                <div className="absolute right-0 top-12 w-48 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl p-2 z-50">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-xs"
+                    onClick={() => setIsExportModalOpen(true)}
+                  >
+                    <Download className="w-4 h-4 mr-2" /> Download Chat PDF
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-xs"
+                    onClick={() => window.print()}
+                  >
+                    <Printer className="w-4 h-4 mr-2" /> Print Chat
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 

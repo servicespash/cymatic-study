@@ -100,37 +100,46 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
       </div>
 
       <div className="mt-8 space-y-6">
-        <div className="border-b border-zinc-800 pb-px flex space-x-1 overflow-x-auto scrollbar-none">
-          {[
-            { id: "missions", label: "Lessons & Missions", icon: BookOpen },
-            { id: "quizzes", label: "Quizzes & Badges", icon: Trophy },
-            { id: "tutor", label: "Socratic Coach", icon: MessageSquare },
-            { id: "projects", label: "Project Sandbox", icon: Building2 },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-wider rounded-t-xl transition-all relative shrink-0 ${
-                  isActive
-                    ? "text-cyan-400 bg-zinc-900/60 border-t border-x border-zinc-800/80"
-                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/40"
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                {tab.label}
-                {isActive && (
-                  <motion.div
-                    layoutId="activeDashboardTab"
-                    className="absolute bottom-0 inset-x-0 h-0.5 bg-cyan-400"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  />
-                )}
-              </button>
-            );
-          })}
+        <div className="border-b border-zinc-800 pb-px flex items-center justify-between space-x-1 overflow-x-auto scrollbar-none">
+          <div className="flex space-x-1">
+            {[
+              { id: "missions", label: "Lessons & Missions", icon: BookOpen },
+              { id: "quizzes", label: "Quizzes & Badges", icon: Trophy },
+              { id: "tutor", label: "Socratic Coach", icon: MessageSquare },
+              { id: "projects", label: "Project Sandbox", icon: Building2 },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex items-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-wider rounded-t-xl transition-all relative shrink-0 ${
+                    isActive
+                      ? "text-cyan-400 bg-zinc-900/60 border-t border-x border-zinc-800/80"
+                      : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/40"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {tab.label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeDashboardTab"
+                      className="absolute bottom-0 inset-x-0 h-0.5 bg-cyan-400"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="flex items-center gap-1 px-3 py-2 text-xs font-bold uppercase tracking-wider text-zinc-500 hover:text-red-400 transition-colors shrink-0"
+          >
+            <X className="h-4 w-4" />
+            Exit
+          </button>
         </div>
 
         <AnimatePresence mode="wait">

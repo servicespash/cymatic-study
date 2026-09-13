@@ -260,6 +260,7 @@ export function Navigation() {
         },
         { to: "/student", label: "My Portfolio", icon: GraduationCap },
         { to: "/tutor", label: "AI Tutor", icon: MessagesSquare },
+        { to: "/chat", label: "Chat", icon: MessagesSquare },
         { to: "/quizzes", label: "Quizzes", icon: Lightbulb },
         { to: "/lessons", label: "Lessons", icon: BookOpen },
         { to: "/projects", label: "Projects", icon: FileCode },
