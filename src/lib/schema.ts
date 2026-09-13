@@ -31,6 +31,8 @@ export interface Profile {
   stream: string | null;
   tutor_persona: string | null;
   referral_code: string | null;
+  voice_volume: number | null;
+  voice_speed: number | null;
   created_at: string | null;
 }
 
@@ -44,6 +46,8 @@ export const ProfileSchema = z.object({
   stream: z.string().nullable(),
   tutor_persona: z.string().nullable(),
   referral_code: z.string().nullable(),
+  voice_volume: z.number().nullable(),
+  voice_speed: z.number().nullable(),
   created_at: z.string().nullable(),
 });
 

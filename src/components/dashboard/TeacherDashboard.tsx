@@ -1,11 +1,6 @@
 import React from "react";
 import { useNavigate } from "@tanstack/react-router";
-import {
-  CheckCircle,
-  MessageSquare,
-  Users,
-  Plus,
-} from "lucide-react";
+import { CheckCircle, MessageSquare, Users, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -220,7 +215,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] uppercase font-bold text-zinc-400">Evaluation Type</label>
+              <label className="text-[10px] uppercase font-bold text-zinc-400">
+                Evaluation Type
+              </label>
               <select
                 value={manualType}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>

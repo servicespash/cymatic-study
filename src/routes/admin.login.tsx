@@ -105,7 +105,7 @@ function AdminLogin() {
         .single();
 
       if (
-        profile?.org_id !== org.id ||
+        profile?.organization_id !== org.id ||
         (profile?.role !== "org_admin" &&
           profile?.role !== "admin" &&
           profile?.role !== "institution_admin")

@@ -76,7 +76,9 @@ function AuthCallbackPage() {
             console.warn("Unauthorized access attempt:", decision.mismatchReason);
             if (isMounted) {
               setStatus("error");
-              setErrorMessage(decision.mismatchReason || "Unauthorized role or institutional mismatch.");
+              setErrorMessage(
+                decision.mismatchReason || "Unauthorized role or institutional mismatch.",
+              );
             }
             return;
           }

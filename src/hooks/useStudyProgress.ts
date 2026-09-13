@@ -123,17 +123,14 @@ export function useStudyProgress() {
         return;
       }
 
-      const currentSchoolId = profile?.org_id;
+      const currentSchoolId = profile?.organization_id;
 
       // Query learning progress from Supabase
-      let query = supabase
-        .from("curriculum_progress")
-        .select("*")
-        .eq("user_id", user.id);
+      let query = supabase.from("curriculum_progress").select("*").eq("user_id", user.id);
 
       if (currentSchoolId) {
         // Only apply if the table has these columns
-        query = query.eq("org_id", currentSchoolId);
+        query = query.eq("organization_id", currentSchoolId);
       }
 
       const { data, error: supabaseError } = await query;
@@ -231,7 +228,7 @@ export function useStudyProgress() {
           updated_at: now,
         };
 
-        if (profile?.school_id || profile?.org_id) {
+        if (profile?.school_id || profile?.organization_id) {
           (payload as any).school_id = profile.school_id || profile.org_id;
           (payload as any).org_id = profile.school_id || profile.org_id;
         }

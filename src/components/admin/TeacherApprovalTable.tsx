@@ -29,7 +29,7 @@ export function TeacherApprovalTable() {
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
-      .eq("org_id", schoolId)
+      .eq("organization_id", schoolId)
       .eq("role", "teacher")
       .eq("is_verified", false);
 

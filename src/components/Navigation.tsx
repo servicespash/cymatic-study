@@ -292,7 +292,7 @@ export function Navigation() {
     "Scholar";
   const orgName =
     schoolName || profile?.school_name || user?.user_metadata?.school_name || "Uganda Secondary";
-  const orgCode = schoolId || profile?.school_id || profile?.org_id || null;
+  const orgCode = schoolId || profile?.school_id || profile?.organization_id || null;
 
   const roleLabel = isAdmin
     ? "Administrator"

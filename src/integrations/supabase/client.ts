@@ -34,14 +34,11 @@ function getEnv(name: string): string | undefined {
 }
 
 function createSupabaseClient() {
-  const DEFAULT_URL = "https://tffffvbaiccqndydsobg.supabase.co";
-  const DEFAULT_KEY = "sb_publishable_Q6c0ZU7hu-Ow6bdzbK5-ig_S74FsIK0";
-
   const SUPABASE_URL =
     getEnv("VITE_SUPABASE_URL") ||
     getEnv("SUPABASE_URL") ||
     getEnv("PUBLIC_SUPABASE_URL") ||
-    DEFAULT_URL;
+    "https://tffffvbaiccqndydsobg.supabase.co";
 
   const keys = [
     getEnv("VITE_SUPABASE_ANON_KEY"),
@@ -54,8 +51,22 @@ function createSupabaseClient() {
 
   const SUPABASE_PUBLISHABLE_KEY =
     keys.find(
-      (k) => k && typeof k === "string" && !k.startsWith("http://") && !k.startsWith("https://"),
-    ) || DEFAULT_KEY;
+      (k) =>
+        k &&
+        typeof k === "string" &&
+        !k.startsWith("http://") &&
+        !k.startsWith("https://"),
+    ) || "sb_publishable_Q6c0ZU7hu-Ow6bdzbK5-ig_S74FsIK0";
+
+  if (
+    !getEnv("VITE_SUPABASE_URL") &&
+    !getEnv("SUPABASE_URL") &&
+    !getEnv("PUBLIC_SUPABASE_URL")
+  ) {
+    console.warn(
+      "[Supabase Client] Using default fallback URL. For production, define VITE_SUPABASE_URL in your environment variables.",
+    );
+  }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: {

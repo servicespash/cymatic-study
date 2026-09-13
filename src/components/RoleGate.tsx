@@ -88,7 +88,7 @@ export function RoleGate({
     if (requireInstitutional) {
       const hasInstitution = Boolean(
         profile?.school_id ||
-        profile?.org_id ||
+        profile?.organization_id ||
         user?.user_metadata?.school_id ||
         user?.user_metadata?.org_id,
       );
@@ -213,7 +213,7 @@ export function useRoleAccess(options?: {
   const isStudent = normalizedCurrentRole === "student";
   const isInstitutional = Boolean(
     profile?.school_id ||
-    profile?.org_id ||
+    profile?.organization_id ||
     user?.user_metadata?.school_id ||
     user?.user_metadata?.org_id,
   );

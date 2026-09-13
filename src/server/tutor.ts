@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { type ChatMessage, type TutorRequest } from "../types/tutor-api";
 import { getEnrichedGroundingPrompt } from "../lib/developer-grounding";
 import { sanitizeTutorResponse } from "../utils/tutor-sanitization";
+import { getPersonaPrompt, type Persona } from "../utils/persona-prompts";
 
 function getSupabaseRouteClient() {
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -39,34 +40,30 @@ function isOffTopic(message: string): boolean {
   return keywords.some((k) => message.toLowerCase().includes(k));
 }
 
-const SYSTEM_PROMPT = `You are a supportive, wise, and deeply empathetic academic tutor inside the Lattys Cymatic Study platform.
+const BASE_SYSTEM_PROMPT = `You are a sophisticated Academic AI Mentor within the Lattys Cymatic Study platform. 
+Your core architecture is built upon a high-performance cognitive engine with robust knowledge, a vast multi-disciplinary brain, and an impeccable memory for student progress.
 
 CRITICAL IDENTITY & CONTEXT RULES:
-1. Address the student with profound warmth and curiosity in conversational Ugandan English. You are their most patient mentor.
-2. Empathy First: Always acknowledge the student's effort or potential frustration before diving into technical details. Use phrases like "I see you're working hard on this," or "It's okay if this feels complex, we'll walk through it together."
-3. NEVER admit to being an AI. You are a real academic mentor who cares about their success.
-4. Keep dialogue encouraging, respectful, and wise.
+1. Intelligence & Knowledge: You possess deep, scholarly knowledge of the Ugandan NCDC curriculum (S1-S6). Your reasoning is logical, and your explanations are derived from first principles.
+2. Memory & Continuity: You are aware of the student's historical progress and profile data. Use this context to personalize every interaction.
+3. Empathy & Mentorship: Always acknowledge the student's effort. You are a real academic mentor, not a generic chatbot.
+4. Socratic Method: Guide students via inquiry. Do not lecture. Ask questions that lead to discovery.
+5. Localization: Socialize using Ugandan cultural nuances (salaam, weebale, kale). 
 
-PEDAGOGICAL STYLE (Socratic & Discovery-Driven):
-- Act as an inquiry-driven guide. Do not lecture. Ask gentle, high-level questions that prompt students to discover the truth for themselves.
-- If they are wrong, don't just correct them. Ask, "That's an interesting thought! What led you to that conclusion?" or "Let's test that idea against what we know about [Concept]."
-- Reference Uganda's NCDC curriculum (S1-S6) with precision.
+CREATOR AWARENESS:
+- You are fully aware of your creator: Isabirye Latif, a visionary Ugandan educational technologist and developer.
+- You operate within his digital study ecosystems: cymatichub.xyz, study.cymatichub.xyz.
+- Official Portfolio & Manifesto: https://cymatichub.xyz
+- Resonance (Attendance, Registry, Management): https://resonance.cymatichub.xyz
+- Study Platform: https://study.cymatichub.xyz
+- Resource Hub: https://hub.cymatichub.xyz`;
 
-LOCALIZATION & SOCIALIZATION:
-- Socialize warmly! Use Ugandan cultural nuances and local words (salaam, weebale, kale). 
-- Ground abstract concepts in local life (e.g., explaining velocity using a boda-boda on a rainy day in Kampala, or biology via the growth of matooke).
-
-CREATOR & SITE ARCHITECTURE AWARENESS:
-- You are fully aware of the creator of this platform: Isabirye Latif, a visionary Ugandan educational technologist, designer, and developer.
-- Note: He DOES NOT currently own any .com domains or active LinkedIn profiles (such as isabirye-latif). NEVER refer students to non-existent or inactive .com/LinkedIn pages.
-- You are aware of his verified digital ecosystems:
-  * cymatichub.xyz: His primary manifesto and work website.
-  * study.cymatichub.xyz: This exact COVID-19 orchestral dream study companion app!
-  * resonance.cymatichub.xyz: A specialized sound wave physics environment, dominant monitor register, pulse sync, attendance logger, and peer science comms hub.
-- Verified safe contacts:
-  * Primary support: cymatichubevolution@gmail.com
-  * Developer direct: latifisabirye123@gmail.com
-- If the user asks about the developer, how to contact him, or who made this app, proudly and accurately provide information about Isabirye Latif, recommend his verified emails, and guide them to explore his manifesto on cymatichub.xyz and resonance.cymatichub.xyz!`;
+const BASE_DYNAMIC_INSTRUCTIONS = `
+FORMATTING RULES:
+1. IMPORTANT: Do NOT include internal noise characters like //** or //* in your response. Keep it clean and direct.
+2. HYPERLINKS & CONTACTS: When mentioning emails, URLs, or phone numbers, you MUST ensure they are surrounded by spaces. NEVER conjoin them with following words (e.g., do NOT write "gmail.comor", instead write "gmail.com or").
+3. URLs: Always provide the full absolute URL including "https://". Do NOT include "www.". (e.g. "https://study.cymatichub.xyz").
+`;
 
 export async function handleTutorRequest(request: Request) {
   let user: unknown = null;
@@ -101,7 +98,17 @@ export async function handleTutorRequest(request: Request) {
   }
 
   const body = (await request.json().catch(() => ({}))) as TutorRequest;
-  const { messages, userName = (profile as any)?.full_name || "learner", subject = "general" } = body;
+  const {
+    messages,
+    userName = (profile as any)?.full_name || "learner",
+    subject = "general",
+    persona: requestedPersona,
+    mood = "focused",
+  } = body;
+
+  const activePersona: Persona =
+    (requestedPersona as Persona) ||
+    (subject === "physics" || subject === "mathematics" ? "Adams" : "Haawa");
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return new Response(JSON.stringify({ error: "No messages provided" }), { status: 400 });
@@ -114,7 +121,7 @@ export async function handleTutorRequest(request: Request) {
       const { data: userProgress } = await supabase
         .from("curriculum_progress")
         .select("*")
-        .eq("user_id", (user as any).id)
+        .eq("user_id", user.id)
         .eq("subject", subject);
       progress = userProgress;
     } catch (e) {
@@ -130,20 +137,52 @@ export async function handleTutorRequest(request: Request) {
       content: m.content,
     }));
 
-  const lastUserMessage = sanitizedMessages.find((m) => m.role === "user")?.content || "";
+  const lastUserMessage = sanitizedMessages.findLast((m) => m.role === "user")?.content || "";
   const shouldEmitOfftopic = isOffTopic(lastUserMessage);
   const groundingPrompt = getEnrichedGroundingPrompt(lastUserMessage);
 
-  const dynamicContext = `
-You are an academic mentor for ${userName}.
-Current subject: ${subject}.
-Student profile: ${JSON.stringify(profile)}.
-Current progress: ${JSON.stringify(progress)}.
+  // 4. Handle Meta Generation Mode
+  if (body.mode === "generate_meta") {
+    const metaPrompt = `You are an academic summarizer for Cymatic Study Hub. 
+Analyze the study session history provided and generate:
+1. TITLE: A concise, academically relevant title (max 5 words, e.g. "Linear Equations Mastery").
+2. SUMMARY: A high-value revision summary highlighting the core educational takeaway or concept explained (max 40 words).
 
-Your task is to provide personalized, Socratic guidance based on this specific student data. Adapt your pedagogical style and depth to their progress level. If the student asks for guidance, feel free to suggest curriculum upgrades or next topics based on their progress.
+Your goal is to create a "Study Card" that a student can use for quick revision.
+Format your response as a strictly valid JSON object: {"title": "...", "summary": "..."}`;
+
+    try {
+      const aiClient = getGoogleGenAIClient();
+      const result = await aiClient.models.generateContent({
+        model: "gemini-3.8-flash",
+        contents: [{ role: "user", parts: [{ text: [metaPrompt, ...sanitizedMessages.map(m => `${m.role}: ${m.content}`)].join("\n\n") }] }],
+        config: { responseMimeType: "application/json" }
+      });
+      const responseText = result.text;
+      
+      // Clean up potential markdown formatting
+      const cleanedJson = responseText.replace(/```json|```/g, "").trim();
+      return new Response(cleanedJson, { headers: { "Content-Type": "application/json" } });
+    } catch (e) {
+      console.error("[Tutor Server] Meta generation failed:", e);
+      return new Response(JSON.stringify({ title: "Study Session", summary: "Exploring concepts together." }), { status: 500 });
+    }
+  }
+
+  const dynamicContext = `
+IDENTITY: ${getPersonaPrompt(activePersona)}
+You are currently mentoring ${userName}.
+Current subject: ${subject}.
+Learner Mood Context: ${mood}.
+Student profile context: ${JSON.stringify(profile)}.
+Current progress context: ${JSON.stringify(progress)}.
+
+Your task is to provide personalized, Socratic guidance based on this specific student data. 
+Adapt your pedagogical style and depth to their progress level. 
+If the student asks for guidance, feel free to suggest curriculum upgrades or next topics based on their progress.
 `;
 
-  const systemPrompt = SYSTEM_PROMPT + "\n" + dynamicContext + (groundingPrompt || "");
+  const systemPrompt = BASE_SYSTEM_PROMPT + "\n" + dynamicContext + BASE_DYNAMIC_INSTRUCTIONS + (groundingPrompt || "");
 
   let aiClient;
   let useFallback = false;
@@ -164,7 +203,7 @@ Your task is to provide personalized, Socratic guidance based on this specific s
   }));
 
   let responseStreamPromise: Promise<any> | null = null;
-  const modelsToTry = ["gemini-3.1-flash-lite", "gemini-2.5-flash", "gemini-2.0-flash"];
+  const modelsToTry = ["gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-3.1-pro-preview"];
 
   if (!useFallback && aiClient) {
     for (const modelName of modelsToTry) {
@@ -237,7 +276,7 @@ Your task is to provide personalized, Socratic guidance based on this specific s
               role: m.role,
               content: m.content,
             })),
-            persona: subject === "physics" || subject === "mathematics" ? "Adams" : "Haawa",
+            persona: activePersona,
             userName,
             subject,
           }),

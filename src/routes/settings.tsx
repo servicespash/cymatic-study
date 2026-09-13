@@ -35,9 +35,12 @@ import { useAuth } from "@/lib/auth-context";
 import { validateNcdcSchoolId, generateNcdcBoardingSchoolId } from "@/lib/school-id-validator";
 import { SchoolIdQRCode } from "@/components/SchoolIdQRCode";
 import { useLanguageStore, type LanguageCode } from "@/store/useLanguageStore";
+import { useTutorVoice } from "@/hooks/useTutorVoice";
 import { supabase } from "@/lib/supabase";
+import { HardwareBridge } from "@/lib/HardwareBridge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { SEOChecklist } from "@/components/SEO/SEOChecklist";
+import { VoiceWaveform } from "@/components/VoiceWaveform";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "System Settings — Cymatic Study" }] }),
@@ -60,6 +63,7 @@ function SettingsPage() {
 
   // Audio preferences
   const tutor = useTutor();
+  const { persona: activePersonaName, setPersona, runDiagnostic } = useTutorVoice();
   const [pitchOffset, setPitchOffset] = useState<number>(() => {
     return parseFloat(localStorage.getItem("tutor_pitch_adj") || "0");
   });
@@ -92,6 +96,18 @@ function SettingsPage() {
   const [showResyncButton, setShowResyncButton] = useState(false);
   const [isResynching, setIsResynching] = useState(false);
   const [verificationTimeLeft, setVerificationTimeLeft] = useState(14400); // 4 hours in seconds
+
+  const [availableVoices, setAvailableVoices] = useState<
+    { name: string; lang: string; gender: "male" | "female" | "neutral" }[]
+  >([]);
+
+  useEffect(() => {
+    const fetchVoices = async () => {
+      const voices = await HardwareBridge.getVoices();
+      setAvailableVoices(voices);
+    };
+    fetchVoices();
+  }, []);
 
   const [outOfSyncStudentsCount, setOutOfSyncStudentsCount] = useState<number | null>(null);
   const [outOfSyncTeachersCount, setOutOfSyncTeachersCount] = useState<number | null>(null);
@@ -296,17 +312,24 @@ function SettingsPage() {
     const sampleText =
       voiceType === "male"
         ? "Salaam! I am Adams, your male voice tutor. I am tuned to help you with analytical study guidance."
-        : "Salaam! I am Power, your female voice tutor. I am configured to help you review syllabus content.";
+        : "Salaam! I am Haawa, your female voice tutor. I am configured to help you review syllabus content.";
 
     setTimeout(() => {
       tutor.speak(sampleText, { force: true });
     }, 100);
   };
 
-  const handleSaveAudioConfig = () => {
+  const handleSaveAudioConfig = async () => {
     localStorage.setItem("tutor_pitch_adj", String(pitchOffset));
     localStorage.setItem("tutor_rate_adj", String(rateOffset));
-    toast.success("Voice attributes saved successfully!");
+
+    // Also sync the new volume and speed preferences to Supabase
+    await tutorVoice.updateVoicePreference({
+      volume: tutor.volume,
+      speed: tutor.speed,
+    });
+
+    toast.success("Voice attributes saved and synced successfully!");
   };
 
   const handleCopyOnboardingInvite = () => {
@@ -673,7 +696,7 @@ function SettingsPage() {
                               {t.adamsName}
                             </h4>
                             <span className="text-[10px] uppercase font-bold tracking-wider text-blue-400">
-                              British Accent
+                              Male Voice
                             </span>
                           </div>
                         </div>
@@ -687,7 +710,7 @@ function SettingsPage() {
                     </div>
                     <div className="mt-5 flex gap-2">
                       <Button
-                        onClick={() => tutor.setVoice("male")}
+                        onClick={() => setPersona("Adams")}
                         className="text-xs font-bold rounded-xl h-8 px-3"
                         variant={tutor.persona.voice === "male" ? "default" : "outline"}
                       >
@@ -697,10 +720,20 @@ function SettingsPage() {
                       <Button
                         variant="ghost"
                         onClick={() => handleTestVoice("male")}
-                        className="text-xs font-bold rounded-xl h-8 px-3 text-primary"
+                        disabled={tutor.speaking}
+                        className="text-xs font-bold rounded-xl h-8 px-3 text-primary disabled:opacity-70"
                       >
-                        <Play className="h-3.5 w-3.5 mr-1" />
-                        {t.testVoiceBtn}
+                        {tutor.speaking && tutor.persona.voice === "male" ? (
+                          <div className="flex items-center gap-1.5">
+                            <VoiceWaveform isSpeaking={true} count={4} />
+                            Speaking...
+                          </div>
+                        ) : (
+                          <>
+                            <Play className="h-3.5 w-3.5 mr-1" />
+                            {t.testVoiceBtn}
+                          </>
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -724,7 +757,7 @@ function SettingsPage() {
                               {t.powerName}
                             </h4>
                             <span className="text-[10px] uppercase font-bold tracking-wider text-purple-400">
-                              American Accent
+                              Female Voice
                             </span>
                           </div>
                         </div>
@@ -738,7 +771,7 @@ function SettingsPage() {
                     </div>
                     <div className="mt-5 flex gap-2">
                       <Button
-                        onClick={() => tutor.setVoice("female")}
+                        onClick={() => setPersona("Haawa")}
                         className="text-xs font-bold rounded-xl h-8 px-3"
                         variant={tutor.persona.voice === "female" ? "default" : "outline"}
                       >
@@ -748,12 +781,137 @@ function SettingsPage() {
                       <Button
                         variant="ghost"
                         onClick={() => handleTestVoice("female")}
-                        className="text-xs font-bold rounded-xl h-8 px-3 text-primary"
+                        disabled={tutor.speaking}
+                        className="text-xs font-bold rounded-xl h-8 px-3 text-primary disabled:opacity-70"
                       >
-                        <Play className="h-3.5 w-3.5 mr-1" />
-                        {t.testVoiceBtn}
+                        {tutor.speaking && tutor.persona.voice === "female" ? (
+                          <div className="flex items-center gap-1.5">
+                            <VoiceWaveform isSpeaking={true} count={4} />
+                            Speaking...
+                          </div>
+                        ) : (
+                          <>
+                            <Play className="h-3.5 w-3.5 mr-1" />
+                            {t.testVoiceBtn}
+                          </>
+                        )}
                       </Button>
                     </div>
+                  </div>
+                </div>
+
+                {/* Specific Voice List Dropdown */}
+                <div className="pt-2 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
+                      <Volume2 className="h-3.5 w-3.5" />
+                      Fine-tune {tutor.persona.name}'s specific voice engine
+                    </Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleTestVoice(tutor.persona.voice)}
+                      disabled={tutor.speaking}
+                      className="h-6 px-2 text-[10px] font-bold rounded-lg text-primary hover:bg-primary/10 disabled:opacity-70"
+                    >
+                      {tutor.speaking ? (
+                        <div className="flex items-center">
+                          <div className="h-1.5 w-1.5 rounded-full bg-primary animate-ping mr-1.5" />
+                          Speaking...
+                        </div>
+                      ) : (
+                        <>
+                          <Play className="h-3 w-3 mr-1" />
+                          Preview Selection
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <select
+                    value={tutor.persona.voiceName || ""}
+                    onChange={(e) => {
+                      tutor.setPersonaVoice(tutor.persona.name, e.target.value);
+                      setTimeout(() => runDiagnostic(), 100);
+                    }}
+                    className="w-full rounded-xl border border-input bg-background/60 px-3.5 py-2.5 text-xs font-bold text-foreground outline-none focus:border-primary transition-all"
+                  >
+                    <option value="">Default System Voice (Auto-detect)</option>
+                    <optgroup label={`${tutor.persona.name} Recommended (${tutor.persona.voice})`}>
+                      {availableVoices
+                        .filter(
+                          (v) =>
+                            v.gender === tutor.persona.voice &&
+                            (v.lang.startsWith("en") || v.lang.startsWith("sw")),
+                        )
+                        .map((v) => (
+                          <option key={v.name} value={v.name}>
+                            {v.name} ({v.lang})
+                          </option>
+                        ))}
+                    </optgroup>
+                    <optgroup label="Other Available Voices">
+                      {availableVoices
+                        .filter(
+                          (v) =>
+                            v.gender !== tutor.persona.voice &&
+                            (v.lang.startsWith("en") || v.lang.startsWith("sw")),
+                        )
+                        .map((v) => (
+                          <option key={v.name} value={v.name}>
+                            {v.name} ({v.lang})
+                          </option>
+                        ))}
+                    </optgroup>
+                  </select>
+
+                  {/* Recently Used Voices Log */}
+                  {tutor.voiceHistory.length > 0 && (
+                    <div className="space-y-2 pt-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Recently Used Voices
+                      </Label>
+                      <div className="flex flex-wrap gap-2">
+                        {tutor.voiceHistory.map((voiceName) => (
+                          <button
+                            key={voiceName}
+                            onClick={() => {
+                              tutor.setPersonaVoice(tutor.persona.name, voiceName);
+                              setTimeout(() => runDiagnostic(), 100);
+                            }}
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ${
+                              tutor.persona.voiceName === voiceName
+                                ? "bg-primary/10 border-primary text-primary"
+                                : "bg-muted/50 border-border/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                            }`}
+                          >
+                            {voiceName}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] text-muted-foreground italic">
+                      Note: Available voices depend on your device and browser settings.
+                    </p>
+                    <span
+                      className={`text-[10px] font-bold flex items-center gap-1 transition-all ${
+                        tutor.speaking ? "text-primary" : "text-green-500"
+                      }`}
+                    >
+                      {tutor.speaking ? (
+                        <div className="flex items-center gap-2">
+                          <VoiceWaveform isSpeaking={tutor.speaking} count={6} />
+                          Voice Active
+                        </div>
+                      ) : (
+                        <>
+                          <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                          Engine Synchronized
+                        </>
+                      )}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -784,42 +942,88 @@ function SettingsPage() {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs font-semibold">
-                      <span>{t.speechPitch}</span>
-                      <span className="font-mono">
-                        {pitchOffset > 0 ? `+${pitchOffset}` : pitchOffset}
-                      </span>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs font-semibold">
+                        <span>Voice Volume</span>
+                        <span className="font-mono text-primary">{Math.round(tutor.volume * 100)}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={tutor.volume}
+                        onChange={(e) => tutor.setVolume(parseFloat(e.target.value))}
+                        className="w-full h-2 rounded-lg bg-muted appearance-none cursor-pointer accent-primary"
+                      />
+                      <p className="text-[10px] text-muted-foreground italic">
+                        Independent level control for the AI tutor voice.
+                      </p>
                     </div>
-                    <input
-                      type="range"
-                      min="-0.5"
-                      max="0.5"
-                      step="0.1"
-                      value={pitchOffset}
-                      onChange={(e) => setPitchOffset(parseFloat(e.target.value))}
-                      className="w-full h-2 rounded-lg bg-muted appearance-none cursor-pointer accent-primary"
-                    />
-                    <p className="text-[10px] text-muted-foreground">{t.speechPitchDesc}</p>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs font-semibold">
+                        <span>{t.speechPitch}</span>
+                        <span className="font-mono">
+                          {pitchOffset > 0 ? `+${pitchOffset}` : pitchOffset}
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="-0.5"
+                        max="0.5"
+                        step="0.1"
+                        value={pitchOffset}
+                        onChange={(e) => setPitchOffset(parseFloat(e.target.value))}
+                        className="w-full h-2 rounded-lg bg-muted appearance-none cursor-pointer accent-primary"
+                      />
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs font-semibold">
-                      <span>{t.speechRate}</span>
-                      <span className="font-mono">
-                        {rateOffset > 0 ? `+${rateOffset}` : rateOffset}
-                      </span>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs font-semibold">
+                        <span>Playback Speed</span>
+                        <span className="font-mono text-primary">{tutor.speed}x</span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2">
+                        {[0.75, 1.0, 1.25, 1.5].map((s) => (
+                          <button
+                            key={s}
+                            onClick={() => tutor.setSpeed(s)}
+                            className={`py-2 rounded-xl text-[10px] font-bold transition-all border ${
+                              tutor.speed === s
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted"
+                            }`}
+                          >
+                            {s}x
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground italic">
+                        Adjust how fast the tutor explains syllabus content.
+                      </p>
                     </div>
-                    <input
-                      type="range"
-                      min="-0.5"
-                      max="0.5"
-                      step="0.1"
-                      value={rateOffset}
-                      onChange={(e) => setRateOffset(parseFloat(e.target.value))}
-                      className="w-full h-2 rounded-lg bg-muted appearance-none cursor-pointer accent-primary"
-                    />
-                    <p className="text-[10px] text-muted-foreground">{t.speechRateDesc}</p>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs font-semibold">
+                        <span>Experimental Speed Adj</span>
+                        <span className="font-mono text-muted-foreground">
+                          {rateOffset > 0 ? `+${rateOffset}` : rateOffset}
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="-0.5"
+                        max="0.5"
+                        step="0.1"
+                        value={rateOffset}
+                        onChange={(e) => setRateOffset(parseFloat(e.target.value))}
+                        className="w-full h-1.5 rounded-lg bg-muted appearance-none cursor-pointer accent-muted-foreground"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -838,51 +1042,51 @@ function SettingsPage() {
 
           {/* TAB 3: INSTITUTIONAL BINDING & SCHOOL ID MANAGEMENT */}
           <TabsContent value="binding" className="space-y-6 outline-none">
-              <div className="space-y-6 animate-fade-in">
-                {/* Admin Privilege Panel Banner */}
-                <div className="rounded-3xl border border-dashed border-primary/30 bg-primary/5 p-5 flex items-center justify-between flex-wrap gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <ShieldCheck className="h-5.5 w-5.5" />
-                    </div>
-                    <div>
-                      <span className="text-xs font-black text-foreground block">
-                        {t.adminPrivilege}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground block max-w-2xl mt-0.5">
-                        Authorized administrative session active. Regenerate certified School IDs and
-                        synchronize teachers and students dynamically in real time.
-                      </span>
-                    </div>
+            <div className="space-y-6 animate-fade-in">
+              {/* Admin Privilege Panel Banner */}
+              <div className="rounded-3xl border border-dashed border-primary/30 bg-primary/5 p-5 flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <ShieldCheck className="h-5.5 w-5.5" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-black text-foreground block">
+                      {t.adminPrivilege}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground block max-w-2xl mt-0.5">
+                      Authorized administrative session active. Regenerate certified School IDs and
+                      synchronize teachers and students dynamically in real time.
+                    </span>
                   </div>
                 </div>
+              </div>
 
-                {/* School Binding Connection Form */}
-                <div
-                  id="school-binding-section"
-                  className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-5 transition-all"
-                >
-                  <div className="flex justify-between items-start gap-4 flex-wrap border-b border-border/30 pb-4">
-                    <div>
-                      <h3 className="text-base font-bold text-foreground">{t.instConnBinding}</h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">{t.instConnBindingSub}</p>
-                    </div>
-
-                    {/* ADMIN ONLY REGENERATOR ACTION BUTTON */}
-                    {canEditInstitutionalSettings && (
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={handleRegenerateSchoolId}
-                          disabled={isResynching}
-                          className="text-xs font-extrabold rounded-xl h-9 bg-amber-500 text-black hover:bg-amber-600 transition-all shadow-glow flex items-center gap-1.5"
-                        >
-                          <RefreshCw className="h-3.5 w-3.5 animate-spin-slow" />
-                          {t.regenerateSchoolId}
-                        </Button>
-                      </div>
-                    )}
+              {/* School Binding Connection Form */}
+              <div
+                id="school-binding-section"
+                className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-5 transition-all"
+              >
+                <div className="flex justify-between items-start gap-4 flex-wrap border-b border-border/30 pb-4">
+                  <div>
+                    <h3 className="text-base font-bold text-foreground">{t.instConnBinding}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">{t.instConnBindingSub}</p>
                   </div>
-                  
+
+                  {/* ADMIN ONLY REGENERATOR ACTION BUTTON */}
+                  {canEditInstitutionalSettings && (
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleRegenerateSchoolId}
+                        disabled={isResynching}
+                        className="text-xs font-extrabold rounded-xl h-9 bg-amber-500 text-black hover:bg-amber-600 transition-all shadow-glow flex items-center gap-1.5"
+                      >
+                        <RefreshCw className="h-3.5 w-3.5 animate-spin-slow" />
+                        {t.regenerateSchoolId}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
                 {/* SECURITY PROTOCOL COUNTDOWN BLOCK */}
                 {regenerationPending && (
                   <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-4 animate-fade-in">

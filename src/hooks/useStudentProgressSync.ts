@@ -58,7 +58,7 @@ export interface UseStudentProgressSyncReturn {
  * and automatic synchronization with Supabase as soon as network connectivity is restored.
  */
 export function useStudentProgressSync(): UseStudentProgressSyncReturn {
-  const { user } = useAuth();
+  const { user, organizationId } = useAuth();
   const [isOnline, setIsOnline] = useState<boolean>(
     typeof navigator !== "undefined" ? navigator.onLine : true,
   );
@@ -132,6 +132,7 @@ export function useStudentProgressSync(): UseStudentProgressSyncReturn {
           try {
             const { error: insertErr } = await supabase.from("task_attempts").insert({
               user_id: user.id,
+              organization_id: organizationId,
               topic_id: item.topic_id,
               answers: item.answers,
               score_pct: item.score_pct,
@@ -160,6 +161,7 @@ export function useStudentProgressSync(): UseStudentProgressSyncReturn {
           try {
             const { error: ptErr } = await supabase.from("user_points").insert({
               user_id: user.id,
+              organization_id: organizationId,
               points: pt.points,
               source: pt.source,
               meta: (pt.meta as any) || null,
@@ -251,6 +253,7 @@ export function useStudentProgressSync(): UseStudentProgressSyncReturn {
       const activeUserId = user?.id || "offline-student";
       await db.points.add({
         user_id: activeUserId,
+        organization_id: organizationId || null,
         points,
         source,
         meta: meta || null,

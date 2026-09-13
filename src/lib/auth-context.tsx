@@ -56,18 +56,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data) {
-        let organizationIdToUse = data.organization_id || metaOrgId || null;
+        let organizationIdToUse = data.org_id || metaOrgId || null;
         let schoolNameToUse = data.school_name || metaSchoolName || null;
         const role = data.role || "student";
 
-        // STRICT VERIFICATION: Verify assigned organization_id matches context
-        if (data.organization_id && metaOrgId && data.organization_id !== metaOrgId) {
-          console.error(`SECURITY WARNING: Organizational mismatch detected for user ${userId}. Claimed: ${metaOrgId}, Actual: ${data.organization_id}`);
+        // STRICT VERIFICATION: Verify assigned org_id matches context
+        if (data.org_id && metaOrgId && data.org_id !== metaOrgId) {
+          console.error(
+            `SECURITY WARNING: Organizational mismatch detected for user ${userId}. Claimed: ${metaOrgId}, Actual: ${data.org_id}`,
+          );
           setLoading(false);
           signOut();
           notifications.error(
             "Security Mismatch",
-            "Access denied. Your account record does not match the current institutional context."
+            "Access denied. Your account record does not match the current institutional context.",
           );
           return;
         }
@@ -76,24 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const isInstitutionalRole = ["teacher", "admin", "org_admin"].includes(role);
         if (isInstitutionalRole && !organizationIdToUse) {
           console.warn("Institutional user missing organization_id validation.");
-        }
-
-        // Auto-generate for admin/org_admin if missing
-        if ((role === "admin" || role === "org_admin") && !organizationIdToUse) {
-          organizationIdToUse = `SCH-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-          if (!schoolNameToUse) {
-            schoolNameToUse = `${data.display_name || "Admin"}'s Academy`;
-          }
-          supabase
-            .from("profiles")
-            .update({
-              organization_id: organizationIdToUse,
-              school_name: schoolNameToUse,
-            })
-            .eq("user_id", userId)
-            .then(({ error: updateErr }) => {
-              if (updateErr) console.warn("Error auto-updating admin organization ID:", updateErr);
-            });
         }
 
         if (organizationIdToUse && typeof window !== "undefined") {
@@ -118,28 +102,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         let organizationIdToUse = metaOrgId || null;
         let schoolNameToUse = metaSchoolName || null;
         const role = activeUser?.user_metadata?.role || "student";
-
-        if ((role === "admin" || role === "org_admin") && !organizationIdToUse) {
-          organizationIdToUse = `SCH-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-          schoolNameToUse = `${activeUser?.user_metadata?.full_name || "Admin"}'s Academy`;
-
-          supabase
-            .from("profiles")
-            .upsert({
-              user_id: userId,
-              organization_id: organizationIdToUse,
-              school_name: schoolNameToUse,
-              role: role,
-              display_name:
-                activeUser?.user_metadata?.full_name ||
-                activeUser?.email?.split("@")[0] ||
-                "Scholar",
-            })
-            .then(({ error: upsertErr }) => {
-              if (upsertErr)
-                console.warn("Error upserting admin profile with generated organization ID:", upsertErr);
-            });
-        }
 
         if (organizationIdToUse && typeof window !== "undefined") {
           localStorage.setItem("cymatic_school_id", organizationIdToUse);
@@ -227,7 +189,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const rawRole = profile?.role || user?.user_metadata?.role || "student";
   const role: UserRole = normalizeRole(rawRole);
 
-  const organizationId = profile?.organization_id || user?.user_metadata?.organization_id || user?.user_metadata?.org_id || null;
+  const organizationId =
+    profile?.organization_id ||
+    user?.user_metadata?.organization_id ||
+    user?.user_metadata?.org_id ||
+    null;
   const schoolName = profile?.school_name || user?.user_metadata?.school_name || null;
 
   const isStudent = role === "student";

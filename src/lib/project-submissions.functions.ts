@@ -71,17 +71,17 @@ export async function submitProjectForMarking(data: {
       .from("project_submissions")
       .insert({
         project_id: project.id,
-        student_user_id: user.id,
+        student_id: user.id,
         student_email: email,
-        project_payload: project,
+        project_data: project,
       })
       .select("id,teacher_token")
       .single();
 
     if (error) {
-      if (error.code === "PGRST205") {
+      if (error.code === "PGRST205" || error.message?.includes("not found")) {
         throw new Error(
-          "Database Table Missing: The 'project_submissions' table does not exist in your Supabase project. Please run the migrations in the SQL Editor.",
+          "Database Table Missing: The 'project_submissions' table does not exist in your Supabase project. Please navigate to 'supabase/migrations/20260524000000_project_submissions.sql' and execute the SQL in your Supabase Dashboard SQL Editor.",
         );
       }
       throw new Error(error.message);
@@ -119,12 +119,12 @@ export async function verifyProjectSubmission(data: any) {
   try {
     const { data: existing } = await supabase
       .from("project_submissions")
-      .select("id,student_user_id,is_verified")
+      .select("id,student_id,is_verified")
       .eq("teacher_token", data.token)
       .maybeSingle();
 
     if (!existing) throw new Error("This assessment token was not found.");
-    if (existing.student_user_id === user.id) {
+    if (existing.student_id === user.id) {
       throw new Error("Forbidden: a student cannot verify their own submission.");
     }
     if (existing.is_verified) throw new Error("This submission has already been verified.");
@@ -155,15 +155,15 @@ export async function verifyProjectSubmission(data: any) {
         teacher_license_id: data.teacherLicenseId?.trim() || null,
         school_reference_key: data.schoolReferenceKey?.trim() || null,
         verified_at: new Date().toISOString(),
-      })
+      } as any)
       .eq("id", existing.id)
       .select("*")
       .maybeSingle();
 
     if (error) {
-      if (error.code === "PGRST205") {
+      if (error.code === "PGRST205" || error.message?.includes("not found")) {
         throw new Error(
-          "Database Table Missing: The 'project_submissions' table does not exist in your Supabase project. Please run the migrations in the SQL Editor.",
+          "Database Table Missing: The 'project_submissions' table does not exist in your Supabase project. Please navigate to 'supabase/migrations/20260524000000_project_submissions.sql' and execute the SQL in your Supabase Dashboard SQL Editor.",
         );
       }
       throw new Error(error.message);
@@ -171,7 +171,7 @@ export async function verifyProjectSubmission(data: any) {
     return {
       submissionId: row.id,
       token: row.teacher_token,
-      project: attachMark(row.project_payload, row),
+      project: attachMark(row.project_payload || row.project_data, row),
       isVerified: row.is_verified,
     };
   } catch (err: any) {
@@ -200,12 +200,12 @@ export async function submitTeacherEvaluation(data: any) {
 
     const { data: existing } = await supabase
       .from("project_submissions")
-      .select("id,student_user_id,status")
+      .select("id,student_id,status")
       .eq("id", data.submissionId)
       .maybeSingle();
 
     if (!existing) throw new Error("Submission not found.");
-    if (existing.student_user_id === user.id)
+    if (existing.student_id === user.id)
       throw new Error("Forbidden: cannot evaluate your own.");
     if (existing.status === "verified") throw new Error("Already verified.");
 
@@ -214,7 +214,6 @@ export async function submitTeacherEvaluation(data: any) {
       .from("project_submissions")
       .update({
         status: "verified",
-        is_verified: true,
         teacher_id: user.id,
         teacher_name: data.teacherName,
         teacher_license: data.license,
@@ -224,15 +223,14 @@ export async function submitTeacherEvaluation(data: any) {
         phase2_score: data.phase2,
         phase3_score: data.phase3,
         phase4_score: data.phase4,
-        total_competency_score: total,
         verified_at: new Date().toISOString(),
       })
       .eq("id", data.submissionId);
 
     if (error) {
-      if (error.code === "PGRST205") {
+      if (error.code === "PGRST205" || error.message?.includes("not found")) {
         throw new Error(
-          "Database Table Missing: The 'project_submissions' table does not exist in your Supabase project. Please run the migrations in the SQL Editor.",
+          "Database Table Missing: The 'project_submissions' table does not exist in your Supabase project. Please navigate to 'supabase/migrations/20260524000000_project_submissions.sql' and execute the SQL in your Supabase Dashboard SQL Editor.",
         );
       }
       throw new Error(error.message);
@@ -262,7 +260,7 @@ export async function loadMyDraftSubmission() {
         "id,status,project_data,phase1_score,phase2_score,phase3_score,phase4_score,total_competency_score,teacher_name,teacher_comments,verified_at,is_verified",
       )
       .eq("student_user_id", user.id)
-      .eq("org_id", profile?.org_id ?? null)
+      .eq("organization_id", profile?.organization_id ?? null)
       .order("updated_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -310,7 +308,7 @@ export async function syncMyDraftSubmission(data: { projectData: any }) {
         .update({
           project_data: data.projectData,
           status: existing.status === "draft" ? "pending" : existing.status,
-          org_id: profile?.org_id ?? null,
+          org_id: profile?.organization_id ?? null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", existing.id)
@@ -325,7 +323,7 @@ export async function syncMyDraftSubmission(data: { projectData: any }) {
       .insert({
         student_user_id: user.id,
         student_id: user.id,
-        org_id: profile?.org_id ?? null,
+        org_id: profile?.organization_id ?? null,
         project_data: data.projectData,
         status: "pending",
       })

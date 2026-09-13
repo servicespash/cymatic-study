@@ -21,13 +21,21 @@ interface TutorServiceState {
   speaking: boolean;
   connected: boolean;
   ttsEnabled: boolean;
+  volume: number;
+  speed: number;
+  voiceHistory: string[];
   setVoice: (v: TutorVoice) => void;
+  setPersonaVoice: (personaName: "Adams" | "Haawa", voiceName: string) => void;
+  setVolume: (v: number) => void;
+  setSpeed: (v: number) => void;
+  addToVoiceHistory: (voiceName: string) => void;
   setMood: (m: UserMood | null) => void;
   setTtsEnabled: (b: boolean) => void;
   connectSession: () => Promise<void>;
   disconnectSession: () => void;
   speak: (text: string, options?: { force?: boolean; queue?: boolean }) => Promise<void>;
   stopSpeaking: () => Promise<void>;
+  reinitializeAudio: () => Promise<void>;
 }
 
 const TutorServiceCtx = createContext<TutorServiceState | null>(null);
@@ -37,6 +45,29 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
   const [mood, setMood] = useState<UserMood | null>(null);
   const [ttsEnabled, setTtsEnabledState] = useState(true);
   const [speaking, setSpeaking] = useState(false);
+  const [volume, setVolumeState] = useState(() => {
+    return parseFloat(localStorage.getItem("tutor_voice_volume") || "1.0");
+  });
+  const [speed, setSpeedState] = useState(() => {
+    return parseFloat(localStorage.getItem("tutor_voice_speed") || "1.0");
+  });
+  const [voiceHistory, setVoiceHistory] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("tutor_voice_history");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [customVoices, setCustomVoices] = useState<Record<string, string>>(() => {
+    try {
+      const saved = localStorage.getItem("tutor_custom_voices");
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
 
   // TTS Queue to prevent overlapping
   const ttsQueue = useRef<string[]>([]);
@@ -45,8 +76,6 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
   const liveTools = useGeminiLive({
     onError: (e) => toast.error(`Live Error: ${e}`),
   });
-
-  const persona = useMemo(() => DEFAULT_PERSONA_CONFIGS[voice], [voice]);
 
   const connectSession = useCallback(
     async (retries = 3) => {
@@ -77,6 +106,60 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
     await HardwareBridge.ttsStop();
   }, []);
 
+  const reinitializeAudio = useCallback(async () => {
+    try {
+      await stopSpeaking();
+      if (liveTools.connected) {
+        liveTools.disconnect();
+        await connectSession();
+      }
+      console.log("[AudioEngine] Immediate re-initialization successful");
+    } catch (err) {
+      console.warn("[AudioEngine] Re-init error:", err);
+    }
+  }, [stopSpeaking, liveTools, connectSession]);
+
+  const setVolume = useCallback((v: number) => {
+    setVolumeState(v);
+    localStorage.setItem("tutor_voice_volume", String(v));
+    reinitializeAudio();
+  }, [reinitializeAudio]);
+
+  const setSpeed = useCallback((v: number) => {
+    setSpeedState(v);
+    localStorage.setItem("tutor_voice_speed", String(v));
+    reinitializeAudio();
+  }, [reinitializeAudio]);
+
+  const addToVoiceHistory = useCallback((voiceName: string) => {
+    setVoiceHistory((prev) => {
+      const filtered = prev.filter((v) => v !== voiceName);
+      const next = [voiceName, ...filtered].slice(0, 5);
+      localStorage.setItem("tutor_voice_history", JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const persona = useMemo(() => {
+    const base = DEFAULT_PERSONA_CONFIGS[voice];
+    return {
+      ...base,
+      voiceName: customVoices[base.name] || base.voiceName,
+    };
+  }, [voice, customVoices]);
+
+  const setPersonaVoice = useCallback(
+    (personaName: "Adams" | "Haawa", voiceName: string) => {
+      setCustomVoices((prev) => {
+        const next = { ...prev, [personaName]: voiceName };
+        localStorage.setItem("tutor_custom_voices", JSON.stringify(next));
+        return next;
+      });
+      addToVoiceHistory(voiceName);
+    },
+    [addToVoiceHistory],
+  );
+
   const processQueue = useCallback(async () => {
     if (isProcessingQueue.current || ttsQueue.current.length === 0) return;
 
@@ -90,15 +173,21 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
           typeof window !== "undefined"
             ? parseFloat(localStorage.getItem("tutor_pitch_adj") || "0")
             : 0;
-        const savedRateAdj =
-          typeof window !== "undefined"
-            ? parseFloat(localStorage.getItem("tutor_rate_adj") || "0")
-            : 0;
+
+        // Auto-adjust pitch based on sentiment/tone hints
+        let sentimentPitchBonus = 0;
+        const encouragingWords = ["well done", "excellent", "great job", "amazing", "correct", "good", "perfect", "brilliant", "keep it up"];
+        if (encouragingWords.some(w => textToSpeak.toLowerCase().includes(w))) {
+          sentimentPitchBonus = 0.15; // Slightly higher pitch for encouragement
+        }
+
         await HardwareBridge.ttsSpeak(textToSpeak, {
-          rate: persona.rate + savedRateAdj,
-          pitch: persona.pitch + savedPitchAdj,
+          rate: speed,
+          pitch: Math.min(2.0, persona.pitch + savedPitchAdj + sentimentPitchBonus),
           lang: persona.voice === "male" ? "en-GB" : "en-US",
           voiceName: persona.voiceName,
+          gender: persona.voice,
+          volume: volume,
         });
       } catch (e) {
         console.error("TTS failed", e);
@@ -109,7 +198,7 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
     setSpeaking(false);
     isProcessingQueue.current = false;
     processQueue(); // Process next item
-  }, [persona]);
+  }, [persona, speed, volume]);
 
   const speak = useCallback(
     async (text: string, options?: { force?: boolean; queue?: boolean }) => {
@@ -132,7 +221,10 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
     [ttsEnabled, processQueue, stopSpeaking],
   );
 
-  const setVoice = useCallback((v: TutorVoice) => setVoiceState(v), []);
+  const setVoice = useCallback((v: TutorVoice) => {
+    setVoiceState(v);
+    reinitializeAudio();
+  }, [reinitializeAudio]);
   const setTtsEnabled = useCallback((b: boolean) => setTtsEnabledState(b), []);
 
   const value = {
@@ -141,13 +233,21 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
     speaking,
     connected: liveTools.connected,
     ttsEnabled,
+    volume,
+    speed,
+    voiceHistory,
     setVoice,
+    setPersonaVoice,
+    setVolume,
+    setSpeed,
+    addToVoiceHistory,
     setMood,
     setTtsEnabled,
     connectSession,
     disconnectSession,
     speak,
     stopSpeaking,
+    reinitializeAudio,
   };
 
   return <TutorServiceCtx.Provider value={value}>{children}</TutorServiceCtx.Provider>;

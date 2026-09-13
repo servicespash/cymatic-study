@@ -244,7 +244,10 @@ function LoginPage() {
               }
             } else {
               // If school ID not found in database registry, warn or handle securely
-              console.warn("Entered school ID not found in organizations registry:", schoolId.trim());
+              console.warn(
+                "Entered school ID not found in organizations registry:",
+                schoolId.trim(),
+              );
             }
           } catch (valErr) {
             console.warn("School validation exception:", valErr);

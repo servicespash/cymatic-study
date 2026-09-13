@@ -133,7 +133,7 @@ export function FloatingTutor() {
               exit={{ opacity: 0, scale: 0.8, y: 30 }}
               className="flex flex-col items-end gap-2.5 mb-2"
             >
-              {/* Ask Adam */}
+              {/* Ask Adams */}
               <Link
                 to="/tutor"
                 onClick={() => {
@@ -143,10 +143,10 @@ export function FloatingTutor() {
                 className="flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-600/90 hover:bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-glow transition-smooth hover:scale-105"
               >
                 <MessagesSquare className="h-4 w-4" />
-                <span>Ask Adam 👨‍🏫</span>
+                <span>Ask Adams 👨‍🏫</span>
               </Link>
 
-              {/* Ask Hawa */}
+              {/* Ask Haawa */}
               <Link
                 to="/tutor"
                 onClick={() => {
@@ -156,7 +156,7 @@ export function FloatingTutor() {
                 className="flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-600/90 hover:bg-purple-600 px-4 py-2.5 text-xs font-bold text-white shadow-glow transition-smooth hover:scale-105"
               >
                 <MessagesSquare className="h-4 w-4" />
-                <span>Ask Hawa 👩‍🏫</span>
+                <span>Ask Haawa 👩‍🏫</span>
               </Link>
 
               {/* Call Live */}

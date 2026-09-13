@@ -56,7 +56,7 @@ export function UnifiedInstitutionalDirectory({ schoolId }: UnifiedInstitutional
       const { data, error } = await supabase
         .from("profiles")
         .select("id, user_id, display_name, level, stream, role, created_at")
-        .eq("org_id", schoolId);
+        .eq("organization_id", schoolId);
 
       if (error) throw error;
       setMembers(data || []);

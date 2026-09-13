@@ -8,10 +8,45 @@ import { Menu, Settings, Download, Volume2, VolumeX, Video, VideoOff } from "luc
 import { supabase } from "@/integrations/supabase/client";
 import { useTutorStore } from "@/store/useTutorStore";
 import { useTutor } from "@/lib/TutorService";
+import { useTutorVoice } from "@/hooks/useTutorVoice";
 import { useSearch } from "@tanstack/react-router";
 import { generateOfflineTutorResponse } from "@/lib/offline-tutor";
 import { Button } from "./ui/button";
 import { exportChatToPDF } from "@/lib/chat-pdf-export";
+
+async function generateSessionMeta(sessionId: number, messages: any[]) {
+  try {
+    const { data: sess } = await supabase.auth.getSession();
+    const token = sess.session?.access_token;
+
+    const res = await fetch("/api/tutor", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        mode: "generate_meta",
+        messages: messages.slice(-10).map((m) => ({
+          role: m.sender === "student" ? "user" : "assistant",
+          content: m.text,
+        })),
+      }),
+    });
+
+    if (res.ok) {
+      const meta = await res.json();
+      if (meta.title || meta.summary) {
+        await useTutorStore.getState().updateSessionMeta(sessionId, {
+          title: meta.title,
+          summary: meta.summary,
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to generate session meta:", err);
+  }
+}
 
 export function TutorPage() {
   return (
@@ -30,9 +65,8 @@ function TutorPageContent() {
     clearMessages,
     setMessages,
     sessionId,
-    persona,
-    setPersona,
   } = useTutorStore();
+  const { persona, setPersona } = useTutorVoice();
   const { speak, stopSpeaking, speaking, setVoice, ttsEnabled, setTtsEnabled } = useTutor();
 
   const [input, setInput] = useState("");
@@ -44,11 +78,6 @@ function TutorPageContent() {
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-
-  // Sync persona configuration with useTutor hook voice on load or change
-  useEffect(() => {
-    setVoice(persona === "Adams" ? "male" : "female");
-  }, [persona, setVoice]);
 
   // Attendance logging
   useEffect(() => {
@@ -158,9 +187,13 @@ function TutorPageContent() {
     }
   }, [prefill]);
 
+  // Load latest sessions on mount
+  useEffect(() => {
+    useTutorStore.getState().loadSessions();
+  }, []);
+
   const handlePersonaChange = (newPersona: "Adams" | "Haawa") => {
     setPersona(newPersona);
-    setVoice(newPersona === "Adams" ? "male" : "female");
     stopSpeaking();
   };
 
@@ -333,6 +366,16 @@ function TutorPageContent() {
       // Trigger automatic voice read-aloud when streamed response settles
       if (tutorReplyText) {
         speak(tutorReplyText);
+        
+        // Automated Titling Service: Analyzes the first exchange to generate a descriptive title
+        const currentMessages = useTutorStore.getState().messages;
+        if (currentMessages.length >= 2 && sessionId) {
+          const session = useTutorStore.getState().sessions.find(s => s.id === sessionId);
+          // Only generate if title is still missing, generic, or if it's the first exchange (length 2-4)
+          if (!session?.title || session.title.includes("Study Session #") || currentMessages.length <= 4) {
+            void generateSessionMeta(sessionId, currentMessages);
+          }
+        }
       }
     } catch (e) {
       console.error("[Tutor Chat] Dynamic API communication error:", e);
@@ -481,7 +524,7 @@ function TutorPageContent() {
                 <p>
                   Voice accent:{" "}
                   <span className="text-zinc-300 font-mono">
-                    {persona === "Adams" ? "GB Accent" : "US Accent"}
+                    {persona === "Adams" ? "Male Voice" : "Female Voice"}
                   </span>
                 </p>
               </div>

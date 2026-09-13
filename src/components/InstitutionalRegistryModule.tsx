@@ -57,7 +57,7 @@ export function InstitutionalRegistryModule() {
   const { user, profile } = useAuth();
   const currentSchoolId =
     profile?.school_id ||
-    profile?.org_id ||
+    profile?.organization_id ||
     user?.user_metadata?.school_id ||
     (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : "") ||
     "SCH-UG-2026";
@@ -84,7 +84,7 @@ export function InstitutionalRegistryModule() {
         const { data: dbProfiles, error } = await supabase
           .from("profiles")
           .select("*")
-          .eq("org_id", currentSchoolId);
+          .eq("organization_id", currentSchoolId);
 
         if (error) throw error;
 
@@ -174,20 +174,16 @@ export function InstitutionalRegistryModule() {
       const inviteLink = generateOfficialInviteLink(memberType, email);
       setLastGeneratedLink(inviteLink);
 
-      // Save record in Supabase profiles/metadata if available
+      // Save record in Supabase authorized_roles to enforce strict binding
       try {
-        await supabase.from("school_registries").insert({
-          school_id: currentSchoolId,
-          full_name: fullName.trim(),
-          email: email.trim(),
+        await supabase.from("authorized_roles").insert({
+          organization_id: currentSchoolId,
+          email: email.trim().toLowerCase(),
           role: memberType,
-          level: memberType === "student" ? level : null,
-          registry_code: uniqueCode,
-          status: "invited",
+          assigned_by: user?.id,
         });
       } catch (dbErr) {
-        // Fallback gracefully
-        console.warn("School registries storage notice:", dbErr);
+        console.warn("authorized_roles storage notice:", dbErr);
       }
 
       setIsAdding(false);

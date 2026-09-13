@@ -85,12 +85,12 @@ export function tutorReplyForMood(
     confused: `Hey${who}, I got you. Confused? That's just the brain growing. Let's break it down.`,
     stressed: `Breathe${who}, you are a child of God. Don't stress. We'll handle this piece by piece.`,
   };
-  const hawa: Record<UserMood, string> = {
+  const haawa: Record<UserMood, string> = {
     happy: `My beloved${who}, your smile is a small sunrise. Walk with me.`,
     focused: `Steady, my dear${who}. The mind is a quiet river today — let it flow.`,
     tired: `Rest, my dear${who}. The mind is tender. One gentle page, then sleep.`,
     confused: `My dear${who}, confusion is just the beginning of wisdom. Speak your heart, I am here.`,
     stressed: `My love${who}, breathe. You are a child of God. Don't stress. Seek guidance, and I will be here.`,
   };
-  return persona === "Adams" ? adams[mood] : hawa[mood];
+  return persona === "Adams" ? adams[mood] : haawa[mood];
 }

@@ -70,7 +70,7 @@ export function ProjectActions({
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
-  const canSync = !!profile?.school_id || !!profile?.org_id;
+  const canSync = !!profile?.school_id || !!profile?.organization_id;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

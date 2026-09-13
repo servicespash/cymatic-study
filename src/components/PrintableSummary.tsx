@@ -73,7 +73,7 @@ export function PrintableSummary({
           }
 
           if (!customSchoolName) {
-            const sch = user.user_metadata?.school_name || profile?.org_id;
+            const sch = user.user_metadata?.school_name || profile?.organization_id;
             if (sch) setSchoolName(sch);
           }
         }

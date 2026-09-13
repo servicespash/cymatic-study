@@ -3,6 +3,8 @@ import { NewsItem, Profile, ProjectSubmission } from "./schema";
 
 export interface ChatSession {
   id?: number;
+  title?: string;
+  summary?: string;
   messages: Array<{
     id: string;
     sender: "student" | "tutor" | "socratic_tutor";
@@ -28,16 +30,15 @@ export class AppDatabase extends Dexie {
       submissions: "id, student_id, school_id, org_id",
       chatSessions: "++id, timestamp",
     });
-    this.version(2).stores({
+    this.version(3).stores({
       news_broadcasts: "id, title, category, published_at",
       news: "id, title, category, published_at",
       profiles: "id, user_id, org_id",
       submissions: "id, student_id, school_id, org_id",
       project_submissions: "id, student_id, school_id, org_id",
-      chatSessions: "++id, timestamp",
+      chatSessions: "++id, timestamp, title, summary",
     });
   }
 }
 
 export const db = new AppDatabase();
-

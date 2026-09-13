@@ -74,34 +74,40 @@ export function useUserRole(): UserRoleState {
       let fetchedOrganizationId: string | null = null;
       let fetchedSchoolName: string | null = null;
 
-      // 1. Attempt secure RPC call if configured on Supabase backend
+      // 1. Attempt secure RPC call (Source of Truth)
       try {
-        const { data: rpcRole, error: rpcError } = await (supabase.rpc as any)(
-          "get_current_user_role",
-        );
-        if (!rpcError && rpcRole && typeof rpcRole === "string") {
+        const { data: rpcRole, error: rpcError } = await supabase.rpc("get_current_user_role");
+        if (!rpcError && rpcRole) {
           fetchedRawRole = rpcRole;
         }
-      } catch {
-        // RPC might not be provisioned in all schema tiers, continue to profile lookup
+      } catch (rpcErr) {
+        console.warn("RPC role lookup failed, falling back to table query", rpcErr);
       }
 
-      // 2. Query authenticated profiles table
-      if (!fetchedRawRole) {
-        const { data: profData, error: profError } = await supabase
-          .from("profiles")
-          .select("role, organization_id, school_name")
+      // 2. Query user_roles and profiles
+      const [rolesRes, profileRes] = await Promise.all([
+        supabase
+          .from("user_roles")
+          .select("role")
           .eq("user_id", user.id)
-          .maybeSingle();
+          .maybeSingle(),
+        supabase
+          .from("profiles")
+          .select("org_id, school_name")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+      ]);
 
-        if (!profError && profData) {
-          fetchedRawRole = profData.role || null;
-          fetchedOrganizationId = profData.organization_id || null;
-          fetchedSchoolName = profData.school_name || null;
-        }
+      if (rolesRes.data) {
+        fetchedRawRole = fetchedRawRole || rolesRes.data.role;
       }
 
-      // 3. Fallback to auth metadata
+      if (profileRes.data) {
+        fetchedOrganizationId = (profileRes.data as any).org_id;
+        fetchedSchoolName = profileRes.data.school_name;
+      }
+
+      // 3. Fallback to auth metadata for UI continuity
       if (!fetchedRawRole) {
         fetchedRawRole = profile?.role || user.user_metadata?.role || "student";
       }

@@ -88,7 +88,7 @@ export function SubmissionModal({
         .from("profiles")
         .select("id, user_id, display_name, teacher_license_id")
         .or("role.eq.teacher,role.eq.independent_teacher")
-        .eq("org_id", profile?.org_id)
+        .eq("organization_id", profile?.organization_id)
         .limit(20);
 
       if (data) {
@@ -97,7 +97,7 @@ export function SubmissionModal({
     };
 
     fetchTeachers();
-  }, [open, isInstitutional, profile?.org_id]);
+  }, [open, isInstitutional, profile?.organization_id]);
 
   // Filter teachers based on search
   const filteredTeachers = useMemo(() => {
@@ -218,7 +218,7 @@ ${project.studentName || profile?.display_name || "Student"}
           teacher_id: teacherPayload?.user_id || null,
           teacher_name: teacherPayload?.display_name || null,
           teacher_license: teacherPayload?.teacher_license_id || null,
-          school_key: profile?.org_id || null,
+          school_key: profile?.organization_id || null,
           project_data: { ...project, markingToken, status: "pending" } as any,
           marking_token: markingToken,
           status: "pending",
@@ -262,7 +262,7 @@ ${project.studentName || profile?.display_name || "Student"}
       .upsert({
         id: project.submissionId || undefined,
         student_id: user?.id,
-        org_id: profile?.org_id || null,
+        org_id: profile?.organization_id || null,
         project_data: { ...project, markingToken, status: "pending" } as any,
         marking_token: markingToken,
         status: "pending",
@@ -306,7 +306,7 @@ ${project.studentName || profile?.display_name || "Student"}
       .upsert({
         id: project.submissionId || undefined,
         student_id: user?.id,
-        org_id: profile?.org_id || null,
+        org_id: profile?.organization_id || null,
         project_data: { ...project, markingToken, status: "pending" } as any,
         marking_token: markingToken,
         status: "pending",

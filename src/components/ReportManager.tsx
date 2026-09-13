@@ -49,7 +49,7 @@ export function ReportManager() {
         .select("user_id, display_name, school_name, role, org_id")
         .eq("role", "student");
 
-      const currentOrgId = profile?.org_id;
+      const currentOrgId = profile?.organization_id;
       if (currentOrgId) {
         query = query.eq("org_id", currentOrgId);
       }

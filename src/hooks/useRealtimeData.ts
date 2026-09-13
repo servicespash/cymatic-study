@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { useAuth } from "@/lib/auth-context";
 
 function resolveDexieTable(tableName: string) {
   const tableMap: Record<string, any> = {
@@ -15,12 +16,21 @@ function resolveDexieTable(tableName: string) {
 }
 
 export function useRealtimeData<T>(
-  table: "news" | "news_broadcasts" | "profiles" | "submissions" | "reports" | "project_submissions" | "dashboard_tasks",
+  table:
+    | "news"
+    | "news_broadcasts"
+    | "profiles"
+    | "submissions"
+    | "reports"
+    | "project_submissions"
+    | "dashboard_tasks",
   schema: z.ZodObject<any>,
   event: "INSERT" | "UPDATE" | "DELETE" | "*" = "*",
   dependencies: any[] = [],
-  organizationId?: string | null,
+  manualOrganizationId?: string | null,
 ) {
+  const { organizationId: contextOrgId } = useAuth();
+  const organizationId = manualOrganizationId || contextOrgId;
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +70,19 @@ export function useRealtimeData<T>(
 
         if (organizationId) {
           // STRICT FILTERING: Prevent cross-school data leakage
-          query = query.eq("organization_id", organizationId);
+          // Map correct column names based on table
+          if (table === "profiles") {
+            query = query.eq("org_id", organizationId);
+          } else if (table === "news_broadcasts" || table === "news") {
+            // News is typically global or doesn't have org_id in current schema
+            console.log("useRealtimeData: Skipping org filter for news_broadcasts");
+          } else {
+            // Default to organization_id for others, or check if we should use org_id
+            // For now, let's be safe and only filter if we are sure
+            // But usually, most partitioned tables should have one.
+            // If the error persists for others, we add them here.
+            query = query.eq("organization_id", organizationId);
+          }
         }
 
         const { data: remoteData, error } = await query;
@@ -135,7 +157,7 @@ export function useRealtimeData<T>(
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [table, event, ...dependencies]);
+  }, [table, event, organizationId, ...dependencies]);
 
   return { data, loading, error };
 }

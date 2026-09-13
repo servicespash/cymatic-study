@@ -12,8 +12,8 @@ export const DEFAULT_PERSONA_CONFIGS: Record<TutorVoice, TutorPersona> = {
   female: {
     voice: "female",
     name: "Haawa",
-    pitch: 1.2,
-    rate: 0.85,
+    pitch: 1.1,
+    rate: 1.05,
     theme: { primary: "#4C1D95", secondary: "#10B981", glow: "Violet-Emerald" },
   },
   male: {

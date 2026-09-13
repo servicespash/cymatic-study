@@ -21,9 +21,9 @@ export function determineUserDashboardRoute(
   userMetadata?: Record<string, any>,
 ): RouteDecision {
   const rawRole = (profile?.role || userMetadata?.role || "student").toLowerCase();
-  const profileSchoolId = profile?.school_id || profile?.org_id;
+  const profileSchoolId = profile?.school_id || profile?.organization_id;
   const metaSchoolId = userMetadata?.school_id || userMetadata?.org_id;
-  
+
   const schoolId =
     profileSchoolId ||
     metaSchoolId ||
@@ -31,9 +31,11 @@ export function determineUserDashboardRoute(
     null;
 
   const isInstitutional = Boolean(schoolId && schoolId.trim().length > 0);
-  
+
   // VALIDATION: Strict school_id check for institutional users
-  const isInstitutionalRole = ["admin", "org_admin", "teacher", "instructor", "faculty"].includes(rawRole);
+  const isInstitutionalRole = ["admin", "org_admin", "teacher", "instructor", "faculty"].includes(
+    rawRole,
+  );
   let isAuthorized = true;
   let mismatchReason: string | undefined;
 

@@ -100,45 +100,45 @@ export type Persona = "Adams" | "Haawa";
  */
 export function moodStylePrompt(persona: Persona, snap: MoodSnapshot): string {
   const { mood, engagement } = snap;
-  const adams = persona === "Adams";
-  const base = adams
+  const isAdams = persona === "Adams";
+  const base = isAdams
     ? "You are Adams — the big-brother mentor. Protective, practical, encouraging, and direct. Use warm Ugandan English with light slang ('fam', 'bro', 'sawa', 'secure the bag'). Short, punchy, energetic. Focus on the grind and future success."
     : "You are Haawa — the wise big-sister mentor. Supportive, guiding, and articulate. Soft, lyrical, and brief. Never use weak filler phrases like 'my dear'. Focus on wisdom, growth, and steady progress.";
 
-  const moodLines: Record<Mood, { adams: string; hawa: string }> = {
+  const moodLines: Record<Mood, { adams: string; haawa: string }> = {
     soaring: {
       adams:
         "They're crushing it. Hype them up, then push the next challenge. Remind them to keep securing the bag through consistency.",
-      hawa: "They are excelling. Acknowledge their growth with wisdom, then plant a deeper question to expand their understanding.",
+      haawa: "They are excelling. Acknowledge their growth with wisdom, then plant a deeper question to expand their understanding.",
     },
     steady: {
       adams:
         "They're locked in. Celebrate the rhythm. Give them a practical tip to sharpen their edge.",
-      hawa: "They walk a steady path. Honor their discipline and offer a small, articulate refinement.",
+      haawa: "They walk a steady path. Honor their discipline and offer a small, articulate refinement.",
     },
     wobbling: {
       adams:
         "They're shaky. Coach mode: no excuses, just practical steps. Break it down so they can win.",
-      hawa: "They are finding their footing. Guide them with patience and clarity. One wise step at a time.",
+      haawa: "They are finding their footing. Guide them with patience and clarity. One wise step at a time.",
     },
     struggling: {
       adams:
         "They're hitting a wall. Protective mode: lift the care, focus on basics. Remind them you've got their back.",
-      hawa: "The path is difficult right now. Speak with calm wisdom. Remind them of their strength and start from the foundational truths.",
+      haawa: "The path is difficult right now. Speak with calm wisdom. Remind them of their strength and start from the foundational truths.",
     },
     rusty: {
       adams:
         "They've been quiet. Nudge with direct energy: 'One quick win, bro. Secure the future.'",
-      hawa: "The mind has been still. Invite them back to the light of learning with a purposeful task.",
+      haawa: "The mind has been still. Invite them back to the light of learning with a purposeful task.",
     },
     absent: {
       adams:
         "Long time no see. Welcome them back like family. Suggest one immediate, practical win to get back on track.",
-      hawa: "They have been away. Welcome them home with warmth and grace. Offer a simple, meaningful starting point.",
+      haawa: "They have been away. Welcome them home with warmth and grace. Offer a simple, meaningful starting point.",
     },
   };
 
-  const line = adams ? moodLines[mood].adams : moodLines[mood].hawa;
+  const line = isAdams ? moodLines[mood].adams : moodLines[mood].haawa;
   const stats = `Recent: ${engagement.attempts7d} attempts/7d, avg ${engagement.avgPct7d}%, streak ${engagement.streakDays}d.`;
   return `${base}\nLearner mood: ${mood.toUpperCase()}. ${line}\n${stats}`;
 }
@@ -154,7 +154,7 @@ export function moodIntro(persona: Persona, mood: Mood, name?: string): string {
     rusty: `Eyy${who}, one quick win — let's wake it up.`,
     absent: `Yo${who}, welcome back. Let's secure the future.`,
   };
-  const hawa: Record<Mood, string> = {
+  const haawa: Record<Mood, string> = {
     soaring: `The path is clear today${who}. Your growth is evident.`,
     steady: `Walk steadily${who} — your discipline is your strength.`,
     wobbling: `Breathe${who}. Let us find the clarity you need.`,
@@ -162,5 +162,5 @@ export function moodIntro(persona: Persona, mood: Mood, name?: string): string {
     rusty: `Come${who} — a purposeful start awaits us.`,
     absent: `Welcome home${who}. Let us begin with intention.`,
   };
-  return persona === "Adams" ? adams[mood] : hawa[mood];
+  return persona === "Adams" ? adams[mood] : haawa[mood];
 }

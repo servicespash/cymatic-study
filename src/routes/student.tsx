@@ -60,9 +60,11 @@ function StudentDashboardPage() {
       setLoadingReports(true);
       try {
         const orgIdToUse = schoolId || organizationId;
-        
-        let query = (supabase.from as any)("project_submissions").select("*").eq("student_id", user.id);
-        
+
+        let query = (supabase.from as any)("project_submissions")
+          .select("*")
+          .eq("student_id", user.id);
+
         if (orgIdToUse) {
           query = query.eq("organization_id", orgIdToUse);
         }

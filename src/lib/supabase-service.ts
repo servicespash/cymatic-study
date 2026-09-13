@@ -20,7 +20,6 @@ export function useNewsFeed() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [diagnosticError, setDiagnosticError] = useState<string | null>(null);
-  const [isUsingMock, setIsUsingMock] = useState(false);
 
   const fetchItems = useCallback(async (forceRefresh = false) => {
     if (forceRefresh) {
@@ -51,10 +50,9 @@ export function useNewsFeed() {
       if (sbError) throw sbError;
 
       setItems(data || []);
-      setIsUsingMock(false);
       setDiagnosticError(null);
     } catch (err: any) {
-      console.warn("Supabase fetch from 'content' table failed, activating mock fallback:", err);
+      console.error("Supabase fetch from 'content' table failed:", err);
 
       // Capture the exact error details
       let errorMsg = "Unknown error";
@@ -69,7 +67,6 @@ export function useNewsFeed() {
 
       setDiagnosticError(errorMsg);
       setError(err instanceof Error ? err : new Error(errorMsg));
-      setIsUsingMock(true);
 
       // Fallback to empty array in case of connection failure
       setItems([]);
@@ -95,7 +92,6 @@ export function useNewsFeed() {
         },
         (payload) => {
           console.log("Real-time update received for 'content'!", payload);
-          if (isUsingMock) return; // Ignore if we are using the mock fallback
 
           setItems((currentItems) => {
             if (payload.eventType === "INSERT") {
@@ -128,7 +124,7 @@ export function useNewsFeed() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchItems, isUsingMock]);
+  }, [fetchItems]);
 
   return {
     items,
@@ -136,7 +132,6 @@ export function useNewsFeed() {
     refreshing,
     error,
     diagnosticError,
-    isUsingMock,
     refreshFeed: () => fetchItems(true),
   };
 }

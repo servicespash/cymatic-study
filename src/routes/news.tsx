@@ -58,7 +58,7 @@ function NewsPage() {
     NewsItemSchema,
     "*",
     [organizationId],
-    organizationId
+    organizationId,
   );
   const refreshing = false; // Real-time doesn't need explicit refresh
 

@@ -24,6 +24,8 @@ import {
   X,
   Sparkles,
   Search,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import { VisionLiveSession } from "@/components/VisionLiveSession";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,6 +42,7 @@ import { Share } from "@capacitor/share";
 import { Capacitor } from "@capacitor/core";
 import { Camera as CapCamera, CameraResultType } from "@capacitor/camera";
 import { sanitizeText } from "@/lib/HardwareBridge";
+import { LinkifiedText } from "@/components/LinkifiedText";
 
 const AI_TUTOR_MARKER = "__AI_TUTOR__";
 
@@ -91,18 +94,28 @@ function ChatRoomPage() {
   const [tutorOn, setTutorOn] = useState(false);
   const [tutorThinking, setTutorThinking] = useState(false);
   const [showVisionSession, setShowVisionSession] = useState(false);
+  const [ratedMessages, setRatedMessages] = useState<Record<string, number>>({});
+  const [manualLevel, setManualLevel] = useState<string | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Determine chat context - institutional uses org_id + level, independent uses global
+  // Determine chat context - institutional uses organization_id + level, independent uses global
   const chatContext = useMemo(() => {
-    if (isInstitutional && profile?.org_id && profile?.level) {
+    const isAdminOrTeacher =
+      profile?.role === "teacher" || profile?.role === "admin" || profile?.role === "org_admin";
+
+    if (isInstitutional && profile?.organization_id) {
+      // For institutional users, we need a level.
+      // If student, use their level. If staff, use a selected level or default to S1.
+      const levelToUse = manualLevel || profile.level || (isAdminOrTeacher ? "S1" : "general");
+
       return {
         type: "institutional" as const,
-        orgId: profile.org_id,
-        level: profile.level,
-        label: `${profile.level} - ${profile.school_name || "School Network"}`,
+        orgId: profile.organization_id,
+        level: levelToUse,
+        label: `${levelToUse} - ${profile.school_name || "School Network"}`,
+        isStaff: isAdminOrTeacher,
       };
     }
     return {
@@ -110,6 +123,7 @@ function ChatRoomPage() {
       orgId: "independent",
       level: profile?.level || "general",
       label: "Independent Learning Space",
+      isStaff: isAdminOrTeacher,
     };
   }, [isInstitutional, profile]);
 
@@ -136,10 +150,10 @@ function ChatRoomPage() {
 
     // Filter by context
     if (chatContext.type === "institutional") {
-      query = query.eq("org_id", chatContext.orgId).eq("level", chatContext.level);
+      query = query.eq("organization_id", chatContext.orgId).eq("level", chatContext.level);
     } else {
       // For independent users, show messages from independent channel or global
-      query = query.or(`org_id.eq.independent,org_id.is.null`);
+      query = query.or(`organization_id.eq.independent,organization_id.is.null`);
     }
 
     const { data, error } = await query;
@@ -172,8 +186,8 @@ function ChatRoomPage() {
           // Check if message belongs to our context
           const belongsToContext =
             chatContext.type === "institutional"
-              ? newMsg.org_id === chatContext.orgId && newMsg.level === chatContext.level
-              : newMsg.org_id === "independent" || !newMsg.org_id;
+              ? newMsg.organization_id === chatContext.orgId && newMsg.level === chatContext.level
+              : newMsg.organization_id === "independent" || !newMsg.organization_id;
 
           if (belongsToContext) {
             const { data: p } = await supabase
@@ -213,7 +227,7 @@ function ChatRoomPage() {
     }
     const { error } = await supabase.from("chat_messages").insert({
       user_id: user.id,
-      org_id: chatContext.orgId,
+      organization_id: chatContext.orgId,
       level: chatContext.level,
       content: text,
       file_url: attachment?.url,
@@ -263,9 +277,10 @@ function ChatRoomPage() {
         },
         body: JSON.stringify({
           messages: recent,
-          persona: "female",
+          persona:
+            profile?.tutor_persona ||
+            (["Math", "Physics"].includes(profile?.subject_interest || "") ? "Adams" : "Haawa"),
           mood: "focused",
-          userMood: "neutral",
           userName: profile?.display_name || "learner",
           context: { route: "/chat", profile },
         }),
@@ -339,6 +354,27 @@ function ChatRoomPage() {
       toast.error("Tutor unavailable: " + (e?.message || "try again"));
     } finally {
       setTutorThinking(false);
+    }
+  };
+
+  const handleFeedback = async (messageId: string, rating: number) => {
+    if (!user?.id) return;
+
+    try {
+      const { error } = await supabase.from("tutor_feedback").insert({
+        user_id: user.id,
+        message_id: messageId,
+        rating: rating,
+        organization_id: chatContext.orgId === "independent" ? null : chatContext.orgId,
+      });
+
+      if (error) throw error;
+
+      setRatedMessages((prev) => ({ ...prev, [messageId]: rating }));
+      toast.success("Thank you for your feedback!");
+    } catch (e) {
+      console.error("Feedback error:", e);
+      toast.error("Failed to save feedback");
     }
   };
 
@@ -529,6 +565,33 @@ function ChatRoomPage() {
                 </p>
               </div>
             </div>
+
+            {chatContext.isStaff && (
+              <div className="space-y-3">
+                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">
+                  Switch Level View
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {["S1", "S2", "S3", "S4", "S5", "S6"].map((lvl) => (
+                    <button
+                      key={lvl}
+                      onClick={() => {
+                        setManualLevel(lvl);
+                        setSidebarOpen(false);
+                        toast.success(`Switched to ${lvl} Chatroom`);
+                      }}
+                      className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
+                        chatContext.level === lvl
+                          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
+                          : "bg-white/5 text-zinc-500 hover:text-white hover:bg-white/10"
+                      }`}
+                    >
+                      {lvl}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-3">
               <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">
@@ -760,7 +823,41 @@ function ChatRoomPage() {
                       </div>
                     )}
                     {displayContent && (
-                      <p className="whitespace-pre-wrap leading-relaxed">{displayContent}</p>
+                      <LinkifiedText
+                        text={displayContent}
+                        className="whitespace-pre-wrap leading-relaxed"
+                        isOwn={isOwn}
+                      />
+                    )}
+                    {isAI && (
+                      <div className="flex items-center gap-3 pt-2 border-t border-primary/10 mt-2">
+                        <button
+                          onClick={() => handleFeedback(msg.id, 1)}
+                          className={`flex items-center gap-1 text-[10px] font-bold uppercase transition-colors ${
+                            ratedMessages[msg.id] === 1
+                              ? "text-primary"
+                              : "text-zinc-500 hover:text-primary/70"
+                          }`}
+                        >
+                          <ThumbsUp
+                            className={`h-3 w-3 ${ratedMessages[msg.id] === 1 ? "fill-current" : ""}`}
+                          />
+                          Helpful
+                        </button>
+                        <button
+                          onClick={() => handleFeedback(msg.id, -1)}
+                          className={`flex items-center gap-1 text-[10px] font-bold uppercase transition-colors ${
+                            ratedMessages[msg.id] === -1
+                              ? "text-rose-500"
+                              : "text-zinc-500 hover:text-rose-500/70"
+                          }`}
+                        >
+                          <ThumbsDown
+                            className={`h-3 w-3 ${ratedMessages[msg.id] === -1 ? "fill-current" : ""}`}
+                          />
+                          Not Really
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>

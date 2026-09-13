@@ -107,36 +107,7 @@ export async function handleNcdcNewsRequest(request: Request) {
   ];
 
   // Default Student Spotlights
-  const DEFAULT_STUDENT_SHOUTOUTS = [
-    {
-      title: "Student Spotlight: Joy Mary Alupo Tops National STEM Challenge",
-      body: JSON.stringify({
-        description:
-          "Joy Mary Alupo, a Senior 5 student from Tororo, has won the National Youth STEM Cup using Cymatic Study's interactive physics calculators to design a miniature eco-friendly irrigation sensor. We are incredibly proud of Joy! Keep shining!",
-        subject: "Physics",
-        achievement: "National STEM Cup Winner",
-        school: "Tororo Girls' School",
-      }),
-      media_url: null,
-      media_type: "student_shoutout",
-      is_ad: false,
-      is_active: true,
-    },
-    {
-      title: "Student Spotlight: Ronald Okello Designs Matrix Calculator",
-      body: JSON.stringify({
-        description:
-          "Ronald Okello, an S6 student from Gulu, built an offline matrix solver tool using Cymatic Study's documentation. His tool helps classmates verify linear transformation determinants. Truly excellent innovation, Ronald!",
-        subject: "Mathematics",
-        achievement: "Matrix Solver App Creator",
-        school: "St. Joseph's College Layibi",
-      }),
-      media_url: null,
-      media_type: "student_shoutout",
-      is_ad: false,
-      is_active: true,
-    },
-  ];
+  const DEFAULT_STUDENT_SHOUTOUTS: any[] = [];
 
   let isEmpty = true;
   const hasAdminKey = !!(
@@ -284,71 +255,9 @@ export async function handleNcdcNewsRequest(request: Request) {
       }
     }
 
-    // 2. Seed default tables if database is completely empty
-    if (isEmpty && hasAdminKey) {
-      try {
-        console.log("First-time seeding of Podcasts, Live Sessions, and Student Shoutouts...");
-        await supabaseAdmin.from("news_broadcasts").insert(DEFAULT_PODCASTS);
-        await supabaseAdmin.from("news_broadcasts").insert(DEFAULT_LIVE_SESSIONS);
-        await supabaseAdmin.from("news_broadcasts").insert(DEFAULT_STUDENT_SHOUTOUTS);
-
-        // Fallback curriculum seeds if Gemini fetch was empty
-        if (generatedNews.length === 0) {
-          const fallbackCurriculum = [
-            {
-              title: "NCDC Rollout of New S5 & S6 Syllabi for Scientific Subjects",
-              body: "The National Curriculum Development Centre (NCDC) has officially released the updated Advanced Level (UACE) syllabus guidelines for Mathematics, Physics, Chemistry, and Biology. Focus is now on research-driven investigations, continuous project assessments, and practical application modules.",
-              media_type: "curriculum_update",
-              is_ad: false,
-              is_active: true,
-              published_at: new Date(Date.now() - 3600000 * 2).toISOString(),
-            },
-            {
-              title: "UNEB S4 (UCE) Chemistry and Biology Mock Exams Schedule",
-              body: "The Uganda National Examinations Board (UNEB) has announced the nationwide dates for lower secondary mock practicals. Students are encouraged to practice their laboratory drawings, titration analysis, and biology specimen classifications.",
-              media_type: "curriculum_update",
-              is_ad: false,
-              is_active: true,
-              published_at: new Date(Date.now() - 3600000 * 12).toISOString(),
-            },
-          ];
-          await supabaseAdmin.from("news_broadcasts").insert(fallbackCurriculum);
-        }
-      } catch (innerError) {
-        console.warn("Could not seed default news in database:", innerError);
-      }
-    } else if (hasAdminKey) {
-      try {
-        // Check for missing categories and patch them so they exist
-        const { data: podcasts } = await supabaseAdmin
-          .from("news_broadcasts")
-          .select("id")
-          .eq("media_type", "podcast")
-          .limit(1);
-        if (!podcasts || podcasts.length === 0) {
-          await supabaseAdmin.from("news_broadcasts").insert(DEFAULT_PODCASTS);
-        }
-
-        const { data: sessions } = await supabaseAdmin
-          .from("news_broadcasts")
-          .select("id")
-          .eq("media_type", "live_session")
-          .limit(1);
-        if (!sessions || sessions.length === 0) {
-          await supabaseAdmin.from("news_broadcasts").insert(DEFAULT_LIVE_SESSIONS);
-        }
-
-        const { data: shoutouts } = await supabaseAdmin
-          .from("news_broadcasts")
-          .select("id")
-          .eq("media_type", "student_shoutout")
-          .limit(1);
-        if (!shoutouts || shoutouts.length === 0) {
-          await supabaseAdmin.from("news_broadcasts").insert(DEFAULT_STUDENT_SHOUTOUTS);
-        }
-      } catch (innerError) {
-        console.warn("Could not patch missing news categories in database:", innerError);
-      }
+    // 2. No automatic seeding of default tables; respect real institutional data integrity
+    if (isEmpty && hasAdminKey && generatedNews.length === 0) {
+      console.log("News feed is empty. Waiting for real or AI-generated content.");
     }
 
     return new Response(

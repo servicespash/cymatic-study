@@ -13,8 +13,8 @@ interface Persona {
 }
 
 const PERSONA_CONFIG: Record<string, Persona> = {
-  Adams: { name: "Adams", pitch: 0.8, rate: 0.9, voiceGender: "male" },
-  Haawa: { name: "Haawa", pitch: 1.2, rate: 1.1, voiceGender: "female" },
+  Adams: { name: "Adams", pitch: 0.85, rate: 1.0, voiceGender: "male" },
+  Haawa: { name: "Haawa", pitch: 1.15, rate: 1.05, voiceGender: "female" },
 };
 
 const isBrowser = (): boolean => typeof window !== "undefined" && typeof document !== "undefined";
@@ -49,6 +49,9 @@ export const speakText = async (text: string, personaName: "Adams" | "Haawa") =>
 
   // Sanitize text to prevent reading out markdown characters and create natural pauses
   const sanitizedText = text
+    .replace(/\/\/\*+/g, "") // Remove noise //**
+    .replace(/\/\*+/g, "") // Remove noise //*
+    .replace(/\*+\/\//g, "") // Remove noise **//
     .replace(/\*\*/g, "") // Remove bold markers
     .replace(/\/\//g, ", ") // Replace // with a comma for a slight pause
     .replace(/["'`]/g, "") // Remove quotes and backticks
@@ -100,7 +103,9 @@ export const speakText = async (text: string, personaName: "Adams" | "Haawa") =>
         (v.name.toLowerCase().includes("male") ||
           v.name.includes("google-m") ||
           v.name.includes("en-us-x-iom") ||
-          v.name.includes("en-gb-x-fis")),
+          v.name.includes("en-gb-x-fis") ||
+          v.name.includes("David") ||
+          v.name.includes("Mark")),
     );
   } else {
     targetVoice = voices.find(
@@ -109,13 +114,17 @@ export const speakText = async (text: string, personaName: "Adams" | "Haawa") =>
         (v.name.toLowerCase().includes("female") ||
           v.name.includes("google-f") ||
           v.name.includes("en-us-x-sfg") ||
-          v.name.includes("en-us-x-tpf")),
+          v.name.includes("en-us-x-tpf") ||
+          v.name.includes("Zira") ||
+          v.name.includes("Samantha") ||
+          v.name.includes("Victoria")),
     );
   }
 
   // Absolute baseline fallback array sequence for limited devices
   if (!targetVoice) {
     const enVoices = voices.filter((v) => v.lang.startsWith("en"));
+    // Attempt to pick a diverse set of defaults if the specific gendered voice isn't found by name
     targetVoice = personaName === "Adams" ? enVoices[1] || enVoices[0] : enVoices[0];
   }
 

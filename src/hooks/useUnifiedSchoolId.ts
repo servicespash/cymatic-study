@@ -14,7 +14,7 @@ export function useUnifiedSchoolId() {
 
   const rawSchoolId =
     profile?.school_id ||
-    profile?.org_id ||
+    profile?.organization_id ||
     userRoleSchoolId ||
     (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : null) ||
     "";
@@ -26,8 +26,8 @@ export function useUnifiedSchoolId() {
   const updateSchoolId = async (newSchoolId: string, newSchoolName: string) => {
     if (!user) return;
     if (!isAdmin) {
-        toast.error("Unauthorized: Only admins can update institutional settings.");
-        return;
+      toast.error("Unauthorized: Only admins can update institutional settings.");
+      return;
     }
     if (isUuid(newSchoolId)) {
       toast.error("UUIDs are not permitted as School IDs.");

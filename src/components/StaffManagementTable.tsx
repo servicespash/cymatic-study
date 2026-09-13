@@ -29,6 +29,10 @@ export function StaffManagementTable() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [newRole, setNewRole] = useState<string>("teacher");
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchStaff = async () => {
     setLoading(true);
@@ -91,8 +95,107 @@ export function StaffManagementTable() {
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </button>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
+          >
+            <Shield className="w-3.5 h-3.5" />
+            Authorize Staff
+          </button>
         </div>
       </div>
+
+      {/* Add Staff Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-xl p-6 shadow-xl w-full max-w-md animate-in fade-in zoom-in duration-200">
+            <h4 className="text-lg font-semibold mb-2">Authorize New Staff</h4>
+            <p className="text-sm text-muted-foreground mb-4">
+              Pre-assign a role to an email address. When the user signs up with this email, they
+              will automatically receive the assigned role.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium mb-1.5 uppercase tracking-wider text-muted-foreground">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="staff@school.edu"
+                  className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium mb-1.5 uppercase tracking-wider text-muted-foreground">
+                  Role Assignment
+                </label>
+                <select
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value)}
+                  className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                >
+                  <option value="teacher">Teacher</option>
+                  <option value="org_admin">Organization Administrator</option>
+                  <option value="admin">System Administrator</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 mt-6">
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 text-sm font-medium rounded-lg hover:bg-muted transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!newEmail || !newEmail.includes("@")) {
+                      toast.error("Please enter a valid email");
+                      return;
+                    }
+                    setSubmitting(true);
+                    try {
+                      // Get current org id
+                      const { data: profile } = await supabase
+                        .from("profiles")
+                        .select("organization_id")
+                        .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
+                        .single();
+
+                      const { error: insertError } = await supabase
+                        .from("authorized_roles")
+                        .insert({
+                          email: newEmail.toLowerCase().trim(),
+                          role: newRole,
+                          organization_id: profile?.organization_id || "SCH-UG-DEFAULT",
+                        });
+
+                      if (insertError) throw insertError;
+
+                      toast.success("Staff authorized successfully!");
+                      setShowAddModal(false);
+                      setNewEmail("");
+                      void fetchStaff();
+                    } catch (err: any) {
+                      toast.error(err.message || "Failed to authorize staff");
+                    } finally {
+                      setSubmitting(false);
+                    }
+                  }}
+                  disabled={submitting}
+                  className="px-4 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+                >
+                  {submitting ? "Processing..." : "Authorize Role"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-center gap-3 mb-6">

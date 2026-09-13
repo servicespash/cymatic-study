@@ -91,7 +91,7 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     adamsName: "Adams (Male)",
     adamsDesc:
       "Pitched lower at a robust, deliberate pace. Designed for systematic explanations of curriculum logic and science exercises.",
-    powerName: "Power / Haawa (Female)",
+    powerName: "Haawa (Female)",
     powerDesc:
       "Pitched higher, carrying a supportive, modern tone. Tuned for reviewing syllabus frameworks and evaluations.",
     synthesisAttrs: "Speech Synthesis Attributes",
@@ -151,7 +151,7 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     adamsName: "Adams (Omusajja)",
     adamsDesc:
       "Nga eddoboozi liri wansi, nga lya nkalakkalira. Lyategekebwa okunnyonnyola ebikwata ku mikutu gwa ssaayansi.",
-    powerName: "Power / Haawa (Omukazi)",
+    powerName: "Haawa (Omukazi)",
     powerDesc:
       "Nga eddoboozi liri waggulu, nga lya kutegeera ne mbeera ey'omulembe. Lyategekebwa okuddamu emikutu.",
     synthesisAttrs: "Entegeka y'Eddoboozi ery'Omulembe",
@@ -208,7 +208,7 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     testVoiceBtn: "Gezaako Eraka",
     adamsName: "Adams (Omushaija)",
     adamsDesc: "Nga eraka riri hansi, ryatebejekwa okunshonshorera eby'esomomo rya ssaayansi.",
-    powerName: "Power / Haawa (Omukazi)",
+    powerName: "Haawa (Omukazi)",
     powerDesc: "Nga eraka riri buggya, rya kutegeera kw'omulembe. Ryatebejekwa okugarukamu.",
     synthesisAttrs: "Okutebeja kw'Eraka ry'Omulembe",
     synthesisAttrsSub: "Kyusa mu bipimo by'okwogera butereevu okuva mu kyuma.",
@@ -265,7 +265,7 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     adamsName: "Adams (Kiume)",
     adamsDesc:
       "Sauti nzito yenye mwendo wa utulivu. Inafaa kwa maelezo ya kina ya sayansi na mantiki ya mtaala.",
-    powerName: "Power / Haawa (Kike)",
+    powerName: "Haawa (Kike)",
     powerDesc:
       "Sauti ya juu, yenye sauti ya kisasa na inayofariji. Inafaa kwa kupitia miongozo ya mtaala.",
     synthesisAttrs: "Tabia za Sauti za Kidijiti",
@@ -323,7 +323,7 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     testVoiceBtn: "Tem Dwol",
     adamsName: "Adams (Dichuo)",
     adamsDesc: "Dwol mapiny maber, momako chengo. Olosne lero weche moko mag sayans kod syllabus.",
-    powerName: "Power / Haawa (Dhako)",
+    powerName: "Haawa (Dhako)",
     powerDesc: "Dwol mamalo, moketo kido manyien. Olosne ng'iyo weche syllabus kod penjo.",
     synthesisAttrs: "Kido mar Dwol mar Kompyuta",
     synthesisAttrsSub: "Lok speed kod pitch mar somo mag dwol.",
@@ -382,7 +382,7 @@ const translations: Record<LanguageCode, TranslationDictionary> = {
     adamsName: "Adams (Omusajja)",
     adamsDesc:
       "Nga eddoboozi liri wansi, nga lya nkalakkalira. Lyategekebwa okunnyonnyola ebikwata ku mikutu gwa ssaayansi ne syllabus.",
-    powerName: "Power / Haawa (Omukazi)",
+    powerName: "Haawa (Omukazi)",
     powerDesc:
       "Nga eddoboozi liri waggulu, nga lya kutegeera ne mbeera ey'omulembe. Lyategekebwa okuddamu.",
     synthesisAttrs: "Ebisito by'Eddoboozi ery'Omulembe",

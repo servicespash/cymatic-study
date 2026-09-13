@@ -72,8 +72,8 @@ export function MarkingDesk() {
         )
         .order("created_at", { ascending: false });
 
-      if (profile?.org_id) {
-        query = query.eq("org_id", profile.org_id);
+      if (profile?.organization_id) {
+        query = query.eq("organization_id", profile.org_id);
       }
 
       const { data, error } = await query;

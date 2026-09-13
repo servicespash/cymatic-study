@@ -99,7 +99,7 @@ function DashboardPage() {
 
   const loadTasks = async () => {
     try {
-      let query = (supabase.from as any)("dashboard_tasks").select("*");
+      let query = supabase.from("dashboard_tasks").select("*");
 
       if (organizationId) {
         query = query.or(`organization_id.is.null,organization_id.eq.${organizationId}`);
@@ -147,8 +147,8 @@ function DashboardPage() {
           isAdmin,
         });
         let query = supabase.from("profiles").select("*");
-        const targetId = (profile as any)?.organization_id || profile?.org_id;
-        
+        const targetId = profile?.organization_id;
+
         // Strict organization filtering to satisfy requirement
         if (targetId) {
           query = query.eq("org_id", targetId);
@@ -172,7 +172,7 @@ function DashboardPage() {
             (p) => p.role === "student" || !p.role || p.role === "",
           );
 
-          const studentIds = studentProfiles.map((p) => p.user_id).filter(Boolean);
+          const studentIds = studentProfiles.map((p) => p.user_id).filter(Boolean) as string[];
           const pointsMap: Record<string, number> = {};
 
           if (studentIds.length > 0) {
@@ -187,8 +187,9 @@ function DashboardPage() {
             }
           }
 
-          const mapped = (studentProfiles as any[]).map((p: any) => {
-            const totalPoints = pointsMap[p.user_id] || 0;
+          const mapped = studentProfiles.map((p) => {
+            const userId = p.user_id || "";
+            const totalPoints = pointsMap[userId] || 0;
             let status = "Getting Started";
             if (totalPoints > 150) status = "All Completed";
             else if (totalPoints > 50) status = "Ahead of Pace";
@@ -196,8 +197,8 @@ function DashboardPage() {
 
             return {
               id: p.id,
-              name: p.full_name || p.display_name || p.username || "Student Scholar",
-              class: p.level || "Senior 3",
+              name: p.full_name || p.display_name || p.username || "Scholar",
+              class: p.level || "Unassigned",
               status: status,
               score: `${Math.min(100, Math.max(10, Math.round(totalPoints / 2.5)))}%`,
               points: totalPoints,
@@ -221,7 +222,7 @@ function DashboardPage() {
     isTeacher,
     isAdmin,
     profile?.school_id,
-    (profile as any)?.org_id,
+    profile?.org_id,
     profile?.school_name,
     isGuestMode,
   ]);
@@ -234,7 +235,7 @@ function DashboardPage() {
     }
 
     try {
-      const { error } = await (supabase.from as any)("dashboard_tasks").insert({
+      const { error } = await supabase.from("dashboard_tasks" as any).insert({
         title: manualTitle,
         subject: manualSubject,
         description: manualDesc,
@@ -323,7 +324,7 @@ function DashboardPage() {
                   Institutional Admin Authority
                 </Badge>
                 <span className="text-xs text-blue-400 font-mono font-bold">
-                  {profile?.school_id || profile?.org_id || "SCH-UG-2026"}
+                  {profile?.school_id || profile?.organization_id || "UNLINKED"}
                 </span>
               </div>
               <h3 className="text-xl font-black text-white uppercase tracking-tight">

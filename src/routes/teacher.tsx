@@ -74,7 +74,8 @@ export interface StudentSubmission {
 function TeacherWorkflowPage() {
   const { user, profile, organizationId } = useAuth();
   const { schoolId: unifiedSchoolId } = useUnifiedSchoolId();
-  const currentSchoolId = unifiedSchoolId || organizationId || (profile as any)?.org_id || profile?.school_id || "";
+  const currentSchoolId =
+    unifiedSchoolId || organizationId || (profile as any)?.org_id || profile?.school_id || "";
   const teacherName = profile?.display_name || user?.email?.split("@")[0] || "Faculty Evaluator";
 
   const [submissions, setSubmissions] = useState<StudentSubmission[]>([]);
@@ -113,7 +114,7 @@ function TeacherWorkflowPage() {
     async function loadSubmissions() {
       setLoadingData(true);
       try {
-        let query = (supabase as any)
+        let query = supabase
           .from("project_submissions")
           .select("*")
           .order("created_at", { ascending: false });
@@ -122,7 +123,7 @@ function TeacherWorkflowPage() {
           query = query.eq("organization_id", currentSchoolId);
         }
 
-        const { data: dbSubs, error: fetchError } = await query;
+        const { data: dbSubs, error: fetchError } = await (query as any);
 
         if (fetchError) {
           if (fetchError.code === "PGRST205") {
@@ -133,7 +134,7 @@ function TeacherWorkflowPage() {
         }
 
         if (dbSubs && dbSubs.length > 0) {
-          const mapped: StudentSubmission[] = (dbSubs as any[]).map((s: any) => ({
+          const mapped: StudentSubmission[] = dbSubs.map((s: any) => ({
             id: s.id,
             student_name: s.student_name || "Unknown Student",
             student_id: s.student_id || "STD-UNKNOWN",
@@ -142,7 +143,9 @@ function TeacherWorkflowPage() {
             subject: s.subject || "Unspecified",
             project_title: s.project_title || "Untitled Assessment",
             project_description: s.project_description || "No description provided.",
-            submitted_at: s.created_at ? s.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
+            submitted_at: s.created_at
+              ? s.created_at.split("T")[0]
+              : new Date().toISOString().split("T")[0],
             status: s.score !== null && s.score !== undefined ? "graded" : "pending",
             score: s.score || undefined,
             rubricScores: {
@@ -187,7 +190,7 @@ function TeacherWorkflowPage() {
 
     try {
       // Upsert to Supabase project_submissions
-      const { error: upsertError } = await (supabase as any).from("project_submissions").upsert({
+      const { error: upsertError } = await (supabase.from("project_submissions") as any).upsert({
         id: selectedSubmission.id,
         student_name: selectedSubmission.student_name,
         student_id: selectedSubmission.student_id,

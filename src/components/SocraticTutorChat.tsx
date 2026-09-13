@@ -1,19 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useSubjectProgress } from "@/hooks/useSubjectProgress";
 import { logRecentActivity } from "@/lib/offline-db";
-import {
-  Send,
-  Sparkles,
-  HelpCircle,
-  BookOpen,
-  RotateCcw,
-  BrainCircuit,
-  Mic,
-  Settings,
-  Menu,
-  Download,
-  Printer,
-} from "lucide-react";
+import { Send, HelpCircle, Menu, Download, Settings, Printer, Mic } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useTutorStore } from "@/store/useTutorStore";
@@ -22,6 +10,8 @@ import { ChatSidebar } from "./ChatSidebar";
 import { ExportPdfModal } from "./ExportPdfModal";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+
+import { LinkifiedText } from "./LinkifiedText";
 
 interface TopicConfig {
   name: string;
@@ -353,7 +343,11 @@ export function SocraticTutorChat() {
                           <HelpCircle className="w-3 h-3" /> Socratic Guide
                         </span>
                       )}
-                      <p>{msg.text}</p>
+                      <LinkifiedText
+                        text={msg.text}
+                        isOwn={msg.sender === "student"}
+                        className="leading-relaxed"
+                      />
                       <span className="text-[8px] text-zinc-600 block mt-1.5 text-right font-mono">
                         {msg.timestamp}
                       </span>

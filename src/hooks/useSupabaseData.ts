@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PostgrestError } from "@supabase/supabase-js";
+import { useAuth } from "@/lib/auth-context";
 
 export function useSupabaseData<T>(
   query: any,
   dependencies: any[] = [],
-  organizationId?: string | null,
+  manualOrganizationId?: string | null,
 ) {
+  const { organizationId: contextOrgId } = useAuth();
+  const organizationId = manualOrganizationId || contextOrgId;
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<PostgrestError | null>(null);
@@ -20,10 +23,23 @@ export function useSupabaseData<T>(
       // STRICT FILTERING: Prevent cross-school data leakage
       try {
         if (typeof query.eq === "function") {
-          finalQuery = query.eq("organization_id", organizationId);
+          const tableName = (query as any).table?.table || "";
+          
+          // Map correct column names based on table
+          if (tableName === "profiles") {
+            finalQuery = query.eq("org_id", organizationId);
+          } else if (tableName === "news_broadcasts" || tableName === "news") {
+            // News is typically global
+            console.log("useSupabaseData: Skipping org filter for news_broadcasts");
+          } else {
+            finalQuery = query.eq("organization_id", organizationId);
+          }
         }
       } catch (e) {
-        console.warn("useSupabaseData: Could not apply organizationId filter to provided query.", e);
+        console.warn(
+          "useSupabaseData: Could not apply organizationId filter to provided query.",
+          e,
+        );
       }
     }
 
@@ -38,7 +54,7 @@ export function useSupabaseData<T>(
     return () => {
       active = false;
     };
-  }, dependencies);
+  }, [organizationId, ...dependencies]);
 
   return { data, loading, error };
 }

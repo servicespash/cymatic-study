@@ -40,7 +40,7 @@ export function DashboardLayout({ children, activeSection }: DashboardLayoutProp
     profile?.school_name ||
     user?.user_metadata?.school_name ||
     "Uganda Secondary Curriculum";
-  const orgId = schoolId || profile?.school_id || profile?.org_id || "SCH-UG-2026";
+  const orgId = schoolId || profile?.school_id || profile?.organization_id || "SCH-UG-2026";
 
   const getRoleConfig = () => {
     switch (currentRole) {

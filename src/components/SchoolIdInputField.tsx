@@ -36,7 +36,7 @@ export function SchoolIdInputField({ onSaved, className = "" }: SchoolIdInputFie
 
   const currentSchoolId =
     profile?.school_id ||
-    profile?.org_id ||
+    profile?.organization_id ||
     user?.user_metadata?.school_id ||
     (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : "") ||
     "";

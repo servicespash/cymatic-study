@@ -173,12 +173,12 @@ function AdminDashboard() {
   const [feedbackList, setFeedbackList] = useState<any[]>([]);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
 
-  const currentOrgId = profile?.org_id || user?.user_metadata?.school_id || org?.id || "";
+  const currentOrgId = profile?.organization_id || user?.user_metadata?.school_id || org?.id || "";
 
   useEffect(() => {
     if (!user?.id) return;
     fetchOrgData();
-  }, [user?.id, profile?.org_id]);
+  }, [user?.id, profile?.organization_id]);
 
   if (!user) return null;
 
@@ -201,12 +201,11 @@ function AdminDashboard() {
       if (prof?.organizations) {
         setOrg(prof.organizations);
       } else {
-        setOrg({
-          id: activeSchoolId,
-          name: prof?.school_name || "Uganda NCDC Boarding School",
-          school_key: activeSchoolId,
-          created_at: new Date().toISOString(),
-        });
+        setOrg(null);
+        if (activeSchoolId) {
+          // If we have an ID but no record, it might be an orphaned admin or first-time setup
+          console.warn(`[Admin] Organization record not found for ID: ${activeSchoolId}`);
+        }
       }
       loadDashboardStats(activeSchoolId);
       loadClassStudentsAndSubmissions(activeSchoolId);
@@ -292,14 +291,14 @@ function AdminDashboard() {
     const { count: pendingCount } = await supabase
       .from("project_submissions")
       .select("*", { count: "exact", head: true })
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .eq("status", "pending");
 
     // 3. Fetch active teachers (users with teacher role in this org)
     const { data: teachersInSubs } = await supabase
       .from("project_submissions")
       .select("teacher_id, teacher_name")
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .not("teacher_id", "is", null);
 
     const uniqueTeachers = new Set(teachersInSubs?.map((t) => t.teacher_id));
@@ -321,7 +320,7 @@ function AdminDashboard() {
     const { data: chatMsgs } = await supabase
       .from("chat_messages")
       .select("user_id, level")
-      .eq("org_id", orgId);
+      .eq("organization_id", orgId);
 
     if (chatMsgs) {
       const msgCounts: Record<string, number> = {};
@@ -341,7 +340,7 @@ function AdminDashboard() {
     const { data: velocityRows } = await supabase
       .from("project_submissions")
       .select("created_at")
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
 
     if (velocityRows) {
@@ -358,15 +357,8 @@ function AdminDashboard() {
       const orderedDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
       setVelocityData(orderedDays.map((d) => ({ day: d, submissions: dayCounts[d] })));
     } else {
-      setVelocityData([
-        { day: "Mon", submissions: 4 },
-        { day: "Tue", submissions: 12 },
-        { day: "Wed", submissions: 8 },
-        { day: "Thu", submissions: 25 },
-        { day: "Fri", submissions: 18 },
-        { day: "Sat", submissions: 5 },
-        { day: "Sun", submissions: 2 },
-      ]);
+      // Velocity Data
+      setVelocityData([]);
     }
 
     // 6. Bottleneck analytics
@@ -374,7 +366,7 @@ function AdminDashboard() {
     const { data: bottlenecks } = await supabase
       .from("project_submissions")
       .select("teacher_name, status")
-      .eq("org_id", orgId);
+      .eq("organization_id", orgId);
 
     const teacherMap: Record<string, { pending: number; verified: number }> = {};
     bottlenecks?.forEach((b) => {
@@ -406,7 +398,7 @@ function AdminDashboard() {
         .select(
           "id, project_title, student_name, student_id, level, subject, score, teacher_name, status, created_at, org_id",
         )
-        .eq("org_id", orgId);
+        .eq("organization_id", orgId);
 
       // No auto-seeding of fake mock records; respect real institutional data integrity
       if (stdData && stdData.length > 0) {
@@ -794,7 +786,7 @@ function AdminDashboard() {
                 <p className="text-zinc-500 text-sm">
                   Oversee students registered under School ID:{" "}
                   <span className="font-mono text-blue-400 font-bold">
-                    {currentOrgId || "SCH-UG-2026"}
+                    {currentOrgId || "UNLINKED"}
                   </span>
                 </p>
               </div>
@@ -869,7 +861,7 @@ function AdminDashboard() {
                     Institutional School ID
                   </p>
                   <p className="text-sm font-mono text-blue-400 mt-1 font-bold truncate">
-                    {currentOrgId || "SCH-UG-2026-X9"}
+                    {currentOrgId || "NOT FOUND"}
                   </p>
                 </CardContent>
               </Card>
@@ -942,7 +934,7 @@ function AdminDashboard() {
                             </div>
                           </TableCell>
                           <TableCell className="font-mono text-xs text-muted-foreground">
-                            {currentOrgId || "SCH-UG-2026"}
+                            {currentOrgId || "UNLINKED"}
                           </TableCell>
                           <TableCell className="font-bold text-foreground">
                             {s.submissionCount || 0}

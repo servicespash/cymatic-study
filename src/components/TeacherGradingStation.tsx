@@ -58,7 +58,7 @@ export function TeacherGradingStation() {
   const { user, profile } = useAuth();
   const currentSchoolId =
     profile?.school_id ||
-    profile?.org_id ||
+    profile?.organization_id ||
     user?.user_metadata?.school_id ||
     (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : "") ||
     "SCH-UG-2026";

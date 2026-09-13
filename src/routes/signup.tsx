@@ -119,9 +119,9 @@ function SignupPage() {
 
     try {
       // Role locking check: check if a profile already exists for this email
-      // Note: Supabase auth.signUp already checks for existing users, 
+      // Note: Supabase auth.signUp already checks for existing users,
       // but we want to be explicit about role-locking.
-      
+
       const mappedRole =
         mode === "register-institution"
           ? "admin"
@@ -152,7 +152,9 @@ function SignupPage() {
 
       if (signUpError) {
         if (signUpError.message.toLowerCase().includes("already registered")) {
-          throw new Error("This email is already active in use. Each account is locked to its original role (Admin, Teacher, or Student). To change roles, please contact system support or use a different institutional email.");
+          throw new Error(
+            "This email is already active in use. Each account is locked to its original role (Admin, Teacher, or Student). To change roles, please contact system support or use a different institutional email.",
+          );
         }
         throw signUpError;
       }
