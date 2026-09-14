@@ -65,6 +65,7 @@ import { SchoolIdInputField } from "@/components/SchoolIdInputField";
 import { SchoolIdQRCode } from "@/components/SchoolIdQRCode";
 import { InstitutionalRegistryModule } from "@/components/InstitutionalRegistryModule";
 import { AdminPerformanceReportsModule } from "@/components/AdminPerformanceReportsModule";
+import { StudentMatrix } from "@/components/admin/StudentMatrix";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TeacherApprovalTable } from "@/components/admin/TeacherApprovalTable";
 import { DeploymentStatus } from "@/components/DeploymentStatus";
@@ -75,7 +76,7 @@ import { DisciplineNudges } from "@/components/DisciplineNudges";
 import { SupabaseLivePulseHeader } from "@/components/SupabaseLivePulseHeader";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 
-export const Route = createFileRoute("/admin/dashboard")({
+export const Route = createFileRoute("/admin/dashboard/")({
   head: () => ({
     meta: [
       { title: "Admin Institutional Console | Cymatic Study" },
@@ -86,13 +87,7 @@ export const Route = createFileRoute("/admin/dashboard")({
       },
     ],
   }),
-  component: () => (
-    <GlobalErrorBoundary fallbackTitle="Admin Dashboard Exception">
-      <AuthRouteMiddleware requireAdmin>
-        <AdminDashboard />
-      </AuthRouteMiddleware>
-    </GlobalErrorBoundary>
-  ),
+  component: AdminDashboard,
 });
 
 import { Organization, Stats, VelocityData, TeacherBottleneck } from "@/types/admin";
@@ -193,6 +188,7 @@ function AdminDashboard() {
       .single();
 
     const activeSchoolId = prof?.org_id || user?.user_metadata?.school_id || "";
+    const activeOrgName = prof?.organizations?.name || prof?.school_name || "Institutional School";
 
     if (!activeSchoolId) {
       setIsOnboardingNeeded(true);
@@ -208,7 +204,7 @@ function AdminDashboard() {
         }
       }
       loadDashboardStats(activeSchoolId);
-      loadClassStudentsAndSubmissions(activeSchoolId);
+      loadClassStudentsAndSubmissions(activeSchoolId, activeOrgName);
       loadFeedback();
     }
   };
@@ -218,12 +214,10 @@ function AdminDashboard() {
     try {
       const { data, error } = await supabase
         .from("user_feedback")
-        .select(
-          `
+        .select(`
           *,
-          profiles:user_id (display_name, level)
-        `,
-        )
+          profiles:user_id (display_name)
+        `)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -266,8 +260,8 @@ function AdminDashboard() {
     // 1. Fetch profiles by org_id or school_id
     const { data: allProfiles } = await supabase
       .from("profiles")
-      .select("level, role")
-      .or(`org_id.eq.${orgId},school_id.eq.${orgId}`);
+      .select("role")
+      .eq("org_id", orgId);
 
     const counts = { S1: 0, S2: 0, S3: 0, S4: 0, S5: 0, S6: 0 };
     let studentCount = 0;
@@ -385,43 +379,40 @@ function AdminDashboard() {
     );
   };
 
-  const loadClassStudentsAndSubmissions = async (orgId: string) => {
+  const loadClassStudentsAndSubmissions = async (orgId: string, orgName: string) => {
     setLoadingList(true);
     try {
       // Load profiles/students
       let { data: stdData } = await (supabase.from("profiles") as any)
-        .select("id, user_id, display_name, level, stream, org_id, school_id, school_name, role")
-        .or(`org_id.eq.${orgId},school_id.eq.${orgId}`);
+        .select("id, user_id, display_name, org_id, school_name, role")
+        .eq("org_id", orgId);
 
       // Load project submissions
       let { data: subData } = await (supabase.from("project_submissions") as any)
-        .select(
-          "id, project_title, student_name, student_id, level, subject, score, teacher_name, status, created_at, org_id",
-        )
-        .eq("organization_id", orgId);
+        .select("id, student_id, total_competency_score, teacher_name, status, created_at, school_key")
+        .eq("school_key", orgId);
 
       // No auto-seeding of fake mock records; respect real institutional data integrity
       if (stdData && stdData.length > 0) {
-        const mappedStudents: StudentRecord[] = stdData.map((s) => {
-          const studentSubs =
-            subData?.filter(
-              (sub) => sub.student_id === s.user_id || sub.student_name === s.display_name,
-            ) || [];
+        const mappedStudents: StudentRecord[] = stdData
+          .filter((s) => s.role === "student" || s.role === "student_monitor") // Only students
+          .map((s) => {
+          const studentSubs = subData?.filter((sub) => sub.student_id === (s.user_id || s.id)) || [];
           const gradedSubs = studentSubs.filter(
-            (sub) => sub.score !== null && sub.score !== undefined,
+            (sub) => sub.total_competency_score !== null && sub.total_competency_score !== undefined,
           );
-          const totalScore = gradedSubs.reduce((acc, sub) => acc + (sub.score || 0), 0);
+          const totalScore = gradedSubs.reduce((acc, sub) => acc + (sub.total_competency_score || 0), 0);
           const avgScore = gradedSubs.length > 0 ? Math.round(totalScore / gradedSubs.length) : 75;
 
           return {
             id: s.id || s.user_id,
             user_id: s.user_id || s.id,
             display_name: s.display_name || "Scholar",
-            level: s.level || "S1",
-            stream: s.stream || "Stream A",
+            level: "S1",
+            stream: "Stream A",
             role: s.role || "student",
             org_id: s.org_id || s.school_id,
-            school_name: s.school_name || "Institutional School",
+            school_name: orgName,
             avgScore,
             submissionCount: studentSubs.length || 0,
           };
@@ -435,11 +426,11 @@ function AdminDashboard() {
         setSubmissionsList(
           subData.map((s) => ({
             id: s.id,
-            project_title: s.project_title || "Competency Task",
-            student_name: s.student_name || "Scholar",
-            level: s.level || "S1",
-            subject: s.subject || "General Science",
-            score: s.score,
+            project_title: "Competency Task",
+            student_name: "Scholar",
+            level: "S1",
+            subject: "General Science",
+            score: s.total_competency_score,
             teacher_name: s.teacher_name || "Lead Verifier",
             status: s.status || "pending",
             created_at: s.created_at || new Date().toISOString(),
@@ -476,86 +467,32 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-blue-600/30">
-      {/* Sidebar Navigation */}
-      <aside className="fixed left-0 top-0 bottom-0 w-64 border-r border-border bg-card/80 backdrop-blur-3xl z-50 hidden lg:flex flex-col">
-        <div className="p-6">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center font-black">
-              C
-            </div>
-            <span className="font-black uppercase tracking-widest text-sm">Cymatic Command</span>
-          </div>
-
-          <nav className="space-y-1">
-            <NavButton
-              icon={LayoutDashboard}
-              label="Overview"
-              active={activeTab === "overview"}
-              onClick={() => setActiveTab("overview")}
-            />
-            <NavButton
-              icon={GraduationCap}
-              label="Students (S1-S6)"
-              active={activeTab === "students"}
-              onClick={() => setActiveTab("students")}
-            />
-            <NavButton
-              icon={FileText}
-              label="Submissions"
-              active={activeTab === "submissions"}
-              onClick={() => setActiveTab("submissions")}
-            />
-            <NavButton
-              icon={Users}
-              label="Faculty & Teachers"
-              active={activeTab === "faculty"}
-              onClick={() => setActiveTab("faculty")}
-            />
-            <NavButton
-              icon={BarChart3}
-              label="Performance Analytics"
-              active={activeTab === "analytics"}
-              onClick={() => setActiveTab("analytics")}
-            />
-            <NavButton
-              icon={FileText}
-              label="Summary Reports (PDF/CSV)"
-              active={activeTab === "reports"}
-              onClick={() => setActiveTab("reports")}
-            />
-            <NavButton
-              icon={Building2}
-              label="School ID & Controls"
-              active={activeTab === "settings"}
-              onClick={() => setActiveTab("settings")}
-            />
-            <NavButton
-              icon={MessageSquare}
-              label="User Feedback"
-              active={activeTab === "feedback"}
-              onClick={() => setActiveTab("feedback")}
-            />
-          </nav>
-        </div>
-
-        <div className="mt-auto p-6 border-t border-white/5 space-y-4">
-          <DeploymentStatus />
-          <div className="flex items-center gap-3 p-2 rounded-xl bg-white/5">
-            <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xs uppercase">
-              SA
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="text-xs font-bold truncate">School Admin</p>
-              <p className="text-[10px] text-zinc-500 truncate">{org?.name || "Loading..."}</p>
-            </div>
-            <Lock className="h-3 w-3 text-zinc-600" />
-          </div>
-        </div>
-      </aside>
-
+    <div className="w-full bg-background text-foreground selection:bg-blue-600/30">
       {/* Main Command Center */}
-      <main className="lg:ml-64 p-8 app-container dashboard-container space-y-8">
+      <main className="p-4 md:p-8 app-container dashboard-container space-y-8 w-full max-w-7xl mx-auto">
+        {/* Horizontal Navigation for remaining modules */}
+        <div className="flex overflow-x-auto gap-2 pb-2 mb-6 border-b border-border/50 hide-scrollbar">
+          {[
+            { id: "overview", label: "Overview", icon: LayoutDashboard },
+            { id: "submissions", label: "Submissions", icon: FileText },
+            { id: "analytics", label: "Analytics", icon: BarChart3 },
+            { id: "reports", label: "Reports", icon: FileText },
+            { id: "settings", label: "School ID & Settings", icon: Settings },
+            { id: "feedback", label: "Feedback", icon: MessageSquare }
+          ].map((tab) => (
+            <Button
+              key={tab.id}
+              variant={activeTab === tab.id ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setActiveTab(tab.id as any)}
+              className="whitespace-nowrap rounded-full"
+            >
+              <tab.icon className="w-4 h-4 mr-2" />
+              {tab.label}
+            </Button>
+          ))}
+        </div>
+
         <header className="flex flex-wrap items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-black tracking-tight uppercase">Dashboard Overview</h1>
@@ -580,7 +517,7 @@ function AdminDashboard() {
         {activeTab === "overview" && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Macro Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="dashboard-grid-4">
               <StatCard
                 icon={Users}
                 label="Total Students"
@@ -610,7 +547,7 @@ function AdminDashboard() {
               />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="dashboard-grid">
               {/* Velocity Chart */}
               <Card className="lg:col-span-2 border-white/5 bg-black/40 backdrop-blur-xl">
                 <CardHeader>
@@ -828,7 +765,7 @@ function AdminDashboard() {
             </div>
 
             {/* CLASS STATS SUMMARY */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="dashboard-grid">
               <Card className="border-white/5 bg-black/40 backdrop-blur-xl">
                 <CardContent className="p-4">
                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
@@ -879,132 +816,18 @@ function AdminDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader className="border-white/5">
-                    <TableRow className="hover:bg-transparent border-white/5 text-zinc-500 uppercase text-[10px] font-bold">
-                      <TableHead>Student Name</TableHead>
-                      <TableHead>Class & Stream</TableHead>
-                      <TableHead>Bound School ID</TableHead>
-                      <TableHead>Projects</TableHead>
-                      <TableHead>Avg Score</TableHead>
-                      <TableHead className="text-right">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loadingList ? (
-                      <>
-                        <TableRow className="border-white/5">
-                          <TableCell colSpan={6} className="py-4">
-                            <Skeleton className="h-8 w-full bg-white/5 rounded-lg" />
-                          </TableCell>
-                        </TableRow>
-                        <TableRow className="border-white/5">
-                          <TableCell colSpan={6} className="py-4">
-                            <Skeleton className="h-8 w-full bg-white/5 rounded-lg" />
-                          </TableCell>
-                        </TableRow>
-                        <TableRow className="border-white/5">
-                          <TableCell colSpan={6} className="py-4">
-                            <Skeleton className="h-8 w-full bg-white/5 rounded-lg" />
-                          </TableCell>
-                        </TableRow>
-                      </>
-                    ) : (
-                      filteredStudents.map((s) => (
-                        <TableRow key={s.id} className="border-border hover:bg-muted/40">
-                          <TableCell className="font-bold flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-full bg-blue-600/20 text-blue-400 border border-blue-600/30 flex items-center justify-center font-black text-xs uppercase">
-                              {s.display_name.slice(0, 2)}
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-foreground">{s.display_name}</p>
-                              <p className="text-[10px] text-muted-foreground font-medium">
-                                ID: {s.user_id.slice(0, 8)}
-                              </p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col gap-1 items-start">
-                              <Badge className="bg-blue-600/10 text-blue-400 border-none shrink-0 text-[10px] py-0.5">
-                                {s.level} - {s.stream || "Stream A"}
-                              </Badge>
-                              <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground/80 bg-muted px-1.5 py-0.5 rounded border border-border">
-                                {s.role?.replace("_", " ") || "student"}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-mono text-xs text-muted-foreground">
-                            {currentOrgId || "UNLINKED"}
-                          </TableCell>
-                          <TableCell className="font-bold text-foreground">
-                            {s.submissionCount || 0}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Progress value={s.avgScore || 75} className="h-1.5 w-16 bg-muted" />
-                              <span className="text-xs font-mono font-bold text-emerald-400">
-                                {s.avgScore || 75}%
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <select
-                                value={s.role || "student"}
-                                onChange={async (e) => {
-                                  const newRole = e.target.value;
-                                  const toastId = toast.loading(
-                                    `Assigning role ${newRole.toUpperCase()} to ${s.display_name}...`,
-                                  );
-                                  try {
-                                    const { error } = await supabase
-                                      .from("profiles")
-                                      .update({ role: newRole })
-                                      .eq("id", s.id);
-                                    if (error) throw error;
-                                    toast.success(
-                                      `Assigned role ${newRole.toUpperCase().replace("_", " ")} to ${s.display_name}!`,
-                                      { id: toastId },
-                                    );
-                                    loadClassStudentsAndSubmissions(currentOrgId);
-                                    loadDashboardStats(currentOrgId);
-                                  } catch (err: any) {
-                                    toast.error(`Failed to assign role: ${err.message}`, {
-                                      id: toastId,
-                                    });
-                                  }
-                                }}
-                                className="bg-muted text-foreground text-[10px] font-black uppercase tracking-tight py-1 px-2.5 rounded-full outline-none border border-border cursor-pointer hover:bg-muted/80 transition-colors"
-                              >
-                                <option value="student">Student</option>
-                                <option value="student_monitor">Student Monitor</option>
-                                <option value="teacher">Teacher</option>
-                                <option value="admin">Admin</option>
-                              </select>
-
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => setInspectedStudent(s)}
-                                className="border-blue-600/30 bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white transition-all text-xs shrink-0"
-                              >
-                                <Eye className="h-3.5 w-3.5 mr-1" /> Inspect
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                    {!loadingList && filteredStudents.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-12 text-zinc-500 italic">
-                          No students registered in this class level yet. Students bound to your
-                          School ID will automatically appear here.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                <StudentMatrix
+                  students={filteredStudents}
+                  loading={loadingList}
+                  searchTerm={searchQuery}
+                  setSearchTerm={setSearchQuery}
+                  setInspectedStudent={setInspectedStudent}
+                  onRefresh={() => {
+                    loadClassStudentsAndSubmissions(currentOrgId, org?.name || "Institutional School");
+                    loadDashboardStats(currentOrgId);
+                  }}
+                  currentOrgId={currentOrgId}
+                />
               </CardContent>
             </Card>
           </div>
@@ -1094,7 +917,7 @@ function AdminDashboard() {
               </div>
             </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="dashboard-grid">
               <Card className="md:col-span-2 border-white/5 bg-black/40 backdrop-blur-xl">
                 <CardHeader>
                   <CardTitle className="text-sm font-black uppercase tracking-widest text-blue-500">
@@ -1249,7 +1072,7 @@ function AdminDashboard() {
                                 {f.profiles?.display_name || "User"}
                               </p>
                               <p className="text-[10px] text-zinc-500">
-                                {f.profiles?.level || "N/A"}
+                                {f.level || "S1"}
                               </p>
                             </div>
                           </TableCell>
@@ -1325,111 +1148,13 @@ function AdminDashboard() {
           </div>
         )}
 
-        {activeTab === "faculty" && (
-          <div className="space-y-6 animate-in fade-in duration-500">
-            {/* INSTITUTIONAL MEMBER REGISTRY & LINK GENERATOR */}
-            <TeacherApprovalTable />
-            <InstitutionalRegistryModule />
-
-            <header className="flex justify-between items-end pt-6 border-t border-white/10">
-              <div>
-                <h2 className="text-xl font-black uppercase tracking-tighter">
-                  Learner Engagement Hub
-                </h2>
-                <p className="text-zinc-500 text-xs">
-                  Monitoring chat interactions and peer collaboration across classes.
-                </p>
-              </div>
-            </header>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="border-white/5 bg-black/40 backdrop-blur-xl">
-                <CardHeader>
-                  <CardTitle className="text-sm font-black uppercase tracking-widest text-cyan-500">
-                    Chat Activity by Level
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {Object.entries(chatEngagement.messagesPerLevel).map(([level, count]) => (
-                    <div
-                      key={level}
-                      className="flex items-center justify-between p-3 rounded-xl bg-white/5"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-lg bg-cyan-500/10 flex items-center justify-center">
-                          <MessageSquare className="h-4 w-4 text-cyan-400" />
-                        </div>
-                        <span className="text-sm font-bold">{level}</span>
-                      </div>
-                      <Badge variant="outline" className="border-cyan-500/30 text-cyan-400">
-                        {count} Messages
-                      </Badge>
-                    </div>
-                  ))}
-                  {Object.keys(chatEngagement.messagesPerLevel).length === 0 && (
-                    <p className="text-center py-8 text-zinc-600 italic text-sm">
-                      No chat activity recorded.
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card className="border-white/5 bg-black/40 backdrop-blur-xl">
-                <CardHeader>
-                  <CardTitle className="text-sm font-black uppercase tracking-widest text-amber-500">
-                    Engagement Insights
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-full bg-amber-500/10 flex items-center justify-center">
-                      <Activity className="h-6 w-6 text-amber-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-white">Active Participation Rate</p>
-                      <p className="text-xs text-zinc-500">
-                        {Math.round(
-                          (chatEngagement.activeUsers / (stats.totalStudents || 1)) * 100,
-                        )}
-                        % of students are active in peer networks.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-white/5">
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-3">
-                      Top Peer Collaborators
-                    </h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="h-6 w-6 rounded-full bg-zinc-800 border border-white/10" />
-                          <span className="text-xs font-medium">Adams Isabirye</span>
-                        </div>
-                        <span className="text-[10px] font-mono text-zinc-500">42 messages</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="h-6 w-6 rounded-full bg-zinc-800 border border-white/10" />
-                          <span className="text-xs font-medium">Hawa Nabirye</span>
-                        </div>
-                        <span className="text-[10px] font-mono text-zinc-500">38 messages</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        )}
-
         {activeTab === "settings" && (
           <div className="space-y-6 animate-in fade-in duration-500">
             <h2 className="text-2xl font-black uppercase tracking-tighter">
               Institutional Authority & School ID Management
             </h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="dashboard-grid">
               {/* OFFICIAL SCHOOL ID MANAGER */}
               <SchoolIdInputField />
 
@@ -1468,7 +1193,7 @@ function AdminDashboard() {
               <UnifiedInstitutionalDirectory schoolId={currentOrgId} />
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-4">
+            <div className="dashboard-grid pt-4">
               <BulkQRGenerator />
               <DisciplineNudges />
             </div>

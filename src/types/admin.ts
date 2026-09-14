@@ -4,6 +4,19 @@ export interface Organization {
   org_code: string;
 }
 
+export interface StudentRecord {
+  user_id: string;
+  display_name: string;
+  email: string;
+  role: string;
+  level: string;
+  stream: string;
+  org_id: string;
+  school_name: string;
+  avgScore: number;
+  submissionCount: number;
+}
+
 export interface Stats {
   totalStudents: number;
   s1: number;

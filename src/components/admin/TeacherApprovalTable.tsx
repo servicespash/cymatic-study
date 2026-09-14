@@ -26,10 +26,10 @@ export function TeacherApprovalTable() {
 
   async function fetchPendingTeachers() {
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("profiles")
       .select("*")
-      .eq("organization_id", schoolId)
+      .eq("org_id", schoolId)
       .eq("role", "teacher")
       .eq("is_verified", false);
 
@@ -43,7 +43,7 @@ export function TeacherApprovalTable() {
   }
 
   async function handleApprove(userId: string) {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from("profiles")
       .update({ is_verified: true })
       .eq("user_id", userId);

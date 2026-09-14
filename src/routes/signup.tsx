@@ -211,13 +211,15 @@ function SignupPage() {
               profilePatch.school_name = resolvedOrgName;
             }
 
-            const { error: enrollErr } = await (supabase as any).rpc("enroll_self_in_school", {
-              _school_key: cleanSchoolId,
-              _level: "S1",
-              _phone: cleanPhone || null,
-            });
-            if (enrollErr) {
-              console.warn("Enroll RPC notice:", enrollErr);
+            if (mode === "join-student") {
+              const { error: enrollErr } = await (supabase as any).rpc("enroll_self_in_school", {
+                _school_key: cleanSchoolId,
+                _level: "S1",
+                _phone: cleanPhone || null,
+              });
+              if (enrollErr) {
+                console.warn("Enroll RPC notice:", enrollErr);
+              }
             }
             if (typeof window !== "undefined") {
               localStorage.setItem("cymatic_school_id", cleanSchoolId);

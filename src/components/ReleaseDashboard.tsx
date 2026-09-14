@@ -32,6 +32,7 @@ import {
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const DEPLOY_HOOK_URL =
   "https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/106aca1a-02ae-46d7-88cf-fbb1642671db";

@@ -22,6 +22,9 @@ function OnboardingPage() {
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
+    if (user?.user_metadata?.role === "teacher" || user?.user_metadata?.role === "admin") {
+      navigate({ to: "/dashboard" });
+    }
     if (user?.user_metadata?.org_id && user?.user_metadata?.level) {
       navigate({ to: "/dashboard" });
     }

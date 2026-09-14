@@ -1,0 +1,14 @@
+.dashboard-grid-4 {
+  display: grid;
+  width: 100%;
+  gap: 1.5rem;
+}
+@container dashboard-main (max-width: 640px) {
+  .dashboard-grid-4 { grid-template-columns: 1fr; gap: 0.875rem; }
+}
+@container dashboard-main (min-width: 641px) and (max-width: 1024px) {
+  .dashboard-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
+}
+@container dashboard-main (min-width: 1025px) {
+  .dashboard-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}

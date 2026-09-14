@@ -1,5 +1,6 @@
 import { ThemeProvider } from "@/lib/theme-context";
 import { AuthProvider } from "@/lib/auth-context";
+import { SchoolProvider } from "@/hooks/useSchoolContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { LiveBroadcastProvider } from "@/lib/live-broadcast-context";
 import { TutorServiceProvider } from "@/lib/TutorService";
@@ -15,22 +16,24 @@ export function GlobalProviders({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <QueryClientProvider client={queryClient}>
-          <LiveBroadcastProvider>
-            <TutorServiceProvider>
-              <UserMoodProvider>
-                <CurriculumProvider>
-                  <MediaProvider>
-                    <LanguageProvider>
-                      {children}
-                      <Toaster />
-                    </LanguageProvider>
-                  </MediaProvider>
-                </CurriculumProvider>
-              </UserMoodProvider>
-            </TutorServiceProvider>
-          </LiveBroadcastProvider>
-        </QueryClientProvider>
+        <SchoolProvider>
+          <QueryClientProvider client={queryClient}>
+            <LiveBroadcastProvider>
+              <TutorServiceProvider>
+                <UserMoodProvider>
+                  <CurriculumProvider>
+                    <MediaProvider>
+                      <LanguageProvider>
+                        {children}
+                        <Toaster />
+                      </LanguageProvider>
+                    </MediaProvider>
+                  </CurriculumProvider>
+                </UserMoodProvider>
+              </TutorServiceProvider>
+            </LiveBroadcastProvider>
+          </QueryClientProvider>
+        </SchoolProvider>
       </AuthProvider>
     </ThemeProvider>
   );
