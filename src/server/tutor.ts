@@ -40,7 +40,14 @@ function isOffTopic(message: string): boolean {
   return keywords.some((k) => message.toLowerCase().includes(k));
 }
 
-const BASE_SYSTEM_PROMPT = `You are a sophisticated Academic AI Mentor within the Lattys Cymatic Study platform. 
+function getSystemPrompt(role: string, name: string): string {
+  const roleInstruction = role === "teacher" 
+    ? `You are assisting a professional educator. Provide analysis of student performance, identify weak areas, and help them improve class outcomes.`
+    : role === "admin"
+    ? `You are assisting an institutional administrator. Provide high-level insights on institutional performance, deployment status, and system-wide student trends.`
+    : `You are an academic mentor guiding a student. Provide personalized, Socratic guidance to support their learning journey.`;
+
+  return `You are a sophisticated Academic AI Mentor within the Lattys Cymatic Study platform. 
 Your core architecture is built upon a high-performance cognitive engine with robust knowledge, a vast multi-disciplinary brain, and an impeccable memory for student progress.
 
 CRITICAL IDENTITY & CONTEXT RULES:
@@ -50,13 +57,17 @@ CRITICAL IDENTITY & CONTEXT RULES:
 4. Socratic Method: Guide students via inquiry. Do not lecture. Ask questions that lead to discovery.
 5. Localization: Socialize using Ugandan cultural nuances (salaam, weebale, kale). 
 
+${roleInstruction}
+
 CREATOR AWARENESS:
 - You are fully aware of your creator: Isabirye Latif, a visionary Ugandan educational technologist and developer.
 - You operate within his digital study ecosystems: cymatichub.xyz, study.cymatichub.xyz.
 - Official Portfolio & Manifesto: https://cymatichub.xyz
 - Resonance (Attendance, Registry, Management): https://resonance.cymatichub.xyz
 - Study Platform: https://study.cymatichub.xyz
-- Resource Hub: https://hub.cymatichub.xyz`;
+- Resource Hub: https://hub.cymatichub.xyz
+- Addressing the user: Address the user as ${role} ${name}.`;
+}
 
 const BASE_DYNAMIC_INSTRUCTIONS = `
 FORMATTING RULES:
@@ -66,9 +77,9 @@ FORMATTING RULES:
 `;
 
 export async function handleTutorRequest(request: Request) {
-  let user: unknown = null;
-  let profile: unknown = null;
-  let progress: unknown = null;
+  let user: any = null;
+  let profile: any = null;
+  let progress: any = null;
 
   // 1. Authenticate (fail-safe)
   try {
@@ -101,6 +112,7 @@ export async function handleTutorRequest(request: Request) {
   const {
     messages,
     userName = (profile as any)?.full_name || "learner",
+    userRole: requestedRole,
     subject = "general",
     persona: requestedPersona,
     mood = "focused",
@@ -158,7 +170,7 @@ Format your response as a strictly valid JSON object: {"title": "...", "summary"
         contents: [{ role: "user", parts: [{ text: [metaPrompt, ...sanitizedMessages.map(m => `${m.role}: ${m.content}`)].join("\n\n") }] }],
         config: { responseMimeType: "application/json" }
       });
-      const responseText = result.text;
+      const responseText = result.text || "";
       
       // Clean up potential markdown formatting
       const cleanedJson = responseText.replace(/```json|```/g, "").trim();
@@ -182,7 +194,9 @@ Adapt your pedagogical style and depth to their progress level.
 If the student asks for guidance, feel free to suggest curriculum upgrades or next topics based on their progress.
 `;
 
-  const systemPrompt = BASE_SYSTEM_PROMPT + "\n" + dynamicContext + BASE_DYNAMIC_INSTRUCTIONS + (groundingPrompt || "");
+  const userRole = requestedRole || profile?.role || "student";
+  const tutorUserName = profile?.display_name || user?.email?.split("@")[0] || "Scholar";
+  const systemPrompt = getSystemPrompt(userRole, tutorUserName) + "\n" + dynamicContext + BASE_DYNAMIC_INSTRUCTIONS + (groundingPrompt || "");
 
   let aiClient;
   let useFallback = false;

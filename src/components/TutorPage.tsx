@@ -10,6 +10,7 @@ import { useTutorStore } from "@/store/useTutorStore";
 import { useTutor } from "@/lib/TutorService";
 import { useTutorVoice } from "@/hooks/useTutorVoice";
 import { useSearch } from "@tanstack/react-router";
+import { useAuth } from "@/lib/auth-context";
 import { generateOfflineTutorResponse } from "@/lib/offline-tutor";
 import { Button } from "./ui/button";
 import { exportChatToPDF } from "@/lib/chat-pdf-export";
@@ -68,6 +69,8 @@ function TutorPageContent() {
   } = useTutorStore();
   const { persona, setPersona } = useTutorVoice();
   const { speak, stopSpeaking, speaking, setVoice, ttsEnabled, setTtsEnabled } = useTutor();
+  const { isAdmin, isTeacher, isStudent } = useAuth();
+  const userRole = isAdmin ? "admin" : isTeacher ? "teacher" : isStudent ? "student" : "unknown";
 
   const [input, setInput] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -142,15 +145,18 @@ function TutorPageContent() {
   // Dynamic welcome message
   useEffect(() => {
     if (messages.length === 0) {
+      const roleGreeting = userRole === 'teacher' ? 'Ready to plan today\'s lessons?' : 
+                           userRole === 'admin' ? 'Ready to manage your institution?' : 
+                           'Ready to dive into your studies today?';
       const greeting: any = {
         id: crypto.randomUUID(),
         sender: "tutor" as const,
-        text: `Hello ${displayName}! Ready to dive into your studies today? What would you like to explore?`,
+        text: `Hello ${displayName}! ${roleGreeting} What would you like to explore?`,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
       setMessages([greeting]);
     }
-  }, [messages.length, setMessages, displayName]);
+  }, [messages.length, setMessages, displayName, userRole]);
 
   useEffect(() => {
     const handleOnline = () => setOfflineMode(false);
@@ -292,6 +298,7 @@ function TutorPageContent() {
           body: JSON.stringify({
             messages: historyToSend,
             userName: displayName,
+            userRole: userRole,
             subject: "general",
           }),
         });
@@ -311,6 +318,7 @@ function TutorPageContent() {
             messages: historyToSend,
             persona: persona === "Adams" ? "male" : "female",
             userName: displayName,
+            userRole: userRole,
             subject: "general",
           }),
         });

@@ -10,7 +10,7 @@ export interface SignUpParams {
   password?: string;
   role?: UserRole | string;
   fullName?: string;
-  schoolId?: string;
+  orgId?: string;
   schoolName?: string;
   level?: string;
 }
@@ -32,12 +32,12 @@ export function useAuth() {
   const rawRole = profile?.role || user?.user_metadata?.role || "student";
   const role: UserRole = normalizeRole(rawRole);
 
-  const organizationId = core.organizationId;
+  const org_id = core.org_id;
 
   const isStudent = role === "student";
   const isTeacher = role === "teacher";
   const isAdmin = role === "admin";
-  const isInstitutional = !!organizationId;
+  const isInstitutional = !!org_id;
   const isGuestMode = !loading && !user;
 
   // Sign In with password or OTP magic link
@@ -85,7 +85,7 @@ export function useAuth() {
       password,
       role = "student",
       fullName,
-      schoolId,
+      orgId,
       schoolName,
       level,
     }: SignUpParams) => {
@@ -93,7 +93,7 @@ export function useAuth() {
         const metadata = {
           role,
           full_name: fullName,
-          school_id: schoolId,
+          org_id: orgId,
           school_name: schoolName,
           level: level || "Senior 3",
         };
@@ -169,7 +169,8 @@ export function useAuth() {
       isAdmin,
       isInstitutional,
       isGuestMode,
-      organizationId,
+      org_id,
+      organizationId: org_id,
       signIn,
       signUp,
       signOut,
@@ -187,7 +188,7 @@ export function useAuth() {
       isAdmin,
       isInstitutional,
       isGuestMode,
-      organizationId,
+      org_id,
       signIn,
       signUp,
       signOut,

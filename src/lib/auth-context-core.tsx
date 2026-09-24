@@ -7,10 +7,8 @@ export interface UserProfile {
   display_name: string | null;
   avatar_url?: string | null;
   role: string | null;
-  organization_id?: string | null;
-  org_id?: string | null;
+  org_id: string | null;
   school_name?: string | null;
-  school_id?: string | null;
   teacher_license_id?: string | null;
   full_name?: string | null;
   username?: string | null;
@@ -31,7 +29,7 @@ export type AuthCtx = {
   isTeacher: boolean;
   isAdmin: boolean;
   isGuestMode: boolean;
-  organizationId: string | null;
+  org_id: string | null;
   schoolName: string | null;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -51,7 +49,7 @@ export const Ctx = createContext<AuthCtx>({
   isTeacher: false,
   isAdmin: false,
   isGuestMode: false,
-  organizationId: null,
+  org_id: null,
   schoolName: null,
   signOut: async () => {},
   refreshProfile: async () => {},

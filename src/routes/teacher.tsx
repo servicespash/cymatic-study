@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ExportPdfModal } from "@/components/ExportPdfModal";
 import { PrintableSummary, MarkedReportItem } from "@/components/PrintableSummary";
 import { ReportManager } from "@/components/ReportManager";
+import { StudentsView } from "@/components/StudentsView";
 import { useUnifiedSchoolId } from "@/hooks/useUnifiedSchoolId";
 import {
   FileText,
@@ -80,7 +81,7 @@ function TeacherWorkflowPage() {
 
   const [submissions, setSubmissions] = useState<StudentSubmission[]>([]);
   const [selectedSubmission, setSelectedSubmission] = useState<StudentSubmission | null>(null);
-  const [activeModeTab, setActiveModeTab] = useState<"grading" | "manager">("grading");
+  const [activeModeTab, setActiveModeTab] = useState<"grading" | "manager" | "students">("grading");
   const [selectedLevel, setSelectedLevel] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [loadingData, setLoadingData] = useState(true);
@@ -286,15 +287,14 @@ function TeacherWorkflowPage() {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-500 dark:text-teal-400 text-xs font-semibold">
               <PenTool className="w-3.5 h-3.5" />
-              Teacher Assessment &amp; Report Station
+              Assessment &amp; Report Station
             </div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
               Structure &amp; Mark Student Reports
             </h1>
             <p className="text-xs md:text-sm text-muted-foreground max-w-2xl leading-relaxed">
-              Structure thematic assessment reports according to NCDC rubrics, assign scores, award
-              study time points and XP award points, apply teacher digital signatures, and export
-              directly as PDFs.
+              Structure thematic assessment reports, assign scores, award study time points and XP
+              award points, apply teacher digital signatures, and export directly as PDFs.
             </p>
           </div>
 
@@ -345,10 +345,24 @@ function TeacherWorkflowPage() {
           <Layers className="w-4 h-4" />
           Thematic Report Curation Manager
         </button>
+
+        <button
+          onClick={() => setActiveModeTab("students")}
+          className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            activeModeTab === "students"
+              ? "bg-indigo-600 text-white shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <User className="w-4 h-4" />
+          Student Roster
+        </button>
       </div>
 
       {activeModeTab === "manager" ? (
         <ReportManager />
+      ) : activeModeTab === "students" ? (
+        <StudentsView schoolId={currentSchoolId} />
       ) : (
         /* WORKFLOW MAIN GRID */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

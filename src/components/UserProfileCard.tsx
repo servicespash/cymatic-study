@@ -50,14 +50,14 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
 
   const schoolId =
     profile?.organization_id || profile?.school_id || localStorage.getItem("cymatic_school_id");
-  const schoolName = profile?.school_name || "Uganda NCDC Member School";
+  const schoolName = profile?.school_name || "Your Institution";
   const displayName =
     profile?.display_name || profile?.full_name || user.email?.split("@")[0] || "Scholar";
   const userEmail = user.email || "";
   const roleTitle = isAdmin
     ? "School Administrator"
     : isTeacher
-      ? "NCDC Instructor / Teacher"
+      ? "Educator / Teacher"
       : isInstitutional
         ? "Institutional Scholar"
         : "Independent Scholar";

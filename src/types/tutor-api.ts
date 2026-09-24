@@ -6,6 +6,7 @@ export interface ChatMessage {
 export interface TutorRequest {
   messages: ChatMessage[];
   userName?: string;
+  userRole?: string;
   subject?: string;
   persona?: string;
   mood?: string;

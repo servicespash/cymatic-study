@@ -14,7 +14,7 @@ function StudentsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   
-  const currentOrgId = profile?.organization_id || user?.user_metadata?.school_id || "";
+  const currentOrgId = profile?.org_id || profile?.organization_id || user?.user_metadata?.school_id || "";
 
   useEffect(() => {
     if (currentOrgId) {
@@ -36,9 +36,9 @@ function StudentsPage() {
         console.error("Error loading student records:", e);
         // Fallback to profiles if student_records is missing
         const res = await supabase.from("profiles")
-          .select("id, display_name, school_id, school_name, role")
-          .eq("school_id", currentOrgId);
-        stdData = res.data?.map(s => ({...s, user_id: s.id, org_id: s.school_id})) || [];
+          .select("id, display_name, org_id, school_name, role")
+          .eq("org_id", currentOrgId);
+        stdData = res.data?.map(s => ({...s, user_id: s.id, org_id: s.org_id})) || [];
       }
 
       let subData: any[] = [];

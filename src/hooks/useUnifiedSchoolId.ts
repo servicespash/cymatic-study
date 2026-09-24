@@ -9,46 +9,45 @@ const isUuid = (val: string | null | undefined): boolean => {
 };
 
 export function useUnifiedSchoolId() {
-  const { profile, schoolId: userRoleSchoolId, isAdmin } = useUserRole();
+  const { profile, org_id: userRoleOrgId, isAdmin } = useUserRole();
   const { user } = useAuth();
 
-  const rawSchoolId =
-    profile?.school_id ||
-    profile?.organization_id ||
-    userRoleSchoolId ||
-    (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : null) ||
+  const rawOrgId =
+    profile?.org_id ||
+    userRoleOrgId ||
+    (typeof window !== "undefined" ? localStorage.getItem("cymatic_org_id") : null) ||
     "";
 
-  const schoolId = isUuid(rawSchoolId) || !rawSchoolId ? "" : rawSchoolId;
+  const org_id = isUuid(rawOrgId) || !rawOrgId ? "" : rawOrgId;
 
   const schoolName = profile?.school_name || user?.user_metadata?.school_name || "";
 
-  const updateSchoolId = async (newSchoolId: string, newSchoolName: string) => {
+  const updateOrgId = async (newOrgId: string, newSchoolName: string) => {
     if (!user) return;
     if (!isAdmin) {
       toast.error("Unauthorized: Only admins can update institutional settings.");
       return;
     }
-    if (isUuid(newSchoolId)) {
-      toast.error("UUIDs are not permitted as School IDs.");
+    if (isUuid(newOrgId)) {
+      toast.error("UUIDs are not permitted as Organizational IDs.");
       return;
     }
     try {
       await supabase.auth.updateUser({
-        data: { school_id: newSchoolId, org_id: newSchoolId, school_name: newSchoolName },
+        data: { org_id: newOrgId, school_name: newSchoolName },
       });
-      // Also update the database profile org_id and school_id securely if possible
+      // Also update the database profile org_id securely
       const { error: dbErr } = await supabase
         .from("profiles")
-        .update({ org_id: newSchoolId, school_name: newSchoolName })
+        .update({ org_id: newOrgId, school_name: newSchoolName })
         .eq("user_id", user.id);
 
-      localStorage.setItem("cymatic_school_id", newSchoolId);
-      toast.success("School ID updated successfully!");
+      localStorage.setItem("cymatic_org_id", newOrgId);
+      toast.success("Institutional ID updated successfully!");
     } catch (err) {
-      toast.error("Failed to update School ID");
+      toast.error("Failed to update Institutional ID");
     }
   };
 
-  return { schoolId, schoolName, updateSchoolId };
+  return { org_id, schoolId: org_id, schoolName, updateOrgId, updateSchoolId: updateOrgId };
 }

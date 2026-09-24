@@ -168,7 +168,7 @@ function AdminDashboard() {
   const [feedbackList, setFeedbackList] = useState<any[]>([]);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
 
-  const currentOrgId = profile?.organization_id || user?.user_metadata?.school_id || org?.id || "";
+  const currentOrgId = profile?.org_id || user?.user_metadata?.org_id || org?.id || "";
 
   useEffect(() => {
     if (!user?.id) return;
@@ -187,7 +187,7 @@ function AdminDashboard() {
       .eq("user_id", user.id)
       .single();
 
-    const activeSchoolId = prof?.org_id || user?.user_metadata?.school_id || "";
+    const activeSchoolId = prof?.org_id || user?.user_metadata?.org_id || "";
     const activeOrgName = prof?.organizations?.name || prof?.school_name || "Institutional School";
 
     if (!activeSchoolId) {
@@ -285,14 +285,14 @@ function AdminDashboard() {
     const { count: pendingCount } = await supabase
       .from("project_submissions")
       .select("*", { count: "exact", head: true })
-      .eq("organization_id", orgId)
+      .eq("org_id", orgId)
       .eq("status", "pending");
 
     // 3. Fetch active teachers (users with teacher role in this org)
     const { data: teachersInSubs } = await supabase
       .from("project_submissions")
       .select("teacher_id, teacher_name")
-      .eq("organization_id", orgId)
+      .eq("org_id", orgId)
       .not("teacher_id", "is", null);
 
     const uniqueTeachers = new Set(teachersInSubs?.map((t) => t.teacher_id));
@@ -314,7 +314,7 @@ function AdminDashboard() {
     const { data: chatMsgs } = await supabase
       .from("chat_messages")
       .select("user_id, level")
-      .eq("organization_id", orgId);
+      .eq("org_id", orgId);
 
     if (chatMsgs) {
       const msgCounts: Record<string, number> = {};
@@ -334,7 +334,7 @@ function AdminDashboard() {
     const { data: velocityRows } = await supabase
       .from("project_submissions")
       .select("created_at")
-      .eq("organization_id", orgId)
+      .eq("org_id", orgId)
       .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
 
     if (velocityRows) {
@@ -360,7 +360,7 @@ function AdminDashboard() {
     const { data: bottlenecks } = await supabase
       .from("project_submissions")
       .select("teacher_name, status")
-      .eq("organization_id", orgId);
+      .eq("org_id", orgId);
 
     const teacherMap: Record<string, { pending: number; verified: number }> = {};
     bottlenecks?.forEach((b) => {
@@ -389,8 +389,8 @@ function AdminDashboard() {
 
       // Load project submissions
       let { data: subData } = await (supabase.from("project_submissions") as any)
-        .select("id, student_id, total_competency_score, teacher_name, status, created_at, school_key")
-        .eq("school_key", orgId);
+        .select("id, student_id, total_competency_score, teacher_name, status, created_at, org_id")
+        .eq("org_id", orgId);
 
       // No auto-seeding of fake mock records; respect real institutional data integrity
       if (stdData && stdData.length > 0) {

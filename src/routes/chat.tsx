@@ -105,14 +105,14 @@ function ChatRoomPage() {
     const isAdminOrTeacher =
       profile?.role === "teacher" || profile?.role === "admin" || profile?.role === "org_admin";
 
-    if (isInstitutional && profile?.organization_id) {
+    if (isInstitutional && profile?.org_id) {
       // For institutional users, we need a level.
       // If student, use their level. If staff, use a selected level or default to S1.
       const levelToUse = manualLevel || profile.level || (isAdminOrTeacher ? "S1" : "general");
 
       return {
         type: "institutional" as const,
-        orgId: profile.organization_id,
+        orgId: profile.org_id,
         level: levelToUse,
         label: `${levelToUse} - ${profile.school_name || "School Network"}`,
         isStaff: isAdminOrTeacher,
@@ -150,10 +150,10 @@ function ChatRoomPage() {
 
     // Filter by context
     if (chatContext.type === "institutional") {
-      query = query.eq("organization_id", chatContext.orgId).eq("level", chatContext.level);
+      query = query.eq("org_id", chatContext.orgId).eq("level", chatContext.level);
     } else {
       // For independent users, show messages from independent channel or global
-      query = query.or(`organization_id.eq.independent,organization_id.is.null`);
+      query = query.or(`org_id.eq.independent,org_id.is.null`);
     }
 
     const { data, error } = await query;
@@ -186,8 +186,8 @@ function ChatRoomPage() {
           // Check if message belongs to our context
           const belongsToContext =
             chatContext.type === "institutional"
-              ? newMsg.organization_id === chatContext.orgId && newMsg.level === chatContext.level
-              : newMsg.organization_id === "independent" || !newMsg.organization_id;
+              ? newMsg.org_id === chatContext.orgId && newMsg.level === chatContext.level
+              : newMsg.org_id === "independent" || !newMsg.org_id;
 
           if (belongsToContext) {
             const { data: p } = await supabase
@@ -227,7 +227,7 @@ function ChatRoomPage() {
     }
     const { error } = await supabase.from("chat_messages").insert({
       user_id: user.id,
-      organization_id: chatContext.orgId,
+      org_id: chatContext.orgId,
       level: chatContext.level,
       content: text,
       file_url: attachment?.url,
@@ -365,7 +365,7 @@ function ChatRoomPage() {
         user_id: user.id,
         message_id: messageId,
         rating: rating,
-        organization_id: chatContext.orgId === "independent" ? null : chatContext.orgId,
+        org_id: chatContext.orgId === "independent" ? null : chatContext.orgId,
       });
 
       if (error) throw error;

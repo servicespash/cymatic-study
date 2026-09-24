@@ -63,7 +63,7 @@ export function UnifiedInstitutionalDirectory({ schoolId }: UnifiedInstitutional
           console.warn("directory_roster view not found in schema cache. Falling back to profiles.");
           const res = await supabase.from("profiles")
             .select("id, display_name, role, created_at")
-            .eq("school_id", schoolId);
+            .eq("org_id", schoolId);
           if (res.error) throw res.error;
           rosterData = res.data?.map(s => ({...s, user_id: s.id})) || [];
         } else {

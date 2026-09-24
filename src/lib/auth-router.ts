@@ -21,13 +21,13 @@ export function determineUserDashboardRoute(
   userMetadata?: Record<string, any>,
 ): RouteDecision {
   const rawRole = (profile?.role || userMetadata?.role || "student").toLowerCase();
-  const profileSchoolId = profile?.school_id || profile?.organization_id;
-  const metaSchoolId = userMetadata?.school_id || userMetadata?.org_id;
+  const profileOrgId = profile?.org_id;
+  const metaOrgId = userMetadata?.org_id;
 
-  const schoolId =
-    profileSchoolId ||
-    metaSchoolId ||
-    (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : null) ||
+  const orgId =
+    profileOrgId ||
+    metaOrgId ||
+    (typeof window !== "undefined" ? localStorage.getItem("cymatic_org_id") : null) ||
     null;
 
   const isInstitutional = Boolean(schoolId && schoolId.trim().length > 0);

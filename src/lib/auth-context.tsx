@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await supabase.auth.signOut();
       if (typeof window !== "undefined") {
-        localStorage.removeItem("cymatic_school_id");
+        localStorage.removeItem("cymatic_org_id");
       }
       setSession(null);
       setUser(null);
@@ -43,10 +43,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const activeUser = currentUser || userRef.current;
       const metaOrgId =
-        activeUser?.user_metadata?.organization_id ||
         activeUser?.user_metadata?.org_id ||
-        activeUser?.user_metadata?.school_id ||
-        (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : null);
+        (typeof window !== "undefined" ? localStorage.getItem("cymatic_org_id") : null);
 
       const metaSchoolName =
         activeUser?.user_metadata?.school_name || activeUser?.user_metadata?.school;
@@ -56,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data) {
-        let organizationIdToUse = data.org_id || metaOrgId || null;
+        let orgIdToUse = data.org_id || metaOrgId || null;
         let schoolNameToUse = data.school_name || metaSchoolName || null;
         const role = data.role || "student";
 
@@ -74,14 +72,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // VALIDATION: Ensure institutional roles have a valid organization_id
+        // VALIDATION: Ensure institutional roles have a valid org_id
         const isInstitutionalRole = ["teacher", "admin", "org_admin"].includes(role);
-        if (isInstitutionalRole && !organizationIdToUse) {
-          console.warn("Institutional user missing organization_id validation.");
+        if (isInstitutionalRole && !orgIdToUse) {
+          console.warn("Institutional user missing org_id validation.");
         }
 
-        if (organizationIdToUse && typeof window !== "undefined") {
-          localStorage.setItem("cymatic_school_id", organizationIdToUse);
+        if (orgIdToUse && typeof window !== "undefined") {
+          localStorage.setItem("cymatic_org_id", orgIdToUse);
         }
 
         const constructedProfile: UserProfile = {
@@ -89,9 +87,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           display_name: data.display_name || activeUser?.email?.split("@")[0] || "Scholar",
           avatar_url: data.avatar_url,
           role: role,
-          organization_id: organizationIdToUse,
+          org_id: orgIdToUse,
           school_name: schoolNameToUse,
-          school_id: organizationIdToUse,
           teacher_license_id: data.teacher_license_id,
           full_name: data.display_name,
           username: data.username || activeUser?.email?.split("@")[0] || null,
@@ -99,12 +96,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
         setProfile(constructedProfile);
       } else {
-        let organizationIdToUse = metaOrgId || null;
+        let orgIdToUse = metaOrgId || null;
         let schoolNameToUse = metaSchoolName || null;
         const role = activeUser?.user_metadata?.role || "student";
 
-        if (organizationIdToUse && typeof window !== "undefined") {
-          localStorage.setItem("cymatic_school_id", organizationIdToUse);
+        if (orgIdToUse && typeof window !== "undefined") {
+          localStorage.setItem("cymatic_org_id", orgIdToUse);
         }
 
         const fallbackProfile: UserProfile = {
@@ -113,9 +110,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             activeUser?.user_metadata?.full_name || activeUser?.email?.split("@")[0] || "Scholar",
           avatar_url: activeUser?.user_metadata?.avatar_url || null,
           role: role,
-          organization_id: organizationIdToUse,
+          org_id: orgIdToUse,
           school_name: schoolNameToUse,
-          school_id: organizationIdToUse,
           teacher_license_id: null,
           full_name: activeUser?.user_metadata?.full_name || null,
           username: activeUser?.email?.split("@")[0] || null,
@@ -189,9 +185,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const rawRole = profile?.role || user?.user_metadata?.role || "student";
   const role: UserRole = normalizeRole(rawRole);
 
-  const organizationId =
-    profile?.organization_id ||
-    user?.user_metadata?.organization_id ||
+  const org_id =
+    profile?.org_id ||
     user?.user_metadata?.org_id ||
     null;
   const schoolName = profile?.school_name || user?.user_metadata?.school_name || null;
@@ -199,7 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isStudent = role === "student";
   const isTeacher = role === "teacher";
   const isAdmin = role === "admin";
-  const isInstitutional = !!organizationId;
+  const isInstitutional = !!org_id;
   const isGuestMode = !loading && !user;
 
   const hasRole = useCallback(
@@ -233,7 +228,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isTeacher,
       isAdmin,
       isGuestMode,
-      organizationId,
+      org_id,
       schoolName,
       signOut,
       refreshProfile,
@@ -252,7 +247,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isTeacher,
       isAdmin,
       isGuestMode,
-      organizationId,
+      org_id,
       schoolName,
       signOut,
       refreshProfile,

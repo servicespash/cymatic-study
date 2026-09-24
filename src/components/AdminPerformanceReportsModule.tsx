@@ -129,20 +129,12 @@ export function AdminPerformanceReportsModule() {
   const schoolName = profile?.school_name || "Uganda NCDC Boarding Institution";
 
   const [loading, setLoading] = useState(true);
-  const [selectedLevelFilter, setSelectedLevelFilter] = useState("ALL");
-  const [reportsData, setReportsData] = useState<StudentPerformanceReportItem[]>([]);
-
-  // Class Averages state
+  const [selectedSubject, setSelectedSubject] = useState<string>("ALL");
+  const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
   const [classAverages, setClassAverages] = useState<
     Record<string, { avg: number; count: number }>
-  >({
-    S1: { avg: 76, count: 18 },
-    S2: { avg: 79, count: 22 },
-    S3: { avg: 82, count: 25 },
-    S4: { avg: 85, count: 30 },
-    S5: { avg: 88, count: 14 },
-    S6: { avg: 91, count: 12 },
-  });
+  >({});
+  const [reportsData, setReportsData] = useState<StudentPerformanceReportItem[]>([]);
 
   useEffect(() => {
     fetchReportData();
@@ -158,15 +150,6 @@ export function AdminPerformanceReportsModule() {
         )
         .eq("organization_id", currentSchoolId);
 
-      const fallbackAverages = {
-        S1: { avg: 76, count: 18 },
-        S2: { avg: 79, count: 22 },
-        S3: { avg: 82, count: 25 },
-        S4: { avg: 85, count: 30 },
-        S5: { avg: 88, count: 14 },
-        S6: { avg: 91, count: 12 },
-      };
-
       if (dbSubmissions && dbSubmissions.length > 0) {
         const mapped: StudentPerformanceReportItem[] = dbSubmissions.map((s) => ({
           id: s.id,
@@ -181,48 +164,41 @@ export function AdminPerformanceReportsModule() {
           teacherSignature: s.teacher_name ? `Signed by ${s.teacher_name}` : "Verified",
           submittedAt: s.created_at ? s.created_at.split("T")[0] : "2026-07-24",
         }));
+        setReportsData(mapped);
 
-        // Recalculate class averages
-        const newAvgs: Record<string, { total: number; count: number }> = {
-          S1: { total: 0, count: 0 },
-          S2: { total: 0, count: 0 },
-          S3: { total: 0, count: 0 },
-          S4: { total: 0, count: 0 },
-          S5: { total: 0, count: 0 },
-          S6: { total: 0, count: 0 },
-        };
+        // Dynamically extract levels and subjects
+        const subjects = Array.from(new Set(mapped.map(i => i.subject))).sort();
+        setAvailableSubjects(subjects);
 
+        // Calculate dynamic class averages
+        const newAvgs: Record<string, { total: number; count: number }> = {};
         mapped.forEach((item) => {
-          if (newAvgs[item.level]) {
-            newAvgs[item.level].total += item.score;
-            newAvgs[item.level].count += 1;
+          if (!newAvgs[item.level]) {
+            newAvgs[item.level] = { total: 0, count: 0 };
           }
+          newAvgs[item.level].total += item.score;
+          newAvgs[item.level].count += 1;
         });
 
         const calculatedAverages: Record<string, { avg: number; count: number }> = {};
         Object.keys(newAvgs).forEach((lvl) => {
-          const c = newAvgs[lvl].count;
           calculatedAverages[lvl] = {
-            avg: c > 0 ? Math.round(newAvgs[lvl].total / c) : fallbackAverages[lvl]?.avg || 75,
-            count: c > 0 ? c : fallbackAverages[lvl]?.count || 10,
+            avg: Math.round(newAvgs[lvl].total / newAvgs[lvl].count),
+            count: newAvgs[lvl].count,
           };
         });
-
-        setReportsData(mapped);
         setClassAverages(calculatedAverages);
-      } else {
-        setReportsData([]);
-        setClassAverages(fallbackAverages);
       }
-    } catch (err) {
-      console.warn("Notice fetching report records:", err);
+    } catch (error) {
+      console.error("Error fetching report data:", error);
+      toast.error("Failed to load performance reports");
     } finally {
       setLoading(false);
     }
   };
 
   const filteredReports = reportsData.filter(
-    (item) => selectedLevelFilter === "ALL" || item.level === selectedLevelFilter,
+    (item) => selectedSubject === "ALL" || item.subject === selectedSubject,
   );
 
   const totalEvaluated = filteredReports.length;

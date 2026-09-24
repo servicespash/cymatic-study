@@ -21,6 +21,39 @@ export const NewsItemSchema = z.object({
   is_active: z.boolean().optional(),
 });
 
+export const ClassSchema = z.object({
+  id: z.string(),
+  name: z.string(), // e.g., "Senior 1"
+  code: z.string(), // e.g., "S1"
+  organization_id: z.string(),
+});
+
+export const SubjectSchema = z.object({
+  id: z.string(),
+  class_id: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+});
+
+export const TopicSchema = z.object({
+  id: z.string(),
+  subject_id: z.string(),
+  title: z.string(),
+});
+
+export const SubtopicSchema = z.object({
+  id: z.string(),
+  topic_id: z.string(),
+  title: z.string(),
+});
+
+export const NoteSchema = z.object({
+  id: z.string(),
+  subtopic_id: z.string(),
+  content: z.string(), // Markdown content
+  created_at: z.string().optional(),
+});
+
 export interface Profile {
   id: string;
   user_id: string;

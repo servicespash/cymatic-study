@@ -1,3 +1,4 @@
+import { NoteHierarchy } from "@/components/NoteHierarchy";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import {
@@ -194,41 +195,12 @@ function LessonsPage() {
         <PageFlipBook />
       ) : (
         <>
-          <div className="mb-4 flex flex-wrap gap-2">
-            {Object.entries(subjectLabels).map(([k, l]) => (
-              <button
-                key={k}
-                onClick={() => {
-                  setSubject(k);
-                  setOpen(null);
-                }}
-                className={`rounded-lg px-4 py-2 text-sm font-semibold transition-smooth ${
-                  subject === k
-                    ? "bg-primary text-primary-foreground shadow-glow"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
-              >
-                {l}
-              </button>
-            ))}
-          </div>
-          <div className="mb-6 flex flex-wrap gap-2">
-            {classLevels.map((c) => (
-              <button
-                key={c.level}
-                onClick={() => {
-                  setLevel(c.level);
-                  setOpen(null);
-                }}
-                className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-smooth ${
-                  level === c.level
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                {c.label}
-              </button>
-            ))}
+          <div className="mt-6">
+            <NoteHierarchy onSelectNote={(n, t) => {
+              setSubject(t.subject);
+              setLevel(t.level);
+              setOpen(t.id);
+            }} />
           </div>
 
           <div className="space-y-3">

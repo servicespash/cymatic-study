@@ -40,7 +40,7 @@ export function SchoolProvider({ children }: { children: ReactNode }) {
     async function loadSchoolContext() {
       if (roleLoading) return;
       
-      let finalSchoolId = organizationId || profile?.org_id || user?.user_metadata?.school_id || null;
+      let finalSchoolId = organizationId || profile?.org_id || user?.user_metadata?.org_id || null;
       let finalSchoolName = roleSchoolName || profile?.school_name || null;
       let fetchedOrgState = null;
 

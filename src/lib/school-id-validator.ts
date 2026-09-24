@@ -2,20 +2,20 @@
  * NCDC Boarding Institution School ID Validation & Generation Utility
  */
 
-export interface SchoolIdValidationResult {
+export interface OrgIdValidationResult {
   isValid: boolean;
   error?: string;
   formatted?: string;
 }
 
 /**
- * Validates whether a School ID complies with the standard format: XXXX-0000 (e.g., LCSS-4128) OR SCH-UG-YYYY-XXXX (e.g., SCH-UG-2026-97EZ).
+ * Validates whether an Organization/School ID complies with the standard format.
  */
-export function validateNcdcSchoolId(id: string): SchoolIdValidationResult {
+export function validateOrgId(id: string): OrgIdValidationResult {
   if (!id || !id.trim()) {
     return {
       isValid: false,
-      error: "School ID cannot be empty. Enter your institutional code or click Auto-Generate.",
+      error: "Institutional ID cannot be empty. Enter your institutional code or click Auto-Generate.",
     };
   }
 
@@ -27,7 +27,7 @@ export function validateNcdcSchoolId(id: string): SchoolIdValidationResult {
     return {
       isValid: false,
       error:
-        "UUIDs are not permitted. Please use a valid alphanumeric School ID format (e.g., SCH-UG-2026-97EZ or LCSS-4128).",
+        "UUIDs are not permitted. Please use a valid alphanumeric Institutional ID format (e.g., SCH-UG-2026-97EZ or LCSS-4128).",
     };
   }
 
@@ -47,9 +47,12 @@ export function validateNcdcSchoolId(id: string): SchoolIdValidationResult {
   return {
     isValid: false,
     error:
-      "Invalid format. School ID must follow standard 'SCH-UG-2026-97EZ' or 'XXXX-0000' style formats.",
+      "Invalid format. Institutional ID must follow standard 'SCH-UG-2026-97EZ' or 'XXXX-0000' style formats.",
   };
 }
+
+// Aliases for backward compatibility during migration
+export const validateNcdcSchoolId = validateOrgId;
 
 /**
  * Auto-generates a standard Institution School ID.

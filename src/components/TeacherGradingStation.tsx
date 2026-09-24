@@ -51,16 +51,16 @@ export interface StudentSubmission {
   feedback?: string;
   teacher_signature?: string;
   signed_at?: string;
-  school_id: string;
+  school_id: string; // Should be org_id
+  org_id: string;
 }
 
 export function TeacherGradingStation() {
   const { user, profile } = useAuth();
-  const currentSchoolId =
-    profile?.school_id ||
-    profile?.organization_id ||
-    user?.user_metadata?.school_id ||
-    (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : "") ||
+  const currentOrgId =
+    profile?.org_id ||
+    user?.user_metadata?.org_id ||
+    (typeof window !== "undefined" ? localStorage.getItem("cymatic_org_id") : "") ||
     "SCH-UG-2026";
 
   const teacherName = profile?.display_name || user?.email?.split("@")[0] || "Faculty Evaluator";
@@ -76,8 +76,8 @@ export function TeacherGradingStation() {
     "project_submissions",
     ProjectSubmissionSchema,
     "*",
-    [currentSchoolId],
-    currentSchoolId,
+    [currentOrgId],
+    currentOrgId,
   );
 
   useEffect(() => {
@@ -321,7 +321,7 @@ export function TeacherGradingStation() {
             <h3 className="text-xs font-black uppercase text-zinc-400 tracking-wider flex items-center justify-between px-1">
               <span>Student Submissions ({filteredSubmissions.length})</span>
               <span className="text-[10px] text-blue-400 font-mono">
-                Bound to {currentSchoolId}
+                Bound to {currentOrgId}
               </span>
             </h3>
 
@@ -377,9 +377,9 @@ export function TeacherGradingStation() {
                       <strong className="text-zinc-300">{selectedSubmission.stream}</strong>
                     </div>
                     <div>
-                      <span className="text-zinc-500">School ID: </span>
+                      <span className="text-zinc-500">Org ID: </span>
                       <strong className="text-blue-400 font-mono">
-                        {selectedSubmission.school_id}
+                        {selectedSubmission.org_id}
                       </strong>
                     </div>
                   </div>
@@ -506,7 +506,7 @@ export function TeacherGradingStation() {
                         <p className="text-[10px] text-zinc-500">
                           Will be stamped as:{" "}
                           <span className="text-zinc-300 italic font-serif">"{typedSignature}"</span>{" "}
-                          bound to School ID <span className="font-mono">{currentSchoolId}</span>.
+                          bound to Org ID <span className="font-mono">{currentOrgId}</span>.
                         </p>
                       </div>
                     ) : (

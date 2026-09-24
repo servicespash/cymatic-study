@@ -56,10 +56,8 @@ export interface RegistryMember {
 export function InstitutionalRegistryModule() {
   const { user, profile } = useAuth();
   const currentSchoolId =
-    profile?.school_id ||
-    profile?.organization_id ||
-    user?.user_metadata?.school_id ||
-    (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : "") ||
+    profile?.org_id ||
+    (typeof window !== "undefined" ? localStorage.getItem("cymatic_org_id") : "") ||
     "SCH-UG-2026";
 
   const schoolName = profile?.school_name || "Uganda NCDC Boarding Institution";
@@ -84,7 +82,7 @@ export function InstitutionalRegistryModule() {
         const { data: dbProfiles, error } = await supabase
           .from("profiles")
           .select("*")
-          .eq("organization_id", currentSchoolId);
+          .eq("org_id", currentSchoolId);
 
         if (error) throw error;
 

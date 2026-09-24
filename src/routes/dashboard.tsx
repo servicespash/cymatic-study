@@ -67,7 +67,7 @@ interface DashboardStudent {
 }
 
 function DashboardPage() {
-  const { user, loading, profile, isTeacher, isAdmin, isGuestMode, organizationId } = useAuth();
+  const { user, loading, profile, isTeacher, isAdmin, isGuestMode, org_id } = useAuth();
 
   const navigate = useNavigate();
   const { completeTaskAndSync } = useTermProgress();
@@ -101,10 +101,10 @@ function DashboardPage() {
     try {
       let query = supabase.from("daily_tasks").select("*");
 
-      if (organizationId) {
-        query = query.or(`organization_id.is.null,organization_id.eq.${organizationId}`);
+      if (org_id) {
+        query = query.or(`org_id.is.null,org_id.eq.${org_id}`);
       } else {
-        query = query.is("organization_id", null);
+        query = query.is("org_id", null);
       }
 
       const { data, error } = await query;
@@ -133,7 +133,7 @@ function DashboardPage() {
     // Refresh when local storage updates
     window.addEventListener("storage", loadTasks);
     return () => window.removeEventListener("storage", loadTasks);
-  }, [organizationId]);
+  }, [org_id]);
 
   // Fetch real institutional student data
   useEffect(() => {
@@ -147,7 +147,7 @@ function DashboardPage() {
           isAdmin,
         });
         let query = supabase.from("profiles").select("*");
-        const targetId = profile?.organization_id;
+        const targetId = profile?.org_id;
 
         // Strict organization filtering to satisfy requirement
         if (targetId) {
@@ -221,7 +221,7 @@ function DashboardPage() {
     user?.id,
     isTeacher,
     isAdmin,
-    profile?.school_id,
+    org_id,
     profile?.org_id,
     profile?.school_name,
     isGuestMode,
@@ -243,7 +243,7 @@ function DashboardPage() {
         points: manualPoints,
         tutor_explanation: manualExplanation,
         created_by: "teacher",
-        organization_id: organizationId,
+        org_id: org_id,
       });
 
       if (error) throw error;
@@ -324,7 +324,7 @@ function DashboardPage() {
                   Institutional Admin Authority
                 </Badge>
                 <span className="text-xs text-blue-400 font-mono font-bold">
-                  {profile?.school_id || profile?.organization_id || "UNLINKED"}
+                  {profile?.org_id || "UNLINKED"}
                 </span>
               </div>
               <h3 className="text-xl font-black text-white uppercase tracking-tight">

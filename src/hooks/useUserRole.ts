@@ -13,7 +13,7 @@ export interface UserRoleState {
   isAdmin: boolean;
   isIndependent: boolean;
   isInstitutional: boolean;
-  organizationId: string | null;
+  org_id: string | null;
   schoolName: string | null;
   loading: boolean;
   error: string | null;
@@ -51,7 +51,7 @@ export function useUserRole(): UserRoleState {
   const { user, profile, loading: authLoading } = useAuth();
   const [role, setRole] = useState<UserRole>("student");
   const [rawRole, setRawRole] = useState<string>("student");
-  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const [org_id, setOrgId] = useState<string | null>(null);
   const [schoolName, setSchoolName] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +60,7 @@ export function useUserRole(): UserRoleState {
     if (!user) {
       setRole("student");
       setRawRole("student");
-      setOrganizationId(null);
+      setOrgId(null);
       setSchoolName(null);
       setLoading(false);
       return;
@@ -71,7 +71,7 @@ export function useUserRole(): UserRoleState {
 
     try {
       let fetchedRawRole: string | null = null;
-      let fetchedOrganizationId: string | null = null;
+      let fetchedOrgId: string | null = null;
       let fetchedSchoolName: string | null = null;
 
       // 1. Attempt secure RPC call (Source of Truth)
@@ -103,7 +103,7 @@ export function useUserRole(): UserRoleState {
       }
 
       if (profileRes.data) {
-        fetchedOrganizationId = (profileRes.data as any).org_id;
+        fetchedOrgId = (profileRes.data as any).org_id;
         fetchedSchoolName = profileRes.data.school_name;
       }
 
@@ -112,18 +112,19 @@ export function useUserRole(): UserRoleState {
         fetchedRawRole = profile?.role || user.user_metadata?.role || "student";
       }
 
-      if (!fetchedOrganizationId) {
-        fetchedOrganizationId =
-          profile?.organization_id ||
-          user.user_metadata?.organization_id ||
+      if (!fetchedOrgId) {
+        fetchedOrgId =
+          profile?.org_id ||
           user.user_metadata?.org_id ||
+          user.user_metadata?.organization_id ||
+          user.user_metadata?.school_id ||
           null;
       }
 
       const normalized = normalizeRole(fetchedRawRole);
       setRawRole(fetchedRawRole || "student");
       setRole(normalized);
-      setOrganizationId(fetchedOrganizationId);
+      setOrgId(fetchedOrgId);
       setSchoolName(fetchedSchoolName);
     } catch (err: any) {
       console.warn("Secure role verification notice:", err);
@@ -169,7 +170,7 @@ export function useUserRole(): UserRoleState {
     isAdmin,
     isIndependent,
     isInstitutional,
-    organizationId,
+    org_id,
     schoolName,
     loading: authLoading || loading,
     error,
