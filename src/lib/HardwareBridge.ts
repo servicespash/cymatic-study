@@ -1,6 +1,7 @@
 import { TextToSpeech } from "@capacitor-community/text-to-speech";
 import { Preferences } from "@capacitor/preferences";
 import { Capacitor } from "@capacitor/core";
+import { VOICE_HINTS } from "@/config/voice-hints";
 
 export function sanitizeText(text: string): string {
   return text
@@ -57,10 +58,7 @@ export const HardwareBridge = {
 
           // 2. Try gender-aware selection if no specific voice found
           if (!targetVoice && options.gender) {
-            const maleHints = ["male", "google-m", "en-us-x-iom", "en-gb-x-fis", "david", "mark", "premium-m", "natural-m"];
-            const femaleHints = ["female", "google-f", "en-us-x-sfg", "en-us-x-tpf", "zira", "samantha", "victoria", "premium-f", "natural-f"];
-            
-            const hints = options.gender === "male" ? maleHints : femaleHints;
+            const hints = options.gender === "male" ? VOICE_HINTS.male : VOICE_HINTS.female;
             
             // Priority 1: Exact lang match + hint
             targetVoice = voices.find(v => 
@@ -148,22 +146,11 @@ export const HardwareBridge = {
       let voices = window.speechSynthesis.getVoices();
 
       const formatVoices = (vList: SpeechSynthesisVoice[]) => {
-        const maleHints = ["male", "google-m", "en-us-x-iom", "en-gb-x-fis", "david", "mark"];
-        const femaleHints = [
-          "female",
-          "google-f",
-          "en-us-x-sfg",
-          "en-us-x-tpf",
-          "zira",
-          "samantha",
-          "victoria",
-        ];
-
         return vList.map((v) => {
           let gender: "male" | "female" | "neutral" = "neutral";
           const nameLower = v.name.toLowerCase();
-          if (maleHints.some((h) => nameLower.includes(h))) gender = "male";
-          else if (femaleHints.some((h) => nameLower.includes(h))) gender = "female";
+          if (VOICE_HINTS.male.some((h) => nameLower.includes(h))) gender = "male";
+          else if (VOICE_HINTS.female.some((h) => nameLower.includes(h))) gender = "female";
 
           return { name: v.name, lang: v.lang, gender };
         });

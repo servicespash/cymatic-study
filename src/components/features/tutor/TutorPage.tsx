@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { ChatSidebar } from "./ChatSidebar";
 import { MainContainer } from "./MainContainer";
 import { ChatArea } from "./ChatArea";
-import { InputField } from "./InputField";
+import { InputField } from "@/components/common/InputField";
 import { TutorErrorBoundary } from "./TutorErrorBoundary";
 import { Menu, Settings, Download, Volume2, VolumeX, Video, VideoOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";

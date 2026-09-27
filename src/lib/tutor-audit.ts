@@ -4,6 +4,8 @@
  * Ensures responses are accurate, curriculum-compliant, and helpful
  */
 
+import { CURRICULUM_DATA } from "@/config/curriculum";
+
 export interface TutorResponse {
   id: string;
   question: string;
@@ -11,6 +13,7 @@ export interface TutorResponse {
   model: string;
   timestamp: Date;
   userId: string;
+  userRole: string; // Added to support role awareness
   subject: string;
   curriculum: string;
   responseTime: number; // ms
@@ -47,23 +50,6 @@ export interface AuditMetrics {
 }
 
 /**
- * Valid curriculum subjects for Uganda secondary education
- */
-const VALID_SUBJECTS = [
-  "Mathematics",
-  "Physics",
-  "Chemistry",
-  "Biology",
-  "English",
-  "History",
-  "Geography",
-  "Economics",
-  "Literature",
-];
-
-const VALID_CURRICULUMS = ["S1", "S2", "S3", "S4", "Advanced"];
-
-/**
  * Audit a tutor response for quality and compliance
  */
 export function auditTutorResponse(response: TutorResponse): Omit<AuditResult, "auditedBy"> {
@@ -97,12 +83,12 @@ export function auditTutorResponse(response: TutorResponse): Omit<AuditResult, "
   }
 
   // 3. Validate subject and curriculum
-  if (!VALID_SUBJECTS.includes(response.subject)) {
+  if (!CURRICULUM_DATA.subjects.includes(response.subject)) {
     issues.push(`Invalid subject: ${response.subject}`);
     complianceScore -= 20;
   }
 
-  if (!VALID_CURRICULUMS.includes(response.curriculum)) {
+  if (!CURRICULUM_DATA.curriculums.includes(response.curriculum)) {
     issues.push(`Invalid curriculum: ${response.curriculum}`);
     complianceScore -= 20;
   }

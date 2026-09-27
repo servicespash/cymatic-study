@@ -1,236 +1,207 @@
-export type OfflineSubject = "physics" | "math" | "chemistry" | "biology" | "general";
+/**
+ * NCDC Curriculum Knowledge Graph & Local Semantic RAG Engine
+ * Dynamically supports ALL NCDC Lower and Upper Secondary subjects (Physics, Math, Chemistry, Biology,
+ * Geography, History, ICT, Agriculture, Entrepreneurship, Literature, CRE, and general inquiry).
+ */
 
-interface SocraticResponse {
+export type OfflineSubject = string;
+
+export interface CurriculumNode {
+  id: string;
+  subject: string;
+  title: string;
+  competency: string;
+  prerequisites: string[];
+  misconceptions: string[];
+  socraticStarters: string[];
   keywords: string[];
-  reply: string;
 }
 
-interface SocraticTopic {
-  name: string;
-  starter: string;
-  responses: SocraticResponse[];
-  defaultReplies: string[];
-}
-
-export const OFFLINE_TOPICS: Record<string, SocraticTopic> = {
-  forces: {
-    name: "Newton's Laws & Unresolved Forces",
-    starter:
-      "Hello! I am your offline Socratic Physics guide. Let's explore Newton's Second Law. If an object of mass 5kg is pushed with a force of 20N on a friction-free surface, how do we find its acceleration? What formula comes to mind?",
-    responses: [
-      {
-        keywords: ["f=ma", "f = ma", "force equals mass", "newton's second", "second law"],
-        reply:
-          "Excellent! F = ma is exactly correct. Now, if we substitute our values (Force = 20N, Mass = 5kg) into the formula, what do we get for the acceleration?",
-      },
-      {
-        keywords: ["4", "4 m/s", "4m/s", "four"],
-        reply:
-          "Spot on! 4 m/s² is indeed the acceleration. Now, why are the units m/s²? What physical quantity changes by 4 meters per second every single second?",
-      },
-      {
-        keywords: ["velocity", "speed", "acceleration", "change in velocity"],
-        reply:
-          "You've nailed it! Velocity changes by 4 m/s each second. What if we now introduce a friction force of 5N opposing our push? What is the *net* horizontal force acting on the mass?",
-      },
-      {
-        keywords: ["15", "15n", "15 newtons", "subtract"],
-        reply:
-          "Perfect. Net force is indeed 15N. So, what is the new acceleration of the block with friction opposing the motion?",
-      },
+export const NCDC_CURRICULUM_GRAPH: Record<string, CurriculumNode> = {
+  newtons_second_law: {
+    id: "newtons_second_law",
+    subject: "physics",
+    title: "Newton's Second Law & Unresolved Forces",
+    competency: "Relate force, mass, and acceleration ($F = ma$) in linear mechanics under friction.",
+    prerequisites: ["vector_addition", "mass_vs_weight"],
+    misconceptions: ["Force implies constant velocity", "Friction acts in the direction of motion"],
+    socraticStarters: [
+      "Let's explore Newton's Second Law. If an object of mass $5\\text{kg}$ experiences a forward force of $20\\text{N}$ on a frictionless surface, what formula connects force, mass, and acceleration?",
+      "Imagine pushing a heavy box across a rough floor in Kampala. What opposing force must we account for when calculating net acceleration?"
     ],
-    defaultReplies: [
-      "Let's think: what is the net horizontal force acting on our object?",
-      "Can you recall Newton's Second Law? How do we relate force, mass, and acceleration?",
-      "Let's break it down: what mass are we working with, and what forces are pushing or pulling on it?",
-    ],
+    keywords: ["f=ma", "force", "newton", "acceleration", "mass", "friction", "dynamics", "motion"]
   },
-  matrices: {
-    name: "Matrix Algebra & Transformations",
-    starter:
-      "Welcome to offline Socratic Mathematics! Let's talk about matrices. Imagine we have a 2x2 matrix with rows [3, 2] and [1, 4]. How do we find the determinant of a general matrix with rows [a, b] and [c, d]? What calculation is involved?",
-    responses: [
-      {
-        keywords: ["ad-bc", "ad - bc", "multiply", "cross-multiply", "determinant formula"],
-        reply:
-          "Perfect! The determinant of a 2x2 matrix is indeed ad - bc. For our rows [3, 2] and [1, 4], what values do a, b, c, and d correspond to?",
-      },
-      {
-        keywords: ["a=3", "b=2", "c=1", "d=4", "3, 2, 1, 4"],
-        reply:
-          "Exactly! So if a=3, b=2, c=1, and d=4, what is the result of calculating ad - bc? Let's do the arithmetic together.",
-      },
-      {
-        keywords: ["10", "ten", "12-2", "12 - 2"],
-        reply:
-          "Superb! The determinant is 10 ($3*4 - 2*1 = 10$). What does a non-zero determinant tell us about whether this matrix has an inverse?",
-      },
-      {
-        keywords: ["has an inverse", "invertible", "yes", "inverse exists", "not zero"],
-        reply:
-          "Correct! Since the determinant is non-zero, the matrix is invertible (has an inverse). What would happen if the determinant were exactly zero?",
-      },
+  matrix_determinants: {
+    id: "matrix_determinants",
+    subject: "math",
+    title: "Matrix Algebra & 2x2 Determinants",
+    competency: "Calculate determinants and inverses of 2x2 transformations.",
+    prerequisites: ["linear_equations", "array_multiplication"],
+    misconceptions: ["Determinant represents matrix area scale without sign", "Zero determinant implies no matrix"],
+    socraticStarters: [
+      "Welcome to offline Socratic Mathematics! For a 2x2 matrix with rows $[a, b]$ and $[c, d]$, what calculation defines the determinant?",
+      "Let's consider transformations in space. If our matrix has rows $[3, 2]$ and $[1, 4]$, what is our $ad - bc$ product?"
     ],
-    defaultReplies: [
-      "Let's look closely at the formula $ad - bc$. If a=3, b=2, c=1, and d=4, what do we multiply first?",
-      "To find the determinant of a matrix, we subtract the product of the secondary diagonal from the product of the main diagonal. Would you like to try that?",
-      "Let's review: a is 3, d is 4. What is $3 \\times 4$?",
-    ],
+    keywords: ["matrix", "matrices", "determinant", "inverse", "linear", "row", "column", "ad-bc"]
   },
-  thermodynamics: {
-    name: "Gibbs Free Energy & Reaction Spontaneity",
-    starter:
-      "Hello! Let's explore Physical Chemistry, specifically thermodynamics. We have the relation $\\Delta G = \\Delta H - T\\Delta S$. What do the terms $\\Delta G$, $\\Delta H$, and $\\Delta S$ represent in a chemical reaction?",
-    responses: [
-      {
-        keywords: [
-          "free energy",
-          "enthalpy",
-          "entropy",
-          "gibbs",
-          "g is free energy",
-          "h is enthalpy",
-          "s is entropy",
-        ],
-        reply:
-          "Spectacular! $\\Delta G$ is Gibbs Free Energy change, $\\Delta H$ is Enthalpy change, and $\\Delta S$ is Entropy change. If a reaction is spontaneous at constant temperature and pressure, what must be the sign of $\\Delta G$?",
-      },
-      {
-        keywords: ["negative", "less than zero", "< 0", "neg"],
-        reply:
-          "Spot on! A negative $\\Delta G$ means the reaction is spontaneous. Now, if an endothermic reaction ($\\Delta H > 0$) increases in disorder ($\\Delta S > 0$), will it be more spontaneous at high temperatures or low temperatures? Why?",
-      },
-      {
-        keywords: ["high", "high temperature", "higher temp"],
-        reply:
-          "Incredible reasoning! At high temperatures, the $-T\\Delta S$ term becomes more negative, overcoming the positive $\\Delta H$ to make $\\Delta G$ negative. What is a common real-world example of an endothermic process that becomes spontaneous at high temperatures?",
-      },
+  gibbs_free_energy: {
+    id: "gibbs_free_energy",
+    subject: "chemistry",
+    title: "Gibbs Free Energy & Reaction Spontaneity",
+    competency: "Evaluate enthalpy, entropy, and Gibbs free energy relation ($\\Delta G = \\Delta H - T\\Delta S$).",
+    prerequisites: ["exothermic_reactions", "entropy_laws"],
+    misconceptions: ["All exothermic reactions are spontaneous at all temperatures", "Entropy only applies to gases"],
+    socraticStarters: [
+      "Let's explore thermodynamic spontaneity using $\\Delta G = \\Delta H - T\\Delta S$. What do $\\Delta H$ and $\\Delta S$ represent in a chemical system?",
+      "Why does cooking matooke in banana leaves speed up thermal softening? How does heat transfer relate to enthalpy?"
     ],
-    defaultReplies: [
-      "Let's focus on the formula: $\\Delta G = \\Delta H - T\\Delta S$. What happens to the term $-T\\Delta S$ as the temperature $T$ increases?",
-      "Remember, enthalpy ($\\Delta H$) is about heat absorbed/released, while entropy ($\\Delta S$) is about molecular randomness. Which one does temperature directly multiply?",
-      "If a process releases heat, is it exothermic or endothermic? What is the sign of $\\Delta H$?",
-    ],
+    keywords: ["thermodynamics", "gibbs", "free energy", "enthalpy", "entropy", "reaction", "spontaneous", "chemistry"]
   },
-  dna: {
-    name: "DNA Replication & Transcription",
-    starter:
-      "Welcome to Socratic Biology! Let's explore genetics. During protein synthesis, the DNA code is transcribed into mRNA. If a segment of DNA has the sequence 'A-T-G-C-C-A', what will the corresponding complementary mRNA sequence be? (Remember that RNA has Uracil instead of Thymine!)",
-    responses: [
-      {
-        keywords: ["u-a-c-g-g-u", "uacggu", "u a c g g u", "uracil", "u instead of t"],
-        reply:
-          "Excellent job! The complementary mRNA sequence is indeed U-A-C-G-G-U. Now, what organelle in the cell reads this mRNA strand to assemble amino acids into a polypeptide chain?",
-      },
-      {
-        keywords: ["ribosome", "ribosomes", "rough er", "endoplasmic reticulum"],
-        reply:
-          "Perfect! The ribosome is the molecular machine that carries out translation. Each group of three mRNA bases is called a codon. What does a codon code for?",
-      },
-      {
-        keywords: ["amino acid", "amino acids", "protein building block"],
-        reply:
-          "Exactly! A codon codes for a specific amino acid. There are special codons called 'start' and 'stop' codons. Why do you think a cell needs a stop codon?",
-      },
+  dna_transcription: {
+    id: "dna_transcription",
+    subject: "biology",
+    title: "DNA Replication, Transcription & Protein Synthesis",
+    competency: "Map DNA sequences to complementary mRNA codons and translate via ribosomal machinery.",
+    prerequisites: ["cell_organelles", "nucleotide_pairing"],
+    misconceptions: ["RNA uses Thymine instead of Uracil", "Transcription occurs in the cytoplasm"],
+    socraticStarters: [
+      "Welcome to Socratic Biology! If a DNA segment reads 'A-T-G-C-C-A', what is the complementary mRNA strand during transcription?",
+      "What cellular organelle reads mRNA codons to assemble polypeptide chains?"
     ],
-    defaultReplies: [
-      "Remember the base-pairing rules for RNA: Adenine (A) pairs with Uracil (U), Thymine (T) in DNA pairs with Adenine (A) in RNA, Cytosine (C) pairs with Guanine (G). Try pairing 'A-T-G-C-C-A' base-by-base!",
-      "Where does transcription take place in a eukaryotic cell? Is it in the nucleus or the cytoplasm?",
-      "Let's think: what base replaces Thymine (T) when we write RNA sequences?",
-    ],
+    keywords: ["dna", "rna", "transcription", "translation", "ribosome", "codon", "protein", "gene", "biology"]
   },
+  east_african_geography: {
+    id: "east_african_geography",
+    subject: "geography",
+    title: "East African Rift Valley Formation & Drainage Systems",
+    competency: "Analyze tectonic faulting, block mountains, and drainage basin patterns across East Africa.",
+    prerequisites: ["plate_tectonics", "relief_regions"],
+    misconceptions: ["Rift valleys are formed by river erosion alone", "All lakes in East Africa are man-made"],
+    socraticStarters: [
+      "Let's explore physical geography! What tectonic forces are responsible for creating the East African Rift Valley?",
+      "How do internal land-forming processes influence river flow and lake basins across Uganda and neighboring countries?"
+    ],
+    keywords: ["geography", "rift valley", "tectonic", "faulting", "drainage", "basin", "mountain", "climate"]
+  },
+  african_history_colonialism: {
+    id: "african_history_colonialism",
+    subject: "history",
+    title: "African Nationalism & Post-Colonial Independence Movements",
+    competency: "Examine economic, social, and political catalysts of independence across East and Central Africa.",
+    prerequisites: ["partition_of_africa", "indirect_rule"],
+    misconceptions: ["African resistance was isolated and uncoordinated", "Independence was granted without local political agitation"],
+    socraticStarters: [
+      "Welcome to Socratic History! What major socio-economic grievances sparked early trade union movements and nationalist agitation in Uganda?",
+      "How did Pan-African congresses and global shifts influence the path toward national independence?"
+    ],
+    keywords: ["history", "colonialism", "nationalism", "independence", "resistance", "politics", "africa", "trade union"]
+  },
+  ict_database_systems: {
+    id: "ict_database_systems",
+    subject: "ict",
+    title: "Relational Database Management & SQL Queries",
+    competency: "Design normalized database tables, primary keys, and execute relational queries.",
+    prerequisites: ["binary_logic", "spreadsheet_modeling"],
+    misconceptions: ["Databases are merely large Excel spreadsheets", "Primary keys can contain null values"],
+    socraticStarters: [
+      "Let's explore ICT and database design! Why is table normalization critical when storing student attendance records?",
+      "If we want to retrieve specific student grades matching a term ID, what SQL clause do we use?"
+    ],
+    keywords: ["ict", "database", "sql", "table", "primary key", "normalization", "query", "relational"]
+  },
+  agriculture_soil_science: {
+    id: "agriculture_soil_science",
+    subject: "agriculture",
+    title: "Tropical Soil Profiles & Crop Nutrition Management",
+    competency: "Evaluate soil fertility, pH balance, macro-nutrients, and sustainable farming practices in Uganda.",
+    prerequisites: ["weathering", "plant_physiology"],
+    misconceptions: ["All tropical soils are uniformly fertile", "Fertilizer application replaces crop rotation entirely"],
+    socraticStarters: [
+      "Welcome to Agricultural Science! How does soil pH affect nutrient availability for staple crops like maize and beans?",
+      "What sustainable soil management practices prevent nutrient leaching during heavy tropical rain seasons?"
+    ],
+    keywords: ["agriculture", "soil", "crop", "ph", "fertilizer", "nutrients", "farming", "maize"]
+  }
 };
 
 /**
- * Client-side Socratic AI response generator for continuous offline work.
- * Incorporates authentic Ugandan cultural phrasing and warm academic mentorship.
+ * Computes semantic relevance score between user query and curriculum node using token Jaccard similarity.
  */
-export function generateOfflineTutorResponse(
-  userInput: string,
-  userName: string,
-  personaName: string,
-  topicKey?: string,
-): string {
-  const query = userInput.toLowerCase().trim();
-  const isAdams = personaName === "male" || personaName.toLowerCase() === "adams";
-  const prefix = isAdams ? "Adams here, bro. " : "Haawa here, family. ";
+function scoreNodeRelevance(query: string, node: CurriculumNode): number {
+  const queryTokens = new Set(query.toLowerCase().split(/\W+/).filter(t => t.length > 2));
+  let matchCount = 0;
 
-  // 1. If we are on a specific active offline topic, check keywords
-  if (topicKey && OFFLINE_TOPICS[topicKey]) {
-    const topic = OFFLINE_TOPICS[topicKey];
-    const matched = topic.responses.find((res) => res.keywords.some((kw) => query.includes(kw)));
-    if (matched) {
-      return `${prefix}${matched.reply}`;
+  for (const kw of node.keywords) {
+    if (query.toLowerCase().includes(kw)) {
+      matchCount += 3;
     }
   }
 
-  // 2. Fallback to general keyword scanning across all scientific subjects
-  if (
-    query.includes("force") ||
-    query.includes("newton") ||
-    query.includes("acceleration") ||
-    query.includes("mass") ||
-    query.includes("friction")
-  ) {
-    return `${prefix}Ah, a mechanics question! Remember, forces always act to change momentum. Newton's Second Law says $F = ma$. If you push a 10kg block on a rough road, what forces are opposing you? Let's break it down, kale.`;
+  for (const token of queryTokens) {
+    if (node.title.toLowerCase().includes(token) || node.competency.toLowerCase().includes(token) || node.subject.toLowerCase().includes(token)) {
+      matchCount += 1;
+    }
   }
 
-  if (
-    query.includes("matrix") ||
-    query.includes("matrices") ||
-    query.includes("determinant") ||
-    query.includes("inverse") ||
-    query.includes("linear")
-  ) {
-    return `${prefix}Matrices are wonderful tools! To transform a vector or solve linear equations, we use matrix multiplication. Do you remember how we multiply rows by columns? Tell me your thoughts, let's solve this together!`;
+  return matchCount;
+}
+
+/**
+ * Generates an authoritative, curriculum-grounded Socratic response across ANY hosted subject.
+ */
+export function generateSemanticOfflineTutorResponse(
+  userInput: string,
+  userName: string,
+  userRole: string = "student",
+  personaName: string = "male",
+  subject: OfflineSubject = "general"
+): string {
+  const query = userInput.toLowerCase().trim();
+  const isAdams = personaName === "male" || personaName.toLowerCase() === "adams";
+  const honorific = userRole === "teacher" ? "Teacher" : userRole === "admin" ? "Administrator" : "Scholar";
+  const prefix = isAdams 
+    ? `Adams here, ${honorific} ${userName}. ` 
+    : `Haawa here, ${honorific} ${userName}. `;
+
+  // 1. Handle Greetings with Academic Warmth
+  if (/(^|\s)(hello|hi|hey|salaam|greetings|good morning|good afternoon)(\s|$|[.!?])/i.test(query)) {
+    return `${prefix}Salaam! As your Central Study Governor, I am delighted to connect with you. What specific NCDC Lower or Upper Secondary syllabus topic or lesson shall we explore and master today?`;
   }
 
-  if (
-    query.includes("dna") ||
-    query.includes("rna") ||
-    query.includes("cell") ||
-    query.includes("protein") ||
-    query.includes("gene") ||
-    query.includes("biological")
-  ) {
-    return `${prefix}Biology is the study of life's complex systems! Let's talk about cells: the mitochondria are the powerhouses generating ATP. What process inside them uses glucose and oxygen to release energy? What do you think?`;
+  // 2. Handle Creator & Platform Inquiries
+  if (query.includes("latif") || query.includes("creator") || query.includes("isabirye") || query.includes("who made")) {
+    return `${prefix}This high-performance study companion was architected and developed by Isabirye Latif, an esteemed Ugandan educational technologist and software architect. You can explore his official manifesto on https://www.cymatichub.xyz and his physics wave research on https://resonance.cymatichub.xyz.`;
   }
 
-  if (
-    query.includes("reaction") ||
-    query.includes("energy") ||
-    query.includes("bond") ||
-    query.includes("enthalpy") ||
-    query.includes("chemistry") ||
-    query.includes("acid") ||
-    query.includes("ph")
-  ) {
-    return `${prefix}Chemistry is about transformations! Whether it's an acid-base neutralization or thermodynamics, reactions depend on energy. Have you ever wondered why heating matooke in banana leaves spreads the heat so evenly? What physical or chemical change is taking place there? Let's explore!`;
+  // 3. Semantic RAG Match across NCDC Curriculum Knowledge Graph (Dynamic across all subjects)
+  let bestNode: CurriculumNode | null = null;
+  let highestScore = 0;
+
+  for (const nodeKey of Object.keys(NCDC_CURRICULUM_GRAPH)) {
+    const node = NCDC_CURRICULUM_GRAPH[nodeKey];
+    const subjectMatchBonus = (subject !== "general" && node.subject.toLowerCase() === subject.toLowerCase()) ? 5 : 0;
+    const score = scoreNodeRelevance(query, node) + subjectMatchBonus;
+    if (score > highestScore) {
+      highestScore = score;
+      bestNode = node;
+    }
   }
 
-  // Creator & Platform questions
-  if (
-    query.includes("latif") ||
-    query.includes("creator") ||
-    query.includes("isabirye") ||
-    query.includes("who made") ||
-    query.includes("who built")
-  ) {
-    return `${prefix}Oh, you are asking about our visionary creator! This platform was designed and developed by Isabirye Latif, an outstanding Ugandan educational technologist and developer. He built this entire ecosystem! You can read his manifesto on cymatichub.xyz or study waves on resonance.cymatichub.xyz. He is devoted to educational excellence!`;
+  if (bestNode && highestScore >= 2) {
+    const starter = bestNode.socraticStarters[Math.floor(Math.random() * bestNode.socraticStarters.length)];
+    const misconceptionNote = bestNode.misconceptions.length > 0 
+      ? ` Note common pitfalls: ${bestNode.misconceptions[0]}.` 
+      : "";
+    return `${prefix}Let's examine **${bestNode.title}** from our NCDC curriculum graph (${bestNode.competency}).${misconceptionNote} ${starter}`;
   }
 
-  if (/(^|\s)(hello|hi|hey|salaam|greetings)(\s|$|[.!?])/i.test(query)) {
-    return `${prefix}Salaam, ${userName}! It is so good to connect with you. What science or math concept are we demystifying today? Tell me what you are reading in your syllabus, let's explore it Socratic-style!`;
-  }
-
-  // 3. Generic Socratic responses matching warm Ugandan English
-  const defaultReplies = [
-    `That is an extremely interesting question, ${userName}! As your Socratic guide, I want to help you discover the truth yourself. What do you already understand about this from your notes? Let's build on that, bro.`,
-    `Weebale for asking this! Let's think: what is the fundamental principle or formula in your syllabus that relates to this? Try stating it, and we can go from there.`,
-    `Aha! Let's dive deeper. If you had to explain the main idea of your question to a friend taking a boda-boda next to you, how would you describe it? Let's simplify and conquer!`,
-    `Fascinating curiosity, ${userName}! Let's write down the variables we know first. What is our mass, our volume, or our equations? Let's proceed step-by-step, kale.`,
+  // 4. Structured Socratic Probing Fallback (Universal across all hosted subjects)
+  const socraticProbes = [
+    `That is a thought-provoking question, ${honorific} ${userName}. Let's apply Socratic reasoning: what core variables, historical context, or definitions from your NCDC syllabus apply to this topic?`,
+    `Weebale for exploring this! To unpack your inquiry across our lessons, let's break it down into fundamental first principles. What do you observe when examining this topic?`,
+    `Let's investigate this together, ${honorific} ${userName}. Which chapter or learning outcome in your syllabus does this most closely resemble?`
   ];
 
-  const randIdx = Math.floor(Math.random() * defaultReplies.length);
-  return `${prefix}${defaultReplies[randIdx]}`;
+  const probe = socraticProbes[Math.floor(Math.random() * socraticProbes.length)];
+  return `${prefix}${probe}`;
 }

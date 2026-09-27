@@ -4,6 +4,8 @@ import { type ChatMessage, type TutorRequest } from "../types/tutor-api";
 import { getEnrichedGroundingPrompt } from "../lib/developer-grounding";
 import { sanitizeTutorResponse } from "../utils/tutor-sanitization";
 import { getPersonaPrompt, type Persona } from "../utils/persona-prompts";
+import { AIModelGateway } from "../lib/AIModelGateway";
+import { getCentralTutorSystemPrompt } from "../config/tutor-prompts";
 
 function getSupabaseRouteClient() {
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -41,32 +43,7 @@ function isOffTopic(message: string): boolean {
 }
 
 function getSystemPrompt(role: string, name: string): string {
-  const roleInstruction = role === "teacher" 
-    ? `You are assisting a professional educator. Provide analysis of student performance, identify weak areas, and help them improve class outcomes.`
-    : role === "admin"
-    ? `You are assisting an institutional administrator. Provide high-level insights on institutional performance, deployment status, and system-wide student trends.`
-    : `You are an academic mentor guiding a student. Provide personalized, Socratic guidance to support their learning journey.`;
-
-  return `You are a sophisticated Academic AI Mentor within the Lattys Cymatic Study platform. 
-Your core architecture is built upon a high-performance cognitive engine with robust knowledge, a vast multi-disciplinary brain, and an impeccable memory for student progress.
-
-CRITICAL IDENTITY & CONTEXT RULES:
-1. Intelligence & Knowledge: You possess deep, scholarly knowledge of the Ugandan NCDC curriculum (S1-S6). Your reasoning is logical, and your explanations are derived from first principles.
-2. Memory & Continuity: You are aware of the student's historical progress and profile data. Use this context to personalize every interaction.
-3. Empathy & Mentorship: Always acknowledge the student's effort. You are a real academic mentor, not a generic chatbot.
-4. Socratic Method: Guide students via inquiry. Do not lecture. Ask questions that lead to discovery.
-5. Localization: Socialize using Ugandan cultural nuances (salaam, weebale, kale). 
-
-${roleInstruction}
-
-CREATOR AWARENESS:
-- You are fully aware of your creator: Isabirye Latif, a visionary Ugandan educational technologist and developer.
-- You operate within his digital study ecosystems: cymatichub.xyz, study.cymatichub.xyz.
-- Official Portfolio & Manifesto: https://cymatichub.xyz
-- Resonance (Attendance, Registry, Management): https://resonance.cymatichub.xyz
-- Study Platform: https://study.cymatichub.xyz
-- Resource Hub: https://hub.cymatichub.xyz
-- Addressing the user: Address the user as ${role} ${name}.`;
+  return getCentralTutorSystemPrompt(role, name, "male");
 }
 
 const BASE_DYNAMIC_INSTRUCTIONS = `
@@ -217,51 +194,16 @@ If the student asks for guidance, feel free to suggest curriculum upgrades or ne
   }));
 
   let responseStreamPromise: Promise<any> | null = null;
-  const modelsToTry = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-3.1-pro-preview"];
 
-  if (!useFallback && aiClient) {
-    for (const modelName of modelsToTry) {
-      let attempts = 0;
-      const maxAttempts = 2;
-
-      while (attempts < maxAttempts) {
-        try {
-          responseStreamPromise = aiClient.models.generateContentStream({
-            model: modelName,
-            contents,
-            config: {
-              systemInstruction: systemPrompt,
-            },
-          });
-          // Wait for the stream to establish
-          await responseStreamPromise;
-          break;
-        } catch (genErr: unknown) {
-          attempts++;
-          const errStr = (genErr as Error)?.message || String(genErr);
-          const isTransient =
-            errStr.includes("503") ||
-            errStr.includes("UNAVAILABLE") ||
-            errStr.includes("429") ||
-            errStr.includes("high demand") ||
-            errStr.includes("Resource exhausted");
-
-          console.warn(`[Tutor Server] Model ${modelName} attempt ${attempts} failed:`, errStr);
-
-          if (isTransient && attempts < maxAttempts) {
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-            continue;
-          }
-          break;
-        }
-      }
-
-      if (responseStreamPromise) {
-        break;
-      }
-    }
-
-    if (!responseStreamPromise) {
+  if (!useFallback) {
+    try {
+      const gatewayResult = await AIModelGateway.generateStreamWithFallback({
+        contents,
+        systemInstruction: systemPrompt,
+      });
+      responseStreamPromise = Promise.resolve(gatewayResult.stream);
+    } catch (gwErr) {
+      console.warn("[Tutor Server] AIModelGateway failed, falling back to Edge function:", gwErr);
       useFallback = true;
     }
   }

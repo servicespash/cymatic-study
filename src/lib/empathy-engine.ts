@@ -6,6 +6,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { TutorPersona } from "./tutor-context";
 import type { UserMood } from "./user-mood-context";
+import { EMPATHY_DATA } from "@/config/empathy-data";
 
 export type EmpathyContext = {
   name: string;
@@ -108,11 +109,9 @@ function getSoulTemplate(
   const student = name || (isAdams ? "bro" : "friend");
 
   // Salutations
-  const adamsSalutations = ["Yo", "Salaam", "What's good", "Aha"];
-  const haawaSalutations = ["Greetings", "Peace be with you", "Hello", "Welcome back"];
   const salutation = isAdams
-    ? adamsSalutations[Math.floor(Math.random() * adamsSalutations.length)]
-    : haawaSalutations[Math.floor(Math.random() * haawaSalutations.length)];
+    ? EMPATHY_DATA.adamsSalutations[Math.floor(Math.random() * EMPATHY_DATA.adamsSalutations.length)]
+    : EMPATHY_DATA.haawaSalutations[Math.floor(Math.random() * EMPATHY_DATA.haawaSalutations.length)];
 
   // Time expressions
   let timeStr = "this moment";
@@ -123,14 +122,7 @@ function getSoulTemplate(
 
   if (trigger === "greeting") {
     // Propose an inquiry-based trigger
-    const activities = [
-      "crack some NCDC calculations together",
-      "explore some science concepts",
-      "conquer a new daily challenge and raise your term score",
-      "bridge another knowledge gap",
-      "examine some real-world study projects",
-    ];
-    const act = activities[Math.floor(Math.random() * activities.length)];
+    const act = EMPATHY_DATA.activities[Math.floor(Math.random() * EMPATHY_DATA.activities.length)];
 
     if (isAdams) {
       return `${salutation}, ${student}! Let's make every second of ${timeStr} count. Ready to ${act}?`;
@@ -141,25 +133,9 @@ function getSoulTemplate(
 
   if (trigger === "mood_change") {
     const state = mood || "pensive";
-    const adamsMoodResponses: Record<string, string> = {
-      stressed: "Stressed? Take a breather, bro. We take it one step at a time. No pressure.",
-      tired:
-        "Tiredness is part of the grind, bro, but rest is key. Recharge and let's get back to it.",
-      confident: "Love that confidence! Keep pushing, let's keep the levels high.",
-      neutral: "Steady pacing is the secret, bro. Let's stay focused.",
-    };
-    const haawaMoodResponses: Record<string, string> = {
-      stressed:
-        "I sense a heavy heart. Pause, close your eyes, and breathe. Clarity will return shortly.",
-      tired:
-        "Do not wear yourself thin. Study with grace. Rest when you must, then seek knowledge.",
-      confident: "A joyful state! May your bright spirit light up your curriculum study today.",
-      neutral: "A balanced state of mind is wonderful for learning. Let us proceed gracefully.",
-    };
-
-    const responseMap = isAdams ? adamsMoodResponses : haawaMoodResponses;
+    const responseMap = isAdams ? EMPATHY_DATA.adamsMoodResponses : EMPATHY_DATA.haawaMoodResponses;
     return (
-      responseMap[state] ||
+      (responseMap as Record<string, string>)[state] ||
       (isAdams
         ? `Feeling ${state}? I'm right here in your corner, bro. Let's keep it moving.`
         : `I recognize you are feeling ${state}. Take comfort, and let us study with ease.`)
@@ -167,8 +143,7 @@ function getSoulTemplate(
   }
 
   if (trigger === "milestone") {
-    const subjects = ["mathematics", "physics", "chemistry", "biology", "curriculum projects"];
-    const sub = subjects[Math.floor(Math.random() * subjects.length)];
+    const sub = EMPATHY_DATA.subjects[Math.floor(Math.random() * EMPATHY_DATA.subjects.length)];
     if (isAdams) {
       return `${salutation}, ${student}! Big moves on those achievements! Your compiled termly mark is rising. Let's keep dominating ${sub}!`;
     } else {

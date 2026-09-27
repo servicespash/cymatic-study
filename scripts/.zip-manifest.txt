@@ -119,7 +119,7 @@ src/components/FloatingTutor.tsx
 src/components/MiraFAB.tsx
 src/components/MoodOverlay.tsx
 src/components/MoodPicker.tsx
-src/components/Navbar.tsx
+src/components/layout/Navbar.tsx
 src/components/PermissionsPanel.tsx
 src/components/SearchEngine.tsx
 src/components/SubjectCard.tsx
@@ -128,14 +128,14 @@ src/components/ThemeToggle.tsx
 src/components/VisionLiveSession.tsx
 src/components/tools/ToolComponent.tsx
 src/components/tools/ToolGenerator.tsx
-src/components/tools/biology/BiologyTools.tsx
+src/components/features/tools/biology/BiologyTools.tsx
 src/components/tools/chemistry/ChemistryTools.tsx
-src/components/tools/math/AreaPerimeterCalc.tsx
+src/components/features/tools/math/AreaPerimeterCalc.tsx
 src/components/tools/math/Matrix3x3Determinant.tsx
 src/components/tools/math/PythagorasCalculator.tsx
 src/components/tools/math/QuadraticSolver.tsx
 src/components/tools/math/TrigonometryCalculator.tsx
-src/components/tools/physics/PhysicsTools.tsx
+src/components/features/tools/physics/PhysicsTools.tsx
 src/components/ui/accordion.tsx
 src/components/ui/alert-dialog.tsx
 src/components/ui/alert.tsx

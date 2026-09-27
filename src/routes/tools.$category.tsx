@@ -8,16 +8,16 @@ import { downloadText } from "@/lib/download";
 import { subjectLabels } from "@/lib/constants";
 
 // Tool Components
-import PhysicsTools from "@/components/tools/physics/PhysicsTools";
+import PhysicsTools from "@/components/features/tools/physics/PhysicsTools";
 import ChemistryTools from "@/components/tools/chemistry/ChemistryTools";
-import BiologyTools from "@/components/tools/biology/BiologyTools";
+import BiologyTools from "@/components/features/tools/biology/BiologyTools";
 
 // Math tools are individual files
 import PythagorasCalculator from "@/components/tools/math/PythagorasCalculator";
 import QuadraticSolver from "@/components/tools/math/QuadraticSolver";
 import TrigonometryCalculator from "@/components/tools/math/TrigonometryCalculator";
 import Matrix3x3Determinant from "@/components/tools/math/Matrix3x3Determinant";
-import AreaPerimeterCalc from "@/components/tools/math/AreaPerimeterCalc";
+import AreaPerimeterCalc from "@/components/features/tools/math/AreaPerimeterCalc";
 import SimultaneousEquations from "@/components/tools/math/SimultaneousEquations";
 import StatisticsCalculator from "@/components/tools/math/StatisticsCalculator";
 

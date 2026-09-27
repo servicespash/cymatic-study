@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { TutorPage } from "@/components/TutorPage";
+import { TutorPage } from "@/components/features/tutor/TutorPage";
 import { z } from "zod";
 
 const tutorSearchSchema = z.object({
