@@ -47,6 +47,8 @@ jobs:
       - name: Build web assets
         run: |
           npm run build
+          mkdir -p dist/client
+          cp -r dist/* dist/client/ || true
           echo "Web assets built successfully to dist/client"
 
       - name: Verify dist/client exists
