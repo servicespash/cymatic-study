@@ -35,6 +35,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: tanstack-start-app
+          projectName: cymatic-sudy
           directory: dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
