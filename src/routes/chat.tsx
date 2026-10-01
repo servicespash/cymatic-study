@@ -307,7 +307,7 @@ function ChatRoomPage() {
           messages: recent,
           persona:
             profile?.tutor_persona ||
-            (["Math", "Physics"].includes(profile?.subject_interest || "") ? "Adams" : "Haawa"),
+            "Adams",
           mood: "focused",
           context: { route: "/chat", cohortId, chatMessageId },
         }),
