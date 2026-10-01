@@ -81,7 +81,7 @@ function ChatPageWrapper() {
 }
 
 function ChatRoomPage() {
-  const { user, loading: authLoading, profile, isInstitutional } = useAuth();
+  const { user, loading: authLoading, profile, role, organizationId, isInstitutional } = useAuth();
   const { liveTools, state, connectSession, disconnectSession } = useTutorSession();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -96,6 +96,8 @@ function ChatRoomPage() {
   const [showVisionSession, setShowVisionSession] = useState(false);
   const [ratedMessages, setRatedMessages] = useState<Record<string, number>>({});
   const [manualLevel, setManualLevel] = useState<string | null>(null);
+  const [cohortId, setCohortId] = useState<string | null>(null);
+  const [chatLock, setChatLock] = useState<{ locked_until: string; reason: string; severity: string } | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -105,14 +107,14 @@ function ChatRoomPage() {
     const isAdminOrTeacher =
       profile?.role === "teacher" || profile?.role === "admin" || profile?.role === "org_admin";
 
-    if (isInstitutional && profile?.org_id) {
+    if (isInstitutional && organizationId) {
       // For institutional users, we need a level.
       // If student, use their level. If staff, use a selected level or default to S1.
       const levelToUse = manualLevel || profile.level || (isAdminOrTeacher ? "S1" : "general");
 
       return {
         type: "institutional" as const,
-        orgId: profile.org_id,
+        orgId: organizationId,
         level: levelToUse,
         label: `${levelToUse} - ${profile.school_name || "School Network"}`,
         isStaff: isAdminOrTeacher,
@@ -125,7 +127,7 @@ function ChatRoomPage() {
       label: "Independent Learning Space",
       isStaff: isAdminOrTeacher,
     };
-  }, [isInstitutional, profile]);
+  }, [isInstitutional, organizationId, profile]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -134,11 +136,22 @@ function ChatRoomPage() {
     }
 
     if (user && profile) {
+      void loadChatState();
       loadMessages();
       const cleanup = subscribeToMessages();
       return cleanup;
     }
   }, [user, authLoading, profile, chatContext]);
+
+  const loadChatState = async () => {
+    if (!user?.id) return;
+    const [{ data: membership }, { data: lock }] = await Promise.all([
+      supabase.from("cohort_members").select("cohort_id").eq("user_id", user.id).eq("organization_id", organizationId).limit(1).maybeSingle(),
+      supabase.rpc("get_active_chat_lock", { target_user: user.id }),
+    ]);
+    setCohortId(membership?.cohort_id || null);
+    setChatLock(Array.isArray(lock) ? (lock[0] || null) : (lock || null));
+  };
 
   const loadMessages = async () => {
     setLoadingMessages(true);
@@ -150,7 +163,7 @@ function ChatRoomPage() {
 
     // Filter by context
     if (chatContext.type === "institutional") {
-      query = query.eq("org_id", chatContext.orgId).eq("level", chatContext.level);
+      query = query.eq("organization_id", chatContext.orgId).eq("level", chatContext.level);
     } else {
       // For independent users, show messages from independent channel or global
       query = query.or(`org_id.eq.independent,org_id.is.null`);
@@ -186,8 +199,8 @@ function ChatRoomPage() {
           // Check if message belongs to our context
           const belongsToContext =
             chatContext.type === "institutional"
-              ? newMsg.org_id === chatContext.orgId && newMsg.level === chatContext.level
-              : newMsg.org_id === "independent" || !newMsg.org_id;
+              ? newMsg.organization_id === chatContext.orgId && newMsg.level === chatContext.level
+              : newMsg.organization_id === null;
 
           if (belongsToContext) {
             const { data: p } = await supabase
@@ -221,19 +234,26 @@ function ChatRoomPage() {
     if (!text && !attachment) return;
 
     setSending(true);
+    if (chatLock && new Date(chatLock.locked_until).getTime() > Date.now()) {
+      toast.error(`Chat is paused until ${new Date(chatLock.locked_until).toLocaleTimeString()}.`);
+      setSending(false);
+      return;
+    }
     if (!user?.id) {
       setSending(false);
       return;
     }
-    const { error } = await supabase.from("chat_messages").insert({
+    const { data: insertedMessage, error } = await supabase.from("chat_messages").insert({
       user_id: user.id,
-      org_id: chatContext.orgId,
+      organization_id: chatContext.type === "institutional" ? chatContext.orgId : null,
+      cohort_id: cohortId,
       level: chatContext.level,
       content: text,
       file_url: attachment?.url,
       file_type: attachment?.type,
       file_name: attachment?.name,
-    });
+      sender_type: "user",
+    }).select("id").single();
 
     if (error) {
       toast.error("Failed to send message");
@@ -245,11 +265,11 @@ function ChatRoomPage() {
 
     // If AI Tutor toggle is ON, fetch a tutor reply and post it to the room
     if (tutorOn && text) {
-      void invokeTutor(text);
+      void invokeTutor(text, insertedMessage?.id || null);
     }
   };
 
-  const invokeTutor = async (prompt: string) => {
+  const invokeTutor = async (prompt: string, chatMessageId: string | null) => {
     if (!user?.id) return;
     setTutorThinking(true);
     try {
@@ -281,8 +301,7 @@ function ChatRoomPage() {
             profile?.tutor_persona ||
             (["Math", "Physics"].includes(profile?.subject_interest || "") ? "Adams" : "Haawa"),
           mood: "focused",
-          userName: profile?.display_name || "learner",
-          context: { route: "/chat", profile },
+          context: { route: "/chat", cohortId, chatMessageId, monitorDrift: true, driftScore: /^(what|why|how|explain|solve|calculate|derive|define)\\b/i.test(prompt.trim()) ? 0 : 0.65 },
         }),
       });
 
@@ -344,11 +363,14 @@ function ChatRoomPage() {
 
       const { error: insertErr } = await supabase.from("chat_messages").insert({
         user_id: user.id,
-        org_id: chatContext.orgId,
+        organization_id: chatContext.type === "institutional" ? chatContext.orgId : null,
+        cohort_id: cohortId,
         level: chatContext.level,
         content: `${AI_TUTOR_MARKER}${sanitizeText(replyText)}`,
+        sender_type: "tutor",
       });
       if (insertErr) throw insertErr;
+      await loadChatState();
     } catch (e: any) {
       console.error("Tutor error:", e);
       toast.error("Tutor unavailable: " + (e?.message || "try again"));
