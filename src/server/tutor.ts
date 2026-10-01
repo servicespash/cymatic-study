@@ -102,8 +102,6 @@ export async function handleTutorRequest(request: Request) {
   const body = (await request.json().catch(() => ({}))) as TutorRequest;
   const {
     messages,
-    userName: requestedUserName,
-    userRole: _requestedRole,
     subject = "general",
     persona: requestedPersona,
     mood = "focused",
