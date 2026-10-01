@@ -60,6 +60,11 @@ jobs:
           echo "✓ dist/client directory exists"
           ls -la dist/client | head -20
 
+      - name: Install Capacitor Android tooling
+        run: |
+          npm install --no-save --legacy-peer-deps @capacitor/cli@8.5.2 @capacitor/android@8.5.2
+          echo "✓ Capacitor Android tooling installed"
+
       - name: Prepare Android platform
         run: |
           npx cap add android
