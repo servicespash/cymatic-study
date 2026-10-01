@@ -29,4 +29,10 @@ export interface TutorResponse {
   status?: {
     tutor_mood: string;
   };
+
+  monitor?: {
+    study_relevance: number;
+    drift: boolean;
+    severity: "none" | "notice" | "warning";
+  };
 }
