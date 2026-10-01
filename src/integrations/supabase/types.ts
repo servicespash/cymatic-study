@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       app_config: {
@@ -138,6 +113,44 @@ export type Database = {
         }
         Relationships: []
       }
+      content_interactions: {
+        Row: {
+          content_id: string
+          created_at: string
+          id: string
+          is_bookmarked: boolean
+          is_liked: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_id: string
+          created_at?: string
+          id?: string
+          is_bookmarked?: boolean
+          is_liked?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string
+          created_at?: string
+          id?: string
+          is_bookmarked?: boolean
+          is_liked?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_interactions_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "news_broadcasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daily_challenges: {
         Row: {
           assigned_date: string
@@ -201,103 +214,6 @@ export type Database = {
           reference_id?: string | null
           task_type?: string
           user_id?: string
-        }
-        Relationships: []
-      }
-      dashboard_tasks: {
-        Row: {
-          id: string
-          title: string
-          subject: string
-          description: string
-          task_type: string
-          points: number
-          tutor_explanation: string | null
-          created_by: string | null
-          organization_id: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          title: string
-          subject: string
-          description: string
-          task_type: string
-          points?: number
-          tutor_explanation?: string | null
-          created_by?: string | null
-          organization_id?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          title?: string
-          subject?: string
-          description?: string
-          task_type?: string
-          points?: number
-          tutor_explanation?: string | null
-          created_by?: string | null
-          organization_id?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      project_submissions: {
-        Row: {
-          id: string
-          student_id: string
-          project_data: Json
-          status: Database["public"]["Enums"]["submission_status"]
-          teacher_id: string | null
-          teacher_name: string | null
-          teacher_license: string | null
-          school_key: string | null
-          phase1_score: number | null
-          phase2_score: number | null
-          phase3_score: number | null
-          phase4_score: number | null
-          total_competency_score: number | null
-          teacher_comments: string | null
-          verified_at: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          student_id: string
-          project_data?: Json
-          status?: Database["public"]["Enums"]["submission_status"]
-          teacher_id?: string | null
-          teacher_name?: string | null
-          teacher_license?: string | null
-          school_key?: string | null
-          phase1_score?: number | null
-          phase2_score?: number | null
-          phase3_score?: number | null
-          phase4_score?: number | null
-          teacher_comments?: string | null
-          verified_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          student_id?: string
-          project_data?: Json
-          status?: Database["public"]["Enums"]["submission_status"]
-          teacher_id?: string | null
-          teacher_name?: string | null
-          teacher_license?: string | null
-          school_key?: string | null
-          phase1_score?: number | null
-          phase2_score?: number | null
-          phase3_score?: number | null
-          phase4_score?: number | null
-          teacher_comments?: string | null
-          verified_at?: string | null
-          created_at?: string
-          updated_at?: string
         }
         Relationships: []
       }
@@ -442,6 +358,7 @@ export type Database = {
           display_name: string | null
           id: string
           org_id: string | null
+          organization_id: string | null
           phone: string | null
           referral_code: string | null
           role: string | null
@@ -456,6 +373,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           org_id?: string | null
+          organization_id?: string | null
           phone?: string | null
           referral_code?: string | null
           role?: string | null
@@ -470,6 +388,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           org_id?: string | null
+          organization_id?: string | null
           phone?: string | null
           referral_code?: string | null
           role?: string | null
@@ -482,6 +401,13 @@ export type Database = {
           {
             foreignKeyName: "profiles_org_id_fkey"
             columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_organization_id_fkey"
+            columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
@@ -633,19 +559,31 @@ export type Database = {
       }
       tutor_content: {
         Row: {
+          audience_role: Database["public"]["Enums"]["app_role"] | null
           content_key: string
+          content_scope: string
           content_value: string
+          is_active: boolean
           language: string | null
+          organization_id: string | null
         }
         Insert: {
+          audience_role?: Database["public"]["Enums"]["app_role"] | null
           content_key: string
+          content_scope?: string
           content_value: string
+          is_active?: boolean
           language?: string | null
+          organization_id?: string | null
         }
         Update: {
+          audience_role?: Database["public"]["Enums"]["app_role"] | null
           content_key?: string
+          content_scope?: string
           content_value?: string
+          is_active?: boolean
           language?: string | null
+          organization_id?: string | null
         }
         Relationships: []
       }
@@ -654,21 +592,30 @@ export type Database = {
           current_state: Json | null
           history: Json | null
           last_updated: string | null
+          organization_id: string | null
+          role_snapshot: Database["public"]["Enums"]["app_role"] | null
           session_id: string
+          tutor_persona: string | null
           user_id: string
         }
         Insert: {
           current_state?: Json | null
           history?: Json | null
           last_updated?: string | null
+          organization_id?: string | null
+          role_snapshot?: Database["public"]["Enums"]["app_role"] | null
           session_id?: string
+          tutor_persona?: string | null
           user_id: string
         }
         Update: {
           current_state?: Json | null
           history?: Json | null
           last_updated?: string | null
+          organization_id?: string | null
+          role_snapshot?: Database["public"]["Enums"]["app_role"] | null
           session_id?: string
+          tutor_persona?: string | null
           user_id?: string
         }
         Relationships: []
@@ -704,22 +651,33 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          organization_id: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          organization_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          organization_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_subscriptions: {
         Row: {
@@ -784,6 +742,7 @@ export type Database = {
     }
     Functions: {
       _auth_uid: { Args: never; Returns: string }
+      current_organization_id: { Args: never; Returns: string }
       dblink: { Args: { "": string }; Returns: Record<string, unknown>[] }
       dblink_cancel_query: { Args: { "": string }; Returns: string }
       dblink_close: { Args: { "": string }; Returns: string }
@@ -821,6 +780,13 @@ export type Database = {
       generate_school_key: { Args: { _name: string }; Returns: string }
       get_or_create_daily_task: { Args: never; Returns: Json }
       get_user_streak: { Args: { uid: string }; Returns: number }
+      has_app_role: {
+        Args: {
+          requested_role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           requested_role: Database["public"]["Enums"]["app_role"]
@@ -842,8 +808,13 @@ export type Database = {
         | { Args: { _score_pct: number; _topic_id: string }; Returns: Json }
     }
     Enums: {
-      app_role: "admin" | "student" | "teacher"
-      submission_status: "draft" | "pending" | "verified"
+      app_role:
+        | "admin"
+        | "student"
+        | "teacher"
+        | "org_admin"
+        | "independent_learner"
+        | "independent_teacher"
     }
     CompositeTypes: {
       dblink_pkey_results: {
@@ -862,12 +833,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -891,11 +862,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -916,11 +887,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -941,11 +912,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -958,11 +929,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -972,13 +943,16 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
-      app_role: ["admin", "student", "teacher"],
-      submission_status: ["draft", "pending", "verified"],
+      app_role: [
+        "admin",
+        "student",
+        "teacher",
+        "org_admin",
+        "independent_learner",
+        "independent_teacher",
+      ],
     },
   },
 } as const
