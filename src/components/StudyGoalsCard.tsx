@@ -1,221 +1,110 @@
-import { useState, useEffect } from "react";
-import { useGamificationStore } from "@/store/useGamificationStore";
-import { Target, Calendar, Clock, Edit2, Check, Sparkles } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
+import { Target, Calendar, CheckCircle2, Save } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
+
+type Goal = {
+  id: string;
+  goal_scope: "daily" | "weekly" | "term";
+  period_start: string;
+  period_end: string;
+  target_points: number;
+  achieved_points: number;
+  target_description: string | null;
+};
+
+const scopes: Goal["goal_scope"][] = ["daily", "weekly", "term"];
 
 export function StudyGoalsCard() {
-  const { goalName, goalType, goalTarget, goalDeadline, completedGaps, setStudyGoal } =
-    useGamificationStore();
+  const { user, organizationId } = useAuth();
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [points, setPoints] = useState<Record<string, number>>({});
+  const [target, setTarget] = useState(25);
+  const [description, setDescription] = useState("");
+  const [scope, setScope] = useState<Goal["goal_scope"]>("daily");
+  const [saving, setSaving] = useState(false);
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState(goalName);
-  const [type, setType] = useState<"daily" | "weekly">(goalType);
-  const [target, setTarget] = useState(goalTarget);
-  const [deadline, setDeadline] = useState(goalDeadline.split("T")[0]);
+  const load = async () => {
+    if (!user?.id) return;
+    const { data: goalRows } = await supabase
+      .from("learning_goals")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("period_start", { ascending: false });
+    setGoals((goalRows || []) as Goal[]);
 
-  // Sync state with store when not editing
-  useEffect(() => {
-    if (!isEditing) {
-      setName(goalName);
-      setType(goalType);
-      setTarget(goalTarget);
-      setDeadline(goalDeadline.split("T")[0]);
-    }
-  }, [goalName, goalType, goalTarget, goalDeadline, isEditing]);
+    const { data: pointRows } = await supabase
+      .from("user_points")
+      .select("points,created_at")
+      .eq("user_id", user.id);
+    const now = new Date();
+    const startDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const day = (pointRows || []).filter((p: any) => new Date(p.created_at).getTime() >= startDay)
+      .reduce((s: number, p: any) => s + Number(p.points || 0), 0);
+    const weekStart = new Date(startDay); weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+    const week = (pointRows || []).filter((p: any) => new Date(p.created_at).getTime() >= weekStart.getTime())
+      .reduce((s: number, p: any) => s + Number(p.points || 0), 0);
+    const term = (pointRows || []).reduce((s: number, p: any) => s + Number(p.points || 0), 0);
+    setPoints({ daily: day, weekly: week, term });
+  };
 
-  // Countdown timer logic
-  const [timeLeft, setTimeLeft] = useState("");
+  useEffect(() => { void load(); }, [user?.id]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date().getTime();
-      const targetTime = new Date(goalDeadline).getTime();
-      const difference = targetTime - now;
-
-      if (difference <= 0) {
-        setTimeLeft("Goal Time Ended");
-        clearInterval(interval);
-        return;
-      }
-
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-
-      const parts = [];
-      if (days > 0) parts.push(`${days}d`);
-      if (hours > 0 || days > 0) parts.push(`${hours}h`);
-      parts.push(`${minutes}m`);
-
-      setTimeLeft(parts.join(" ") + " remaining");
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [goalDeadline]);
-
-  // Auto-calculated progress: let's base it on completedGaps. For realistic feel, let's count completedGaps.
-  // Gaps cleared since target might be 0, so let's use the total gaps solved, or allow cap to target.
-  const currentProgress = completedGaps.length;
-  const progressPercent = Math.min(100, Math.round((currentProgress / (target || 1)) * 100));
-
-  const handleSave = () => {
-    // Construct full ISO deadline from date input
-    const dateObj = new Date(deadline);
-    // Set to end of the selected day
-    dateObj.setHours(23, 59, 59, 999);
-    setStudyGoal(name, type, target, dateObj.toISOString());
-    setIsEditing(false);
+  const saveGoal = async () => {
+    if (!user?.id) return;
+    setSaving(true);
+    try {
+      const start = new Date(); start.setHours(0,0,0,0);
+      const end = new Date(start);
+      if (scope === "daily") end.setDate(end.getDate());
+      if (scope === "weekly") end.setDate(end.getDate() + 6);
+      if (scope === "term") end.setMonth(end.getMonth() + 3);
+      await supabase.from("learning_goals").upsert({
+        user_id: user.id,
+        organization_id: organizationId,
+        goal_scope: scope,
+        period_start: start.toISOString().slice(0,10),
+        period_end: end.toISOString().slice(0,10),
+        target_points: Math.max(0, target),
+        achieved_points: points[scope] || 0,
+        target_description: description.trim() || null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id,goal_scope,period_start" });
+      setDescription("");
+      await load();
+    } finally { setSaving(false); }
   };
 
   return (
-    <div
-      id="study-goals-card"
-      className="bg-zinc-900/80 backdrop-blur-md rounded-2xl p-6 border border-zinc-800/80 shadow-xl space-y-6"
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-rose-500/10 rounded-xl border border-rose-500/20">
-            <Target className="h-5 w-5 text-rose-400" />
-          </div>
-          <div>
-            <h3 className="text-white font-semibold text-lg tracking-tight">Active Study Goal</h3>
-            <p className="text-zinc-500 text-xs">Set specific milestones to stay on track</p>
-          </div>
-        </div>
-
-        <button
-          onClick={() => setIsEditing(!isEditing)}
-          className="p-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg transition-colors border border-zinc-800"
-          aria-label={isEditing ? "Cancel editing goal" : "Edit study goal"}
-        >
-          {isEditing ? <Check className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
-        </button>
+    <section className="rounded-2xl border border-zinc-800/80 bg-zinc-900/70 p-5 space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/10 p-2"><Target className="h-5 w-5 text-cyan-400" /></div>
+        <div><h3 className="font-bold text-white">Study goals</h3><p className="text-xs text-zinc-500">Daily, weekly and term points from recorded activity.</p></div>
       </div>
 
-      <AnimatePresence mode="wait">
-        {isEditing ? (
-          <motion.div
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            className="space-y-4"
-          >
-            <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1">
-                Goal Description
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none"
-                placeholder="e.g. Master 3 Biology topics"
-              />
-            </div>
+      <div className="grid grid-cols-3 gap-2">
+        {scopes.map((s) => {
+          const goal = goals.find(g => g.goal_scope === s);
+          const earned = points[s] || goal?.achieved_points || 0;
+          const pct = goal ? Math.min(100, Math.round((earned / Math.max(1, goal.target_points)) * 100)) : 0;
+          return <div key={s} className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-3">
+            <p className="text-[10px] uppercase font-bold tracking-wider text-zinc-500">{s}</p>
+            <p className="mt-1 text-lg font-black text-white">{earned}{goal ? <span className="text-xs text-zinc-500"> / {goal.target_points}</span> : null}</p>
+            {goal && <div className="mt-2 h-1.5 rounded-full bg-zinc-800 overflow-hidden"><div className="h-full bg-cyan-500" style={{width: pct + "%"}} /></div>}
+          </div>;
+        })}
+      </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1">Type</label>
-                <select
-                  value={type}
-                  onChange={(e) => setType(e.target.value as "daily" | "weekly")}
-                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none"
-                >
-                  <option value="daily">Daily Target</option>
-                  <option value="weekly">Weekly Target</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1">
-                  Target Gaps to Clear
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  max={20}
-                  value={target}
-                  onChange={(e) => setTarget(parseInt(e.target.value) || 1)}
-                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none"
-                />
-              </div>
-            </div>
+      <div className="grid gap-2 sm:grid-cols-[auto_auto_1fr_auto]">
+        <select value={scope} onChange={e => setScope(e.target.value as Goal["goal_scope"])} className="rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-white">
+          {scopes.map(s => <option key={s} value={s}>{s} goal</option>)}
+        </select>
+        <input type="number" min={0} value={target} onChange={e => setTarget(Number(e.target.value))} className="w-24 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-white" />
+        <input value={description} onChange={e => setDescription(e.target.value)} placeholder="Goal focus" className="rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-white" />
+        <button disabled={saving} onClick={saveGoal} className="inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-500 px-3 py-2 text-xs font-bold text-black disabled:opacity-50"><Save className="h-3.5 w-3.5" />Save</button>
+      </div>
 
-            <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1">Deadline Date</label>
-              <input
-                type="date"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none"
-              />
-            </div>
-
-            <button
-              onClick={handleSave}
-              className="w-full py-2 bg-rose-500 hover:bg-rose-600 text-white font-medium text-xs rounded-xl transition-colors shadow-lg"
-            >
-              Update Study Goal
-            </button>
-          </motion.div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            className="space-y-4"
-          >
-            <div>
-              <div className="flex items-center gap-1.5 text-zinc-400 text-[10px] font-bold uppercase tracking-widest">
-                <span>{goalType} Target</span>
-                <span>•</span>
-                <span className="text-zinc-500">{timeLeft}</span>
-              </div>
-              <h4 className="text-base font-bold text-white mt-1 leading-snug">{goalName}</h4>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs font-medium">
-                <span className="text-zinc-400">Completion Status</span>
-                <span className="text-rose-400 font-mono font-bold">
-                  {currentProgress} / {goalTarget} ({progressPercent}%)
-                </span>
-              </div>
-              <div className="h-2.5 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800/50 relative">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-rose-500 to-pink-500 rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progressPercent}%` }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 text-xs text-zinc-500 bg-zinc-950/40 p-3 rounded-xl border border-zinc-850">
-              <div className="flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5 text-zinc-400" />
-                <span>By {new Date(goalDeadline).toLocaleDateString()}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5 text-zinc-400" />
-                <span>{timeLeft}</span>
-              </div>
-            </div>
-
-            {progressPercent >= 100 && (
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 flex items-center gap-2.5 text-rose-400"
-              >
-                <Sparkles className="h-4 w-4 shrink-0" />
-                <span className="text-[11px] font-medium leading-normal">
-                  Goal fully completed! Great job on mastering your curriculum!
-                </span>
-              </motion.div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+      <div className="flex items-center gap-2 text-[10px] text-zinc-500"><Calendar className="h-3.5 w-3.5" /> Progress is calculated from persisted points, not local completion counters.</div>
+    </section>
   );
 }
