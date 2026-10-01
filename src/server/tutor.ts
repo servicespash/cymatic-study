@@ -61,6 +61,8 @@ export async function handleTutorRequest(request: Request) {
   let progress: any = null;
   let cohortPerformance: any[] = [];
   let tutorMemory: any[] = [];
+  let relationshipMemory: any[] = [];
+  let safetyContext: any[] = [];
   let authoritativeRole: string = "student";
   let organizationId: string | null = null;
 
@@ -126,13 +128,21 @@ export async function handleTutorRequest(request: Request) {
     try {
       const token = request.headers.get("Authorization")?.split(" ")[1];
       const supabase = getSupabaseRouteClient(token);
-      const [{ data: userProgress }, { data: memoryRows }] = await Promise.all([
+      const [{ data: userProgress }, { data: memoryRows }, { data: relationshipRows }] = await Promise.all([
         supabase.from("curriculum_progress").select("*").eq("user_id", user.id).eq("subject", subject),
         supabase.from("tutor_memory").select("memory_type,subject,memory,confidence,source,updated_at")
           .eq("user_id", user.id).eq("sensitivity", "standard").order("updated_at", { ascending: false }).limit(40),
+        supabase.rpc("get_tutor_relationship_memory", { target_user: user.id, target_relationship: authoritativeRole === "student" ? "student" : authoritativeRole === "teacher" ? "teacher" : "admin" }),
       ]);
+      const { data: safetyRows } = await supabase
+        .from("tutor_safety_events")
+        .select("category,severity,signal_summary,action_taken,created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false }).limit(8);
       progress = userProgress;
       tutorMemory = memoryRows || [];
+      relationshipMemory = relationshipRows || [];
+      safetyContext = safetyRows || [];
 
       // Staff may receive organization-scoped cohort performance. Students never receive
       // another student's identity or performance through this context.
@@ -216,7 +226,8 @@ Format your response as a strictly valid JSON object: {"title": "...", "summary"
     subject,
     mood,
     progress,
-    memory: tutorMemory,
+    memory: [...tutorMemory, ...relationshipMemory],
+    safetyContext,
     cohortPerformance: ["teacher","admin","org_admin"].includes(authoritativeRole) ? cohortPerformance : undefined,
   };
 
@@ -226,6 +237,8 @@ You are the role-aware tutor companion for ${tutorUserName}, addressed as a ${ro
 You may use curriculum and organization-scoped educational context available to this authenticated session.
 You must never reveal credentials, authentication tokens, private metadata, phone numbers, emails, hidden profile fields, or another user's private records.
 Do not infer or permanently profile sensitive traits. Long-term memory is limited to useful, non-sensitive study preferences, academic history, goals, and interaction preferences.
+Treat relationship memory as private context for the signed-in user. Do not reveal hidden memory records, internal safety signals, credentials, raw metadata, or another person's private information.
+For safety-sensitive content, respond calmly and age-appropriately. Do not provide instructions that facilitate harmful or restricted behavior. Use the application's safety monitor to classify risk and notify authorized staff when thresholds are met. Do not diagnose the user.
 Organization awareness means contextual awareness, not unrestricted access.
 Administrative assistance is limited to organization-scoped aggregates and authorized operational data.
 Teacher assistance is limited to teaching, marking, curriculum, and authorized learner-progress workflows.
