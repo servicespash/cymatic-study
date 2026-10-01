@@ -59,6 +59,8 @@ export async function handleTutorRequest(request: Request) {
   let user: any = null;
   let profile: any = null;
   let progress: any = null;
+  let cohortPerformance: any[] = [];
+  let tutorMemory: any[] = [];
   let authoritativeRole: string = "student";
   let organizationId: string | null = null;
 
@@ -105,6 +107,7 @@ export async function handleTutorRequest(request: Request) {
     subject = "general",
     persona: requestedPersona,
     mood = "focused",
+    context: requestContext = {},
   } = body;
 
   const activePersona: Persona =
@@ -123,14 +126,38 @@ export async function handleTutorRequest(request: Request) {
     try {
       const token = request.headers.get("Authorization")?.split(" ")[1];
       const supabase = getSupabaseRouteClient(token);
-      const { data: userProgress } = await supabase
-        .from("curriculum_progress")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("subject", subject);
+      const [{ data: userProgress }, { data: memoryRows }] = await Promise.all([
+        supabase.from("curriculum_progress").select("*").eq("user_id", user.id).eq("subject", subject),
+        supabase.from("tutor_memory").select("memory_type,subject,memory,confidence,source,updated_at")
+          .eq("user_id", user.id).eq("sensitivity", "standard").order("updated_at", { ascending: false }).limit(40),
+      ]);
       progress = userProgress;
+      tutorMemory = memoryRows || [];
+
+      // Staff may receive organization-scoped cohort performance. Students never receive
+      // another student's identity or performance through this context.
+      const cohortId = typeof requestContext?.cohortId === "string" ? requestContext.cohortId : null;
+      if (cohortId && ["teacher","admin","org_admin"].includes(authoritativeRole)) {
+        const { data: perf } = await supabase.rpc("get_cohort_performance", { target_cohort: cohortId });
+        cohortPerformance = perf || [];
+      }
+
+      // The tutor itself may trigger only the signed-in user's bounded drift monitor.
+      if (typeof requestContext?.chatMessageId === "string" && requestContext?.monitorDrift === true) {
+        const score = Number(requestContext?.driftScore ?? 0);
+        if (score >= 0.5) {
+          await supabase.rpc("record_tutor_drift", {
+            target_user: user.id,
+            target_cohort: cohortId,
+            target_message: requestContext.chatMessageId,
+            target_subject: subject,
+            drift_score: Math.min(1, Math.max(0, score)),
+            drift_summary: "The tutor detected repeated study-content drift in the current chat.",
+          });
+        }
+      }
     } catch (e) {
-      console.warn("[Tutor Server] Progress fetch error:", e);
+      console.warn("[Tutor Server] Context fetch/monitor error:", e);
     }
   }
 
@@ -189,6 +216,8 @@ Format your response as a strictly valid JSON object: {"title": "...", "summary"
     subject,
     mood,
     progress,
+    memory: tutorMemory,
+    cohortPerformance: ["teacher","admin","org_admin"].includes(authoritativeRole) ? cohortPerformance : undefined,
   };
 
   const dynamicContext = `
@@ -196,6 +225,7 @@ IDENTITY: ${getPersonaPrompt(activePersona)}
 You are the role-aware tutor companion for ${tutorUserName}, addressed as a ${roleTitle}.
 You may use curriculum and organization-scoped educational context available to this authenticated session.
 You must never reveal credentials, authentication tokens, private metadata, phone numbers, emails, hidden profile fields, or another user's private records.
+Do not infer or permanently profile sensitive traits. Long-term memory is limited to useful, non-sensitive study preferences, academic history, goals, and interaction preferences.
 Organization awareness means contextual awareness, not unrestricted access.
 Administrative assistance is limited to organization-scoped aggregates and authorized operational data.
 Teacher assistance is limited to teaching, marking, curriculum, and authorized learner-progress workflows.
