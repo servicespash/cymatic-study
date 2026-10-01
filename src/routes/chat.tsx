@@ -301,7 +301,7 @@ function ChatRoomPage() {
             profile?.tutor_persona ||
             (["Math", "Physics"].includes(profile?.subject_interest || "") ? "Adams" : "Haawa"),
           mood: "focused",
-          context: { route: "/chat", cohortId, chatMessageId, monitorDrift: true, driftScore: /^(what|why|how|explain|solve|calculate|derive|define)\\b/i.test(prompt.trim()) ? 0 : 0.65 },
+          context: { route: "/chat", cohortId, chatMessageId },
         }),
       });
 
@@ -345,6 +345,26 @@ function ChatRoomPage() {
       } catch (e) {
         // Fall back gracefully if the API returns raw plain text instead of JSON
         replyText = fullJsonString || "I'm here, but couldn't form a response right now.";
+      }
+
+      if (parsed?.monitor?.drift && typeof parsed.monitor.study_relevance === "number" && chatMessageId) {
+        try {
+          const { data: monitorResult } = await supabase.rpc("record_tutor_drift", {
+            target_user: user.id,
+            target_cohort: cohortId,
+            target_message: chatMessageId,
+            target_subject: chatContext.level,
+            drift_score: Math.min(1, Math.max(0, 1 - parsed.monitor.study_relevance)),
+            drift_summary: "The tutor detected study-content drift in the shared chat.",
+          });
+          const result = Array.isArray(monitorResult) ? monitorResult[0] : monitorResult;
+          if (result?.lock_applied) {
+            await loadChatState();
+            toast.warning("Study chat paused for a short focused reset.");
+          }
+        } catch (monitorError) {
+          console.warn("Tutor monitoring event failed:", monitorError);
+        }
       }
 
       // Trigger UI Actions
