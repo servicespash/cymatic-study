@@ -29,14 +29,14 @@ export function useAuth() {
   const loading = core.loading;
   const profile = core.profile;
 
-  const rawRole = profile?.role || user?.user_metadata?.role || "student";
-  const role: UserRole = normalizeRole(rawRole);
+  const rawRole = core.rawRole;
+  const role: UserRole = core.role;
 
-  const org_id = core.org_id;
+  const org_id = core.organizationId;
 
-  const isStudent = role === "student";
-  const isTeacher = role === "teacher";
-  const isAdmin = role === "admin";
+  const isStudent = core.isStudent;
+  const isTeacher = core.isTeacher;
+  const isAdmin = core.isAdmin;
   const isInstitutional = !!org_id;
   const isGuestMode = !loading && !user;
 
