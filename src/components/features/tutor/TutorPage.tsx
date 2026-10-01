@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { ChatSidebar } from "./ChatSidebar";
-import { MainContainer } from "./MainContainer";
+import { MainContainer } from "@/components/layout/MainContainer";
 import { ChatArea } from "./ChatArea";
 import { InputField } from "@/components/common/InputField";
 import { TutorErrorBoundary } from "./TutorErrorBoundary";
