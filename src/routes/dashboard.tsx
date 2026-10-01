@@ -67,7 +67,7 @@ interface DashboardStudent {
 }
 
 function DashboardPage() {
-  const { user, loading, profile, isTeacher, isAdmin, isGuestMode, org_id } = useAuth();
+  const { user, loading, profile, isTeacher, isAdmin, isGuestMode, organizationId } = useAuth();
 
   const navigate = useNavigate();
   const { completeTaskAndSync } = useTermProgress();
@@ -102,9 +102,9 @@ function DashboardPage() {
       let query = supabase.from("daily_tasks").select("*");
 
       if (org_id) {
-        query = query.or(`org_id.is.null,org_id.eq.${org_id}`);
+        query = query.or(`organization_id.is.null,organization_id.eq.${organizationId}`);
       } else {
-        query = query.is("org_id", null);
+        query = query.is("organization_id", null);
       }
 
       const { data, error } = await query;
@@ -133,7 +133,7 @@ function DashboardPage() {
     // Refresh when local storage updates
     window.addEventListener("storage", loadTasks);
     return () => window.removeEventListener("storage", loadTasks);
-  }, [org_id]);
+  }, [organizationId]);
 
   // Fetch real institutional student data
   useEffect(() => {
@@ -151,7 +151,7 @@ function DashboardPage() {
 
         // Strict organization filtering to satisfy requirement
         if (targetId) {
-          query = query.eq("org_id", targetId);
+          query = query.eq("organization_id", targetId);
         } else if (profile?.school_name) {
           query = query.eq("school_name", profile.school_name);
         } else {
@@ -221,8 +221,8 @@ function DashboardPage() {
     user?.id,
     isTeacher,
     isAdmin,
-    org_id,
-    profile?.org_id,
+    organizationId,
+    profile?.organization_id,
     profile?.school_name,
     isGuestMode,
   ]);
@@ -243,7 +243,7 @@ function DashboardPage() {
         points: manualPoints,
         tutor_explanation: manualExplanation,
         created_by: "teacher",
-        org_id: org_id,
+        organization_id: organizationId,
       });
 
       if (error) throw error;
@@ -324,7 +324,7 @@ function DashboardPage() {
                   Institutional Admin Authority
                 </Badge>
                 <span className="text-xs text-blue-400 font-mono font-bold">
-                  {profile?.org_id || "UNLINKED"}
+                  {organizationId || "UNLINKED"}
                 </span>
               </div>
               <h3 className="text-xl font-black text-white uppercase tracking-tight">
