@@ -180,6 +180,21 @@ export async function handleTutorRequest(request: Request) {
     }));
 
   const lastUserMessage = sanitizedMessages.findLast((m) => m.role === "user")?.content || "";
+
+  // Credential/privacy gate. Raw credential-like input is never sent to the model,
+  // persisted to memory, included in monitoring summaries, or exported.
+  const credentialPattern = /\\b(?:password|passcode|pin|otp|one[- ]?time code|cvv|cvc|security code|api[_ -]?key|access[_ -]?token|secret[_ -]?key|private[_ -]?key|bank account|account number|card number|credit card|debit card|national id|national identification|passport number|driver.?s? license|tax id|nssf|nin)\\b/i;
+  const credentialNumberPattern = /\\b(?:\\d[ -]?){8,24}\\b/;
+  const credentialLike = credentialPattern.test(lastUserMessage) || (/(?:password|passcode|pin|otp|card|account|passport|national id|credential|token|secret)/i.test(lastUserMessage) && credentialNumberPattern.test(lastUserMessage));
+
+  if (credentialLike) {
+    // Deliberately do not log, store, summarize, or pass the message to the model.
+    return new Response(JSON.stringify({
+      blocked: true,
+      category: "private_credentials",
+      message: "Please do not enter passwords, PINs, verification codes, bank/card details, national ID or passport details, API keys, tokens, or other private credentials in this chat. I cannot safely handle or store those details."
+    }), { status: 400, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
+  }
   const shouldEmitOfftopic = isOffTopic(lastUserMessage);
   const groundingPrompt = getEnrichedGroundingPrompt(lastUserMessage);
 
