@@ -532,6 +532,7 @@ export type Database = {
           answers: Json | null
           created_at: string
           id: string
+          organization_id: string | null
           passed: boolean
           score_pct: number
           topic_id: string
@@ -541,6 +542,7 @@ export type Database = {
           answers?: Json | null
           created_at?: string
           id?: string
+          organization_id?: string | null
           passed: boolean
           score_pct: number
           topic_id: string
@@ -550,12 +552,21 @@ export type Database = {
           answers?: Json | null
           created_at?: string
           id?: string
+          organization_id?: string | null
           passed?: boolean
           score_pct?: number
           topic_id?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "task_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tutor_content: {
         Row: {
