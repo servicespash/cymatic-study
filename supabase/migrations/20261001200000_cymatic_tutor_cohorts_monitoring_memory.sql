@@ -251,3 +251,11 @@ BEGIN
 END; $$;
 REVOKE ALL ON FUNCTION public.record_tutor_drift(uuid,uuid,uuid,text,numeric,text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.record_tutor_drift(uuid,uuid,uuid,text,numeric,text) TO authenticated;
+
+DROP POLICY IF EXISTS goals_self_insert ON public.learning_goals;
+CREATE POLICY goals_self_insert ON public.learning_goals FOR INSERT TO authenticated
+WITH CHECK(user_id=auth.uid() AND organization_id IS NOT DISTINCT FROM public.current_organization_id());
+DROP POLICY IF EXISTS goals_self_update ON public.learning_goals;
+CREATE POLICY goals_self_update ON public.learning_goals FOR UPDATE TO authenticated
+USING(user_id=auth.uid())
+WITH CHECK(user_id=auth.uid() AND organization_id IS NOT DISTINCT FROM public.current_organization_id());
