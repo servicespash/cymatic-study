@@ -7,7 +7,7 @@ import { getPersonaPrompt, type Persona } from "../utils/persona-prompts";
 import { AIModelGateway } from "../lib/AIModelGateway";
 import { getCentralTutorSystemPrompt } from "../config/tutor-prompts";
 
-function getSupabaseRouteClient() {
+function getSupabaseRouteClient(accessToken?: string) {
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
   const supabaseKey =
     process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
@@ -19,7 +19,9 @@ function getSupabaseRouteClient() {
     throw new Error("Missing Supabase route environment variables");
   }
 
-  return createClient(supabaseUrl, supabaseKey);
+  return createClient(supabaseUrl, supabaseKey, accessToken
+    ? { global: { headers: { Authorization: `Bearer ${accessToken}` } } }
+    : undefined);
 }
 
 function getGoogleGenAIClient() {
@@ -57,13 +59,16 @@ export async function handleTutorRequest(request: Request) {
   let user: any = null;
   let profile: any = null;
   let progress: any = null;
+  let authoritativeRole: string = "student";
+  let organizationId: string | null = null;
 
-  // 1. Authenticate (fail-safe)
+  // 1. Authenticate. All subsequent database reads use the same user token,
+  // so RLS remains active and tenant boundaries are enforced.
   try {
     const authHeader = request.headers.get("Authorization");
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.split(" ")[1];
-      const supabase = getSupabaseRouteClient();
+      const supabase = getSupabaseRouteClient(token);
       const {
         data: { user: authUser },
         error,
@@ -73,12 +78,21 @@ export async function handleTutorRequest(request: Request) {
         user = authUser;
 
         // Fetch User Profile
-        const { data: userProfile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("user_id", authUser.id)
-          .maybeSingle();
+        const [{ data: userProfile }, { data: roleRows }] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("user_id,display_name,tutor_persona,organization_id,school_name")
+            .eq("user_id", authUser.id)
+            .maybeSingle(),
+          supabase
+            .from("user_roles")
+            .select("role,organization_id,created_at")
+            .eq("user_id", authUser.id)
+            .order("created_at", { ascending: true }),
+        ]);
         profile = userProfile;
+        authoritativeRole = String(roleRows?.[0]?.role || "student");
+        organizationId = roleRows?.[0]?.organization_id || userProfile?.organization_id || null;
       }
     }
   } catch (err) {
@@ -88,8 +102,8 @@ export async function handleTutorRequest(request: Request) {
   const body = (await request.json().catch(() => ({}))) as TutorRequest;
   const {
     messages,
-    userName = (profile as any)?.full_name || "learner",
-    userRole: requestedRole,
+    userName: requestedUserName,
+    userRole: _requestedRole,
     subject = "general",
     persona: requestedPersona,
     mood = "focused",
@@ -103,10 +117,14 @@ export async function handleTutorRequest(request: Request) {
     return new Response(JSON.stringify({ error: "No messages provided" }), { status: 400 });
   }
 
-  // 2. Fetch Curriculum Progress (fail-safe)
+  const tutorUserName = profile?.display_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "there";
+
+  // 2. Fetch only the current user's progress. Never serialize the raw profile
+  // or auth metadata into the model context.
   if (user) {
     try {
-      const supabase = getSupabaseRouteClient();
+      const token = request.headers.get("Authorization")?.split(" ")[1];
+      const supabase = getSupabaseRouteClient(token);
       const { data: userProgress } = await supabase
         .from("curriculum_progress")
         .select("*")
@@ -158,21 +176,39 @@ Format your response as a strictly valid JSON object: {"title": "...", "summary"
     }
   }
 
+  const roleTitle =
+    authoritativeRole === "admin" ? "Administrator" :
+    authoritativeRole === "org_admin" ? "Organization Administrator" :
+    authoritativeRole === "teacher" ? "Teacher" :
+    authoritativeRole === "independent_teacher" ? "Independent Teacher" :
+    authoritativeRole === "independent_learner" ? "Independent Learner" : "Student";
+
+  const safeTutorContext = {
+    role: authoritativeRole,
+    roleTitle,
+    organizationScope: organizationId ? "current organization only" : "independent space",
+    userName: tutorUserName,
+    subject,
+    mood,
+    progress,
+  };
+
   const dynamicContext = `
 IDENTITY: ${getPersonaPrompt(activePersona)}
-You are currently mentoring ${userName}.
+You are the role-aware tutor companion for ${tutorUserName}, addressed as a ${roleTitle}.
+You may use curriculum and organization-scoped educational context available to this authenticated session.
+You must never reveal credentials, authentication tokens, private metadata, phone numbers, emails, hidden profile fields, or another user's private records.
+Organization awareness means contextual awareness, not unrestricted access.
+Administrative assistance is limited to organization-scoped aggregates and authorized operational data.
+Teacher assistance is limited to teaching, marking, curriculum, and authorized learner-progress workflows.
+Student assistance is limited to curriculum learning, academic progress, study planning, and personal support.
 Current subject: ${subject}.
-Learner Mood Context: ${mood}.
-Student profile context: ${JSON.stringify(profile)}.
-Current progress context: ${JSON.stringify(progress)}.
-
-Your task is to provide personalized, Socratic guidance based on this specific student data. 
-Adapt your pedagogical style and depth to their progress level. 
-If the student asks for guidance, feel free to suggest curriculum upgrades or next topics based on their progress.
+Mood context: ${mood}.
+Safe tutor context: ${JSON.stringify(safeTutorContext)}.
 `;
 
-  const userRole = requestedRole || profile?.role || "student";
-  const tutorUserName = profile?.display_name || user?.email?.split("@")[0] || "Scholar";
+  // Never trust role/name supplied by the client when authenticated identity exists.
+  const userRole = authoritativeRole;
   const systemPrompt = getSystemPrompt(userRole, tutorUserName) + "\n" + dynamicContext + BASE_DYNAMIC_INSTRUCTIONS + (groundingPrompt || "");
 
   let aiClient;
@@ -233,7 +269,7 @@ If the student asks for guidance, feel free to suggest curriculum upgrades or ne
               content: m.content,
             })),
             persona: activePersona,
-            userName,
+            userName: tutorUserName,
             subject,
           }),
         });
