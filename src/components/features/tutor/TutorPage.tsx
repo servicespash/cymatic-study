@@ -12,7 +12,7 @@ import { useTutorVoice } from "@/hooks/useTutorVoice";
 import { useSearch } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { generateOfflineTutorResponse } from "@/lib/offline-tutor";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import { exportChatToPDF } from "@/lib/chat-pdf-export";
 
 async function generateSessionMeta(sessionId: number, messages: any[]) {
