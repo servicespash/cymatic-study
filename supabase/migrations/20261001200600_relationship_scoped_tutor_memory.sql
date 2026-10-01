@@ -17,16 +17,16 @@ CREATE INDEX IF NOT EXISTS tutor_rel_memory_subject_idx ON public.tutor_relation
 CREATE INDEX IF NOT EXISTS tutor_rel_memory_org_idx ON public.tutor_relationship_memory(organization_id,subject_user_id);
 
 -- The signed-in person can read/write only their own relationship memory.
-CREATE POLICY tutor_rel_memory_self_read ON public.tutor_relationship_memory FOR SELECT TO authenticated
+DROP POLICY IF EXISTS tutor_rel_memory_self_read ON public.tutor_relationship_memory FOR SELECT TO authenticated
 USING(subject_user_id=auth.uid());
-CREATE POLICY tutor_rel_memory_self_insert ON public.tutor_relationship_memory FOR INSERT TO authenticated
+DROP POLICY IF EXISTS tutor_rel_memory_self_insert ON public.tutor_relationship_memory FOR INSERT TO authenticated
 WITH CHECK(subject_user_id=auth.uid() AND organization_id IS NOT DISTINCT FROM public.current_organization_id());
-CREATE POLICY tutor_rel_memory_self_update ON public.tutor_relationship_memory FOR UPDATE TO authenticated
+DROP POLICY IF EXISTS tutor_rel_memory_self_update ON public.tutor_relationship_memory FOR UPDATE TO authenticated
 USING(subject_user_id=auth.uid()) WITH CHECK(subject_user_id=auth.uid() AND organization_id IS NOT DISTINCT FROM public.current_organization_id());
 
 -- Staff can read only standard, organization-scoped relationship memory. Restricted memory
 -- is never exposed through this policy.
-CREATE POLICY tutor_rel_memory_staff_read ON public.tutor_relationship_memory FOR SELECT TO authenticated
+DROP POLICY IF EXISTS tutor_rel_memory_staff_read ON public.tutor_relationship_memory FOR SELECT TO authenticated
 USING(
  organization_id=public.current_organization_id()
  AND sensitivity='standard'
@@ -67,8 +67,8 @@ CREATE TABLE IF NOT EXISTS public.tutor_safety_events (
  created_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.tutor_safety_events ENABLE ROW LEVEL SECURITY;
-CREATE POLICY tutor_safety_self_read ON public.tutor_safety_events FOR SELECT TO authenticated USING(user_id=auth.uid());
-CREATE POLICY tutor_safety_staff_read ON public.tutor_safety_events FOR SELECT TO authenticated USING(
+DROP POLICY IF EXISTS tutor_safety_self_read ON public.tutor_safety_events FOR SELECT TO authenticated USING(user_id=auth.uid());
+DROP POLICY IF EXISTS tutor_safety_staff_read ON public.tutor_safety_events FOR SELECT TO authenticated USING(
  organization_id=public.current_organization_id()
  AND (public.has_app_role(auth.uid(),'teacher') OR public.has_app_role(auth.uid(),'admin') OR public.has_app_role(auth.uid(),'org_admin'))
 );
