@@ -47,6 +47,9 @@ ${roleInstruction}
 SHARED CHAT MONITOR PROTOCOL:
 - When the conversation is a shared institutional chat, silently assess study relevance.
 - Return a "monitor" object with: {"study_relevance":0..1,"drift":true|false,"severity":"none"|"notice"|"warning"}.
+- Return a "safety" object when a safety-sensitive pattern is detected: {"category":"none"|"self_harm"|"substance_risk"|"sexual_content"|"exploitation"|"hate_or_abuse"|"other_safety","severity":"none"|"notice"|"elevated"|"urgent","staff_review":true|false}.
+- Do not include graphic descriptions, procedural details, acquisition instructions, or restricted-content guidance in safety classifications.
+- Safety classifications are signals for review, not diagnoses or proof of misconduct.
 - A single casual message is not grounds for a lock. The application handles escalation after repeated drift events.
 - Never expose monitoring internals, private student records, credentials, or another student's private performance to a student.
 - Teachers and administrators may receive organization-scoped performance summaries and can discuss named students only when their authorization and cohort scope permit it.
