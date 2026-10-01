@@ -209,3 +209,45 @@ DO $$ BEGIN
  IF NOT EXISTS(SELECT 1 FROM pg_publication_tables WHERE pubname='supabase_realtime' AND tablename='chat_messages')
  THEN ALTER PUBLICATION supabase_realtime ADD TABLE public.chat_messages; END IF;
 END $$;
+
+
+-- The tutor may monitor only the authenticated user's own drift.
+-- Three drift events inside ten minutes trigger a 15-minute study reset,
+-- plus notifications to authorized staff in the same organization.
+CREATE OR REPLACE FUNCTION public.record_tutor_drift(
+ target_user uuid,target_cohort uuid,target_message uuid,target_subject text,
+ drift_score numeric,drift_summary text
+) RETURNS TABLE(lock_applied boolean,locked_until timestamptz,escalation_count integer)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
+DECLARE caller uuid:=auth.uid(); org uuid; recent_count integer; until_ts timestamptz;
+BEGIN
+ IF caller IS NULL OR caller IS DISTINCT FROM target_user THEN RAISE EXCEPTION 'Only the monitored user may trigger their own tutor drift monitor'; END IF;
+ SELECT organization_id INTO org FROM public.profiles WHERE user_id=target_user;
+ INSERT INTO public.tutor_monitor_events(organization_id,cohort_id,user_id,chat_message_id,event_type,severity,score,subject,summary,evidence)
+ VALUES(org,target_cohort,target_user,target_message,CASE WHEN drift_score>=.8 THEN 'drift_warning' ELSE 'drift_notice' END,
+ CASE WHEN drift_score>=.8 THEN 'warning' ELSE 'notice' END,drift_score,target_subject,drift_summary,
+ jsonb_build_object('source','tutor','window_minutes',10));
+ SELECT count(*)::integer INTO recent_count FROM public.tutor_monitor_events
+ WHERE user_id=target_user AND event_type IN('drift_notice','drift_warning','drift_escalation')
+ AND created_at>=now()-interval '10 minutes';
+ IF recent_count>=3 THEN
+  until_ts:=now()+interval '15 minutes';
+  INSERT INTO public.tutor_monitor_events(organization_id,cohort_id,user_id,event_type,severity,score,subject,summary,evidence)
+  VALUES(org,target_cohort,target_user,'drift_escalation','high',drift_score,target_subject,
+   'Study-content drift persisted across multiple tutor interventions; chat temporarily locked for a focused study reset.',
+   jsonb_build_object('escalation_count',recent_count,'lock_minutes',15));
+  INSERT INTO public.chat_locks(organization_id,cohort_id,user_id,locked_by,reason,severity,locked_until,metadata)
+  VALUES(org,target_cohort,target_user,target_user,'Persistent off-study chat drift after repeated tutor redirection.','moderate',until_ts,
+   jsonb_build_object('source','tutor','escalation_count',recent_count));
+  INSERT INTO public.tutor_notifications(organization_id,recipient_user_id,title,message,severity)
+  SELECT org,ur.user_id,'Tutor study-monitor alert',
+   format('%s has repeatedly drifted away from study content in chat. The tutor applied a 15-minute study reset and flagged the interaction for review.',
+     COALESCE((SELECT display_name FROM public.profiles WHERE user_id=target_user),'A student')),'warning'
+  FROM public.user_roles ur WHERE ur.organization_id=org AND ur.role IN('teacher','admin','org_admin');
+  RETURN QUERY SELECT true,until_ts,recent_count;
+ ELSE
+  RETURN QUERY SELECT false,NULL::timestamptz,recent_count;
+ END IF;
+END; $$;
+REVOKE ALL ON FUNCTION public.record_tutor_drift(uuid,uuid,uuid,text,numeric,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.record_tutor_drift(uuid,uuid,uuid,text,numeric,text) TO authenticated;
