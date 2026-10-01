@@ -60,6 +60,11 @@ jobs:
           echo "✓ dist/client directory exists"
           ls -la dist/client | head -20
 
+      - name: Prepare Android platform
+        run: |
+          npx cap add android
+          echo "✓ Android platform generated"
+
       - name: Run Capacitor sync
         run: |
           npx cap sync android
