@@ -98,6 +98,7 @@ function ChatRoomPage() {
   const [manualLevel, setManualLevel] = useState<string | null>(null);
   const [cohortId, setCohortId] = useState<string | null>(null);
   const [chatLock, setChatLock] = useState<{ locked_until: string; reason: string; severity: string } | null>(null);
+  const [cohorts, setCohorts] = useState<Array<{ id: string; name: string; class_level: string; stream: string | null }>>([]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -130,6 +131,7 @@ function ChatRoomPage() {
   }, [isInstitutional, organizationId, profile]);
 
   useEffect(() => {
+    if (role === "student" && isInstitutional) setTutorOn(true);
     if (!authLoading && !user) {
       navigate({ to: "/login" });
       return;
@@ -145,11 +147,17 @@ function ChatRoomPage() {
 
   const loadChatState = async () => {
     if (!user?.id) return;
-    const [{ data: membership }, { data: lock }] = await Promise.all([
-      supabase.from("cohort_members").select("cohort_id").eq("user_id", user.id).eq("organization_id", organizationId).limit(1).maybeSingle(),
+    const membershipQuery = supabase.from("cohort_members").select("cohort_id").eq("user_id", user.id).eq("organization_id", organizationId).limit(1).maybeSingle();
+    const cohortQuery = (role === "teacher" || role === "admin" || role === "org_admin")
+      ? supabase.from("cohorts").select("id,name,class_level,stream").eq("organization_id", organizationId).eq("class_level", chatContext.level).eq("is_active", true).order("name")
+      : Promise.resolve({ data: [] as any[], error: null });
+    const [{ data: membership }, { data: lock }, { data: cohortRows }] = await Promise.all([
+      membershipQuery,
       supabase.rpc("get_active_chat_lock", { target_user: user.id }),
+      cohortQuery,
     ]);
-    setCohortId(membership?.cohort_id || null);
+    setCohorts((cohortRows || []) as any[]);
+    setCohortId(membership?.cohort_id || (cohortRows?.[0]?.id ?? null));
     setChatLock(Array.isArray(lock) ? (lock[0] || null) : (lock || null));
   };
 
@@ -610,6 +618,15 @@ function ChatRoomPage() {
 
             {chatContext.isStaff && (
               <div className="space-y-3">
+                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">Class / Stream</p>
+                <select
+                  value={cohortId || ""}
+                  onChange={(e) => { setCohortId(e.target.value || null); setSidebarOpen(false); }}
+                  className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-zinc-200"
+                >
+                  <option value="">Organization level view</option>
+                  {cohorts.map(c => <option key={c.id} value={c.id}>{c.name}{c.stream ? ` · ${c.stream}` : ""}</option>)}
+                </select>
                 <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">
                   Switch Level View
                 </p>
