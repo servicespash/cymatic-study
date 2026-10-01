@@ -7,12 +7,12 @@ import { generateEmpathyResponse, getTimeContext } from "./empathy-engine";
  */
 export async function buildGreeting(
   persona: TutorPersona,
-  opts?: { name?: string; weather?: string; ad?: string; mood?: MoodSnapshot | null },
+  opts?: { name?: string; weather?: string; ad?: string; mood?: MoodSnapshot | null; roleTitle?: string },
 ): Promise<string> {
   const isOnline = typeof navigator !== "undefined" && navigator.onLine;
 
   const context = {
-    name: opts?.name || "learner",
+    name: opts?.name || "there",
     mood: opts?.mood?.mood || null,
     time: getTimeContext(),
     district: opts?.weather ? opts.weather.split(" in ")[1] : undefined,
@@ -20,6 +20,7 @@ export async function buildGreeting(
   };
 
   const greeting = await generateEmpathyResponse(persona, context, "greeting");
+  const title = opts?.roleTitle ? ` ${opts.roleTitle}` : "";
 
   // Append weather or ad if they aren't already integrated by AI
   let extra = "";
@@ -30,7 +31,7 @@ export async function buildGreeting(
         : ` Yo, peep the news tab — ${opts.ad}.`;
   }
 
-  return `${greeting}${extra}`;
+  return `${greeting.replace(/\b(learner|student|teacher|administrator)\b/gi, "").replace(/\s{2,}/g, " ").trim()}${title ? `,${title}` : ""}${extra}`;
 }
 
 export async function fetchWeatherSummary(): Promise<string | null> {
