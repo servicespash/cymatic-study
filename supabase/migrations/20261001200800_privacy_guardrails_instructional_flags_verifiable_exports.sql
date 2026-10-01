@@ -27,8 +27,10 @@ CREATE TABLE IF NOT EXISTS public.tutor_export_verifications (
 );
 ALTER TABLE public.tutor_export_verifications ENABLE ROW LEVEL SECURITY;
 CREATE INDEX IF NOT EXISTS tutor_export_verification_code_idx ON public.tutor_export_verifications(verification_code);
+DROP POLICY IF EXISTS tutor_export_verification_owner_read ON public.tutor_export_verifications;
 CREATE POLICY tutor_export_verification_owner_read ON public.tutor_export_verifications
  FOR SELECT TO authenticated USING(created_by=auth.uid());
+DROP POLICY IF EXISTS tutor_export_verification_public_valid_read ON public.tutor_export_verifications;
 CREATE POLICY tutor_export_verification_public_valid_read ON public.tutor_export_verifications
  FOR SELECT TO anon USING(status='valid' AND (expires_at IS NULL OR expires_at>now()));
 
