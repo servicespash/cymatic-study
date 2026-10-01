@@ -12,10 +12,14 @@ CREATE TABLE IF NOT EXISTS public.tutor_study_summaries (
  updated_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.tutor_study_summaries ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS study_summary_owner_read ON public.tutor_study_summaries FOR SELECT TO authenticated USING(owner_user_id=auth.uid());
-DROP POLICY IF EXISTS study_summary_owner_write ON public.tutor_study_summaries FOR INSERT TO authenticated WITH CHECK(owner_user_id=auth.uid() AND organization_id IS NOT DISTINCT FROM public.current_organization_id());
-DROP POLICY IF EXISTS study_summary_owner_update ON public.tutor_study_summaries FOR UPDATE TO authenticated USING(owner_user_id=auth.uid()) WITH CHECK(owner_user_id=auth.uid());
-DROP POLICY IF EXISTS study_summary_staff_read ON public.tutor_study_summaries FOR SELECT TO authenticated USING(
+DROP POLICY IF EXISTS study_summary_owner_read ON public.tutor_study_summaries;
+CREATE POLICY study_summary_owner_read ON public.tutor_study_summaries FOR SELECT TO authenticated USING(owner_user_id=auth.uid());
+DROP POLICY IF EXISTS study_summary_owner_write ON public.tutor_study_summaries;
+CREATE POLICY study_summary_owner_write ON public.tutor_study_summaries FOR INSERT TO authenticated WITH CHECK(owner_user_id=auth.uid() AND organization_id IS NOT DISTINCT FROM public.current_organization_id());
+DROP POLICY IF EXISTS study_summary_owner_update ON public.tutor_study_summaries;
+CREATE POLICY study_summary_owner_update ON public.tutor_study_summaries FOR UPDATE TO authenticated USING(owner_user_id=auth.uid()) WITH CHECK(owner_user_id=auth.uid());
+DROP POLICY IF EXISTS study_summary_staff_read ON public.tutor_study_summaries;
+CREATE POLICY study_summary_staff_read ON public.tutor_study_summaries FOR SELECT TO authenticated USING(
  organization_id=public.current_organization_id() AND visibility IN('cohort','staff')
  AND (public.has_app_role(auth.uid(),'teacher') OR public.has_app_role(auth.uid(),'admin') OR public.has_app_role(auth.uid(),'org_admin'))
 );
@@ -35,11 +39,14 @@ CREATE TABLE IF NOT EXISTS public.tutor_summary_exports (
  sent_at timestamptz
 );
 ALTER TABLE public.tutor_summary_exports ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS summary_export_owner_read ON public.tutor_summary_exports FOR SELECT TO authenticated
+DROP POLICY IF EXISTS summary_export_owner_read ON public.tutor_summary_exports;
+CREATE POLICY summary_export_owner_read ON public.tutor_summary_exports FOR SELECT TO authenticated
 USING(requested_by=auth.uid());
-DROP POLICY IF EXISTS summary_export_owner_insert ON public.tutor_summary_exports FOR INSERT TO authenticated
+DROP POLICY IF EXISTS summary_export_owner_insert ON public.tutor_summary_exports;
+CREATE POLICY summary_export_owner_insert ON public.tutor_summary_exports FOR INSERT TO authenticated
 WITH CHECK(requested_by=auth.uid());
-DROP POLICY IF EXISTS summary_export_owner_update ON public.tutor_summary_exports FOR UPDATE TO authenticated
+DROP POLICY IF EXISTS summary_export_owner_update ON public.tutor_summary_exports;
+CREATE POLICY summary_export_owner_update ON public.tutor_summary_exports FOR UPDATE TO authenticated
 USING(requested_by=auth.uid()) WITH CHECK(requested_by=auth.uid());
 
 CREATE OR REPLACE FUNCTION public.queue_tutor_summary_export(
