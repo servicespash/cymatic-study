@@ -320,9 +320,7 @@ export function TeacherGradingStation() {
           <div className="lg:col-span-5 space-y-3">
             <h3 className="text-xs font-black uppercase text-zinc-400 tracking-wider flex items-center justify-between px-1">
               <span>Student Submissions ({filteredSubmissions.length})</span>
-              <span className="text-[10px] text-blue-400 font-mono">
-                Bound to {currentOrgId}
-              </span>
+              <span className="text-[10px] text-blue-400 font-mono">Bound to {currentOrgId}</span>
             </h3>
 
             <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
@@ -362,9 +360,13 @@ export function TeacherGradingStation() {
                     >
                       {selectedSubmission.level} • {selectedSubmission.subject}
                     </Badge>
-                    <span className="text-xs font-mono text-zinc-400">ID: {selectedSubmission.id}</span>
+                    <span className="text-xs font-mono text-zinc-400">
+                      ID: {selectedSubmission.id}
+                    </span>
                   </div>
-                  <h3 className="text-xl font-black text-white">{selectedSubmission.project_title}</h3>
+                  <h3 className="text-xl font-black text-white">
+                    {selectedSubmission.project_title}
+                  </h3>
                   <p className="text-xs text-zinc-400">{selectedSubmission.project_description}</p>
 
                   <div className="flex items-center gap-4 text-xs text-zinc-300 pt-2">
@@ -505,7 +507,9 @@ export function TeacherGradingStation() {
                         />
                         <p className="text-[10px] text-zinc-500">
                           Will be stamped as:{" "}
-                          <span className="text-zinc-300 italic font-serif">"{typedSignature}"</span>{" "}
+                          <span className="text-zinc-300 italic font-serif">
+                            "{typedSignature}"
+                          </span>{" "}
                           bound to Org ID <span className="font-mono">{currentOrgId}</span>.
                         </p>
                       </div>

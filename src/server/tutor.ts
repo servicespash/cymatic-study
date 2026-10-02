@@ -7,7 +7,7 @@ import { getPersonaPrompt, type Persona } from "../utils/persona-prompts";
 import { AIModelGateway } from "../lib/AIModelGateway";
 import { getCentralTutorSystemPrompt } from "../config/tutor-prompts";
 
-function getSupabaseRouteClient(accessToken?: string) {
+function getSupabaseRouteClient() {
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
   const supabaseKey =
     process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
@@ -19,9 +19,7 @@ function getSupabaseRouteClient(accessToken?: string) {
     throw new Error("Missing Supabase route environment variables");
   }
 
-  return createClient(supabaseUrl, supabaseKey, accessToken
-    ? { global: { headers: { Authorization: `Bearer ${accessToken}` } } }
-    : undefined);
+  return createClient(supabaseUrl, supabaseKey);
 }
 
 function getGoogleGenAIClient() {
@@ -59,20 +57,13 @@ export async function handleTutorRequest(request: Request) {
   let user: any = null;
   let profile: any = null;
   let progress: any = null;
-  let cohortPerformance: any[] = [];
-  let tutorMemory: any[] = [];
-  let relationshipMemory: any[] = [];
-  let safetyContext: any[] = [];
-  let authoritativeRole: string = "student";
-  let organizationId: string | null = null;
 
-  // 1. Authenticate. All subsequent database reads use the same user token,
-  // so RLS remains active and tenant boundaries are enforced.
+  // 1. Authenticate (fail-safe)
   try {
     const authHeader = request.headers.get("Authorization");
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.split(" ")[1];
-      const supabase = getSupabaseRouteClient(token);
+      const supabase = getSupabaseRouteClient();
       const {
         data: { user: authUser },
         error,
@@ -82,21 +73,12 @@ export async function handleTutorRequest(request: Request) {
         user = authUser;
 
         // Fetch User Profile
-        const [{ data: userProfile }, { data: roleRows }] = await Promise.all([
-          supabase
-            .from("profiles")
-            .select("user_id,display_name,tutor_persona,organization_id,school_name")
-            .eq("user_id", authUser.id)
-            .maybeSingle(),
-          supabase
-            .from("user_roles")
-            .select("role,organization_id,created_at")
-            .eq("user_id", authUser.id)
-            .order("created_at", { ascending: true }),
-        ]);
+        const { data: userProfile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", authUser.id)
+          .maybeSingle();
         profile = userProfile;
-        authoritativeRole = String(roleRows?.[0]?.role || "student");
-        organizationId = roleRows?.[0]?.organization_id || userProfile?.organization_id || null;
       }
     }
   } catch (err) {
@@ -106,10 +88,11 @@ export async function handleTutorRequest(request: Request) {
   const body = (await request.json().catch(() => ({}))) as TutorRequest;
   const {
     messages,
+    userName = (profile as any)?.full_name || "learner",
+    userRole: requestedRole,
     subject = "general",
     persona: requestedPersona,
     mood = "focused",
-    context: requestContext = {},
   } = body;
 
   const activePersona: Persona =
@@ -120,54 +103,18 @@ export async function handleTutorRequest(request: Request) {
     return new Response(JSON.stringify({ error: "No messages provided" }), { status: 400 });
   }
 
-  const tutorUserName = profile?.display_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "there";
-
-  // 2. Fetch only the current user's progress. Never serialize the raw profile
-  // or auth metadata into the model context.
+  // 2. Fetch Curriculum Progress (fail-safe)
   if (user) {
     try {
-      const token = request.headers.get("Authorization")?.split(" ")[1];
-      const supabase = getSupabaseRouteClient(token);
-      const [{ data: userProgress }, { data: memoryRows }, { data: relationshipRows }] = await Promise.all([
-        supabase.from("curriculum_progress").select("*").eq("user_id", user.id).eq("subject", subject),
-        supabase.from("tutor_memory").select("memory_type,subject,memory,confidence,source,updated_at")
-          .eq("user_id", user.id).eq("sensitivity", "standard").order("updated_at", { ascending: false }).limit(40),
-        supabase.rpc("get_tutor_relationship_memory", { target_user: user.id, target_relationship: authoritativeRole === "student" ? "student" : authoritativeRole === "teacher" ? "teacher" : "admin" }),
-      ]);
-      const { data: safetyRows } = await supabase
-        .from("tutor_safety_events")
-        .select("category,severity,signal_summary,action_taken,created_at")
+      const supabase = getSupabaseRouteClient();
+      const { data: userProgress } = await supabase
+        .from("curriculum_progress")
+        .select("*")
         .eq("user_id", user.id)
-        .order("created_at", { ascending: false }).limit(8);
+        .eq("subject", subject);
       progress = userProgress;
-      tutorMemory = memoryRows || [];
-      relationshipMemory = relationshipRows || [];
-      safetyContext = safetyRows || [];
-
-      // Staff may receive organization-scoped cohort performance. Students never receive
-      // another student's identity or performance through this context.
-      const cohortId = typeof requestContext?.cohortId === "string" ? requestContext.cohortId : null;
-      if (cohortId && ["teacher","admin","org_admin"].includes(authoritativeRole)) {
-        const { data: perf } = await supabase.rpc("get_cohort_performance", { target_cohort: cohortId });
-        cohortPerformance = perf || [];
-      }
-
-      // The tutor itself may trigger only the signed-in user's bounded drift monitor.
-      if (typeof requestContext?.chatMessageId === "string" && requestContext?.monitorDrift === true) {
-        const score = Number(requestContext?.driftScore ?? 0);
-        if (score >= 0.5) {
-          await supabase.rpc("record_tutor_drift", {
-            target_user: user.id,
-            target_cohort: cohortId,
-            target_message: requestContext.chatMessageId,
-            target_subject: subject,
-            drift_score: Math.min(1, Math.max(0, score)),
-            drift_summary: "The tutor detected repeated study-content drift in the current chat.",
-          });
-        }
-      }
     } catch (e) {
-      console.warn("[Tutor Server] Context fetch/monitor error:", e);
+      console.warn("[Tutor Server] Progress fetch error:", e);
     }
   }
 
@@ -180,21 +127,6 @@ export async function handleTutorRequest(request: Request) {
     }));
 
   const lastUserMessage = sanitizedMessages.findLast((m) => m.role === "user")?.content || "";
-
-  // Credential/privacy gate. Raw credential-like input is never sent to the model,
-  // persisted to memory, included in monitoring summaries, or exported.
-  const credentialPattern = /\\b(?:password|passcode|pin|otp|one[- ]?time code|cvv|cvc|security code|api[_ -]?key|access[_ -]?token|secret[_ -]?key|private[_ -]?key|bank account|account number|card number|credit card|debit card|national id|national identification|passport number|driver.?s? license|tax id|nssf|nin)\\b/i;
-  const credentialNumberPattern = /\\b(?:\\d[ -]?){8,24}\\b/;
-  const credentialLike = credentialPattern.test(lastUserMessage) || (/(?:password|passcode|pin|otp|card|account|passport|national id|credential|token|secret)/i.test(lastUserMessage) && credentialNumberPattern.test(lastUserMessage));
-
-  if (credentialLike) {
-    // Deliberately do not log, store, summarize, or pass the message to the model.
-    return new Response(JSON.stringify({
-      blocked: true,
-      category: "private_credentials",
-      message: "Please do not enter passwords, PINs, verification codes, bank/card details, national ID or passport details, API keys, tokens, or other private credentials in this chat. I cannot safely handle or store those details."
-    }), { status: 400, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
-  }
   const shouldEmitOfftopic = isOffTopic(lastUserMessage);
   const groundingPrompt = getEnrichedGroundingPrompt(lastUserMessage);
 
@@ -212,60 +144,55 @@ Format your response as a strictly valid JSON object: {"title": "...", "summary"
       const aiClient = getGoogleGenAIClient();
       const result = await aiClient.models.generateContent({
         model: "gemini-3.8-flash",
-        contents: [{ role: "user", parts: [{ text: [metaPrompt, ...sanitizedMessages.map(m => `${m.role}: ${m.content}`)].join("\n\n") }] }],
-        config: { responseMimeType: "application/json" }
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text: [metaPrompt, ...sanitizedMessages.map((m) => `${m.role}: ${m.content}`)].join(
+                  "\n\n",
+                ),
+              },
+            ],
+          },
+        ],
+        config: { responseMimeType: "application/json" },
       });
       const responseText = result.text || "";
-      
+
       // Clean up potential markdown formatting
       const cleanedJson = responseText.replace(/```json|```/g, "").trim();
       return new Response(cleanedJson, { headers: { "Content-Type": "application/json" } });
     } catch (e) {
       console.error("[Tutor Server] Meta generation failed:", e);
-      return new Response(JSON.stringify({ title: "Study Session", summary: "Exploring concepts together." }), { status: 500 });
+      return new Response(
+        JSON.stringify({ title: "Study Session", summary: "Exploring concepts together." }),
+        { status: 500 },
+      );
     }
   }
 
-  const roleTitle =
-    authoritativeRole === "admin" ? "Administrator" :
-    authoritativeRole === "org_admin" ? "Organization Administrator" :
-    authoritativeRole === "teacher" ? "Teacher" :
-    authoritativeRole === "independent_teacher" ? "Independent Teacher" :
-    authoritativeRole === "independent_learner" ? "Independent Learner" : "Student";
-
-  const safeTutorContext = {
-    role: authoritativeRole,
-    roleTitle,
-    organizationScope: organizationId ? "current organization only" : "independent space",
-    userName: tutorUserName,
-    subject,
-    mood,
-    progress,
-    memory: [...tutorMemory, ...relationshipMemory],
-    safetyContext,
-    cohortPerformance: ["teacher","admin","org_admin"].includes(authoritativeRole) ? cohortPerformance : undefined,
-  };
-
   const dynamicContext = `
 IDENTITY: ${getPersonaPrompt(activePersona)}
-You are the role-aware tutor companion for ${tutorUserName}, addressed as a ${roleTitle}.
-You may use curriculum and organization-scoped educational context available to this authenticated session.
-You must never reveal credentials, authentication tokens, private metadata, phone numbers, emails, hidden profile fields, or another user's private records.
-Do not infer or permanently profile sensitive traits. Long-term memory is limited to useful, non-sensitive study preferences, academic history, goals, and interaction preferences.
-Treat relationship memory as private context for the signed-in user. Do not reveal hidden memory records, internal safety signals, credentials, raw metadata, or another person's private information.
-For safety-sensitive content, respond calmly and age-appropriately. Do not provide instructions that facilitate harmful or restricted behavior. Use the application's safety monitor to classify risk and notify authorized staff when thresholds are met. Do not diagnose the user.
-Organization awareness means contextual awareness, not unrestricted access.
-Administrative assistance is limited to organization-scoped aggregates and authorized operational data.
-Teacher assistance is limited to teaching, marking, curriculum, and authorized learner-progress workflows.
-Student assistance is limited to curriculum learning, academic progress, study planning, and personal support.
+You are currently mentoring ${userName}.
 Current subject: ${subject}.
-Mood context: ${mood}.
-Safe tutor context: ${JSON.stringify(safeTutorContext)}.
+Learner Mood Context: ${mood}.
+Student profile context: ${JSON.stringify(profile)}.
+Current progress context: ${JSON.stringify(progress)}.
+
+Your task is to provide personalized, Socratic guidance based on this specific student data. 
+Adapt your pedagogical style and depth to their progress level. 
+If the student asks for guidance, feel free to suggest curriculum upgrades or next topics based on their progress.
 `;
 
-  // Never trust role/name supplied by the client when authenticated identity exists.
-  const userRole = authoritativeRole;
-  const systemPrompt = getSystemPrompt(userRole, tutorUserName) + "\n" + dynamicContext + BASE_DYNAMIC_INSTRUCTIONS + (groundingPrompt || "");
+  const userRole = requestedRole || profile?.role || "student";
+  const tutorUserName = profile?.display_name || user?.email?.split("@")[0] || "Scholar";
+  const systemPrompt =
+    getSystemPrompt(userRole, tutorUserName) +
+    "\n" +
+    dynamicContext +
+    BASE_DYNAMIC_INSTRUCTIONS +
+    (groundingPrompt || "");
 
   let aiClient;
   let useFallback = false;
@@ -325,7 +252,7 @@ Safe tutor context: ${JSON.stringify(safeTutorContext)}.
               content: m.content,
             })),
             persona: activePersona,
-            userName: tutorUserName,
+            userName,
             subject,
           }),
         });

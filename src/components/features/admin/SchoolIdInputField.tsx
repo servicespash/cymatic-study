@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { validateNcdcSchoolId, generateNcdcBoardingSchoolId } from "@/lib/school-id-validator";
-import { SchoolIdQRCode } from "@/components/SchoolIdQRCode";
+import { SchoolIdQRCode } from "@/components/features/admin/SchoolIdQRCode";
 import { generateStudentRegistryCode } from "@/lib/auth-router";
 import { QRScannerModal } from "@/components/QRScannerModal";
 

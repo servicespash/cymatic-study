@@ -1,285 +1,33 @@
-import { GoogleGenAI } from "@google/genai";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export async function handleNcdcNewsRequest(request: Request) {
   console.log("NCDC News & Media Synchronization called");
 
-  let forceRefresh = false;
+  // Just return the current news from the database
   try {
-    const body = await request.json();
-    forceRefresh = !!body?.forceRefresh;
-  } catch (e) {
-    // Body empty or not JSON, default to false
-  }
+    const { data: news, error } = await supabaseAdmin
+      .from("news_broadcasts")
+      .select("*")
+      .eq("is_active", true)
+      .order("published_at", { ascending: false });
 
-  // Default High-Quality Podcasts
-  const DEFAULT_PODCASTS = [
-    {
-      title: "The Magic of Matrices in Real Life",
-      body: JSON.stringify({
-        description:
-          "Discover how S5/S6 matrix algebra powers modern computer graphics, video game mechanics, and complex transformations.",
-        subject: "Mathematics",
-        speaker: "Sir Latif Isabirye",
-        duration: "12:45",
-      }),
-      media_url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-      media_type: "podcast",
-      is_ad: false,
-      is_active: true,
-    },
-    {
-      title: "Quantum Mechanics & Semiconductor Electronics",
-      body: JSON.stringify({
-        description:
-          "Dive into wave-particle duality, Planck's constant, and how modern diodes and transistors are designed to power our devices.",
-        subject: "Physics",
-        speaker: "Dr. Florence Nakayiza",
-        duration: "15:20",
-      }),
-      media_url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-      media_type: "podcast",
-      is_ad: false,
-      is_active: true,
-    },
-    {
-      title: "The Energy Landscapes of Thermodynamics",
-      body: JSON.stringify({
-        description:
-          "A deep-dive into physical chemistry principles, explaining how Enthalpy, Entropy, and Gibbs Free Energy govern natural reactions.",
-        subject: "Chemistry",
-        speaker: "Prof. Herbert Mukasa",
-        duration: "10:15",
-      }),
-      media_url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-      media_type: "podcast",
-      is_ad: false,
-      is_active: true,
-    },
-    {
-      title: "DNA Replication & The Molecular Clock",
-      body: JSON.stringify({
-        description:
-          "Syllabus review of the molecular processes of transcription and translation, and how cell division maintains biological lifespans.",
-        subject: "Biology",
-        speaker: "Teacher Brenda Namubiru",
-        duration: "14:10",
-      }),
-      media_url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
-      media_type: "podcast",
-      is_ad: false,
-      is_active: true,
-    },
-  ];
-
-  // Default High-Quality Live Sessions
-  const DEFAULT_LIVE_SESSIONS = [
-    {
-      title: "Cymatic Masterclass: Oscillating Systems & Resonance",
-      body: JSON.stringify({
-        description:
-          "An intensive visual lecture on mechanical resonance, sound wave amplification, and the mathematical equations of simple harmonic motion.",
-        subject: "Physics",
-        instructor: "Sir Latif Isabirye",
-        scheduled_at: new Date(Date.now() + 3600000 * 24).toISOString(), // Tomorrow
-        duration: "1h 30m",
-      }),
-      media_url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-      media_type: "live_session",
-      is_ad: false,
-      is_active: true,
-    },
-    {
-      title: "S5/S6 Organic Chemistry Synthesis Pathway Review",
-      body: JSON.stringify({
-        description:
-          "Step-by-step breakdown of aliphatic and aromatic reaction mechanisms, functional groups, and esterification practical questions.",
-        subject: "Chemistry",
-        instructor: "Prof. Herbert Mukasa",
-        scheduled_at: new Date(Date.now() + 3600000 * 48).toISOString(), // In 2 days
-        duration: "1h",
-      }),
-      media_url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-      media_type: "live_session",
-      is_ad: false,
-      is_active: true,
-    },
-  ];
-
-  // Default Student Spotlights
-  const DEFAULT_STUDENT_SHOUTOUTS: any[] = [];
-
-  let isEmpty = true;
-  const hasAdminKey = !!(
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_PUBLISHABLE_KEY ||
-    process.env.VITE_SUPABASE_KEY ||
-    process.env.VITE_SUPABASE_ANON_KEY
-  );
-
-  if (hasAdminKey) {
-    try {
-      const { count } = await supabaseAdmin
-        .from("news_broadcasts")
-        .select("*", { count: "exact", head: true });
-      isEmpty = count === 0;
-    } catch (e) {
-      console.warn("Supabase admin client failed to check news count:", e);
-    }
-  } else {
-    console.warn("SUPABASE_SERVICE_ROLE_KEY missing, skipping database news check.");
-  }
-
-  let generatedNews: Array<{ title: string; body: string }> = [];
-
-  const apiKey =
-    process.env.GEMINI_API_KEY ||
-    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-    process.env.GOOGLE_GENERATIVE_AI_KEY;
-
-  if (apiKey) {
-    console.log(
-      `[GeminiNews] API key present (len: ${apiKey.length}, starts with: ${apiKey.substring(0, 5)}...)`,
-    );
-  } else {
-    console.warn("[GeminiNews] No Gemini API key found in environment variables.");
-  }
-  // Use Gemini for grounded news if API key is present
-  if (apiKey) {
-    const ai = new GoogleGenAI({
-      apiKey,
-    });
-
-    try {
-      console.log("Fetching live news from Gemini 3.1 Flash-lite search grounding...");
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-flash-lite",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: "Provide exactly 3 distinct, highly professional real-time news items about the National Curriculum Development Centre (NCDC) or Uganda National Examinations Board (UNEB) regarding Ugandan secondary school curriculum updates, syllabus rollouts, or mocks schedules for Advanced/Ordinary Level science subjects (Mathematics, Physics, Chemistry, Biology). Return the result in JSON format as an array of objects with 'title' and 'body' fields. Keep the body text clear, descriptive, and academic. Do not include markdown formatting like ```json.",
-              },
-            ],
-          },
-        ],
-        config: {
-          responseMimeType: "application/json",
-          tools: [{ googleSearch: {} }],
-        },
-      });
-      let text = response.text || "";
-      if (text) {
-        text = text
-          .replace(/```json/gi, "")
-          .replace(/```/g, "")
-          .trim();
-        const jsonMatch = text.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
-          text = jsonMatch[0];
-        }
-        const parsed = JSON.parse(text);
-        if (Array.isArray(parsed)) {
-          generatedNews = parsed;
-        } else if (parsed && typeof parsed === "object" && Array.isArray(parsed.news)) {
-          generatedNews = parsed.news;
-        }
-      }
-    } catch (e: any) {
-      if (e?.message?.includes("API key not valid")) {
-        console.warn("[GeminiNews] API key invalid, skipping grounded search.");
-      } else {
-        console.error("Gemini grounding news search failed:", e);
-      }
-    }
-  }
-
-  try {
-    const hasAdminKey = !!(
-      process.env.SUPABASE_SERVICE_ROLE_KEY ||
-      process.env.SUPABASE_PUBLISHABLE_KEY ||
-      process.env.VITE_SUPABASE_KEY ||
-      process.env.VITE_SUPABASE_ANON_KEY
-    );
-
-    // 1. Handle curriculum updates insertions/replacements
-    if (generatedNews.length > 0 && hasAdminKey) {
-      try {
-        // Delete old dynamic updates
-        await supabaseAdmin.from("news_broadcasts").delete().eq("media_type", "curriculum_update");
-
-        const payload = generatedNews.map((item) => ({
-          title: item.title,
-          body: typeof item.body === "object" ? JSON.stringify(item.body) : item.body,
-          media_type: "curriculum_update",
-          is_ad: false,
-          is_active: true,
-          published_at: new Date().toISOString(),
-        }));
-        await supabaseAdmin.from("news_broadcasts").insert(payload);
-      } catch (innerError) {
-        console.warn("Could not update news_broadcasts in database:", innerError);
-      }
-    } else if (forceRefresh && hasAdminKey) {
-      try {
-        // if it failed to generate news, we should probably not delete existing news to avoid empty feed,
-        // or we can insert fallback news if it's completely empty.
-        const { count: currCount } = await supabaseAdmin
-          .from("news_broadcasts")
-          .select("*", { count: "exact", head: true })
-          .eq("media_type", "curriculum_update");
-        if (currCount === 0) {
-          const fallbackCurriculum = [
-            {
-              title: "NCDC Rollout of New S5 & S6 Syllabi for Scientific Subjects",
-              body: "The National Curriculum Development Centre (NCDC) has officially released the updated Advanced Level (UACE) syllabus guidelines for Mathematics, Physics, Chemistry, and Biology. Focus is now on research-driven investigations, continuous project assessments, and practical application modules.",
-              media_type: "curriculum_update",
-              is_ad: false,
-              is_active: true,
-              published_at: new Date(Date.now() - 3600000 * 2).toISOString(),
-            },
-            {
-              title: "UNEB S4 (UCE) Chemistry and Biology Mock Exams Schedule",
-              body: "The Uganda National Examinations Board (UNEB) has announced the nationwide dates for lower secondary mock practicals. Students are encouraged to practice their laboratory drawings, titration analysis, and biology specimen classifications.",
-              media_type: "curriculum_update",
-              is_ad: false,
-              is_active: true,
-              published_at: new Date(Date.now() - 3600000 * 12).toISOString(),
-            },
-          ];
-          await supabaseAdmin.from("news_broadcasts").insert(fallbackCurriculum);
-        }
-      } catch (innerError) {
-        console.warn("Could not check/insert fallback curriculum in database:", innerError);
-      }
-    }
-
-    // 2. No automatic seeding of default tables; respect real institutional data integrity
-    if (isEmpty && hasAdminKey && generatedNews.length === 0) {
-      console.log("News feed is empty. Waiting for real or AI-generated content.");
-    }
+    if (error) throw error;
 
     return new Response(
-      JSON.stringify({ success: true, count: generatedNews.length, news: generatedNews }),
+      JSON.stringify({ success: true, count: news.length, news }),
       {
         headers: { "Content-Type": "application/json" },
       },
     );
-  } catch (dbError) {
-    console.warn(
-      "News database operations failed (likely missing SUPABASE_SERVICE_ROLE_KEY):",
-      dbError,
-    );
+  } catch (error) {
+    console.error("News database operations failed:", error);
     return new Response(
       JSON.stringify({
-        success: true,
-        count: generatedNews.length,
-        news: generatedNews,
-        warning: "Database sync failed",
+        success: false,
+        error: "Database sync failed",
       }),
       {
-        status: 200, // Return 200 even if DB failed, since we might have generated news
+        status: 500,
         headers: { "Content-Type": "application/json" },
       },
     );

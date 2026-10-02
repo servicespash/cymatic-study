@@ -1,5 +1,14 @@
 export const VOICE_HINTS = {
-  male: ["male", "google-m", "en-us-x-iom", "en-gb-x-fis", "david", "mark", "premium-m", "natural-m"],
+  male: [
+    "male",
+    "google-m",
+    "en-us-x-iom",
+    "en-gb-x-fis",
+    "david",
+    "mark",
+    "premium-m",
+    "natural-m",
+  ],
   female: [
     "female",
     "google-f",

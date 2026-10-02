@@ -70,9 +70,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TeacherApprovalTable } from "@/components/admin/TeacherApprovalTable";
 import { DeploymentStatus } from "@/components/layout/DeploymentStatus";
 import { AdminOnboardingWorkflow } from "@/components/features/admin/AdminOnboardingWorkflow";
-import { UnifiedInstitutionalDirectory } from "@/components/features/admin/UnifiedInstitutionalDirectory";
-import { BulkQRGenerator } from "@/components/features/admin/BulkQRGenerator";
-import { DisciplineNudges } from "@/components/features/admin/DisciplineNudges";
+import { UnifiedInstitutionalDirectory } from "@/components/UnifiedInstitutionalDirectory";
+import { BulkQRGenerator } from "@/components/BulkQRGenerator";
+import { DisciplineNudges } from "@/components/DisciplineNudges";
 import { SupabaseLivePulseHeader } from "@/components/SupabaseLivePulseHeader";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 
@@ -214,10 +214,12 @@ function AdminDashboard() {
     try {
       const { data, error } = await supabase
         .from("user_feedback")
-        .select(`
+        .select(
+          `
           *,
           profiles:user_id (display_name)
-        `)
+        `,
+        )
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -383,12 +385,12 @@ function AdminDashboard() {
     setLoadingList(true);
     try {
       // Load profiles/students
-      let { data: stdData } = await (supabase.from("profiles") as any)
+      const { data: stdData } = await (supabase.from("profiles") as any)
         .select("id, user_id, display_name, org_id, school_name, role")
         .eq("org_id", orgId);
 
       // Load project submissions
-      let { data: subData } = await (supabase.from("project_submissions") as any)
+      const { data: subData } = await (supabase.from("project_submissions") as any)
         .select("id, student_id, total_competency_score, teacher_name, status, created_at, org_id")
         .eq("org_id", orgId);
 
@@ -397,26 +399,32 @@ function AdminDashboard() {
         const mappedStudents: StudentRecord[] = stdData
           .filter((s) => s.role === "student" || s.role === "student_monitor") // Only students
           .map((s) => {
-          const studentSubs = subData?.filter((sub) => sub.student_id === (s.user_id || s.id)) || [];
-          const gradedSubs = studentSubs.filter(
-            (sub) => sub.total_competency_score !== null && sub.total_competency_score !== undefined,
-          );
-          const totalScore = gradedSubs.reduce((acc, sub) => acc + (sub.total_competency_score || 0), 0);
-          const avgScore = gradedSubs.length > 0 ? Math.round(totalScore / gradedSubs.length) : 75;
+            const studentSubs =
+              subData?.filter((sub) => sub.student_id === (s.user_id || s.id)) || [];
+            const gradedSubs = studentSubs.filter(
+              (sub) =>
+                sub.total_competency_score !== null && sub.total_competency_score !== undefined,
+            );
+            const totalScore = gradedSubs.reduce(
+              (acc, sub) => acc + (sub.total_competency_score || 0),
+              0,
+            );
+            const avgScore =
+              gradedSubs.length > 0 ? Math.round(totalScore / gradedSubs.length) : 75;
 
-          return {
-            id: s.id || s.user_id,
-            user_id: s.user_id || s.id,
-            display_name: s.display_name || "Scholar",
-            level: "S1",
-            stream: "Stream A",
-            role: s.role || "student",
-            org_id: s.org_id || s.school_id,
-            school_name: orgName,
-            avgScore,
-            submissionCount: studentSubs.length || 0,
-          };
-        });
+            return {
+              id: s.id || s.user_id,
+              user_id: s.user_id || s.id,
+              display_name: s.display_name || "Scholar",
+              level: "S1",
+              stream: "Stream A",
+              role: s.role || "student",
+              org_id: s.org_id || s.school_id,
+              school_name: orgName,
+              avgScore,
+              submissionCount: studentSubs.length || 0,
+            };
+          });
         setStudentsList(mappedStudents);
       } else {
         setStudentsList([]);
@@ -478,7 +486,7 @@ function AdminDashboard() {
             { id: "analytics", label: "Analytics", icon: BarChart3 },
             { id: "reports", label: "Reports", icon: FileText },
             { id: "settings", label: "School ID & Settings", icon: Settings },
-            { id: "feedback", label: "Feedback", icon: MessageSquare }
+            { id: "feedback", label: "Feedback", icon: MessageSquare },
           ].map((tab) => (
             <Button
               key={tab.id}
@@ -823,7 +831,10 @@ function AdminDashboard() {
                   setSearchTerm={setSearchQuery}
                   setInspectedStudent={setInspectedStudent}
                   onRefresh={() => {
-                    loadClassStudentsAndSubmissions(currentOrgId, org?.name || "Institutional School");
+                    loadClassStudentsAndSubmissions(
+                      currentOrgId,
+                      org?.name || "Institutional School",
+                    );
                     loadDashboardStats(currentOrgId);
                   }}
                   currentOrgId={currentOrgId}
@@ -1071,9 +1082,7 @@ function AdminDashboard() {
                               <p className="text-xs font-bold text-white">
                                 {f.profiles?.display_name || "User"}
                               </p>
-                              <p className="text-[10px] text-zinc-500">
-                                {f.level || "S1"}
-                              </p>
+                              <p className="text-[10px] text-zinc-500">{f.level || "S1"}</p>
                             </div>
                           </TableCell>
                           <TableCell>

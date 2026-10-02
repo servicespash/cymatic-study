@@ -21,7 +21,9 @@ const PermissionCard: React.FC<PermissionCardProps> = ({
 }) => (
   <div className="flex items-center justify-between p-4 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
     <div className="flex items-center gap-3">
-      <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${enabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+      <div
+        className={`h-10 w-10 rounded-xl flex items-center justify-center ${enabled ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
+      >
         <Icon className="h-5 w-5" />
       </div>
       <div>
@@ -31,9 +33,11 @@ const PermissionCard: React.FC<PermissionCardProps> = ({
     </div>
     <button
       onClick={onToggle}
-      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${enabled ? 'bg-primary' : 'bg-muted'}`}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${enabled ? "bg-primary" : "bg-muted"}`}
     >
-      <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${enabled ? 'translate-x-5' : 'translate-x-0'}`} />
+      <span
+        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${enabled ? "translate-x-5" : "translate-x-0"}`}
+      />
     </button>
   </div>
 );
@@ -41,11 +45,21 @@ const PermissionCard: React.FC<PermissionCardProps> = ({
 export const DevicePermissionsSettings: React.FC = () => {
   const { language, setLanguage, t } = useLanguageStore();
 
-  const [cameraEnabled, setCameraEnabled] = React.useState(() => localStorage.getItem("perm_camera") !== "false");
-  const [micEnabled, setMicEnabled] = React.useState(() => localStorage.getItem("perm_mic") !== "false");
-  const [notificationsEnabled, setNotificationsEnabled] = React.useState(() => localStorage.getItem("perm_notify") !== "false");
-  const [storageEnabled, setStorageEnabled] = React.useState(() => localStorage.getItem("perm_storage") !== "false");
-  const [autoSync, setAutoSync] = React.useState(() => localStorage.getItem("pref_autosync") !== "false");
+  const [cameraEnabled, setCameraEnabled] = React.useState(
+    () => localStorage.getItem("perm_camera") !== "false",
+  );
+  const [micEnabled, setMicEnabled] = React.useState(
+    () => localStorage.getItem("perm_mic") !== "false",
+  );
+  const [notificationsEnabled, setNotificationsEnabled] = React.useState(
+    () => localStorage.getItem("perm_notify") !== "false",
+  );
+  const [storageEnabled, setStorageEnabled] = React.useState(
+    () => localStorage.getItem("perm_storage") !== "false",
+  );
+  const [autoSync, setAutoSync] = React.useState(
+    () => localStorage.getItem("pref_autosync") !== "false",
+  );
 
   const handleTogglePermission = (type: "camera" | "mic" | "notify" | "storage") => {
     if (type === "camera") {
@@ -69,7 +83,10 @@ export const DevicePermissionsSettings: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div id="device-permissions-section" className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-5">
+      <div
+        id="device-permissions-section"
+        className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-5"
+      >
         <div>
           <h3 className="text-base font-bold text-foreground">{t.devicePerms}</h3>
           <p className="text-xs text-muted-foreground mt-0.5">{t.devicePermsSub}</p>
@@ -107,7 +124,10 @@ export const DevicePermissionsSettings: React.FC = () => {
         </div>
       </div>
 
-      <div id="regional-preferences-section" className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-5">
+      <div
+        id="regional-preferences-section"
+        className="rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur shadow-sm space-y-5"
+      >
         <div>
           <h3 className="text-base font-bold text-foreground">{t.regionalPref}</h3>
           <p className="text-xs text-muted-foreground mt-0.5">{t.regionalPrefSub}</p>
@@ -146,9 +166,11 @@ export const DevicePermissionsSettings: React.FC = () => {
                   localStorage.setItem("pref_autosync", String(!autoSync));
                   toast.success(`Auto-sync: ${!autoSync ? "Enabled" : "Disabled"}`);
                 }}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${autoSync ? 'bg-primary' : 'bg-muted'}`}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${autoSync ? "bg-primary" : "bg-muted"}`}
               >
-                <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${autoSync ? 'translate-x-5' : 'translate-x-0'}`} />
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${autoSync ? "translate-x-5" : "translate-x-0"}`}
+                />
               </button>
             </div>
           </div>

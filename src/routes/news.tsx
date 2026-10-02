@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { FoundersSpotlight } from "@/components/FoundersSpotlight";
@@ -6,7 +7,8 @@ import { NewsFeed } from "@/components/NewsFeed";
 import { useNewsFeed } from "@/lib/supabase-service";
 import { RoleGuard } from "@/components/RoleGuard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { RefreshCw, Database } from "lucide-react";
+import { RefreshCw } from "lucide-react";
+import { NewsNotificationBadge } from "@/components/NewsNotificationBadge";
 
 export const Route = createFileRoute("/news")({
   head: () => ({ meta: [{ title: "News & Podcasts — Latty's Cymatic Study" }] }),
@@ -19,6 +21,13 @@ export const Route = createFileRoute("/news")({
 
 function NewsPage() {
   const { items, loading, error, refreshFeed } = useNewsFeed();
+  const [filter, setFilter] = useState<string>("all");
+
+  const filteredItems = useMemo(() => {
+    return filter === "all"
+      ? items
+      : items.filter((item) => item.category === filter);
+  }, [items, filter]);
 
   useEffect(() => {
     if (error) {
@@ -30,22 +39,35 @@ function NewsPage() {
     <div className="app-container dashboard-container min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-7xl w-full min-w-0">
         <div className="mb-6 sm:mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
+          <div className="relative">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white break-words">
               Cymatic Spotlight
             </h1>
+            <NewsNotificationBadge />
             <p className="text-xs sm:text-sm text-zinc-400 mt-1 leading-relaxed">
               Real-time curriculum news and updates.
             </p>
           </div>
-          <button
-            onClick={refreshFeed}
-            disabled={loading}
-            className="flex items-center justify-center gap-2 rounded-xl bg-cyan-500/10 px-4 py-2.5 text-xs sm:text-sm font-bold text-cyan-400 hover:bg-cyan-500/20 transition-colors border border-cyan-500/20 disabled:opacity-50 shrink-0 self-start md:self-auto"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            Refresh Feed
-          </button>
+          <div className="flex gap-2">
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="rounded-xl bg-zinc-900 border border-zinc-800 px-3 py-2.5 text-xs text-white"
+            >
+              <option value="all">All Categories</option>
+              <option value="curriculum">Curriculum</option>
+              <option value="live">Live Sessions</option>
+              <option value="podcast">Podcasts</option>
+            </select>
+            <button
+              onClick={refreshFeed}
+              disabled={loading}
+              className="flex items-center justify-center gap-2 rounded-xl bg-cyan-500/10 px-4 py-2.5 text-xs sm:text-sm font-bold text-cyan-400 hover:bg-cyan-500/20 transition-colors border border-cyan-500/20 disabled:opacity-50 shrink-0 self-start md:self-auto"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              Refresh
+            </button>
+          </div>
         </div>
 
         <FoundersSpotlight />
@@ -68,7 +90,7 @@ function NewsPage() {
 
             {!loading && (
               <ErrorBoundary>
-                <NewsFeed items={items} />
+                <NewsFeed items={filteredItems} />
               </ErrorBoundary>
             )}
           </div>

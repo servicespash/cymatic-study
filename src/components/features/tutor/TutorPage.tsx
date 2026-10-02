@@ -11,7 +11,7 @@ import { useTutor } from "@/lib/TutorService";
 import { useTutorVoice } from "@/hooks/useTutorVoice";
 import { useSearch } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
-import { generateOfflineTutorResponse } from "@/lib/offline-tutor";
+import { generateSemanticOfflineTutorResponse } from "@/lib/offline-tutor";
 import { Button } from "@/components/ui/button";
 import { exportChatToPDF } from "@/lib/chat-pdf-export";
 
@@ -58,15 +58,8 @@ export function TutorPage() {
 }
 
 function TutorPageContent() {
-  const {
-    messages,
-    isLoading,
-    addMessage,
-    setLoading,
-    clearMessages,
-    setMessages,
-    sessionId,
-  } = useTutorStore();
+  const { messages, isLoading, addMessage, setLoading, clearMessages, setMessages, sessionId } =
+    useTutorStore();
   const { persona, setPersona } = useTutorVoice();
   const { speak, stopSpeaking, speaking, setVoice, ttsEnabled, setTtsEnabled } = useTutor();
   const { isAdmin, isTeacher, isStudent } = useAuth();
@@ -145,9 +138,12 @@ function TutorPageContent() {
   // Dynamic welcome message
   useEffect(() => {
     if (messages.length === 0) {
-      const roleGreeting = userRole === 'teacher' ? 'Ready to plan today\'s lessons?' : 
-                           userRole === 'admin' ? 'Ready to manage your institution?' : 
-                           'Ready to dive into your studies today?';
+      const roleGreeting =
+        userRole === "teacher"
+          ? "Ready to plan today's lessons?"
+          : userRole === "admin"
+            ? "Ready to manage your institution?"
+            : "Ready to dive into your studies today?";
       const greeting: any = {
         id: crypto.randomUUID(),
         sender: "tutor" as const,
@@ -238,10 +234,12 @@ function TutorPageContent() {
 
     if (offlineMode) {
       setTimeout(() => {
-        const reply = generateOfflineTutorResponse(
+        const reply = generateSemanticOfflineTutorResponse(
           studentPromptText,
           displayName,
+          userRole,
           persona === "Adams" ? "male" : "female",
+          "general",
         );
         useTutorStore
           .getState()
@@ -374,23 +372,29 @@ function TutorPageContent() {
       // Trigger automatic voice read-aloud when streamed response settles
       if (tutorReplyText) {
         speak(tutorReplyText);
-        
+
         // Automated Titling Service: Analyzes the first exchange to generate a descriptive title
         const currentMessages = useTutorStore.getState().messages;
         if (currentMessages.length >= 2 && sessionId) {
-          const session = useTutorStore.getState().sessions.find(s => s.id === sessionId);
+          const session = useTutorStore.getState().sessions.find((s) => s.id === sessionId);
           // Only generate if title is still missing, generic, or if it's the first exchange (length 2-4)
-          if (!session?.title || session.title.includes("Study Session #") || currentMessages.length <= 4) {
+          if (
+            !session?.title ||
+            session.title.includes("Study Session #") ||
+            currentMessages.length <= 4
+          ) {
             void generateSessionMeta(sessionId, currentMessages);
           }
         }
       }
     } catch (e) {
       console.error("[Tutor Chat] Dynamic API communication error:", e);
-      const reply = generateOfflineTutorResponse(
+      const reply = generateSemanticOfflineTutorResponse(
         studentPromptText,
         displayName,
+        userRole,
         persona === "Adams" ? "male" : "female",
+        "general",
       );
 
       useTutorStore

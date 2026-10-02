@@ -48,36 +48,38 @@ export const HardwareBridge = {
         // Find best matching voice if available
         if (window.speechSynthesis.getVoices) {
           const voices = window.speechSynthesis.getVoices();
-          
+
           let targetVoice: SpeechSynthesisVoice | undefined;
 
           // 1. Try explicit voiceName if provided
           if (options.voiceName) {
-            targetVoice = voices.find(v => v.name === options.voiceName);
+            targetVoice = voices.find((v) => v.name === options.voiceName);
           }
 
           // 2. Try gender-aware selection if no specific voice found
           if (!targetVoice && options.gender) {
             const hints = options.gender === "male" ? VOICE_HINTS.male : VOICE_HINTS.female;
-            
+
             // Priority 1: Exact lang match + hint
-            targetVoice = voices.find(v => 
-              v.lang === options.lang && 
-              hints.some(h => v.name.toLowerCase().includes(h))
+            targetVoice = voices.find(
+              (v) => v.lang === options.lang && hints.some((h) => v.name.toLowerCase().includes(h)),
             );
 
             // Priority 2: StartsWith lang match + hint
             if (!targetVoice) {
-              targetVoice = voices.find(v => 
-                v.lang.startsWith(options.lang.split('-')[0]) && 
-                hints.some(h => v.name.toLowerCase().includes(h))
+              targetVoice = voices.find(
+                (v) =>
+                  v.lang.startsWith(options.lang.split("-")[0]) &&
+                  hints.some((h) => v.name.toLowerCase().includes(h)),
               );
             }
           }
 
           // 3. Fallback to just language matching
           if (!targetVoice) {
-            targetVoice = voices.find(v => v.lang.startsWith(options.lang) || v.lang === options.lang);
+            targetVoice = voices.find(
+              (v) => v.lang.startsWith(options.lang) || v.lang === options.lang,
+            );
           }
 
           if (targetVoice) utter.voice = targetVoice;
@@ -137,7 +139,9 @@ export const HardwareBridge = {
     await Preferences.remove({ key });
   },
 
-  async getVoices(): Promise<{ name: string; lang: string; gender: "male" | "female" | "neutral" }[]> {
+  async getVoices(): Promise<
+    { name: string; lang: string; gender: "male" | "female" | "neutral" }[]
+  > {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
       return [];
     }

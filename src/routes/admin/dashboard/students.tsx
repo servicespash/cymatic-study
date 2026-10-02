@@ -13,8 +13,9 @@ function StudentsPage() {
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  
-  const currentOrgId = profile?.org_id || profile?.organization_id || user?.user_metadata?.school_id || "";
+
+  const currentOrgId =
+    profile?.org_id || profile?.organization_id || user?.user_metadata?.school_id || "";
 
   useEffect(() => {
     if (currentOrgId) {
@@ -35,10 +36,11 @@ function StudentsPage() {
       } catch (e: any) {
         console.error("Error loading student records:", e);
         // Fallback to profiles if student_records is missing
-        const res = await supabase.from("profiles")
+        const res = await supabase
+          .from("profiles")
           .select("id, display_name, org_id, school_name, role")
           .eq("org_id", currentOrgId);
-        stdData = res.data?.map(s => ({...s, user_id: s.id, org_id: s.org_id})) || [];
+        stdData = res.data?.map((s) => ({ ...s, user_id: s.id, org_id: s.org_id })) || [];
       }
 
       let subData: any[] = [];
@@ -57,10 +59,18 @@ function StudentsPage() {
         const mappedStudents = stdData
           .filter((s: any) => s.role === "student" || s.role === "student_monitor")
           .map((s: any) => {
-            const studentSubs = subData?.filter((sub: any) => sub.student_id === (s.user_id || s.id)) || [];
-            const gradedSubs = studentSubs.filter((sub: any) => sub.total_competency_score !== null && sub.total_competency_score !== undefined);
-            const totalScore = gradedSubs.reduce((acc: number, sub: any) => acc + (sub.total_competency_score || 0), 0);
-            const avgScore = gradedSubs.length > 0 ? Math.round(totalScore / gradedSubs.length) : 75;
+            const studentSubs =
+              subData?.filter((sub: any) => sub.student_id === (s.user_id || s.id)) || [];
+            const gradedSubs = studentSubs.filter(
+              (sub: any) =>
+                sub.total_competency_score !== null && sub.total_competency_score !== undefined,
+            );
+            const totalScore = gradedSubs.reduce(
+              (acc: number, sub: any) => acc + (sub.total_competency_score || 0),
+              0,
+            );
+            const avgScore =
+              gradedSubs.length > 0 ? Math.round(totalScore / gradedSubs.length) : 75;
 
             return {
               user_id: s.user_id || s.id,
@@ -86,12 +96,12 @@ function StudentsPage() {
 
   return (
     <div className="p-6">
-      <StudentMatrix 
-        students={students} 
-        loading={loading} 
-        searchTerm={searchTerm} 
-        setSearchTerm={setSearchTerm} 
-        setInspectedStudent={() => {}} 
+      <StudentMatrix
+        students={students}
+        loading={loading}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        setInspectedStudent={() => {}}
         onRefresh={loadStudents}
         currentOrgId={currentOrgId}
       />

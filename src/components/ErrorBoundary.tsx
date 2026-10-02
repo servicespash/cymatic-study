@@ -34,10 +34,13 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center bg-zinc-950 text-white rounded-2xl border border-white/10">
           <h2 className="text-2xl font-black mb-4 tracking-tight">Access or Data Error</h2>
           <p className="mb-8 text-zinc-400 max-w-sm">
-            We encountered a problem accessing your data. This might be due to insufficient permissions for your role or a temporary connection issue.
+            We encountered a problem accessing your data. This might be due to insufficient
+            permissions for your role or a temporary connection issue.
           </p>
           <div className="flex gap-4">
-            <Button variant="outline" onClick={() => window.location.href = '/dashboard'}>Return to Dashboard</Button>
+            <Button variant="outline" onClick={() => (window.location.href = "/dashboard")}>
+              Return to Dashboard
+            </Button>
             <Button onClick={this.handleRetry}>Retry Action</Button>
           </div>
         </div>

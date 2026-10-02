@@ -59,20 +59,27 @@ export function UnifiedInstitutionalDirectory({ schoolId }: UnifiedInstitutional
         .eq("org_id", schoolId);
 
       if (error) {
-        if (error.code === 'PGRST205' || error.message?.includes('PGRST205') || error.message?.includes('Could not find the table')) {
-          console.warn("directory_roster view not found in schema cache. Falling back to profiles.");
-          const res = await supabase.from("profiles")
+        if (
+          error.code === "PGRST205" ||
+          error.message?.includes("PGRST205") ||
+          error.message?.includes("Could not find the table")
+        ) {
+          console.warn(
+            "directory_roster view not found in schema cache. Falling back to profiles.",
+          );
+          const res = await supabase
+            .from("profiles")
             .select("id, display_name, role, created_at")
             .eq("org_id", schoolId);
           if (res.error) throw res.error;
-          rosterData = res.data?.map(s => ({...s, user_id: s.id})) || [];
+          rosterData = res.data?.map((s) => ({ ...s, user_id: s.id })) || [];
         } else {
           throw error;
         }
       } else {
         rosterData = data || [];
       }
-      
+
       setMembers(rosterData);
     } catch (err: any) {
       console.error("Error fetching directory:", err);

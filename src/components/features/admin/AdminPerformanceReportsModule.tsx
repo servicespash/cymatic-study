@@ -167,7 +167,7 @@ export function AdminPerformanceReportsModule() {
         setReportsData(mapped);
 
         // Dynamically extract levels and subjects
-        const subjects = Array.from(new Set(mapped.map(i => i.subject))).sort();
+        const subjects = Array.from(new Set(mapped.map((i) => i.subject))).sort();
         setAvailableSubjects(subjects);
 
         // Calculate dynamic class averages

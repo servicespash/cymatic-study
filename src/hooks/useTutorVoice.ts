@@ -75,13 +75,12 @@ export const useTutorVoice = () => {
     }
 
     debounceTimerRef.current = setTimeout(async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase
-        .from("profiles")
-        .update(updates)
-        .eq("user_id", user.id);
+      const { error } = await supabase.from("profiles").update(updates).eq("user_id", user.id);
 
       if (error) {
         console.error("[Settings Sync] Failed to persist to Supabase:", error);
@@ -95,7 +94,7 @@ export const useTutorVoice = () => {
     setPersona(newPersona);
     // Immediate audio re-initialization
     tutor.setVoice(newPersona === "Adams" ? "male" : "female");
-    
+
     syncToSupabaseDebounced({ tutor_persona: newPersona });
     toast.success(`Tutor persona set to ${newPersona}`);
     runDiagnostic();

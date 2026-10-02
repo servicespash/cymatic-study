@@ -81,7 +81,7 @@ function ChatPageWrapper() {
 }
 
 function ChatRoomPage() {
-  const { user, loading: authLoading, profile, role, organizationId, isInstitutional } = useAuth();
+  const { user, loading: authLoading, profile, isInstitutional } = useAuth();
   const { liveTools, state, connectSession, disconnectSession } = useTutorSession();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -96,9 +96,6 @@ function ChatRoomPage() {
   const [showVisionSession, setShowVisionSession] = useState(false);
   const [ratedMessages, setRatedMessages] = useState<Record<string, number>>({});
   const [manualLevel, setManualLevel] = useState<string | null>(null);
-  const [cohortId, setCohortId] = useState<string | null>(null);
-  const [chatLock, setChatLock] = useState<{ locked_until: string; reason: string; severity: string } | null>(null);
-  const [cohorts, setCohorts] = useState<Array<{ id: string; name: string; class_level: string; stream: string | null }>>([]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -108,14 +105,14 @@ function ChatRoomPage() {
     const isAdminOrTeacher =
       profile?.role === "teacher" || profile?.role === "admin" || profile?.role === "org_admin";
 
-    if (isInstitutional && organizationId) {
+    if (isInstitutional && profile?.org_id) {
       // For institutional users, we need a level.
       // If student, use their level. If staff, use a selected level or default to S1.
       const levelToUse = manualLevel || profile.level || (isAdminOrTeacher ? "S1" : "general");
 
       return {
         type: "institutional" as const,
-        orgId: organizationId,
+        orgId: profile.org_id,
         level: levelToUse,
         label: `${levelToUse} - ${profile.school_name || "School Network"}`,
         isStaff: isAdminOrTeacher,
@@ -128,38 +125,20 @@ function ChatRoomPage() {
       label: "Independent Learning Space",
       isStaff: isAdminOrTeacher,
     };
-  }, [isInstitutional, organizationId, profile]);
+  }, [isInstitutional, profile]);
 
   useEffect(() => {
-    if (role === "student" && isInstitutional) setTutorOn(true);
     if (!authLoading && !user) {
       navigate({ to: "/login" });
       return;
     }
 
     if (user && profile) {
-      void loadChatState();
       loadMessages();
       const cleanup = subscribeToMessages();
       return cleanup;
     }
   }, [user, authLoading, profile, chatContext]);
-
-  const loadChatState = async () => {
-    if (!user?.id) return;
-    const membershipQuery = supabase.from("cohort_members").select("cohort_id").eq("user_id", user.id).eq("organization_id", organizationId).limit(1).maybeSingle();
-    const cohortQuery = (role === "teacher" || role === "admin" || role === "org_admin")
-      ? supabase.from("cohorts").select("id,name,class_level,stream").eq("organization_id", organizationId).eq("class_level", chatContext.level).eq("is_active", true).order("name")
-      : Promise.resolve({ data: [] as any[], error: null });
-    const [{ data: membership }, { data: lock }, { data: cohortRows }] = await Promise.all([
-      membershipQuery,
-      supabase.rpc("get_active_chat_lock", { target_user: user.id }),
-      cohortQuery,
-    ]);
-    setCohorts((cohortRows || []) as any[]);
-    setCohortId(membership?.cohort_id || (cohortRows?.[0]?.id ?? null));
-    setChatLock(Array.isArray(lock) ? (lock[0] || null) : (lock || null));
-  };
 
   const loadMessages = async () => {
     setLoadingMessages(true);
@@ -171,7 +150,7 @@ function ChatRoomPage() {
 
     // Filter by context
     if (chatContext.type === "institutional") {
-      query = query.eq("organization_id", chatContext.orgId).eq("level", chatContext.level);
+      query = query.eq("org_id", chatContext.orgId).eq("level", chatContext.level);
     } else {
       // For independent users, show messages from independent channel or global
       query = query.or(`org_id.eq.independent,org_id.is.null`);
@@ -207,8 +186,8 @@ function ChatRoomPage() {
           // Check if message belongs to our context
           const belongsToContext =
             chatContext.type === "institutional"
-              ? newMsg.organization_id === chatContext.orgId && newMsg.level === chatContext.level
-              : newMsg.organization_id === null;
+              ? newMsg.org_id === chatContext.orgId && newMsg.level === chatContext.level
+              : newMsg.org_id === "independent" || !newMsg.org_id;
 
           if (belongsToContext) {
             const { data: p } = await supabase
@@ -242,26 +221,19 @@ function ChatRoomPage() {
     if (!text && !attachment) return;
 
     setSending(true);
-    if (chatLock && new Date(chatLock.locked_until).getTime() > Date.now()) {
-      toast.error(`Chat is paused until ${new Date(chatLock.locked_until).toLocaleTimeString()}.`);
-      setSending(false);
-      return;
-    }
     if (!user?.id) {
       setSending(false);
       return;
     }
-    const { data: insertedMessage, error } = await supabase.from("chat_messages").insert({
+    const { error } = await supabase.from("chat_messages").insert({
       user_id: user.id,
-      organization_id: chatContext.type === "institutional" ? chatContext.orgId : null,
-      cohort_id: cohortId,
+      org_id: chatContext.orgId,
       level: chatContext.level,
       content: text,
       file_url: attachment?.url,
       file_type: attachment?.type,
       file_name: attachment?.name,
-      sender_type: "user",
-    }).select("id").single();
+    });
 
     if (error) {
       toast.error("Failed to send message");
@@ -273,11 +245,11 @@ function ChatRoomPage() {
 
     // If AI Tutor toggle is ON, fetch a tutor reply and post it to the room
     if (tutorOn && text) {
-      void invokeTutor(text, insertedMessage?.id || null);
+      void invokeTutor(text);
     }
   };
 
-  const invokeTutor = async (prompt: string, chatMessageId: string | null) => {
+  const invokeTutor = async (prompt: string) => {
     if (!user?.id) return;
     setTutorThinking(true);
     try {
@@ -307,9 +279,10 @@ function ChatRoomPage() {
           messages: recent,
           persona:
             profile?.tutor_persona ||
-            "Adams",
+            (["Math", "Physics"].includes(profile?.subject_interest || "") ? "Adams" : "Haawa"),
           mood: "focused",
-          context: { route: "/chat", cohortId, chatMessageId },
+          userName: profile?.display_name || "learner",
+          context: { route: "/chat", profile },
         }),
       });
 
@@ -355,26 +328,6 @@ function ChatRoomPage() {
         replyText = fullJsonString || "I'm here, but couldn't form a response right now.";
       }
 
-      if (parsed?.monitor?.drift && typeof parsed.monitor.study_relevance === "number" && chatMessageId) {
-        try {
-          const { data: monitorResult } = await supabase.rpc("record_tutor_drift", {
-            target_user: user.id,
-            target_cohort: cohortId,
-            target_message: chatMessageId,
-            target_subject: chatContext.level,
-            drift_score: Math.min(1, Math.max(0, 1 - parsed.monitor.study_relevance)),
-            drift_summary: "The tutor detected study-content drift in the shared chat.",
-          });
-          const result = Array.isArray(monitorResult) ? monitorResult[0] : monitorResult;
-          if (result?.lock_applied) {
-            await loadChatState();
-            toast.warning("Study chat paused for a short focused reset.");
-          }
-        } catch (monitorError) {
-          console.warn("Tutor monitoring event failed:", monitorError);
-        }
-      }
-
       // Trigger UI Actions
       if (parsed && parsed.ui_actions) {
         for (const action of parsed.ui_actions) {
@@ -391,14 +344,11 @@ function ChatRoomPage() {
 
       const { error: insertErr } = await supabase.from("chat_messages").insert({
         user_id: user.id,
-        organization_id: chatContext.type === "institutional" ? chatContext.orgId : null,
-        cohort_id: cohortId,
+        org_id: chatContext.orgId,
         level: chatContext.level,
         content: `${AI_TUTOR_MARKER}${sanitizeText(replyText)}`,
-        sender_type: "tutor",
       });
       if (insertErr) throw insertErr;
-      await loadChatState();
     } catch (e: any) {
       console.error("Tutor error:", e);
       toast.error("Tutor unavailable: " + (e?.message || "try again"));
@@ -618,15 +568,6 @@ function ChatRoomPage() {
 
             {chatContext.isStaff && (
               <div className="space-y-3">
-                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">Class / Stream</p>
-                <select
-                  value={cohortId || ""}
-                  onChange={(e) => { setCohortId(e.target.value || null); setSidebarOpen(false); }}
-                  className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-zinc-200"
-                >
-                  <option value="">Organization level view</option>
-                  {cohorts.map(c => <option key={c.id} value={c.id}>{c.name}{c.stream ? ` · ${c.stream}` : ""}</option>)}
-                </select>
                 <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">
                   Switch Level View
                 </p>

@@ -60,12 +60,14 @@ export function MarkingDesk() {
     try {
       setLoading(true);
       let query = (supabase.from("project_submissions") as any)
-        .select(`
+        .select(
+          `
           *,
           profiles:student_user_id (
             display_name
           )
-        `)
+        `,
+        )
         .order("created_at", { ascending: false });
 
       if (profile?.organization_id) {
@@ -77,7 +79,11 @@ export function MarkingDesk() {
       if (error) throw error;
       setSubmissions((data as any[]) || []);
     } catch (error: any) {
-      if (error.code === 'PGRST205' || error.message?.includes('PGRST205') || error.message?.includes('Could not find the table')) {
+      if (
+        error.code === "PGRST205" ||
+        error.message?.includes("PGRST205") ||
+        error.message?.includes("Could not find the table")
+      ) {
         console.warn("Project submissions table not found in schema cache. Mocking empty list.");
         setSubmissions([]);
       } else {

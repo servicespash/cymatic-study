@@ -1,4 +1,11 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { StudentRecord } from "@/types/admin";
 import { MoreVertical, Search, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,7 +26,15 @@ interface StudentMatrixProps {
   currentOrgId: string;
 }
 
-export const StudentMatrix = ({ students, loading, searchTerm, setSearchTerm, setInspectedStudent, onRefresh, currentOrgId }: StudentMatrixProps) => {
+export const StudentMatrix = ({
+  students,
+  loading,
+  searchTerm,
+  setSearchTerm,
+  setInspectedStudent,
+  onRefresh,
+  currentOrgId,
+}: StudentMatrixProps) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -58,7 +73,9 @@ export const StudentMatrix = ({ students, loading, searchTerm, setSearchTerm, se
             </>
           ) : students.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="py-12 text-center text-zinc-500 italic">No students registered.</TableCell>
+              <TableCell colSpan={6} className="py-12 text-center text-zinc-500 italic">
+                No students registered.
+              </TableCell>
             </TableRow>
           ) : (
             students.map((s) => (

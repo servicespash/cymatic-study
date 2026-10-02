@@ -1,4 +1,3 @@
-import { injectSpeedInsights } from "@vercel/speed-insights";
 import {
   Outlet,
   Link,
@@ -10,10 +9,10 @@ import {
 import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
-import { Navbar } from "@/components/Navbar";
+import { Navbar } from "@/components/layout/Navbar";
 import { LivePulseIndicator } from "@/components/LivePulseIndicator";
 import { MoodOverlay } from "@/components/MoodOverlay";
-import { FloatingTutor } from "@/components/FloatingTutor";
+import { FloatingTutor } from "@/components/features/tutor/FloatingTutor";
 import { BRAND } from "@/lib/constants";
 import { getOrganizationSchema, getPersonSchema, getAllCoursesSchemas } from "@/lib/seo";
 import { buildAllNCDCCourses } from "@/lib/schema";
@@ -111,9 +110,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  useEffect(() => {
-    injectSpeedInsights();
-  }, []);
+  useEffect(() => {}, []);
 
   useEffect(() => {
     let title = "Lattys Cymatic Study — Uganda Secondary Curriculum Study Companion";

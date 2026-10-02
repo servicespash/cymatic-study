@@ -134,9 +134,9 @@ function StudentDashboardPage() {
 
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <Link to="/student/progress">
-                <Button className="bg-primary text-primary-foreground font-bold text-xs rounded-xl px-4 py-2.5">
-                    View Academic Progress
-                </Button>
+              <Button className="bg-primary text-primary-foreground font-bold text-xs rounded-xl px-4 py-2.5">
+                View Academic Progress
+              </Button>
             </Link>
           </div>
         </div>
@@ -178,7 +178,6 @@ function StudentDashboardPage() {
           </CardContent>
         </Card>
       </div>
-
     </div>
   );
 }

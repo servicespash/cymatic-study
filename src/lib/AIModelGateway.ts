@@ -16,14 +16,17 @@ export class AIModelGateway {
     "gemini-3.8-flash",
     "gemini-3.1-flash-lite",
     "gemini-3.7-flash",
-    "gemini-3.1-pro-preview"
+    "gemini-3.1-pro-preview",
   ];
 
   /**
    * Generates a streaming content response with automatic cascading fallback across models.
    */
-  static async generateStreamWithFallback(options: ModelGatewayOptions): Promise<{ stream: AsyncIterable<any>; modelUsed: string }> {
-    const apiKey = options.apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  static async generateStreamWithFallback(
+    options: ModelGatewayOptions,
+  ): Promise<{ stream: AsyncIterable<any>; modelUsed: string }> {
+    const apiKey =
+      options.apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!apiKey) {
       throw new Error("AIModelGateway: Missing Gemini API Key in environment.");
     }
@@ -32,7 +35,9 @@ export class AIModelGateway {
     const { GoogleGenAI } = await import("@google/genai");
     const ai = new GoogleGenAI({ apiKey });
 
-    const modelsToTry = options.model ? [options.model, ...AIModelGateway.DEFAULT_MODELS] : AIModelGateway.DEFAULT_MODELS;
+    const modelsToTry = options.model
+      ? [options.model, ...AIModelGateway.DEFAULT_MODELS]
+      : AIModelGateway.DEFAULT_MODELS;
 
     let lastError: any = null;
 
@@ -45,7 +50,9 @@ export class AIModelGateway {
           const responseStream = await ai.models.generateContentStream({
             model: modelName,
             contents: options.contents,
-            config: options.systemInstruction ? { systemInstruction: options.systemInstruction } : undefined,
+            config: options.systemInstruction
+              ? { systemInstruction: options.systemInstruction }
+              : undefined,
           });
 
           return {
@@ -56,7 +63,11 @@ export class AIModelGateway {
           attempts++;
           lastError = err;
           const errStr = err?.message || String(err);
-          const isTransient = errStr.includes("503") || errStr.includes("UNAVAILABLE") || errStr.includes("429") || errStr.includes("Resource exhausted");
+          const isTransient =
+            errStr.includes("503") ||
+            errStr.includes("UNAVAILABLE") ||
+            errStr.includes("429") ||
+            errStr.includes("Resource exhausted");
 
           if (isTransient && attempts < maxAttempts) {
             await new Promise((r) => setTimeout(r, 1000 * attempts));
@@ -67,6 +78,8 @@ export class AIModelGateway {
       }
     }
 
-    throw new Error(`AIModelGateway failed across all models. Last error: ${lastError?.message || String(lastError)}`);
+    throw new Error(
+      `AIModelGateway failed across all models. Last error: ${lastError?.message || String(lastError)}`,
+    );
   }
 }

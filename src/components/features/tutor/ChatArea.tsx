@@ -3,16 +3,16 @@ import { useAuth } from "@/lib/auth-context";
 import { Message, useTutorStore } from "@/store/useTutorStore";
 import { Download, Volume2, VolumeX, Sparkles } from "lucide-react";
 import { useState } from "react";
-import { ExportPdfModal } from "./ExportPdfModal";
+import { ExportPdfModal } from "@/components/ExportPdfModal";
 import { useTutor } from "@/lib/TutorService";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 
-import { LinkifiedText } from "./LinkifiedText";
+import { LinkifiedText } from "@/components/LinkifiedText";
 
 export function ChatArea({ messages, isLoading }: { messages: Message[]; isLoading: boolean }) {
   const { isTeacher, isAdmin } = useAuth();
   const { persona, sessionId, sessions, updateSessionMeta } = useTutorStore();
-  const currentSession = sessions.find(s => s.id === sessionId);
+  const currentSession = sessions.find((s) => s.id === sessionId);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { speak, stopSpeaking, speaking } = useTutor();
   const [activeSpeakingId, setActiveSpeakingId] = useState<string | null>(null);
@@ -25,11 +25,11 @@ export function ChatArea({ messages, isLoading }: { messages: Message[]; isLoadi
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode: "generate_meta",
-          messages: messages.slice(-10).map(m => ({
+          messages: messages.slice(-10).map((m) => ({
             role: m.sender === "student" ? "user" : "assistant",
-            content: m.text
-          }))
-        })
+            content: m.text,
+          })),
+        }),
       });
       if (res.ok) {
         const meta = await res.json();
@@ -103,7 +103,11 @@ export function ChatArea({ messages, isLoading }: { messages: Message[]; isLoadi
                     : "bg-zinc-900/50 text-zinc-100 border border-zinc-800/80 shadow-sm"
                 }`}
               >
-                <LinkifiedText text={msg.text} isOwn={isStudent} className="whitespace-pre-wrap leading-relaxed" />
+                <LinkifiedText
+                  text={msg.text}
+                  isOwn={isStudent}
+                  className="whitespace-pre-wrap leading-relaxed"
+                />
               </div>
               {!isStudent && msg.text && (
                 <button

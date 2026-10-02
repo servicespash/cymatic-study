@@ -15,7 +15,8 @@ export function validateOrgId(id: string): OrgIdValidationResult {
   if (!id || !id.trim()) {
     return {
       isValid: false,
-      error: "Institutional ID cannot be empty. Enter your institutional code or click Auto-Generate.",
+      error:
+        "Institutional ID cannot be empty. Enter your institutional code or click Auto-Generate.",
     };
   }
 

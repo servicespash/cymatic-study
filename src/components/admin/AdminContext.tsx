@@ -19,7 +19,12 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Stats>({
     totalStudents: 0,
-    s1: 0, s2: 0, s3: 0, s4: 0, s5: 0, s6: 0,
+    s1: 0,
+    s2: 0,
+    s3: 0,
+    s4: 0,
+    s5: 0,
+    s6: 0,
     pendingSubmissions: 0,
     activeTeachers: 0,
   });
@@ -28,7 +33,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (user?.id && currentOrgId) {
-        fetchOrgData();
+      fetchOrgData();
     }
   }, [user?.id, currentOrgId]);
 

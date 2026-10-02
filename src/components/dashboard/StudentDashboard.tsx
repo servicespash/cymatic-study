@@ -17,7 +17,7 @@ import { SearchEngine } from "@/components/SearchEngine";
 import { TaskContextMenu } from "@/components/TaskContextMenu";
 import { StudyGoalsCard } from "@/components/StudyGoalsCard";
 import { DisciplineNudges } from "@/components/DisciplineNudges";
-import { SocraticTutorChat } from "@/components/SocraticTutorChat";
+import { SocraticTutorChat } from "@/components/features/tutor/SocraticTutorChat";
 import { BreathingGuide } from "@/components/BreathingGuide";
 import StudentProjectsDashboard from "@/components/StudentProjectsDashboard";
 import { PastSessionsList } from "@/components/PastSessionsList";
@@ -51,7 +51,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     <>
       <div className="space-y-6">
         <SubjectPracticeReminder />
-        
+
         {/* Simple Navigation Header for Student */}
         <div className="flex items-center justify-between bg-zinc-900/40 p-4 rounded-2xl border border-zinc-800/60">
           <div className="flex items-center gap-3">
@@ -64,7 +64,11 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             </div>
           </div>
           <Link to="/student/progress">
-            <Button variant="outline" size="sm" className="rounded-xl border-zinc-700 bg-zinc-800 text-zinc-300 text-[10px] font-bold h-9 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl border-zinc-700 bg-zinc-800 text-zinc-300 text-[10px] font-bold h-9 gap-2"
+            >
               <TrendingUp className="h-3.5 w-3.5 text-cyan-400" />
               View Progress Charts
             </Button>
@@ -105,7 +109,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             })}
           </div>
           <button
-            onClick={() => window.location.href = '/'}
+            onClick={() => (window.location.href = "/")}
             className="flex items-center gap-1 px-3 py-2 text-xs font-bold uppercase tracking-wider text-zinc-500 hover:text-red-400 transition-colors shrink-0"
           >
             <X className="h-4 w-4" />
@@ -168,25 +172,49 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                           >
                             <div>
                               <div className="flex items-start justify-between gap-2">
-                                <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded ${
-                                  task.subject === "Math" ? "bg-cyan-500/10 text-cyan-400" : 
-                                  task.subject === "Physics" ? "bg-violet-500/10 text-violet-400" :
-                                  task.subject === "Chemistry" ? "bg-orange-500/10 text-orange-400" : 
-                                  "bg-emerald-500/10 text-emerald-400"
-                                }`}>
+                                <span
+                                  className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded ${
+                                    task.subject === "Math"
+                                      ? "bg-cyan-500/10 text-cyan-400"
+                                      : task.subject === "Physics"
+                                        ? "bg-violet-500/10 text-violet-400"
+                                        : task.subject === "Chemistry"
+                                          ? "bg-orange-500/10 text-orange-400"
+                                          : "bg-emerald-500/10 text-emerald-400"
+                                  }`}
+                                >
                                   {task.subject}
                                 </span>
-                                {task.priority && <Star className="h-4 w-4 text-cyan-400 fill-cyan-400 animate-pulse" />}
+                                {task.priority && (
+                                  <Star className="h-4 w-4 text-cyan-400 fill-cyan-400 animate-pulse" />
+                                )}
                               </div>
-                              <h4 className="font-bold text-sm text-zinc-100 tracking-tight mt-2 line-clamp-1">{task.title}</h4>
-                              <p className="text-[11px] text-zinc-400 mt-1 line-clamp-3 leading-relaxed">{task.description}</p>
+                              <h4 className="font-bold text-sm text-zinc-100 tracking-tight mt-2 line-clamp-1">
+                                {task.title}
+                              </h4>
+                              <p className="text-[11px] text-zinc-400 mt-1 line-clamp-3 leading-relaxed">
+                                {task.description}
+                              </p>
                             </div>
                             <div className="pt-3 border-t border-zinc-900 flex items-center justify-between text-[10px]">
-                              <span className="font-semibold text-zinc-500 uppercase">{task.taskType.replace("_", " ")}</span>
+                              <span className="font-semibold text-zinc-500 uppercase">
+                                {task.taskType.replace("_", " ")}
+                              </span>
                               {task.isCompleted ? (
-                                <span className="flex items-center gap-1 text-emerald-400 font-bold"><CheckCircle className="h-3.5 w-3.5" /> Completed</span>
+                                <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                                  <CheckCircle className="h-3.5 w-3.5" /> Completed
+                                </span>
                               ) : (
-                                <button onClick={(e) => { e.stopPropagation(); completeTaskAndSync(task); loadTasks(); }} className="bg-cyan-500 hover:bg-cyan-600 text-black font-bold px-3 py-1 rounded-lg">Earn +{task.points} Pts</button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    completeTaskAndSync(task);
+                                    loadTasks();
+                                  }}
+                                  className="bg-cyan-500 hover:bg-cyan-600 text-black font-bold px-3 py-1 rounded-lg"
+                                >
+                                  Earn +{task.points} Pts
+                                </button>
                               )}
                             </div>
                           </motion.div>
@@ -204,21 +232,51 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               <div className="space-y-6">
                 <div className="bg-zinc-900/80 backdrop-blur-md rounded-2xl p-6 border border-zinc-800/80 shadow-xl space-y-4">
                   <div>
-                    <h3 className="text-white font-bold text-lg tracking-tight">Standard Subject Quizzes</h3>
-                    <p className="text-zinc-500 text-xs">Test your academic competence under real secondary assessment standards.</p>
+                    <h3 className="text-white font-bold text-lg tracking-tight">
+                      Standard Subject Quizzes
+                    </h3>
+                    <p className="text-zinc-500 text-xs">
+                      Test your academic competence under real secondary assessment standards.
+                    </p>
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
                     {[
-                      { subject: "Math", label: "Mathematics", color: "from-cyan-500/10 to-cyan-500/5 border-cyan-500/25 text-cyan-400" },
-                      { subject: "Physics", label: "Physics Science", color: "from-violet-500/10 to-violet-500/5 border-violet-500/25 text-violet-400" },
-                      { subject: "Chemistry", label: "Chemistry Science", color: "from-orange-500/10 to-orange-500/5 border-orange-500/25 text-orange-400" },
-                      { subject: "Biology", label: "Biology Science", color: "from-emerald-500/10 to-emerald-500/5 border-emerald-500/25 text-emerald-400" },
+                      {
+                        subject: "Math",
+                        label: "Mathematics",
+                        color: "from-cyan-500/10 to-cyan-500/5 border-cyan-500/25 text-cyan-400",
+                      },
+                      {
+                        subject: "Physics",
+                        label: "Physics Science",
+                        color:
+                          "from-violet-500/10 to-violet-500/5 border-violet-500/25 text-violet-400",
+                      },
+                      {
+                        subject: "Chemistry",
+                        label: "Chemistry Science",
+                        color:
+                          "from-orange-500/10 to-orange-500/5 border-orange-500/25 text-orange-400",
+                      },
+                      {
+                        subject: "Biology",
+                        label: "Biology Science",
+                        color:
+                          "from-emerald-500/10 to-emerald-500/5 border-emerald-500/25 text-emerald-400",
+                      },
                     ].map((q) => (
-                      <button key={q.subject} className={`p-4 rounded-xl border bg-gradient-to-br ${q.color} text-left transition-all h-28 flex flex-col justify-between`}>
-                        <span className="text-[10px] font-bold uppercase tracking-widest bg-zinc-950/50 px-2 py-0.5 rounded self-start">S1-S4</span>
+                      <button
+                        key={q.subject}
+                        className={`p-4 rounded-xl border bg-gradient-to-br ${q.color} text-left transition-all h-28 flex flex-col justify-between`}
+                      >
+                        <span className="text-[10px] font-bold uppercase tracking-widest bg-zinc-950/50 px-2 py-0.5 rounded self-start">
+                          S1-S4
+                        </span>
                         <div>
                           <h4 className="font-bold text-sm text-white">{q.label}</h4>
-                          <p className="text-[10px] text-zinc-400 mt-1">Start interactive quiz assessment</p>
+                          <p className="text-[10px] text-zinc-400 mt-1">
+                            Start interactive quiz assessment
+                          </p>
                         </div>
                       </button>
                     ))}

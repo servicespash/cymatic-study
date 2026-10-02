@@ -1,13 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  Settings as SettingsIcon,
-  Globe,
-  Camera,
-  Mic,
-  Bell,
-  HardDrive,
-} from "lucide-react";
+import { Settings as SettingsIcon, Globe, Camera, Mic, Bell, HardDrive } from "lucide-react";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { useLanguageStore, type LanguageCode } from "@/store/useLanguageStore";
 import { useAuth } from "@/lib/auth-context";
@@ -32,14 +25,14 @@ function SettingsPage() {
 
   // Local hardware preferences
   const [cameraEnabled, setCameraEnabled] = useState(
-    () => localStorage.getItem("perm_camera") !== "false"
+    () => localStorage.getItem("perm_camera") !== "false",
   );
   const [micEnabled, setMicEnabled] = useState(() => localStorage.getItem("perm_mic") !== "false");
   const [notificationsEnabled, setNotificationsEnabled] = useState(
-    () => localStorage.getItem("perm_notify") !== "false"
+    () => localStorage.getItem("perm_notify") !== "false",
   );
   const [storageEnabled, setStorageEnabled] = useState(
-    () => localStorage.getItem("perm_storage") !== "false"
+    () => localStorage.getItem("perm_storage") !== "false",
   );
 
   const handleTogglePermission = (type: "camera" | "mic" | "notify" | "storage") => {
@@ -77,7 +70,9 @@ function SettingsPage() {
                 {activeTab === "permissions" ? "Permissions & Hardware" : "Role Console"}
               </span>
             </div>
-            <p className="text-xs text-zinc-500 mt-0.5">Configure devices, language parameters, and institutional bounds.</p>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Configure devices, language parameters, and institutional bounds.
+            </p>
           </div>
         </div>
 
@@ -92,12 +87,24 @@ function SettingsPage() {
             }}
             className="bg-transparent text-xs font-bold outline-none cursor-pointer border-none text-white font-mono"
           >
-            <option className="bg-zinc-900" value="en">English</option>
-            <option className="bg-zinc-900" value="lg">Luganda</option>
-            <option className="bg-zinc-900" value="nk">Runyankole</option>
-            <option className="bg-zinc-900" value="sw">Swahili</option>
-            <option className="bg-zinc-900" value="lu">Luo</option>
-            <option className="bg-zinc-900" value="ls">Lusoga</option>
+            <option className="bg-zinc-900" value="en">
+              English
+            </option>
+            <option className="bg-zinc-900" value="lg">
+              Luganda
+            </option>
+            <option className="bg-zinc-900" value="nk">
+              Runyankole
+            </option>
+            <option className="bg-zinc-900" value="sw">
+              Swahili
+            </option>
+            <option className="bg-zinc-900" value="lu">
+              Luo
+            </option>
+            <option className="bg-zinc-900" value="ls">
+              Lusoga
+            </option>
           </select>
         </div>
       </div>
@@ -121,7 +128,9 @@ function SettingsPage() {
           <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 space-y-4">
             <div>
               <h3 className="text-base font-bold text-white">Browser Hardware Access</h3>
-              <p className="text-xs text-zinc-500 mt-0.5">Enable microphone, camera, notifications, and offline capability.</p>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                Enable microphone, camera, notifications, and offline capability.
+              </p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
@@ -161,21 +170,27 @@ function SettingsPage() {
         <TabsContent value="role_settings" className="space-y-6 outline-none">
           {isAdmin && (
             <div className="space-y-2">
-              <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest px-1">Institutional Administration</h4>
+              <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest px-1">
+                Institutional Administration
+              </h4>
               <AdminSettings />
             </div>
           )}
 
           {isTeacher && (
             <div className="space-y-2">
-              <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-widest px-1">Educator Space</h4>
+              <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-widest px-1">
+                Educator Space
+              </h4>
               <TeacherSettings />
             </div>
           )}
 
           {isStudent && (
             <div className="space-y-2">
-              <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest px-1">Learner Space</h4>
+              <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest px-1">
+                Learner Space
+              </h4>
               <StudentSettings />
             </div>
           )}

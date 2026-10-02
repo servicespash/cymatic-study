@@ -1,5 +1,8 @@
 import { ReactNode } from "react";
-import { ResponsiveContainer, type ContainerVariant } from "./layout/ResponsiveContainer";
+import {
+  ResponsiveContainer,
+  type ContainerVariant,
+} from "@/components/layout/ResponsiveContainer";
 import { cn } from "@/lib/utils";
 
 export interface MainContainerProps {

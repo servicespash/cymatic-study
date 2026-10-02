@@ -6,7 +6,7 @@ import { useTutor } from "@/lib/TutorService";
 import { useAuth } from "@/lib/auth-context";
 import { useUserMood, USER_MOODS, tutorReplyForMood, type UserMood } from "@/lib/user-mood-context";
 import { cn } from "@/lib/utils";
-import { VisionLiveSession } from "./VisionLiveSession";
+import { VisionLiveSession } from "@/components/VisionLiveSession";
 
 export const LiquidWaveform = ({
   state,

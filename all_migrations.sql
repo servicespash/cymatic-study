@@ -96,6 +96,9 @@ ALTER TABLE public.task_attempts
 ALTER TABLE public.task_attempts
   ADD CONSTRAINT task_attempts_score_range CHECK (score_pct BETWEEN 0 AND 100);
 
+-- 4. Fix permissions
+GRANT SELECT ON public.content TO anon;
+
 -- 3. Server-side submission function: validates input, derives passed + points
 CREATE OR REPLACE FUNCTION public.submit_quiz_attempt(
   _topic_id text,

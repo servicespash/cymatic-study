@@ -51,18 +51,10 @@ function createSupabaseClient() {
 
   const SUPABASE_PUBLISHABLE_KEY =
     keys.find(
-      (k) =>
-        k &&
-        typeof k === "string" &&
-        !k.startsWith("http://") &&
-        !k.startsWith("https://"),
+      (k) => k && typeof k === "string" && !k.startsWith("http://") && !k.startsWith("https://"),
     ) || "sb_publishable_Q6c0ZU7hu-Ow6bdzbK5-ig_S74FsIK0";
 
-  if (
-    !getEnv("VITE_SUPABASE_URL") &&
-    !getEnv("SUPABASE_URL") &&
-    !getEnv("PUBLIC_SUPABASE_URL")
-  ) {
+  if (!getEnv("VITE_SUPABASE_URL") && !getEnv("SUPABASE_URL") && !getEnv("PUBLIC_SUPABASE_URL")) {
     console.warn(
       "[Supabase Client] Using default fallback URL. For production, define VITE_SUPABASE_URL in your environment variables.",
     );

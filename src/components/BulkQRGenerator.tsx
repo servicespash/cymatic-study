@@ -53,7 +53,7 @@ export function BulkQRGenerator() {
 
       if (error) throw error;
 
-      let list = data || [];
+      const list = data || [];
 
       setOrganizations(list);
       // Auto-select all by default

@@ -24,7 +24,7 @@ export function useSupabaseData<T>(
       try {
         if (typeof query.eq === "function") {
           const tableName = (query as any).table?.table || "";
-          
+
           // Map correct column names based on table
           if (tableName === "profiles") {
             finalQuery = query.eq("org_id", organizationId);

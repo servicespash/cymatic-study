@@ -28,7 +28,7 @@ export class TenantContextService {
       schoolName: "National Secondary Institution (Uganda)",
       district: "Kampala",
       term: "Term 2, 2026",
-      curriculumType: "NCDC Lower & Upper Secondary Curriculum"
+      curriculumType: "NCDC Lower & Upper Secondary Curriculum",
     };
 
     if (!userId) return defaultContext;
@@ -48,7 +48,7 @@ export class TenantContextService {
           schoolName: (data as any).school_name || defaultContext.schoolName,
           district: (data as any).district || defaultContext.district,
           term: (data as any).metadata?.term || defaultContext.term,
-          curriculumType: defaultContext.curriculumType
+          curriculumType: defaultContext.curriculumType,
         };
       }
     } catch (err) {

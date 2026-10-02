@@ -1,12 +1,7 @@
 import { createFileRoute, Outlet, Link, useLocation } from "@tanstack/react-router";
 import { AuthRouteMiddleware } from "@/middlewares/auth-middleware";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
-import {
-  LayoutDashboard,
-  GraduationCap,
-  Users,
-  Settings,
-} from "lucide-react";
+import { LayoutDashboard, GraduationCap, Users, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/admin/dashboard")({
@@ -33,9 +28,11 @@ function DashboardLayout() {
                 <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center font-black text-white">
                   C
                 </div>
-                <h2 className="text-xl font-black uppercase tracking-widest text-primary">Command Node</h2>
+                <h2 className="text-xl font-black uppercase tracking-widest text-primary">
+                  Command Node
+                </h2>
               </div>
-              
+
               <div className="flex overflow-x-auto gap-2 hide-scrollbar">
                 {navItems.map((item) => {
                   const isActive = location.pathname === item.path;
@@ -49,7 +46,9 @@ function DashboardLayout() {
                           : "text-muted-foreground hover:text-foreground hover:bg-muted"
                       }`}
                     >
-                      <item.icon className={`h-4 w-4 ${isActive ? "text-white" : "text-muted-foreground"}`} />
+                      <item.icon
+                        className={`h-4 w-4 ${isActive ? "text-white" : "text-muted-foreground"}`}
+                      />
                       {item.label}
                     </Link>
                   );

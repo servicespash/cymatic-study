@@ -102,11 +102,15 @@ export const useTutorStore = create<TutorState>((set, get) => ({
       if (db?.chatSessions) {
         await db.chatSessions.delete(id);
         await get().loadSessions();
-        
+
         // Also delete from Supabase if possible
         const { data: user } = await supabase.auth.getUser();
         if (user.user) {
-          await supabase.from("tutor_sessions").delete().eq("local_id", id).eq("user_id", user.user.id);
+          await supabase
+            .from("tutor_sessions")
+            .delete()
+            .eq("local_id", id)
+            .eq("user_id", user.user.id);
         }
 
         const lastSession = await db.chatSessions.orderBy("timestamp").last();
@@ -137,33 +141,33 @@ export const useTutorStore = create<TutorState>((set, get) => ({
   syncToSupabase: async () => {
     // Only sync if online
     if (!navigator.onLine) return;
-    
+
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       if (db?.chatSessions) {
         const sessions = await db.chatSessions.toArray();
         if (sessions.length === 0) return;
 
-        const syncData = sessions.map(s => ({
+        const syncData = sessions.map((s) => ({
           session_id: String(s.id),
           user_id: user.id,
           history: s.messages as any,
           current_state: {
             title: s.title || `Study Session #${s.id}`,
-            summary: s.summary || ""
+            summary: s.summary || "",
           } as any,
           last_updated: new Date(s.timestamp).toISOString(),
         }));
 
-        const { error } = await supabase
-          .from("tutor_sessions")
-          .upsert(syncData, { 
-            onConflict: "session_id,user_id",
-            ignoreDuplicates: false 
-          });
-          
+        const { error } = await supabase.from("tutor_sessions").upsert(syncData, {
+          onConflict: "session_id,user_id",
+          ignoreDuplicates: false,
+        });
+
         if (error) {
           console.warn("Supabase sync error:", error.message);
         } else {
@@ -173,12 +177,15 @@ export const useTutorStore = create<TutorState>((set, get) => ({
     } catch (e) {
       console.warn("Sync failed:", e);
     }
-  }
+  },
 }));
 
 // Setup background sync interval (every 5 minutes)
 if (typeof window !== "undefined") {
-  setInterval(() => {
-    useTutorStore.getState().syncToSupabase();
-  }, 1000 * 60 * 5);
+  setInterval(
+    () => {
+      useTutorStore.getState().syncToSupabase();
+    },
+    1000 * 60 * 5,
+  );
 }

@@ -24,7 +24,7 @@ export function BooksAtmosphere() {
     if (!ctx) return;
 
     let animationFrameId: number;
-    let books: AnimatedBook[] = [];
+    const books: AnimatedBook[] = [];
     const bookCount = 12;
     const colors = ["#8b5cf6", "#6366f1", "#06b6d4", "#ec4899", "#3b82f6", "#10b981"];
 

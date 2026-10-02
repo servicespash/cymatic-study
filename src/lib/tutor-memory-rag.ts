@@ -26,7 +26,9 @@ export class TutorMemoryRAG {
   /**
    * Stores a PII-stripped academic Q&A pattern into shared memory.
    */
-  static async recordSharedInsight(record: Omit<SanitizedMemoryRecord, "id" | "success_count">): Promise<void> {
+  static async recordSharedInsight(
+    record: Omit<SanitizedMemoryRecord, "id" | "success_count">,
+  ): Promise<void> {
     const supabase = TutorMemoryRAG.getClient();
     if (!supabase) return;
 
@@ -36,14 +38,17 @@ export class TutorMemoryRAG {
         .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "[EMAIL]")
         .replace(/\+?[0-9]{10,15}/g, "[PHONE]");
 
-      await supabase.from("tutor_shared_memory").upsert({
-        subject: record.subject,
-        question_pattern: sanitizedQuestion.toLowerCase().trim(),
-        expert_solution: record.expert_solution,
-        curriculum_node: record.curriculum_node,
-        success_count: 1,
-        created_at: new Date().toISOString()
-      }, { onConflict: "question_pattern" });
+      await supabase.from("tutor_shared_memory").upsert(
+        {
+          subject: record.subject,
+          question_pattern: sanitizedQuestion.toLowerCase().trim(),
+          expert_solution: record.expert_solution,
+          curriculum_node: record.curriculum_node,
+          success_count: 1,
+          created_at: new Date().toISOString(),
+        },
+        { onConflict: "question_pattern" },
+      );
     } catch (err) {
       console.warn("[TutorMemoryRAG] Failed to record shared insight:", err);
     }

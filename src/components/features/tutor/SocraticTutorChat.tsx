@@ -7,11 +7,11 @@ import { cn } from "@/lib/utils";
 import { useTutorStore } from "@/store/useTutorStore";
 import type { Message as ChatMessage } from "@/store/useTutorStore";
 import { ChatSidebar } from "./ChatSidebar";
-import { ExportPdfModal } from "./ExportPdfModal";
+import { ExportPdfModal } from "@/components/ExportPdfModal";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 
-import { LinkifiedText } from "./LinkifiedText";
+import { LinkifiedText } from "@/components/LinkifiedText";
 
 interface TopicConfig {
   name: string;
@@ -300,7 +300,11 @@ export function SocraticTutorChat() {
               Exit
             </Button>
             <div className="relative">
-              <Button variant="ghost" size="icon" onClick={() => setIsSettingsOpen(!isSettingsOpen)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+              >
                 <Settings className="w-6 h-6" />
               </Button>
               {isSettingsOpen && (

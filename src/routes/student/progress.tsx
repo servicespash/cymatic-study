@@ -36,22 +36,22 @@ function StudentProgressPage() {
         if (error) throw error;
 
         const mapped: MarkedReportItem[] = (dbSubs || []).map((s: any) => ({
-            id: s.id,
-            projectTitle: s.project_title || "Untitled Project",
-            subject: s.subject || "Unspecified Subject",
-            score: s.score ?? 0,
-            rubricScores: {
-              planning: Math.round((s.score || 0) * 0.3),
-              execution: Math.round((s.score || 0) * 0.4),
-              conclusion: Math.round((s.score || 0) * 0.3),
-            },
-            feedback: s.feedback || "No feedback provided.",
-            teacherName: s.teacher_name || "Unknown Evaluator",
-            teacherTitle: "Instructor",
-            teacherSignature: s.teacher_name ? `Digital Seal ${s.teacher_name}` : "Verified Stamp",
-            markedAt: s.created_at || new Date().toISOString().split("T")[0],
-            timePointsEarned: s.time_points || 0,
-            awardPointsEarned: s.award_points || 0,
+          id: s.id,
+          projectTitle: s.project_title || "Untitled Project",
+          subject: s.subject || "Unspecified Subject",
+          score: s.score ?? 0,
+          rubricScores: {
+            planning: Math.round((s.score || 0) * 0.3),
+            execution: Math.round((s.score || 0) * 0.4),
+            conclusion: Math.round((s.score || 0) * 0.3),
+          },
+          feedback: s.feedback || "No feedback provided.",
+          teacherName: s.teacher_name || "Unknown Evaluator",
+          teacherTitle: "Instructor",
+          teacherSignature: s.teacher_name ? `Digital Seal ${s.teacher_name}` : "Verified Stamp",
+          markedAt: s.created_at || new Date().toISOString().split("T")[0],
+          timePointsEarned: s.time_points || 0,
+          awardPointsEarned: s.award_points || 0,
         }));
         setMarkedReports(mapped);
       } catch (err) {
@@ -66,24 +66,28 @@ function StudentProgressPage() {
   return (
     <div className="p-8 space-y-8">
       <h1 className="text-3xl font-black">Academic Progress</h1>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Award /> XP & Level</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <p className="text-2xl font-bold">{xp} XP</p>
-                <p>Level {level}</p>
-            </CardContent>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Award /> XP & Level
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{xp} XP</p>
+            <p>Level {level}</p>
+          </CardContent>
         </Card>
         <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Clock /> Gaps Mastered</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <p className="text-2xl font-bold">{completedGaps.length}</p>
-            </CardContent>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock /> Gaps Mastered
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{completedGaps.length}</p>
+          </CardContent>
         </Card>
       </div>
 

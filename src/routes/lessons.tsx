@@ -196,11 +196,13 @@ function LessonsPage() {
       ) : (
         <>
           <div className="mt-6">
-            <NoteHierarchy onSelectNote={(n, t) => {
-              setSubject(t.subject);
-              setLevel(t.level);
-              setOpen(t.id);
-            }} />
+            <NoteHierarchy
+              onSelectNote={(n, t) => {
+                setSubject(t.subject);
+                setLevel(t.level);
+                setOpen(t.id);
+              }}
+            />
           </div>
 
           <div className="space-y-3">

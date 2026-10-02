@@ -12,16 +12,11 @@ import { type UserMood } from "./user-mood-context";
 import { toast } from "sonner";
 import { HardwareBridge } from "./HardwareBridge";
 import { AudioEngine } from "./audio-engine";
-import { useAuth } from "./auth-context-core";
 
 import { type TutorVoice, type TutorPersona, DEFAULT_PERSONA_CONFIGS } from "./persona-config";
 
 interface TutorServiceState {
   persona: TutorPersona;
-  userName: string;
-  userRole: "admin" | "org_admin" | "teacher" | "student" | "independent_teacher" | "independent_learner";
-  roleTitle: string;
-  roleBoundary: string;
   mood: UserMood | null;
   speaking: boolean;
   connected: boolean;
@@ -46,7 +41,6 @@ interface TutorServiceState {
 const TutorServiceCtx = createContext<TutorServiceState | null>(null);
 
 export function TutorServiceProvider({ children }: { children: ReactNode }) {
-  const { user, profile, role } = useAuth();
   const [voice, setVoiceState] = useState<TutorVoice>("male");
   const [mood, setMood] = useState<UserMood | null>(null);
   const [ttsEnabled, setTtsEnabledState] = useState(true);
@@ -125,17 +119,23 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
     }
   }, [stopSpeaking, liveTools, connectSession]);
 
-  const setVolume = useCallback((v: number) => {
-    setVolumeState(v);
-    localStorage.setItem("tutor_voice_volume", String(v));
-    reinitializeAudio();
-  }, [reinitializeAudio]);
+  const setVolume = useCallback(
+    (v: number) => {
+      setVolumeState(v);
+      localStorage.setItem("tutor_voice_volume", String(v));
+      reinitializeAudio();
+    },
+    [reinitializeAudio],
+  );
 
-  const setSpeed = useCallback((v: number) => {
-    setSpeedState(v);
-    localStorage.setItem("tutor_voice_speed", String(v));
-    reinitializeAudio();
-  }, [reinitializeAudio]);
+  const setSpeed = useCallback(
+    (v: number) => {
+      setSpeedState(v);
+      localStorage.setItem("tutor_voice_speed", String(v));
+      reinitializeAudio();
+    },
+    [reinitializeAudio],
+  );
 
   const addToVoiceHistory = useCallback((voiceName: string) => {
     setVoiceHistory((prev) => {
@@ -145,20 +145,6 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
       return next;
     });
   }, []);
-
-  const userName = profile?.display_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "there";
-  const roleTitle =
-    role === "admin" ? "Administrator" :
-    role === "org_admin" ? "Organization Administrator" :
-    role === "teacher" ? "Teacher" :
-    role === "independent_teacher" ? "Independent Teacher" :
-    role === "independent_learner" ? "Independent Learner" : "Student";
-  const roleBoundary =
-    role === "admin" || role === "org_admin"
-      ? "institutional administration, organization-scoped performance, operations, and oversight"
-      : role === "teacher" || role === "independent_teacher"
-        ? "teaching, marking, curriculum delivery, learner progress, and educator workflow"
-        : "curriculum learning, academic progress, study planning, and personal academic support";
 
   const persona = useMemo(() => {
     const base = DEFAULT_PERSONA_CONFIGS[voice];
@@ -196,8 +182,18 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
 
         // Auto-adjust pitch based on sentiment/tone hints
         let sentimentPitchBonus = 0;
-        const encouragingWords = ["well done", "excellent", "great job", "amazing", "correct", "good", "perfect", "brilliant", "keep it up"];
-        if (encouragingWords.some(w => textToSpeak.toLowerCase().includes(w))) {
+        const encouragingWords = [
+          "well done",
+          "excellent",
+          "great job",
+          "amazing",
+          "correct",
+          "good",
+          "perfect",
+          "brilliant",
+          "keep it up",
+        ];
+        if (encouragingWords.some((w) => textToSpeak.toLowerCase().includes(w))) {
           sentimentPitchBonus = 0.15; // Slightly higher pitch for encouragement
         }
 
@@ -241,18 +237,17 @@ export function TutorServiceProvider({ children }: { children: ReactNode }) {
     [ttsEnabled, processQueue, stopSpeaking],
   );
 
-  const setVoice = useCallback((v: TutorVoice) => {
-    setVoiceState(v);
-    reinitializeAudio();
-  }, [reinitializeAudio]);
+  const setVoice = useCallback(
+    (v: TutorVoice) => {
+      setVoiceState(v);
+      reinitializeAudio();
+    },
+    [reinitializeAudio],
+  );
   const setTtsEnabled = useCallback((b: boolean) => setTtsEnabledState(b), []);
 
   const value = {
     persona,
-    userName,
-    userRole: role,
-    roleTitle,
-    roleBoundary,
     mood,
     speaking,
     connected: liveTools.connected,

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Sparkles } from "lucide-react";
 import { useTutor } from "@/lib/TutorService";
-import { VisionLiveSession } from "./VisionLiveSession";
+import { VisionLiveSession } from "@/components/VisionLiveSession";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";

@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { SchoolIdQRCode } from "@/components/SchoolIdQRCode";
+import { SchoolIdQRCode } from "@/components/features/admin/SchoolIdQRCode";
 
 interface UserProfileCardProps {
   className?: string;

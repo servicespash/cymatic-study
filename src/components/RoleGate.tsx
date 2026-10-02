@@ -68,7 +68,10 @@ export function RoleGate({
   children,
 }: RoleGateProps) {
   const auth = useAuth();
-  const { user, loading, isGuestMode, role: normalizedCurrentRole, rawRole: currentRawRole, isAdmin, isTeacher, isStudent, isInstitutional } = auth;
+  const { user, profile, loading, isGuestMode } = auth;
+
+  const currentRawRole = profile?.role || user?.user_metadata?.role || (user ? "student" : "guest");
+  const normalizedCurrentRole: UserRole = normalizeRole(currentRawRole);
 
   const isAuthorized = useMemo(() => {
     // 1. Guest checking
@@ -83,7 +86,13 @@ export function RoleGate({
 
     // 2. Institutional check
     if (requireInstitutional) {
-      if (!isInstitutional) return false;
+      const hasInstitution = Boolean(
+        profile?.school_id ||
+        profile?.organization_id ||
+        user?.user_metadata?.school_id ||
+        user?.user_metadata?.org_id,
+      );
+      if (!hasInstitution) return false;
     }
 
     // Independent check
@@ -95,13 +104,13 @@ export function RoleGate({
     }
 
     // 3. Admin override & explicit check
-    const isUserAdmin = isAdmin;
+    const isUserAdmin = normalizedCurrentRole === "admin";
     if (requireAdmin) {
       return isUserAdmin;
     }
 
     // 4. Teacher requirement (Teachers & Admins have teacher capabilities)
-    const isUserTeacher = isTeacher || isUserAdmin;
+    const isUserTeacher = normalizedCurrentRole === "teacher" || isUserAdmin;
     if (requireTeacher) {
       return isUserTeacher;
     }
@@ -132,11 +141,8 @@ export function RoleGate({
     requireInstitutional,
     requireIndependent,
     allowedRoles,
+    profile,
     normalizedCurrentRole,
-    isAdmin,
-    isTeacher,
-    isStudent,
-    isInstitutional,
   ]);
 
   if (loading) {
@@ -197,7 +203,20 @@ export function useRoleAccess(options?: {
   allowGuest?: boolean;
 }) {
   const auth = useAuth();
-  const { user, loading, isGuestMode, role: normalizedCurrentRole, rawRole: currentRawRole, isAdmin, isTeacher, isStudent, isInstitutional } = auth;
+  const { user, profile, loading, isGuestMode } = auth;
+
+  const currentRawRole = profile?.role || user?.user_metadata?.role || (user ? "student" : "guest");
+  const normalizedCurrentRole: UserRole = normalizeRole(currentRawRole);
+
+  const isAdmin = normalizedCurrentRole === "admin";
+  const isTeacher = normalizedCurrentRole === "teacher" || isAdmin;
+  const isStudent = normalizedCurrentRole === "student";
+  const isInstitutional = Boolean(
+    profile?.school_id ||
+    profile?.organization_id ||
+    user?.user_metadata?.school_id ||
+    user?.user_metadata?.org_id,
+  );
 
   const hasAccess = useMemo(() => {
     if (!options) return true;
@@ -239,10 +258,6 @@ export function useRoleAccess(options?: {
     isTeacher,
     isStudent,
     normalizedCurrentRole,
-    isAdmin,
-    isTeacher,
-    isStudent,
-    isInstitutional,
   ]);
 
   return {

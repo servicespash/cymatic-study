@@ -110,8 +110,12 @@ function getSoulTemplate(
 
   // Salutations
   const salutation = isAdams
-    ? EMPATHY_DATA.adamsSalutations[Math.floor(Math.random() * EMPATHY_DATA.adamsSalutations.length)]
-    : EMPATHY_DATA.haawaSalutations[Math.floor(Math.random() * EMPATHY_DATA.haawaSalutations.length)];
+    ? EMPATHY_DATA.adamsSalutations[
+        Math.floor(Math.random() * EMPATHY_DATA.adamsSalutations.length)
+      ]
+    : EMPATHY_DATA.haawaSalutations[
+        Math.floor(Math.random() * EMPATHY_DATA.haawaSalutations.length)
+      ];
 
   // Time expressions
   let timeStr = "this moment";

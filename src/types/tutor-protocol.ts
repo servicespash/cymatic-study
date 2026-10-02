@@ -29,15 +29,4 @@ export interface TutorResponse {
   status?: {
     tutor_mood: string;
   };
-
-  monitor?: {
-    study_relevance: number;
-    drift: boolean;
-    severity: "none" | "notice" | "warning";
-  };
-  safety?: {
-    category: "none" | "self_harm" | "substance_risk" | "sexual_content" | "exploitation" | "hate_or_abuse" | "other_safety";
-    severity: "none" | "notice" | "elevated" | "urgent";
-    staff_review: boolean;
-  };
 }

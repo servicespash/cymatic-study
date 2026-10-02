@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { generateNcdcBoardingSchoolId } from "@/lib/school-id-validator";
 import { generateStudentRegistryCode } from "@/lib/auth-router";
-import { SchoolIdQRCode } from "@/components/SchoolIdQRCode";
+import { SchoolIdQRCode } from "@/components/features/admin/SchoolIdQRCode";
 import { motion } from "motion/react";
 
 interface AdminOnboardingWorkflowProps {

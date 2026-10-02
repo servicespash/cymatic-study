@@ -17,8 +17,7 @@
     "lint:ci": "eslint . --quiet",
     "format": "prettier --write .",
     "test": "vitest run",
-    "sync-types": "supabase gen types typescript --local > ./src/lib/database.types.ts",
-    "typecheck": "tsc --noEmit"
+    "sync-types": "supabase gen types typescript --local > ./src/lib/database.types.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.12",
@@ -75,7 +74,6 @@
     "@tanstack/react-start": "^1.168.26",
     "@tanstack/router-plugin": "^1.168.18",
     "@types/react-katex": "^3.0.4",
-    "@vercel/speed-insights": "^2.0.0",
     "ai": "^6.0.197",
     "canvg": "^4.0.3",
     "class-variance-authority": "^0.7.1",

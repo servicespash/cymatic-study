@@ -12,10 +12,10 @@ interface VoiceWaveformProps {
  * A high-fidelity animated waveform that reacts to the 'speaking' state.
  * Uses framed-motion for smooth, organic movement.
  */
-export const VoiceWaveform: React.FC<VoiceWaveformProps> = ({ 
-  isSpeaking, 
-  color = "bg-primary", 
-  count = 12 
+export const VoiceWaveform: React.FC<VoiceWaveformProps> = ({
+  isSpeaking,
+  color = "bg-primary",
+  count = 12,
 }) => {
   return (
     <div className="flex items-center justify-center gap-1 h-8 px-2 overflow-hidden">

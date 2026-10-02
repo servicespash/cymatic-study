@@ -67,7 +67,7 @@ interface DashboardStudent {
 }
 
 function DashboardPage() {
-  const { user, loading, profile, isTeacher, isAdmin, isGuestMode, organizationId } = useAuth();
+  const { user, loading, profile, isTeacher, isAdmin, isGuestMode, org_id } = useAuth();
 
   const navigate = useNavigate();
   const { completeTaskAndSync } = useTermProgress();
@@ -102,9 +102,9 @@ function DashboardPage() {
       let query = supabase.from("daily_tasks").select("*");
 
       if (org_id) {
-        query = query.or(`organization_id.is.null,organization_id.eq.${organizationId}`);
+        query = query.or(`org_id.is.null,org_id.eq.${org_id}`);
       } else {
-        query = query.is("organization_id", null);
+        query = query.is("org_id", null);
       }
 
       const { data, error } = await query;
@@ -133,7 +133,7 @@ function DashboardPage() {
     // Refresh when local storage updates
     window.addEventListener("storage", loadTasks);
     return () => window.removeEventListener("storage", loadTasks);
-  }, [organizationId]);
+  }, [org_id]);
 
   // Fetch real institutional student data
   useEffect(() => {
@@ -142,47 +142,82 @@ function DashboardPage() {
     const fetchRealData = async () => {
       setLoadingStudents(true);
       try {
-        if (!organizationId) {
+        console.log("[Dashboard] Fetching real institutional data for role check...", {
+          isTeacher,
+          isAdmin,
+        });
+        let query = supabase.from("profiles").select("*");
+        const targetId = profile?.org_id;
+
+        // Strict organization filtering to satisfy requirement
+        if (targetId) {
+          query = query.eq("org_id", targetId);
+        } else if (profile?.school_name) {
+          query = query.eq("school_name", profile.school_name);
+        } else {
+          // If no organization linkage, return empty to prevent cross-org data leakage
           setRealStudents([]);
           setLoadingStudents(false);
           return;
         }
 
-        const { data, error } = await supabase.rpc("get_organization_student_performance");
+        const { data: profilesData, error } = await query;
         if (error) throw error;
 
-        const mapped = (data || []).map((p: any) => ({
-          id: p.user_id,
-          name: p.display_name || "Student",
-          class: p.level || "Unassigned",
-          status:
-            p.performance_band === "strong_progress" ? "Strong Progress" :
-            p.performance_band === "on_track" ? "On Track" :
-            p.performance_band === "needs_support" ? "Needs Support" :
-            p.performance_band === "at_risk" ? "Needs Attention" : "Insufficient Data",
-          score: p.attempts > 0 ? `${Number(p.average_score).toFixed(1)}%` : "—",
-          points: Number(p.points || 0),
-        }));
-        setTotalOrgProfiles(mapped.length);
-        setRealStudents(mapped);
+        if (profilesData) {
+          setTotalOrgProfiles(profilesData.length);
+
+          // Filter for student accounts (or empty roles which are default students)
+          const studentProfiles = profilesData.filter(
+            (p) => p.role === "student" || !p.role || p.role === "",
+          );
+
+          const studentIds = studentProfiles.map((p) => p.user_id).filter(Boolean) as string[];
+          const pointsMap: Record<string, number> = {};
+
+          if (studentIds.length > 0) {
+            const { data: pointsData } = await (supabase.from as any)("user_points")
+              .select("user_id, points")
+              .in("user_id", studentIds);
+
+            if (pointsData) {
+              pointsData.forEach((p: any) => {
+                pointsMap[p.user_id] = (pointsMap[p.user_id] || 0) + (p.points || 0);
+              });
+            }
+          }
+
+          const mapped = studentProfiles.map((p) => {
+            const userId = p.user_id || "";
+            const totalPoints = pointsMap[userId] || 0;
+            let status = "Getting Started";
+            if (totalPoints > 150) status = "All Completed";
+            else if (totalPoints > 50) status = "Ahead of Pace";
+            else if (totalPoints > 0) status = "On Track";
+
+            return {
+              id: p.id,
+              name: p.full_name || p.display_name || p.username || "Scholar",
+              class: p.level || "Unassigned",
+              status: status,
+              score: `${Math.min(100, Math.max(10, Math.round(totalPoints / 2.5)))}%`,
+              points: totalPoints,
+            };
+          });
+
+          // Sort by points descending
+          mapped.sort((a, b) => b.points - a.points);
+          setRealStudents(mapped);
+        }
       } catch (err) {
-        console.error("Error fetching institutional performance:", err);
-        setRealStudents([]);
+        console.error("Error fetching institutional student roll:", err);
       } finally {
         setLoadingStudents(false);
       }
     };
 
     void fetchRealData();
-  }, [
-    user?.id,
-    isTeacher,
-    isAdmin,
-    organizationId,
-    profile?.organization_id,
-    profile?.school_name,
-    isGuestMode,
-  ]);
+  }, [user?.id, isTeacher, isAdmin, org_id, profile?.org_id, profile?.school_name, isGuestMode]);
 
   const handleTeacherCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -200,7 +235,7 @@ function DashboardPage() {
         points: manualPoints,
         tutor_explanation: manualExplanation,
         created_by: "teacher",
-        organization_id: organizationId,
+        org_id: org_id,
       });
 
       if (error) throw error;
@@ -281,7 +316,7 @@ function DashboardPage() {
                   Institutional Admin Authority
                 </Badge>
                 <span className="text-xs text-blue-400 font-mono font-bold">
-                  {organizationId || "UNLINKED"}
+                  {profile?.org_id || "UNLINKED"}
                 </span>
               </div>
               <h3 className="text-xl font-black text-white uppercase tracking-tight">

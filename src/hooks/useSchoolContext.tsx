@@ -29,8 +29,17 @@ const SchoolContext = createContext<SchoolContextState>({
 
 export function SchoolProvider({ children }: { children: ReactNode }) {
   const { user, profile } = useAuth();
-  const { role, rawRole, isAdmin, isTeacher, isStudent, organizationId, schoolName: roleSchoolName, loading: roleLoading } = useUserRole();
-  
+  const {
+    role,
+    rawRole,
+    isAdmin,
+    isTeacher,
+    isStudent,
+    organizationId,
+    schoolName: roleSchoolName,
+    loading: roleLoading,
+  } = useUserRole();
+
   const [schoolId, setSchoolId] = useState<string | null>(null);
   const [schoolName, setSchoolName] = useState<string | null>(null);
   const [orgState, setOrgState] = useState<any | null>(null);
@@ -39,8 +48,9 @@ export function SchoolProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function loadSchoolContext() {
       if (roleLoading) return;
-      
-      let finalSchoolId = organizationId || profile?.org_id || user?.user_metadata?.org_id || null;
+
+      const finalSchoolId =
+        organizationId || profile?.org_id || user?.user_metadata?.org_id || null;
       let finalSchoolName = roleSchoolName || profile?.school_name || null;
       let fetchedOrgState = null;
 
@@ -51,7 +61,7 @@ export function SchoolProvider({ children }: { children: ReactNode }) {
             .select("*")
             .eq("id", finalSchoolId)
             .maybeSingle();
-            
+
           if (data) {
             fetchedOrgState = data;
             if (!finalSchoolName && data.name) {
@@ -73,17 +83,19 @@ export function SchoolProvider({ children }: { children: ReactNode }) {
   }, [user, profile, organizationId, roleSchoolName, roleLoading]);
 
   return (
-    <SchoolContext.Provider value={{ 
-      schoolId, 
-      schoolName, 
-      userRole: role,
-      rawRole,
-      isAdmin,
-      isTeacher,
-      isStudent,
-      orgState,
-      loading: loading || roleLoading 
-    }}>
+    <SchoolContext.Provider
+      value={{
+        schoolId,
+        schoolName,
+        userRole: role,
+        rawRole,
+        isAdmin,
+        isTeacher,
+        isStudent,
+        orgState,
+        loading: loading || roleLoading,
+      }}
+    >
       {children}
     </SchoolContext.Provider>
   );

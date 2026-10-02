@@ -205,8 +205,7 @@ export async function submitTeacherEvaluation(data: any) {
       .maybeSingle();
 
     if (!existing) throw new Error("Submission not found.");
-    if (existing.student_id === user.id)
-      throw new Error("Forbidden: cannot evaluate your own.");
+    if (existing.student_id === user.id) throw new Error("Forbidden: cannot evaluate your own.");
     if (existing.status === "verified") throw new Error("Already verified.");
 
     const total = data.phase1 + data.phase2 + data.phase3 + data.phase4;

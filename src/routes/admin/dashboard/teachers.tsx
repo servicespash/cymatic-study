@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { TeacherApprovalTable } from "@/components/admin/TeacherApprovalTable";
-import { InstitutionalRegistryModule } from "@/components/InstitutionalRegistryModule";
+import { InstitutionalRegistryModule } from "@/components/features/admin/InstitutionalRegistryModule";
 import { TeacherList } from "@/components/admin/TeacherList";
 
 export const Route = createFileRoute("/admin/dashboard/teachers")({

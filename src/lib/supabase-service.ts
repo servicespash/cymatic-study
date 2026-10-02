@@ -41,11 +41,14 @@ export function useNewsFeed() {
         }).catch((err) => console.error("Sync API failed", err));
       }
 
-      // Try to query the actual 'content' table as requested
-      const { data, error: sbError } = await supabase
-        .from("content")
+      // Try to query the actual 'news_broadcasts' table
+      const query = supabase
+        .from("news_broadcasts")
         .select("*")
+        .eq("is_active", true)
         .order("published_at", { ascending: false });
+
+      const { data, error: sbError } = await query;
 
       if (sbError) throw sbError;
 
@@ -80,18 +83,18 @@ export function useNewsFeed() {
     // Initial fetch
     fetchItems();
 
-    // Set up real-time subscription for reactive updates on 'content' table
+    // Set up real-time subscription for reactive updates on 'news_broadcasts' table
     const channel = supabase
-      .channel("content_changes")
+      .channel("news_broadcasts_changes")
       .on(
         "postgres_changes",
         {
           event: "*", // Listen to INSERT, UPDATE, DELETE
           schema: "public",
-          table: "content",
+          table: "news_broadcasts",
         },
         (payload) => {
-          console.log("Real-time update received for 'content'!", payload);
+          console.log("Real-time update received for 'news_broadcasts'!", payload);
 
           setItems((currentItems) => {
             if (payload.eventType === "INSERT") {
