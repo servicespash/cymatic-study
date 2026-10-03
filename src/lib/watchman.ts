@@ -43,10 +43,10 @@ export const checkWatchman = async (userId?: string): Promise<WatchmanState> => 
     try {
       const { data } = await supabase
         .from("profiles" as any)
-        .select("is_verified" as any)
-        .eq("id", userId)
-        .single();
-      isVerified = !!(data as any)?.is_verified;
+        .select("users:user_id (is_verified)")
+        .eq("user_id", userId)
+        .maybeSingle();
+      isVerified = !!(data as any)?.users?.is_verified;
     } catch (e) {
       console.warn("Watchman: Verification check failed", e);
     }

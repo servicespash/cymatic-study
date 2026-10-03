@@ -8,7 +8,7 @@ import { ExportPdfModal } from "@/components/ExportPdfModal";
 import { PrintableSummary, MarkedReportItem } from "@/components/PrintableSummary";
 import { ReportManager } from "@/components/ReportManager";
 import { StudentsView } from "@/components/StudentsView";
-import { useUnifiedSchoolId } from "@/hooks/useUnifiedSchoolId";
+import { useOrganization } from "@/hooks/useOrganization";
 import {
   FileText,
   CheckCircle,
@@ -73,10 +73,8 @@ export interface StudentSubmission {
 }
 
 function TeacherWorkflowPage() {
-  const { user, profile, organizationId } = useAuth();
-  const { schoolId: unifiedSchoolId } = useUnifiedSchoolId();
-  const currentSchoolId =
-    unifiedSchoolId || organizationId || (profile as any)?.org_id || profile?.school_id || "";
+  const { user, profile } = useAuth();
+  const { organizationId: currentSchoolId, schoolName } = useOrganization();
   const teacherName = profile?.display_name || user?.email?.split("@")[0] || "Faculty Evaluator";
 
   const [submissions, setSubmissions] = useState<StudentSubmission[]>([]);
@@ -121,7 +119,7 @@ function TeacherWorkflowPage() {
           .order("created_at", { ascending: false });
 
         if (currentSchoolId) {
-          query = query.eq("organization_id", currentSchoolId);
+          query = query.eq("school_key", currentSchoolId);
         }
 
         const { data: dbSubs, error: fetchError } = await (query as any);
@@ -203,7 +201,7 @@ function TeacherWorkflowPage() {
         score: scoreVal,
         feedback: feedbackVal,
         teacher_name: typedSignature.trim(),
-        organization_id: currentSchoolId,
+        school_key: currentSchoolId,
         status: "graded",
       });
 

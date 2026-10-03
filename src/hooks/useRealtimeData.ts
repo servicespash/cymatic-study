@@ -29,8 +29,8 @@ export function useRealtimeData<T>(
   dependencies: any[] = [],
   manualOrganizationId?: string | null,
 ) {
-  const { organizationId: contextOrgId } = useAuth();
-  const organizationId = manualOrganizationId || contextOrgId;
+  const { org_id: contextOrgUUID, organizationId: contextOrgId } = useAuth();
+  const organizationId = manualOrganizationId || contextOrgUUID; // Prefer UUID for DB logic
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +48,8 @@ export function useRealtimeData<T>(
               (item: any) =>
                 item.organization_id === organizationId ||
                 item.school_id === organizationId ||
-                item.org_id === organizationId,
+                item.org_id === organizationId ||
+                item.organization_uuid === organizationId,
             );
           }
           if (cachedData.length > 0) {
@@ -76,11 +77,10 @@ export function useRealtimeData<T>(
           } else if (table === "news_broadcasts" || table === "news") {
             // News is typically global or doesn't have org_id in current schema
             console.log("useRealtimeData: Skipping org filter for news_broadcasts");
+          } else if (table === "project_submissions" || table === "submissions") {
+            query = query.eq("org_id", organizationId);
           } else {
-            // Default to organization_id for others, or check if we should use org_id
-            // For now, let's be safe and only filter if we are sure
-            // But usually, most partitioned tables should have one.
-            // If the error persists for others, we add them here.
+            // Default to organization_id for others (UUID)
             query = query.eq("organization_id", organizationId);
           }
         }

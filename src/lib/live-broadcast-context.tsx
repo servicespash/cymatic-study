@@ -61,8 +61,9 @@ export const LiveBroadcastProvider = ({ children }: { children: React.ReactNode 
 
     fetchBroadcast();
 
+    const channelId = `broadcast-status-${Math.random().toString(36).substring(2, 11)}`;
     const channel = supabase
-      .channel("broadcast-status")
+      .channel(channelId)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "news_broadcasts" },

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { useOrganization } from "@/hooks/useOrganization";
 import {
   Shield,
   UserCheck,
@@ -20,10 +21,13 @@ interface StaffMember {
   email: string;
   role: string;
   school_id?: string;
+  org_id?: string;
+  school_name?: string;
   updated_at?: string;
 }
 
 export function StaffManagementTable() {
+  const { orgId, organizationId, schoolName, filterByOrganization } = useOrganization();
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,11 +43,18 @@ export function StaffManagementTable() {
     setError(null);
     try {
       // Safe query with fallback handling to prevent UI freezing
-      const { data, error: queryError } = await supabase
+      let query = supabase
         .from("profiles")
         .select("*")
-        .in("role", ["admin", "teacher", "head_teacher"])
-        .order("full_name", { ascending: true });
+        .in("role", ["admin", "teacher", "head_teacher"]);
+
+      if (orgId) {
+        query = query.or(`org_id.eq.${orgId},school_name.ilike.%${schoolName}%`);
+      } else if (schoolName) {
+        query = query.ilike("school_name", `%${schoolName}%`);
+      }
+
+      const { data, error: queryError } = await query.order("full_name", { ascending: true });
 
       if (queryError) {
         console.error("Error fetching staff profiles:", queryError.message);
@@ -63,9 +74,11 @@ export function StaffManagementTable() {
 
   useEffect(() => {
     void fetchStaff();
-  }, []);
+  }, [orgId, schoolName]);
 
-  const filteredStaff = staff.filter((member) => {
+  const orgFiltered = filterByOrganization(staff);
+
+  const filteredStaff = orgFiltered.filter((member) => {
     const matchesSearch =
       (member.full_name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
       (member.email?.toLowerCase() || "").includes(searchTerm.toLowerCase());
@@ -286,7 +299,7 @@ export function StaffManagementTable() {
                     </span>
                   </td>
                   <td className="py-3 px-4 font-mono text-xs text-muted-foreground">
-                    {member.school_id || "UG-SCH-DEFAULT"}
+                    {organizationId || member.school_id || "UG-SCH-DEFAULT"}
                   </td>
                   <td className="py-3 px-4 text-right">
                     <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">

@@ -32,7 +32,8 @@ export function useAuth() {
   const rawRole = profile?.role || user?.user_metadata?.role || "student";
   const role: UserRole = normalizeRole(rawRole);
 
-  const org_id = core.org_id;
+  const org_id = core.org_id; // UUID for internal logic
+  const organizationId = core.organizationId; // Human-readable ID for display
 
   const isStudent = role === "student";
   const isTeacher = role === "teacher";
@@ -170,7 +171,7 @@ export function useAuth() {
       isInstitutional,
       isGuestMode,
       org_id,
-      organizationId: org_id,
+      organizationId,
       signIn,
       signUp,
       signOut,
@@ -189,6 +190,7 @@ export function useAuth() {
       isInstitutional,
       isGuestMode,
       org_id,
+      organizationId,
       signIn,
       signUp,
       signOut,

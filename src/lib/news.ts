@@ -103,8 +103,10 @@ export function useNewsService() {
     loadNews();
 
     // Subscribe to real-time updates for news broadcasts in Supabase
+    // Using unique channel name to avoid conflicts if hook is used multiple times
+    const channelId = `news-sync-${Math.random().toString(36).substring(2, 11)}`;
     const channel = supabase
-      .channel("news-broadcasts-realtime-sync")
+      .channel(channelId)
       .on(
         "postgres_changes",
         {

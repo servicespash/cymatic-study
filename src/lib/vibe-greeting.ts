@@ -12,14 +12,23 @@ export interface VibeGreetingOptions {
 
 export function generateVibeGreeting(options: VibeGreetingOptions): string {
   const isAdams = options.persona === "male";
+  const cleanName = (options.userName || "Scholar").trim();
+  const firstName = cleanName.split(/\s+/)[0];
+  const normalizedRole = (options.userRole || "student").toLowerCase();
+
   const honorific =
-    options.userRole === "teacher"
+    normalizedRole === "teacher"
       ? "Teacher"
-      : options.userRole === "admin"
+      : normalizedRole === "admin" || normalizedRole === "administrator" || normalizedRole === "org_admin"
         ? "Administrator"
         : "Scholar";
 
-  const name = options.userName || "family";
+  const addressedName =
+    normalizedRole === "teacher"
+      ? `Teacher ${firstName}`
+      : normalizedRole === "admin" || normalizedRole === "administrator" || normalizedRole === "org_admin"
+        ? `Administrator ${firstName}`
+        : firstName;
 
   // Calculate absence duration
   let absenceMessage = "It's wonderful to see you today!";
@@ -36,15 +45,15 @@ export function generateVibeGreeting(options: VibeGreetingOptions): string {
   }
 
   const adamsHooks = [
-    `Wagwan, ${honorific} ${name}! ${absenceMessage} Ready to conquer today's physics and mathematics equations?`,
-    `Salaam, bro ${name}! ${absenceMessage} Let's dive straight into first principles and solve some hard problems, kale!`,
-    `Hey there, ${honorific} ${name}! ${absenceMessage} Time to put in that high-precision study energy.`,
+    `Wagwan, ${addressedName}! ${absenceMessage} Ready to conquer today's physics and mathematics equations?`,
+    `Salaam, ${addressedName}! ${absenceMessage} Let's dive straight into first principles and solve some hard problems, kale!`,
+    `Hey there, ${addressedName}! ${absenceMessage} Time to put in that high-precision study energy.`,
   ];
 
   const haawaHooks = [
-    `Wagwan, family ${name}! ${absenceMessage} May peace and deep focus guide our biology and chemistry explorations today.`,
-    `Salaam, ${honorific} ${name}! ${absenceMessage} So glad you're here. Shall we explore life's cellular complexities together?`,
-    `Greetings, dear ${name}! ${absenceMessage} Let's cultivate excellence step by step.`,
+    `Wagwan, ${addressedName}! ${absenceMessage} May peace and deep focus guide our explorations today.`,
+    `Salaam, ${addressedName}! ${absenceMessage} So glad you're here. Shall we explore complexities together?`,
+    `Greetings, dear ${addressedName}! ${absenceMessage} Let's cultivate excellence step by step.`,
   ];
 
   const pool = isAdams ? adamsHooks : haawaHooks;

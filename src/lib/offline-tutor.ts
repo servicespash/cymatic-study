@@ -234,14 +234,25 @@ export function generateSemanticOfflineTutorResponse(
   userRole: string = "student",
   personaName: string = "male",
   subject: OfflineSubject = "general",
+  schoolName?: string | null,
 ): string {
   const query = userInput.toLowerCase().trim();
   const isAdams = personaName === "male" || personaName.toLowerCase() === "adams";
-  const honorific =
-    userRole === "teacher" ? "Teacher" : userRole === "admin" ? "Administrator" : "Scholar";
+  const cleanName = (userName || "Scholar").trim();
+  const firstName = cleanName.split(/\s+/)[0];
+  const normalizedRole = (userRole || "student").toLowerCase();
+
+  const addressedName =
+    normalizedRole === "teacher"
+      ? `Teacher ${firstName}`
+      : normalizedRole === "admin" || normalizedRole === "administrator" || normalizedRole === "org_admin"
+        ? `Administrator ${firstName}`
+        : firstName;
+
+  const orgContext = schoolName ? ` from ${schoolName}` : "";
   const prefix = isAdams
-    ? `Adams here, ${honorific} ${userName}. `
-    : `Haawa here, ${honorific} ${userName}. `;
+    ? `Adams here, ${addressedName}${orgContext}. `
+    : `Haawa here, ${addressedName}${orgContext}. `;
 
   // 1. Handle Greetings with Academic Warmth
   if (

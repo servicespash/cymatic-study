@@ -248,10 +248,12 @@ export function useNewsFeed() {
   }, [fetchItems]);
 
   useEffect(() => {
-    // Persistent channel to avoid subscription errors
-    const channel = supabase.channel("news_broadcasts_live_updates");
+    // Generate a unique channel name for this instance
+    const channelId = `news_broadcasts_${Math.random().toString(36).substring(2, 11)}`;
+    const channel = supabase.channel(channelId);
 
-    channel.on(
+    channel
+      .on(
         "postgres_changes",
         {
           event: "*",
@@ -300,9 +302,12 @@ export function useNewsFeed() {
             return updated;
           });
         },
-      );
-      
-    channel.subscribe();
+      )
+      .subscribe((status) => {
+        if (status !== "SUBSCRIBED") {
+          console.log(`News Realtime Status: ${status}`);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

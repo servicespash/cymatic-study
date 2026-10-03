@@ -26,9 +26,18 @@ export function TeacherList() {
 
   async function fetchTeachers() {
     setLoading(true);
+    // Join with public.users to get email and verification status
     const { data, error } = await (supabase as any)
       .from("profiles")
-      .select("user_id, display_name, email, role, is_verified")
+      .select(`
+        user_id,
+        display_name,
+        role,
+        users:user_id (
+          email,
+          is_verified
+        )
+      `)
       .eq("org_id", schoolId)
       .eq("role", "teacher");
 
@@ -36,7 +45,13 @@ export function TeacherList() {
       console.error("Error fetching teachers list:", error);
       toast.error("Failed to load teachers");
     } else {
-      setTeachers(data || []);
+      // Map the data to flatten the users info for easier rendering
+      const flattened = (data || []).map((p: any) => ({
+        ...p,
+        email: p.users?.email,
+        is_verified: p.users?.is_verified
+      }));
+      setTeachers(flattened);
     }
     setLoading(false);
   }

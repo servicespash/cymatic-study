@@ -110,7 +110,7 @@ type GoalPeriod = "daily" | "weekly" | "term";
 
 export function HomePage() {
   const { persona, speak } = useTutor();
-  const { user, isAdmin, isTeacher } = useAuth();
+  const { user, isAdmin, isTeacher, role, schoolName } = useAuth();
 
   // Points logic
   const [todayPoints, setTodayPoints] = useState(0);
@@ -263,7 +263,13 @@ export function HomePage() {
       }
       const weather = await fetchWeatherSummary();
       if (cancelled) return;
-      const text = await buildGreeting(persona, { name, weather: weather ?? undefined, ad });
+      const text = await buildGreeting(persona, {
+        name,
+        weather: weather ?? undefined,
+        ad,
+        role: role,
+        schoolName: schoolName,
+      });
       void speak(text, { force: true });
       markGreeted();
     })();

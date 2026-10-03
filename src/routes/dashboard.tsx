@@ -20,6 +20,7 @@ import { AuthRouteMiddleware } from "@/middlewares/auth-middleware";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { ExportPdfModal } from "@/components/ExportPdfModal";
 import { type DynamicDailyTask } from "@/lib/quiz-engine";
+import { useOrganization } from "@/hooks/useOrganization";
 
 export const Route = createFileRoute("/dashboard")({
   head: () =>
@@ -61,7 +62,8 @@ interface DashboardStudent {
 }
 
 function DashboardPage() {
-  const { user, loading, profile, isTeacher, isAdmin, isGuestMode, org_id } = useAuth();
+  const { user, loading, profile, isTeacher, isAdmin, isGuestMode } = useAuth();
+  const { organizationId, orgId, schoolName } = useOrganization();
 
   const navigate = useNavigate();
   const { completeTaskAndSync } = useTermProgress();
@@ -93,12 +95,15 @@ function DashboardPage() {
 
   const loadTasks = async () => {
     try {
-      let query = supabase.from("daily_tasks").select("*");
+      let query = supabase.from("dashboard_tasks").select("*");
 
-      if (org_id) {
-        query = query.or(`org_id.is.null,org_id.eq.${org_id}`);
+      if (orgId || organizationId) {
+        const filters = ["organization_id.is.null"];
+        if (orgId) filters.push(`organization_id.eq.${orgId}`);
+        if (organizationId) filters.push(`organization_id.eq.${organizationId}`);
+        query = query.or(filters.join(","));
       } else {
-        query = query.is("org_id", null);
+        query = query.is("organization_id", null);
       }
 
       const { data, error } = await query;
@@ -141,13 +146,12 @@ function DashboardPage() {
           isAdmin,
         });
         let query = supabase.from("profiles").select("*");
-        const targetId = profile?.org_id;
 
-        // Strict organization filtering to satisfy requirement
-        if (targetId) {
-          query = query.eq("org_id", targetId);
-        } else if (profile?.school_name) {
-          query = query.eq("school_name", profile.school_name);
+        // Strict organization filtering using unified useOrganization context
+        if (orgId) {
+          query = query.or(`org_id.eq.${orgId},school_name.ilike.%${schoolName}%`);
+        } else if (schoolName) {
+          query = query.ilike("school_name", `%${schoolName}%`);
         } else {
           // If no organization linkage, return empty to prevent cross-org data leakage
           setRealStudents([]);
@@ -221,7 +225,7 @@ function DashboardPage() {
     }
 
     try {
-      const { error } = await supabase.from("daily_tasks" as any).insert({
+      const { error } = await supabase.from("dashboard_tasks" as any).insert({
         title: manualTitle,
         subject: manualSubject,
         description: manualDesc,
@@ -229,7 +233,7 @@ function DashboardPage() {
         points: manualPoints,
         tutor_explanation: manualExplanation,
         created_by: "teacher",
-        org_id: org_id,
+        organization_id: org_id,
       });
 
       if (error) throw error;
@@ -250,9 +254,7 @@ function DashboardPage() {
   };
 
   const [dailyPoints, setDailyPoints] = useState(0);
-  const [activeTab, setActiveTab] = useState<"missions" | "quizzes" | "tutor" | "projects" | "saved">(
-    "missions",
-  );
+  const [activeTab, setActiveTab] = useState<"missions" | "quizzes" | "tutor" | "projects" | "saved">("missions");
 
   // Fetch daily points on mount or when user changes
   useEffect(() => {

@@ -1,7 +1,6 @@
-import { createContext, useContext, ReactNode, useEffect, useState } from "react";
-import { useAuth } from "@/lib/auth-context";
-import { useUserRole, UserRole } from "@/hooks/useUserRole";
-import { supabase } from "@/integrations/supabase/client";
+import { createContext, useContext, ReactNode } from "react";
+import { useOrganization } from "@/hooks/useOrganization";
+import type { UserRole } from "@/hooks/useUserRole";
 
 interface SchoolContextState {
   schoolId: string | null;
@@ -28,72 +27,24 @@ const SchoolContext = createContext<SchoolContextState>({
 });
 
 export function SchoolProvider({ children }: { children: ReactNode }) {
-  const { user, profile } = useAuth();
-  const {
-    role,
-    rawRole,
-    isAdmin,
-    isTeacher,
-    isStudent,
-    organizationId,
-    schoolName: roleSchoolName,
-    loading: roleLoading,
-  } = useUserRole();
-
-  const [schoolId, setSchoolId] = useState<string | null>(null);
-  const [schoolName, setSchoolName] = useState<string | null>(null);
-  const [orgState, setOrgState] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadSchoolContext() {
-      if (roleLoading) return;
-
-      const finalSchoolId =
-        organizationId || profile?.org_id || user?.user_metadata?.org_id || null;
-      let finalSchoolName = roleSchoolName || profile?.school_name || null;
-      let fetchedOrgState = null;
-
-      if (finalSchoolId) {
-        try {
-          const { data, error } = await supabase
-            .from("organizations")
-            .select("*")
-            .eq("id", finalSchoolId)
-            .maybeSingle();
-
-          if (data) {
-            fetchedOrgState = data;
-            if (!finalSchoolName && data.name) {
-              finalSchoolName = data.name;
-            }
-          }
-        } catch (e) {
-          console.warn("Failed to fetch organization state", e);
-        }
-      }
-
-      setSchoolId(finalSchoolId);
-      setSchoolName(finalSchoolName);
-      setOrgState(fetchedOrgState);
-      setLoading(false);
-    }
-
-    loadSchoolContext();
-  }, [user, profile, organizationId, roleSchoolName, roleLoading]);
+  const org = useOrganization();
 
   return (
     <SchoolContext.Provider
       value={{
-        schoolId,
-        schoolName,
-        userRole: role,
-        rawRole,
-        isAdmin,
-        isTeacher,
-        isStudent,
-        orgState,
-        loading: loading || roleLoading,
+        schoolId: org.organizationId,
+        schoolName: org.schoolName,
+        userRole: org.role as UserRole,
+        rawRole: org.role,
+        isAdmin: org.isAdmin,
+        isTeacher: org.isTeacher,
+        isStudent: org.isStudent,
+        orgState: {
+          id: org.orgId,
+          school_key: org.organizationId,
+          name: org.schoolName,
+        },
+        loading: org.loading,
       }}
     >
       {children}

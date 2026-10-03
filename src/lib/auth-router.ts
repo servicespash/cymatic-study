@@ -21,32 +21,34 @@ export function determineUserDashboardRoute(
   userMetadata?: Record<string, any>,
 ): RouteDecision {
   const rawRole = (profile?.role || userMetadata?.role || "student").toLowerCase();
-  const profileOrgId = profile?.org_id;
-  const metaOrgId = userMetadata?.org_id;
+  
+  // Relational Anchor (UUID)
+  const profileOrgUUID = profile?.org_id;
+  const metaOrgUUID = userMetadata?.org_id || userMetadata?.organization_uuid;
 
-  const orgId =
-    profileOrgId ||
-    metaOrgId ||
-    (typeof window !== "undefined" ? localStorage.getItem("cymatic_org_id") : null) ||
+  // Identity Anchor (SHCUGI...)
+  const profileOrgHumanId = profile?.organization_id || profile?.school_id;
+  const metaOrgHumanId = userMetadata?.organization_id || userMetadata?.school_id || userMetadata?.school_key;
+
+  const orgUUID = profileOrgUUID || metaOrgUUID || null;
+  const orgHumanId = 
+    profileOrgHumanId || 
+    metaOrgHumanId || 
+    (typeof window !== "undefined" ? localStorage.getItem("cymatic_org_id") || localStorage.getItem("cymatic_school_id") : null) ||
     null;
 
-  const isInstitutional = Boolean(schoolId && schoolId.trim().length > 0);
+  const isInstitutional = Boolean(orgUUID || (orgHumanId && orgHumanId.trim().length > 0));
 
-  // VALIDATION: Strict school_id check for institutional users
+  // VALIDATION: Strict org identification check for institutional users
   const isInstitutionalRole = ["admin", "org_admin", "teacher", "instructor", "faculty"].includes(
     rawRole,
   );
   let isAuthorized = true;
   let mismatchReason: string | undefined;
 
-  if (isInstitutionalRole && !schoolId) {
+  if (isInstitutionalRole && !orgUUID && !orgHumanId) {
     isAuthorized = false;
     mismatchReason = "Institutional role detected without valid School ID or Organization linkage.";
-  }
-
-  if (profileSchoolId && metaSchoolId && profileSchoolId !== metaSchoolId) {
-    // Optional: Log potential role/org mismatch
-    console.warn("Security Notice: Profile school_id does not match Auth metadata school_id.");
   }
 
   // 1. Institutional Administrator
@@ -55,7 +57,7 @@ export function determineUserDashboardRoute(
       targetPath: isAuthorized ? "/admin/dashboard" : "/onboarding",
       roleLabel: "Institutional Administrator",
       isInstitutional: true,
-      schoolId,
+      schoolId: orgHumanId || orgUUID,
       dashboardTitle: "Institutional Admin Console",
       isAuthorized,
       mismatchReason,
@@ -73,7 +75,7 @@ export function determineUserDashboardRoute(
       targetPath: isAuthorized ? "/dashboard" : "/onboarding",
       roleLabel: isInstitutional ? "Institutional Educator" : "Independent Educator",
       isInstitutional,
-      schoolId,
+      schoolId: orgHumanId || orgUUID,
       dashboardTitle: "Teacher Evaluation & Marking Station",
       isAuthorized,
       mismatchReason,
@@ -85,7 +87,7 @@ export function determineUserDashboardRoute(
     targetPath: "/dashboard",
     roleLabel: isInstitutional ? "Boarding Scholar" : "Independent Scholar",
     isInstitutional,
-    schoolId,
+    schoolId: orgHumanId || orgUUID,
     dashboardTitle: isInstitutional ? "Institutional Student Hub" : "Personal Learning Workspace",
     isAuthorized: true, // Students are usually authorized to see dashboard even if not institutional
   };

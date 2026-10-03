@@ -14,7 +14,8 @@ import {
   MessagesSquare,
   Newspaper,
   Settings as SettingsIcon,
-  Sparkles,
+  Activity,
+  Zap,
   X,
   ShieldCheck,
   PenTool,
@@ -270,7 +271,7 @@ export function Navigation() {
       ];
     } else {
       rawLinks = [
-        { to: "/", label: "Home", icon: Sparkles },
+        { to: "/", label: "Home", icon: Zap },
         { to: "/news", label: "News & Syllabus", icon: Newspaper },
         { to: "/tutor", label: "Socratic AI", icon: MessagesSquare },
         { to: "/curriculum", label: "Curriculum", icon: BookOpen },
@@ -309,7 +310,7 @@ export function Navigation() {
         {/* BRAND LOGO */}
         <Link to="/" className="flex items-center gap-2.5 group shrink-0">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-hero shadow-glow transition-transform duration-300 group-hover:scale-105">
-            <Sparkles className="h-5 w-5 text-primary-foreground" />
+            <Zap className="h-5 w-5 text-primary-foreground" />
           </div>
           <div className="leading-tight hidden sm:block">
             <div className="flex items-center gap-1.5">
@@ -374,7 +375,7 @@ export function Navigation() {
             )}
             title={particlesEnabled ? "Cymatic Resonance Active" : "Cymatic Resonance Suspended"}
           >
-            <Sparkles className={cn("h-3.5 w-3.5", particlesEnabled && "animate-pulse")} />
+            <Activity className={cn("h-3.5 w-3.5", particlesEnabled && "animate-pulse")} />
           </button>
 
           <ThemeToggle />
@@ -433,7 +434,7 @@ export function Navigation() {
               particlesEnabled ? "text-cyan-400" : "text-muted-foreground",
             )}
           >
-            <Sparkles className={cn("h-4 w-4", particlesEnabled && "animate-pulse")} />
+            <Activity className={cn("h-4 w-4", particlesEnabled && "animate-pulse")} />
           </button>
           <ThemeToggle />
           <button

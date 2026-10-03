@@ -19,6 +19,8 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+import { DynamicGreeting } from "@/components/common/DynamicGreeting";
+
 interface DashboardLayoutProps {
   children: ReactNode;
   activeSection?: string;
@@ -89,6 +91,9 @@ export function DashboardLayout({ children, activeSection }: DashboardLayoutProp
 
   return (
     <div className="min-h-screen bg-background text-foreground space-y-6">
+      {/* DYNAMIC HMI GREETING COMPONENT */}
+      <DynamicGreeting />
+
       {/* ROLE BANNER & CONTEXT HEADER */}
       <div className="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md p-4 sm:p-5 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

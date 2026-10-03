@@ -15,6 +15,8 @@ export type EmpathyContext = {
   district?: string;
   points?: number;
   isOnline: boolean;
+  role?: string | null;
+  schoolName?: string | null;
 };
 
 /**
@@ -43,7 +45,7 @@ export async function generateEmpathyResponse(
             messages: [
               {
                 role: "user",
-                content: `[INTERNAL_TRIGGER: ${trigger}] Context: Name=${context.name}, Mood=${context.mood}, Time=${context.time}, District=${context.district || "Uganda"}. Generate a short, 1-sentence ${trigger === "greeting" ? "greeting" : "reaction"} in your persona.`,
+                content: `[INTERNAL_TRIGGER: ${trigger}] Context: Name=${context.name}, Role=${context.role || "Scholar"}, School=${context.schoolName || "Cymatic Hub"}, Mood=${context.mood}, Time=${context.time}, District=${context.district || "Uganda"}. Generate a short, 1-sentence ${trigger === "greeting" ? "greeting" : "reaction"} in your persona.`,
               },
             ],
             persona: persona.voice,
@@ -57,6 +59,8 @@ export async function generateEmpathyResponse(
               points: context.points || 0,
               timeContext: context.time,
               route: "Internal Trigger",
+              role: context.role,
+              schoolName: context.schoolName,
             },
             internal: true,
           }),

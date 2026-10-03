@@ -33,6 +33,29 @@ function OnboardingPage() {
   const isInstitutional =
     typeof window !== "undefined" && sessionStorage.getItem("login_mode") === "institutional";
 
+  const [schoolName, setSchoolName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isInstitutional && schoolKey.length >= 8) {
+      const lookup = async () => {
+        try {
+          const { data } = await supabase
+            .from("organizations")
+            .select("name")
+            .ilike("school_key", schoolKey.trim())
+            .maybeSingle();
+          if (data) setSchoolName(data.name);
+          else setSchoolName(null);
+        } catch (e) {
+          setSchoolName(null);
+        }
+      };
+      lookup();
+    } else {
+      setSchoolName(null);
+    }
+  }, [schoolKey, isInstitutional]);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -50,13 +73,34 @@ function OnboardingPage() {
       return;
     }
 
+    const resolvedSchoolName = data?.org_name ?? schoolName ?? null;
+    const resolvedSchoolKey = isInstitutional ? schoolKey.trim() : null;
+    const resolvedOrgId = data?.org_id ?? null;
+
     await supabase.auth.updateUser({
       data: {
-        school_name: data?.org_name ?? null,
+        school_name: resolvedSchoolName,
+        school_id: resolvedSchoolKey,
+        organization_id: resolvedSchoolKey,
+        org_id: resolvedOrgId,
+        organization_uuid: resolvedOrgId,
         phone_number: phoneNumber.trim(),
         level,
       },
     });
+
+    if (typeof window !== "undefined") {
+      if (resolvedSchoolKey) {
+        localStorage.setItem("cymatic_org_id", resolvedSchoolKey);
+        localStorage.setItem("cymatic_school_id", resolvedSchoolKey);
+      }
+      if (resolvedSchoolName) {
+        localStorage.setItem("cymatic_school_name", resolvedSchoolName);
+      }
+      if (resolvedOrgId) {
+        localStorage.setItem("cymatic_org_uuid", resolvedOrgId);
+      }
+    }
 
     setSubmitting(false);
     navigate({ to: "/dashboard" });
@@ -107,6 +151,11 @@ function OnboardingPage() {
                 placeholder="Enter the School ID issued by your institution"
                 className="w-full rounded-lg border border-input bg-background/60 px-3.5 py-2.5 text-sm font-mono tracking-wider text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
               />
+              {schoolName && (
+                <p className="mt-1.5 text-xs font-bold text-emerald-400 animate-in fade-in slide-in-from-top-1">
+                  Verified: {schoolName}
+                </p>
+              )}
               <p className="mt-1 text-[10px] text-muted-foreground">
                 Ask your head teacher / school admin for the official School ID.
               </p>

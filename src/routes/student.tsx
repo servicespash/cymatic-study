@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AuthRouteMiddleware } from "@/middlewares/auth-middleware";
-import { useUnifiedSchoolId } from "@/hooks/useUnifiedSchoolId";
+import { useOrganization } from "@/hooks/useOrganization";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useGamificationStore } from "@/store/useGamificationStore";
 import { Link } from "@tanstack/react-router";
+import { MarkedReportItem } from "@/components/PrintableSummary";
 import {
   FileText,
   Printer,
@@ -36,12 +37,11 @@ export const Route = createFileRoute("/student")({
 });
 
 function StudentDashboardPage() {
-  const { user, profile, organizationId } = useAuth();
+  const { user, profile } = useAuth();
   const { xp, level, badges, completedGaps, completedTasks } = useGamificationStore();
-  const { schoolId, schoolName: unifiedSchoolName } = useUnifiedSchoolId();
+  const { organizationId, schoolName } = useOrganization();
 
   const studentName = profile?.display_name || user?.email?.split("@")[0] || "Scholar";
-  const schoolName = unifiedSchoolName || profile?.school_name || "Unknown Institution";
   const className = (profile as any)?.level || "N/A";
   const unebIndex = (profile as any)?.uneb_index || "N/A";
 
@@ -58,14 +58,12 @@ function StudentDashboardPage() {
       if (!user?.id) return;
       setLoadingReports(true);
       try {
-        const orgIdToUse = schoolId || organizationId;
-
         let query = (supabase.from as any)("project_submissions")
           .select("*")
           .eq("student_id", user.id);
 
-        if (orgIdToUse) {
-          query = query.eq("organization_id", orgIdToUse);
+        if (organizationId) {
+          query = query.eq("school_key", organizationId);
         }
 
         const { data: dbSubs, error } = await query.order("created_at", { ascending: false });

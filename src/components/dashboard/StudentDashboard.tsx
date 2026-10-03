@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   BookOpen,
   Trophy,
@@ -22,6 +22,10 @@ import StudentProjectsDashboard from "@/components/StudentProjectsDashboard";
 import { PastSessionsList } from "@/components/PastSessionsList";
 import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
+import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
+import { useNewsFeed } from "@/lib/news-service";
+import { NewsCard } from "@/components/NewsCard";
 
 interface StudentDashboardProps {
   activeTab: string;
@@ -267,8 +271,79 @@ const QuizzesTab = () => (
     </div>
   </div>
 );
-const TutorTab = () => <div className="space-y-6"><SocraticTutorChat /><BreathingGuide /></div>;
-const ProjectsTab = () => <div className="space-y-6"><StudentProjectsDashboard /><PastSessionsList /></div>;
-const SavedItemsTab = () => <div className="p-8 text-center text-zinc-500">Saved Items feature coming soon.</div>;
+const TutorTab = () => (
+  <div className="space-y-6">
+    <SocraticTutorChat />
+    <BreathingGuide />
+  </div>
+);
+
+const ProjectsTab = () => (
+  <div className="space-y-6">
+    <StudentProjectsDashboard />
+    <PastSessionsList />
+  </div>
+);
+
+const SavedItemsTab = () => {
+  const { user } = useAuth();
+  const { items } = useNewsFeed();
+  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchBookmarks = async () => {
+      try {
+        const { data } = await supabase
+          .from("content_interactions")
+          .select("content_id")
+          .eq("user_id", user.id)
+          .eq("is_bookmarked", true);
+        if (data) {
+          setBookmarkedIds(data.map((d) => d.content_id));
+        }
+      } catch (err) {
+        console.error("Error fetching bookmarks:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBookmarks();
+  }, [user]);
+
+  const bookmarkedItems = items.filter((item) => bookmarkedIds.includes(item.id));
+
+  if (loading) {
+    return <div className="p-8 text-center text-zinc-500 animate-pulse">Loading saved broadcasts...</div>;
+  }
+
+  if (bookmarkedItems.length === 0) {
+    return (
+      <div className="p-12 text-center bg-zinc-950/40 rounded-2xl border border-dashed border-zinc-800">
+        <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 text-zinc-500 mb-4">
+          <Bookmark className="h-6 w-6" />
+        </div>
+        <h3 className="text-white font-bold text-lg">No Bookmarks Yet</h3>
+        <p className="text-zinc-500 text-xs mt-1 max-w-xs mx-auto">
+          Broadcasts you bookmark will appear here for quick access later.
+        </p>
+        <Link to="/news">
+          <Button variant="link" className="text-cyan-400 text-xs font-bold mt-4">
+            Browse Spotlight News
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {bookmarkedItems.map((item) => (
+        <NewsCard key={item.id} item={item} />
+      ))}
+    </div>
+  );
+};
 
 export default StudentDashboard;

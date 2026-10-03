@@ -78,15 +78,66 @@ export function SchoolIdInputField({ onSaved, className = "" }: SchoolIdInputFie
   };
 
   // Admin-only School ID provisioner
-  const handleAdminGenerateNewId = () => {
-    if (!isAdmin) return;
-    const generatedId = generateNcdcBoardingSchoolId();
-    setInputVal(generatedId);
-    setValidationError(null);
-    setIsFormatValid(true);
-    toast.info(`Generated Official Institution Code: ${generatedId}`, {
-      description: "Click 'Save Official School Registry' to issue this ID to your school.",
-    });
+  const handleAdminGenerateNewId = async () => {
+    if (!isAdmin || !user) return;
+
+    const generatedId = generateNcdcBoardingSchoolId(schoolNameVal || currentSchoolName);
+    const orgUUID = profile?.org_id || user?.user_metadata?.org_id;
+
+    if (!orgUUID) {
+      // If admin not yet linked, just set input and let them save normally
+      setInputVal(generatedId);
+      setValidationError(null);
+      setIsFormatValid(true);
+      toast.info(`Generated Official Institution Code: ${generatedId}`, {
+        description: "Click 'Save Official School Registry' to issue this ID to your school.",
+      });
+      return;
+    }
+
+    setSaving(true);
+    const toastId = toast.loading("Regenerating and syncing institutional ID...");
+
+    try {
+      // 1. Update organization record with new school_key
+      const { error: orgErr } = await supabase
+        .from("organizations")
+        .update({
+          school_key: generatedId,
+          name: (schoolNameVal || currentSchoolName).trim(),
+        })
+        .eq("id", orgUUID);
+
+      if (orgErr) throw orgErr;
+
+      // 2. Update user metadata
+      await supabase.auth.updateUser({
+        data: {
+          school_id: generatedId,
+          organization_id: generatedId,
+          school_key: generatedId,
+          school_name: (schoolNameVal || currentSchoolName).trim(),
+        },
+      });
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cymatic_school_id", generatedId);
+        localStorage.setItem("cymatic_org_id", generatedId);
+        localStorage.setItem("cymatic_school_name", (schoolNameVal || currentSchoolName).trim());
+      }
+
+      setInputVal(generatedId);
+      setSaving(false);
+      toast.success("Organization ID Regenerated successfully!", {
+        id: toastId,
+        description: `New Code: ${generatedId}. Existing members remain linked via institutional UUID.`,
+      });
+
+      if (onSaved) onSaved(generatedId);
+    } catch (err: any) {
+      setSaving(false);
+      toast.error(err.message || "Failed to regenerate ID", { id: toastId });
+    }
   };
 
   // Save to Supabase (User Metadata + Profiles Table)

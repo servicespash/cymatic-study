@@ -7,7 +7,9 @@ export interface UserProfile {
   display_name: string | null;
   avatar_url?: string | null;
   role: string | null;
-  org_id: string | null;
+  org_id: string | null; // Database UUID
+  organization_id: string | null; // Human-readable ID (SHCUGI...)
+  school_id?: string | null; // Alias for organization_id
   school_name?: string | null;
   teacher_license_id?: string | null;
   full_name?: string | null;
@@ -29,7 +31,8 @@ export type AuthCtx = {
   isTeacher: boolean;
   isAdmin: boolean;
   isGuestMode: boolean;
-  org_id: string | null;
+  org_id: string | null; // UUID
+  organizationId: string | null; // Human-readable ID (Source of Truth)
   schoolName: string | null;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -50,6 +53,7 @@ export const Ctx = createContext<AuthCtx>({
   isAdmin: false,
   isGuestMode: false,
   org_id: null,
+  organizationId: null,
   schoolName: null,
   signOut: async () => {},
   refreshProfile: async () => {},

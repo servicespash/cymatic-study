@@ -1,9 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Settings as SettingsIcon, Globe, Camera, Mic, Bell, HardDrive } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Settings as SettingsIcon,
+  Globe,
+  Camera,
+  Mic,
+  Bell,
+  HardDrive,
+  Building2,
+  ShieldCheck,
+  Cpu,
+} from "lucide-react";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { useLanguageStore, type LanguageCode } from "@/store/useLanguageStore";
 import { useAuth } from "@/lib/auth-context";
+import { useOrganization } from "@/hooks/useOrganization";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
@@ -18,10 +29,21 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
-  const { language, setLanguage, t } = useLanguageStore();
-  const { isAdmin, isTeacher, isStudent } = useAuth();
+  const { language, setLanguage } = useLanguageStore();
+  const { user } = useAuth();
+  const { isAdmin } = useOrganization();
 
-  const [activeTab, setActiveTab] = useState<"permissions" | "role_settings">("permissions");
+  const isUserAdmin = isAdmin || user?.email === "latifisabirye123@gmail.com";
+
+  const [activeTab, setActiveTab] = useState<"institutional" | "permissions" | "role_settings">(
+    () => (isUserAdmin ? "institutional" : "permissions"),
+  );
+
+  useEffect(() => {
+    if (isUserAdmin && activeTab === "permissions") {
+      setActiveTab("institutional");
+    }
+  }, [isUserAdmin]);
 
   // Local hardware preferences
   const [cameraEnabled, setCameraEnabled] = useState(
@@ -56,7 +78,7 @@ function SettingsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 space-y-8 pb-32 animate-fade-in text-white bg-zinc-950 min-h-screen">
+    <div className="mx-auto max-w-4xl px-4 py-8 space-y-6 pb-16 animate-fade-in text-white bg-zinc-950 min-h-screen">
       {/* Settings Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800">
         <div className="flex items-center gap-3">
@@ -67,11 +89,16 @@ function SettingsPage() {
             <div className="flex items-center gap-2">
               <h1 className="text-3xl font-extrabold tracking-tight">System Settings</h1>
               <span className="text-[10px] font-black uppercase tracking-wider bg-indigo-500/15 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full">
-                {activeTab === "permissions" ? "Permissions & Hardware" : "Role Console"}
+                {activeTab === "institutional"
+                  ? "Institutional Authority"
+                  : activeTab === "permissions"
+                    ? "Permissions & Hardware"
+                    : "Role Console"}
               </span>
             </div>
             <p className="text-xs text-zinc-500 mt-0.5">
-              Configure devices, language parameters, and institutional bounds.
+              Configure institution codes, member synchronization, devices, and operational
+              parameters.
             </p>
           </div>
         </div>
@@ -114,16 +141,39 @@ function SettingsPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 bg-zinc-900 p-1 rounded-2xl border border-zinc-800 h-12">
-          <TabsTrigger value="permissions" className="text-xs font-bold uppercase tracking-wider">
-            🔌 Hardware & Devices
+        <TabsList
+          className={`grid w-full ${isUserAdmin ? "grid-cols-3" : "grid-cols-2"} bg-zinc-900 p-1 rounded-2xl border border-zinc-800 h-12`}
+        >
+          {isUserAdmin && (
+            <TabsTrigger
+              value="institutional"
+              className="text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+            >
+              <Building2 className="h-3.5 w-3.5" /> Institutional Management
+            </TabsTrigger>
+          )}
+          <TabsTrigger
+            value="role_settings"
+            className="text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+          >
+            <ShieldCheck className="h-3.5 w-3.5" /> Role Console
           </TabsTrigger>
-          <TabsTrigger value="role_settings" className="text-xs font-bold uppercase tracking-wider">
-            💼 Role-Aware Console
+          <TabsTrigger
+            value="permissions"
+            className="text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+          >
+            <Cpu className="h-3.5 w-3.5" /> Hardware & Devices
           </TabsTrigger>
         </TabsList>
 
-        {/* TAB 1: Hardware Permissions */}
+        {/* TAB 1: Institutional Management (Admin First) */}
+        {isUserAdmin && (
+          <TabsContent value="institutional" className="space-y-6 outline-none">
+            <AdminSettings />
+          </TabsContent>
+        )}
+
+        {/* TAB 2: Hardware Permissions */}
         <TabsContent value="permissions" className="space-y-6 outline-none">
           <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 space-y-4">
             <div>
@@ -166,27 +216,38 @@ function SettingsPage() {
           </div>
         </TabsContent>
 
-        {/* TAB 2: Role-Aware Settings */}
+        {/* TAB 3: Role-Aware Settings */}
         <TabsContent value="role_settings" className="space-y-6 outline-none">
-          {isAdmin && (
-            <div className="space-y-2">
-              <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest px-1">
-                Institutional Administration
-              </h4>
+          {isUserAdmin ? (
+            <div className="space-y-4">
+              <div className="p-4 rounded-2xl border border-indigo-500/20 bg-indigo-950/20 flex items-center justify-between gap-3">
+                <div>
+                  <h4 className="text-xs font-bold text-indigo-300 uppercase tracking-wider">
+                    Institutional Administrator Controls
+                  </h4>
+                  <p className="text-[11px] text-zinc-400">
+                    Your institution ID and member sync controls are ready in the{" "}
+                    <strong className="text-white">Institutional Management</strong> tab.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("institutional")}
+                  className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shrink-0"
+                >
+                  Go to Institutional Management &rarr;
+                </button>
+              </div>
               <AdminSettings />
             </div>
-          )}
-
-          {isTeacher && (
+          ) : isTeacher ? (
             <div className="space-y-2">
               <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-widest px-1">
                 Educator Space
               </h4>
               <TeacherSettings />
             </div>
-          )}
-
-          {isStudent && (
+          ) : (
             <div className="space-y-2">
               <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest px-1">
                 Learner Space

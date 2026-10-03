@@ -2,52 +2,71 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { StudentMatrix } from "@/components/admin/StudentMatrix";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth-context";
+import { useOrganization } from "@/hooks/useOrganization";
 
 export const Route = createFileRoute("/admin/dashboard/students")({
   component: StudentsPage,
 });
 
 function StudentsPage() {
-  const { user, profile } = useAuth();
+  const {
+    orgId,
+    organizationId,
+    schoolName,
+    filterByOrganization,
+    loading: orgLoading,
+  } = useOrganization();
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const currentOrgId =
-    profile?.org_id || profile?.organization_id || user?.user_metadata?.school_id || "";
-
   useEffect(() => {
-    if (currentOrgId) {
+    if (!orgLoading) {
       loadStudents();
     }
-  }, [currentOrgId]);
+  }, [orgId, organizationId, schoolName, orgLoading]);
 
   const loadStudents = async () => {
     setLoading(true);
     try {
       let stdData: any[] = [];
       try {
-        const res = await (supabase.from("student_records") as any)
-          .select("id, user_id, display_name, org_id, school_name, role")
-          .eq("org_id", currentOrgId);
+        let query = (supabase.from("student_records") as any).select(
+          "id, user_id, display_name, org_id, school_name, role",
+        );
+        if (orgId) {
+          query = query.or(`org_id.eq.${orgId},school_name.ilike.%${schoolName}%`);
+        } else if (schoolName) {
+          query = query.ilike("school_name", `%${schoolName}%`);
+        }
+        const res = await query;
         if (res.error) throw res.error;
         stdData = res.data || [];
       } catch (e: any) {
-        console.error("Error loading student records:", e);
-        // Fallback to profiles if student_records is missing
-        const res = await supabase
-          .from("profiles")
-          .select("id, display_name, org_id, school_name, role")
-          .eq("org_id", currentOrgId);
+        console.error("Error loading student records, falling back to profiles:", e);
+        // Fallback to profiles table
+        let query = supabase.from("profiles").select("id, display_name, org_id, school_name, role");
+        if (orgId) {
+          query = query.or(`org_id.eq.${orgId},school_name.ilike.%${schoolName}%`);
+        } else if (schoolName) {
+          query = query.ilike("school_name", `%${schoolName}%`);
+        }
+        const res = await query;
         stdData = res.data?.map((s) => ({ ...s, user_id: s.id, org_id: s.org_id })) || [];
       }
 
+      // Filter with single source of truth helper
+      const matchedProfiles = filterByOrganization(stdData);
+
       let subData: any[] = [];
       try {
-        const res = await (supabase.from("project_submissions") as any)
-          .select("student_id, total_competency_score, school_key")
-          .eq("school_key", currentOrgId);
+        let subQuery = (supabase.from("project_submissions") as any).select(
+          "student_id, total_competency_score, school_key",
+        );
+        if (organizationId) {
+          subQuery = subQuery.eq("school_key", organizationId);
+        }
+        const res = await subQuery;
         if (!res.error && res.data) {
           subData = res.data;
         }
@@ -55,8 +74,8 @@ function StudentsPage() {
         console.warn("Could not load submissions for scores", e);
       }
 
-      if (stdData.length > 0) {
-        const mappedStudents = stdData
+      if (matchedProfiles.length > 0) {
+        const mappedStudents = matchedProfiles
           .filter((s: any) => s.role === "student" || s.role === "student_monitor")
           .map((s: any) => {
             const studentSubs =
@@ -78,7 +97,8 @@ function StudentsPage() {
               role: s.role || "student",
               level: s.level || "S1",
               stream: s.stream || "Stream A",
-              org_id: s.org_id || s.school_id,
+              org_id: s.org_id || s.school_id || organizationId,
+              school_name: s.school_name || schoolName,
               avgScore,
               submissionCount: studentSubs.length || 0,
             };

@@ -7,7 +7,14 @@ import { generateEmpathyResponse, getTimeContext } from "./empathy-engine";
  */
 export async function buildGreeting(
   persona: TutorPersona,
-  opts?: { name?: string; weather?: string; ad?: string; mood?: MoodSnapshot | null },
+  opts?: {
+    name?: string;
+    weather?: string;
+    ad?: string;
+    mood?: MoodSnapshot | null;
+    role?: string | null;
+    schoolName?: string | null;
+  },
 ): Promise<string> {
   const isOnline = typeof navigator !== "undefined" && navigator.onLine;
 
@@ -17,6 +24,8 @@ export async function buildGreeting(
     time: getTimeContext(),
     district: opts?.weather ? opts.weather.split(" in ")[1] : undefined,
     isOnline: isOnline,
+    role: opts?.role,
+    schoolName: opts?.schoolName,
   };
 
   const greeting = await generateEmpathyResponse(persona, context, "greeting");

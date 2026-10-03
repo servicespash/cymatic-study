@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { useOrganization } from "@/hooks/useOrganization";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -115,18 +116,8 @@ export async function fetchAndAggregatePerformanceData(
 }
 
 export function AdminPerformanceReportsModule() {
-  const { user, profile, organizationId } = useAuth();
-  const currentSchoolId = useMemo(
-    () =>
-      organizationId ||
-      profile?.organization_id ||
-      user?.user_metadata?.organization_id ||
-      (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_id") : "") ||
-      "SCH-UG-2026",
-    [profile, user, organizationId],
-  );
-
-  const schoolName = profile?.school_name || "Uganda NCDC Boarding Institution";
+  const { user, profile } = useAuth();
+  const { organizationId: currentSchoolId, schoolName } = useOrganization();
 
   const [loading, setLoading] = useState(true);
   const [selectedSubject, setSelectedSubject] = useState<string>("ALL");

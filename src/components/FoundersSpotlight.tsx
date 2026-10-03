@@ -1,4 +1,4 @@
-import { ChevronDown, Mail, Quote, Sparkles, X, Globe } from "lucide-react";
+import { ChevronDown, Mail, Quote, Zap, X, Globe, Award } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 // No import needed for public assets
 const founderImg = "/founder-Latif-profile.jpg";
@@ -26,7 +26,7 @@ export function FoundersSpotlight() {
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/45 via-transparent to-primary/10" />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
                     <div className="bg-black/20 backdrop-blur-sm p-2 rounded-full">
-                      <Sparkles className="h-5 w-5 text-white" />
+                      <Zap className="h-5 w-5 text-white" />
                     </div>
                   </div>
                 </button>
@@ -75,7 +75,7 @@ export function FoundersSpotlight() {
 
           <div className="min-w-0 text-center sm:text-left">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-              <Sparkles className="h-3 w-3" /> Founder's Spotlight
+              <Award className="h-3 w-3" /> Founder's Spotlight
             </span>
             <h2 className="mt-3 text-2xl font-black leading-tight tracking-tight text-foreground sm:text-3xl">
               The Vision Behind the Evolution

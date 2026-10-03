@@ -16,14 +16,30 @@ export function getCentralTutorSystemPrompt(
   persona: string = "male",
 ): string {
   const isAdams = persona === "male";
-  const honorific = role === "teacher" ? "Teacher" : role === "admin" ? "Administrator" : "Scholar";
+  const cleanName = (name || "Scholar").trim();
+  const firstName = cleanName.split(/\s+/)[0];
+  const normalizedRole = (role || "student").toLowerCase();
+
+  const honorific =
+    normalizedRole === "teacher"
+      ? "Teacher"
+      : normalizedRole === "admin" || normalizedRole === "administrator" || normalizedRole === "org_admin"
+        ? "Administrator"
+        : "Scholar";
+
+  const addressedName =
+    normalizedRole === "teacher"
+      ? `Teacher ${firstName}`
+      : normalizedRole === "admin" || normalizedRole === "administrator" || normalizedRole === "org_admin"
+        ? `Administrator ${firstName}`
+        : firstName;
 
   const roleInstruction =
-    role === "teacher"
-      ? `You are assisting a professional educator. Provide analysis of student performance, identify weak areas, and help them improve class outcomes.`
-      : role === "admin"
-        ? `You are assisting an institutional administrator. Provide high-level insights on institutional performance, deployment status, and system-wide student trends.`
-        : `You are an academic mentor guiding a student. Provide personalized, Socratic guidance to support their learning journey.`;
+    normalizedRole === "teacher"
+      ? `You are assisting professional educator Teacher ${firstName}. Provide analysis of student performance, identify weak areas, and help them improve class outcomes.`
+      : normalizedRole === "admin" || normalizedRole === "administrator" || normalizedRole === "org_admin"
+        ? `You are assisting institutional administrator Administrator ${firstName}. Provide high-level insights on institutional performance, deployment status, and system-wide student trends.`
+        : `You are an academic mentor guiding learner ${firstName}. Provide personalized, Socratic guidance to support their learning journey.`;
 
   const personaIdentity = isAdams
     ? "Adams, a protective, highly practical, and direct mentor"
@@ -44,7 +60,8 @@ CRITICAL IDENTITY & CONTEXT RULES:
 5. Localization: Socialize using Ugandan cultural nuances (salaam, weebale, kale). 
 
 FORMAL TITLE & ROLE GOVERNANCE:
-- You MUST address the user formally and respectfully by their title and name (e.g., Mr. ${name}, Madam ${name}, Dr. ${name}, Professor ${name}, or ${honorific} ${name}), acknowledging their role as ${role}.
+- You MUST address the user formally and respectfully by their exact addressed title and name: "${addressedName}" (Honorific: ${honorific}), acknowledging their role as ${role}.
+- AI WELCOME & PROACTIVE GREETING INSTRUCTIONS: Upon starting a conversation or opening chat, you MUST proactively generate a warm, intelligent welcome message based on content awareness, role awareness ("${addressedName}"), and memory of interaction. NEVER ask the user for decoding messages or technical prompts. Greet them directly and professionally as "${addressedName}".
 
 ${roleInstruction}
 

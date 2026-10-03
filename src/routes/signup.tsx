@@ -21,7 +21,11 @@ import { lovable } from "@/integrations/lovable/index";
 import { useRoleRedirect } from "@/hooks/useRoleRedirect";
 import { toast } from "sonner";
 import { QRScannerModal } from "@/components/QRScannerModal";
-import { validateNcdcSchoolId } from "@/lib/school-id-validator";
+import {
+  validateNcdcSchoolId,
+  getSchoolShortCode,
+  generateNcdcBoardingSchoolId,
+} from "@/lib/school-id-validator";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Join the Hub — Cymatic Study" }] }),
@@ -172,39 +176,127 @@ function SignupPage() {
       let issuedSchoolId: string | null = null;
 
       if (mode === "register-institution") {
-        const { data: orgRes, error: rpcErr } = await (supabase as any).rpc(
-          "register_institution",
-          {
-            _name: cleanSchoolName,
-            _email: cleanEmail,
-            _phone: cleanPhone || null,
-          },
-        );
-        if (rpcErr) throw rpcErr;
-        issuedSchoolId = (orgRes as any)?.school_key ?? (orgRes as any)?.key ?? null;
-        if (!issuedSchoolId) throw new Error("Server did not return a School ID. Please retry.");
+        const shortCode = getSchoolShortCode(cleanSchoolName);
+        issuedSchoolId = generateNcdcBoardingSchoolId(cleanSchoolName);
+        let resolvedOrgId = null;
+
+        try {
+          const { data: orgRes, error: rpcErr } = await (supabase as any).rpc(
+            "register_institution",
+            {
+              _name: cleanSchoolName,
+              _email: cleanEmail,
+              _phone: cleanPhone || null,
+            },
+          );
+          if (!rpcErr && orgRes) {
+            const orgInfo = Array.isArray(orgRes) ? orgRes[0] : orgRes;
+            resolvedOrgId = orgInfo?.id ?? orgInfo?.org_id ?? null;
+          }
+        } catch (rpcEx) {
+          console.warn("register_institution RPC fallback:", rpcEx);
+        }
+
+        // Direct DB synchronization to ensure short form organization ID is retained
+        try {
+          if (resolvedOrgId) {
+            await supabase
+              .from("organizations")
+              .update({
+                school_key: issuedSchoolId,
+                name: cleanSchoolName,
+              })
+              .eq("id", resolvedOrgId);
+          } else {
+            const newOrgUUID =
+              typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : undefined;
+            const { data: createdOrg } = await supabase
+              .from("organizations")
+              .upsert({
+                id: newOrgUUID,
+                name: cleanSchoolName,
+                school_key: issuedSchoolId,
+                creator_user_id: data.user.id,
+                email: cleanEmail,
+              })
+              .select()
+              .maybeSingle();
+
+            if (createdOrg) {
+              resolvedOrgId = createdOrg.id;
+            }
+          }
+        } catch (dbOrgErr) {
+          console.warn("Organization table persistence notice:", dbOrgErr);
+        }
+
+        if (resolvedOrgId) {
+          profilePatch.org_id = resolvedOrgId;
+          profilePatch.school_name = cleanSchoolName;
+          profilePatch.role = "admin";
+
+          // Update user metadata so the session has the organization parameters immediately
+          try {
+            await supabase.auth.updateUser({
+              data: {
+                org_id: resolvedOrgId,
+                organization_uuid: resolvedOrgId,
+                school_name: cleanSchoolName,
+                school_id: issuedSchoolId,
+                organization_id: issuedSchoolId,
+                role: "admin",
+              },
+            });
+
+            if (typeof window !== "undefined") {
+              localStorage.setItem("cymatic_org_uuid", resolvedOrgId);
+              localStorage.setItem("cymatic_org_id", issuedSchoolId);
+              localStorage.setItem("cymatic_school_id", issuedSchoolId);
+              localStorage.setItem("cymatic_school_name", cleanSchoolName);
+              localStorage.setItem("cymatic_user_role", "admin");
+            }
+          } catch (metaErr) {
+            console.warn("Failed to update admin metadata during signup:", metaErr);
+          }
+        }
       } else if (mode === "join-teacher" || mode === "join-student") {
         if (cleanSchoolId) {
           try {
-            const { data: orgData } = await (supabase as any).rpc("lookup_organization_by_key", {
-              _school_key: cleanSchoolId,
-            });
             let resolvedOrgId = null;
             let resolvedOrgName = null;
-            if (orgData && orgData.length > 0) {
-              resolvedOrgId = orgData[0].id;
-              resolvedOrgName = orgData[0].name;
-            } else {
-              const { data: orgDirect } = await supabase
+
+            let orgDirect = null;
+            const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            if (uuidPattern.test(cleanSchoolId)) {
+              const { data } = await supabase
                 .from("organizations")
-                .select("id, name")
+                .select("id, name, school_key")
+                .eq("id", cleanSchoolId)
+                .maybeSingle();
+              orgDirect = data;
+            } else {
+              const { data } = await supabase
+                .from("organizations")
+                .select("id, name, school_key")
                 .ilike("school_key", cleanSchoolId)
                 .maybeSingle();
-              if (orgDirect) {
-                resolvedOrgId = orgDirect.id;
-                resolvedOrgName = orgDirect.name;
+              orgDirect = data;
+            }
+
+            if (orgDirect) {
+              resolvedOrgId = orgDirect.id;
+              resolvedOrgName = orgDirect.name;
+            } else {
+              const { data: orgData } = await (supabase as any).rpc("lookup_organization_by_key", {
+                _school_key: cleanSchoolId,
+              });
+              if (orgData && orgData.length > 0) {
+                resolvedOrgId = orgData[0].id;
+                resolvedOrgName = orgData[0].name;
               }
             }
+
+            const canonicalSchoolKey = orgDirect?.school_key || cleanSchoolId;
 
             if (resolvedOrgId) {
               profilePatch.org_id = resolvedOrgId;
@@ -213,7 +305,7 @@ function SignupPage() {
 
             if (mode === "join-student") {
               const { error: enrollErr } = await (supabase as any).rpc("enroll_self_in_school", {
-                _school_key: cleanSchoolId,
+                _school_key: canonicalSchoolKey,
                 _level: "S1",
                 _phone: cleanPhone || null,
               });
@@ -221,8 +313,29 @@ function SignupPage() {
                 console.warn("Enroll RPC notice:", enrollErr);
               }
             }
+
+            // Sync user metadata and local storage for students/teachers
+            try {
+              await supabase.auth.updateUser({
+                data: {
+                  org_id: resolvedOrgId,
+                  organization_uuid: resolvedOrgId,
+                  school_name: resolvedOrgName,
+                  school_id: canonicalSchoolKey,
+                  organization_id: canonicalSchoolKey,
+                  role: mappedRole,
+                },
+              });
+            } catch (metaErr) {
+              console.warn("Member metadata update notice:", metaErr);
+            }
+
             if (typeof window !== "undefined") {
-              localStorage.setItem("cymatic_school_id", cleanSchoolId);
+              localStorage.setItem("cymatic_school_id", canonicalSchoolKey);
+              localStorage.setItem("cymatic_org_id", canonicalSchoolKey);
+              if (resolvedOrgName) localStorage.setItem("cymatic_school_name", resolvedOrgName);
+              if (resolvedOrgId) localStorage.setItem("cymatic_org_uuid", resolvedOrgId);
+              localStorage.setItem("cymatic_user_role", mappedRole);
             }
           } catch (enrollEx) {
             console.warn("School enrollment exception:", enrollEx);
@@ -230,7 +343,13 @@ function SignupPage() {
         }
       }
 
-      await (supabase as any).from("profiles").update(profilePatch).eq("user_id", data.user.id);
+      await (supabase as any).from("profiles").upsert(
+        {
+          user_id: data.user.id,
+          ...profilePatch,
+        },
+        { onConflict: "user_id" },
+      );
 
       if (referralCode) {
         if (data.session) {
@@ -247,7 +366,24 @@ function SignupPage() {
         void sendInstitutionWelcomeEmail(cleanSchoolName, issuedSchoolId, cleanName, cleanEmail);
         setGeneratedSchoolId(issuedSchoolId);
         setSubmitting(false);
-        toast.success("School registered successfully!", { id: toastId });
+        toast.success("Institutional Headquarters established successfully!", { id: toastId });
+
+        // Refresh profile if session exists to sync the new organization
+        if (data.session) {
+          try {
+            await (supabase as any).auth.updateUser({
+              data: {
+                org_id: profilePatch.org_id,
+                organization_uuid: profilePatch.org_id,
+                school_id: issuedSchoolId,
+                organization_id: issuedSchoolId,
+                school_name: cleanSchoolName,
+              },
+            });
+          } catch (e) {
+            console.warn("Post-signup metadata sync notice:", e);
+          }
+        }
         return;
       }
 

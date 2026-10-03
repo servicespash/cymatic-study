@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { useOrganization } from "@/hooks/useOrganization";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   User,
@@ -24,7 +25,9 @@ interface UserProfileCardProps {
 }
 
 export function UserProfileCard({ className = "", showActions = true }: UserProfileCardProps) {
-  const { user, profile, signOut, isInstitutional, isTeacher, isAdmin, organizationId } = useAuth();
+  const { user, profile, signOut } = useAuth();
+  const { organizationId: schoolId, schoolName, isAdmin: isUserAdmin, isTeacher, isInstitutional } =
+    useOrganization();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -48,13 +51,10 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
     );
   }
 
-  const schoolId =
-    profile?.organization_id || profile?.school_id || localStorage.getItem("cymatic_school_id");
-  const schoolName = profile?.school_name || "Your Institution";
   const displayName =
     profile?.display_name || profile?.full_name || user.email?.split("@")[0] || "Scholar";
   const userEmail = user.email || "";
-  const roleTitle = isAdmin
+  const roleTitle = isUserAdmin
     ? "School Administrator"
     : isTeacher
       ? "Educator / Teacher"
@@ -62,16 +62,16 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
         ? "Institutional Scholar"
         : "Independent Scholar";
 
-  const displaySchoolId = organizationId || schoolId;
+  const displaySchoolId = schoolId;
 
   const handleCopySchoolId = () => {
     if (!schoolId) {
-      toast.info("No School ID set. You can set your School ID in Settings.");
+      toast.info("No Organization ID set. You can set it in Settings.");
       return;
     }
     navigator.clipboard.writeText(schoolId);
     setCopied(true);
-    toast.success(`School ID copied to clipboard: ${schoolId}`);
+    toast.success(`Organization ID copied: ${schoolId}`);
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -136,9 +136,9 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
               <IdCard className="h-4 w-4 text-primary" />
               <div className="flex flex-col">
                 <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
-                  School ID
+                  Organization ID
                 </span>
-                <span className="text-xs font-mono font-bold text-foreground">
+                <span className="text-xs font-mono font-bold text-foreground truncate max-w-[140px] sm:max-w-[200px]">
                   {displaySchoolId || "Not Configured"}
                 </span>
               </div>
@@ -148,7 +148,7 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
               <button
                 onClick={handleCopySchoolId}
                 className="h-8 px-2.5 rounded-xl bg-background border border-border hover:border-primary/40 text-xs font-semibold flex items-center gap-1 transition-colors"
-                title="Copy School ID"
+                title="Copy Organization ID"
               >
                 {copied ? (
                   <Check className="h-3.5 w-3.5 text-emerald-500" />
@@ -191,7 +191,7 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
         </div>
       </div>
       {/* Admin/Teacher sharing tools */}
-      {schoolId && (isAdmin || isTeacher) && (
+      {schoolId && (isUserAdmin || isTeacher) && (
         <div className="mt-4 pt-4 border-t border-border/40 space-y-2.5">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1">
@@ -199,13 +199,13 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
               Invite Scholars & Teachers
             </span>
             <span className="text-[9px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded">
-              School ID: {schoolId}
+              Org ID: {schoolId}
             </span>
           </div>
           <div className="grid grid-cols-3 gap-2">
             <button
               onClick={() => {
-                const inviteMsg = `Salaam! Join "${schoolName}" on Cymatic Study.\n\nSchool ID: ${schoolId}\n\nClick the link to join and link your account automatically: ${window.location.origin}/signup?school_id=${schoolId}`;
+                const inviteMsg = `Join "${schoolName}" on Cymatic Study.\n\nOrganization ID: ${schoolId}\n\nClick link to join automatically: ${window.location.origin}/signup?school_id=${schoolId}`;
                 navigator.clipboard.writeText(inviteMsg);
                 toast.success("Complete invitation message copied to clipboard!");
               }}
@@ -215,7 +215,7 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
               Copy Msg
             </button>
             <a
-              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Salaam! Join our school "${schoolName}" on Lattys Cymatic Study.\n\nUse School ID: ${schoolId}\n\nClick here to register and link your account automatically: ${window.location.origin}/signup?school_id=${schoolId}`)}`}
+              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Join our school "${schoolName}" on Cymatic Study.\n\nUse Organization ID: ${schoolId}\n\nClick here to register and link automatically: ${window.location.origin}/signup?school_id=${schoolId}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-1.5 h-9 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors shadow-sm"
@@ -223,7 +223,7 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
               WhatsApp
             </a>
             <a
-              href={`mailto:?subject=${encodeURIComponent(`Invitation to join ${schoolName} on Cymatic Study`)}&body=${encodeURIComponent(`Hello,\n\nYou are invited to join "${schoolName}" on Cymatic Study. \n\nUse School ID: ${schoolId}\n\nClick the link below to register and link your account automatically:\n${window.location.origin}/signup?school_id=${schoolId}\n\nBest regards.`)}`}
+              href={`mailto:?subject=${encodeURIComponent(`Invitation to join ${schoolName} on Cymatic Study`)}&body=${encodeURIComponent(`Hello,\n\nYou are invited to join "${schoolName}" on Cymatic Study. \n\nUse Organization ID: ${schoolId}\n\nClick the link below to register and link your account automatically:\n${window.location.origin}/signup?school_id=${schoolId}\n\nBest regards.`)}`}
               className="inline-flex items-center justify-center gap-1.5 h-9 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-colors shadow-sm"
             >
               Email Invite
@@ -232,8 +232,8 @@ export function UserProfileCard({ className = "", showActions = true }: UserProf
         </div>
       )}
 
-      {/* Digital QR Code Identity Strip (if School ID is set) */}
-      {schoolId && (
+      {/* Digital QR Code Identity Strip (shown on dashboard, hidden in compact settings) */}
+      {schoolId && showActions && (
         <div className="mt-4 pt-4 border-t border-border/40">
           <SchoolIdQRCode
             schoolId={schoolId}

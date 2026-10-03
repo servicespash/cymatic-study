@@ -26,29 +26,40 @@ export function TeacherApprovalTable() {
 
   async function fetchPendingTeachers() {
     setLoading(true);
+    // Join with public.users to get email and verification status
+    // Use any cast to bypass missing relationship types
     const { data, error } = await (supabase as any)
       .from("profiles")
-      .select("*")
+      .select(`
+        *,
+        users:user_id (
+          email,
+          is_verified
+        )
+      `)
       .eq("org_id", schoolId)
-      .eq("role", "teacher")
-      .eq("is_verified", false);
+      .eq("role", "teacher");
 
     if (error) {
       console.error("Error fetching pending teachers:", error);
       toast.error("Failed to load pending teachers");
     } else {
-      setPendingTeachers(data || []);
+      // Filter manually if the join doesn't support nested filtering reliably on all versions
+      const filtered = (data || []).filter((p: any) => p.users?.is_verified === false);
+      setPendingTeachers(filtered);
     }
     setLoading(false);
   }
 
   async function handleApprove(userId: string) {
+    // Update verification status in the users table
     const { error } = await (supabase as any)
-      .from("profiles")
+      .from("users")
       .update({ is_verified: true })
-      .eq("user_id", userId);
+      .eq("id", userId);
 
     if (error) {
+      console.error("Approval error:", error);
       toast.error("Failed to approve teacher");
     } else {
       toast.success("Teacher approved successfully");
@@ -72,8 +83,8 @@ export function TeacherApprovalTable() {
         <TableBody>
           {pendingTeachers.map((teacher) => (
             <TableRow key={teacher.user_id}>
-              <TableCell>{teacher.full_name || "N/A"}</TableCell>
-              <TableCell>{teacher.email}</TableCell>
+              <TableCell>{teacher.display_name || teacher.full_name || "N/A"}</TableCell>
+              <TableCell>{teacher.users?.email || teacher.email || "N/A"}</TableCell>
               <TableCell>
                 <Button variant="ghost" size="sm" onClick={() => handleApprove(teacher.user_id)}>
                   <CheckCircle className="w-5 h-5 text-green-500" />

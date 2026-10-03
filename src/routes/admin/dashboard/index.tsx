@@ -75,6 +75,7 @@ import { BulkQRGenerator } from "@/components/BulkQRGenerator";
 import { DisciplineNudges } from "@/components/DisciplineNudges";
 import { SupabaseLivePulseHeader } from "@/components/SupabaseLivePulseHeader";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
+import { useOrganization } from "@/hooks/useOrganization";
 
 export const Route = createFileRoute("/admin/dashboard/")({
   head: () => ({
@@ -168,12 +169,19 @@ function AdminDashboard() {
   const [feedbackList, setFeedbackList] = useState<any[]>([]);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
 
-  const currentOrgId = profile?.org_id || user?.user_metadata?.org_id || org?.id || "";
+  const {
+    organizationId: currentOrgId,
+    orgId: currentOrgUUID,
+    schoolName: currentSchoolName,
+    shortCode,
+    filterByOrganization,
+    isAdmin,
+  } = useOrganization();
 
   useEffect(() => {
     if (!user?.id) return;
     fetchOrgData();
-  }, [user?.id, profile?.organization_id]);
+  }, [user?.id, profile?.org_id, currentOrgUUID, currentOrgId]);
 
   if (!user) return null;
 
@@ -185,26 +193,32 @@ function AdminDashboard() {
       .from("profiles")
       .select("org_id, school_name, organizations(*)")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
-    const activeSchoolId = prof?.org_id || user?.user_metadata?.org_id || "";
-    const activeOrgName = prof?.organizations?.name || prof?.school_name || "Institutional School";
+    const activeSchoolId = currentOrgUUID || prof?.org_id || user?.user_metadata?.org_id || "";
+    const activeOrgName =
+      currentSchoolName ||
+      prof?.organizations?.name ||
+      prof?.school_name ||
+      "Cymatic Study Ecosystem";
+    const activeHumanId =
+      currentOrgId || prof?.organizations?.school_key || user?.user_metadata?.school_id || "";
 
-    if (!activeSchoolId) {
+    if (!activeSchoolId && !isAdmin) {
       setIsOnboardingNeeded(true);
     } else {
       setIsOnboardingNeeded(false);
       if (prof?.organizations) {
         setOrg(prof.organizations);
       } else {
-        setOrg(null);
-        if (activeSchoolId) {
-          // If we have an ID but no record, it might be an orphaned admin or first-time setup
-          console.warn(`[Admin] Organization record not found for ID: ${activeSchoolId}`);
-        }
+        setOrg({
+          id: activeSchoolId,
+          name: activeOrgName,
+          school_key: activeHumanId,
+        });
       }
-      loadDashboardStats(activeSchoolId);
-      loadClassStudentsAndSubmissions(activeSchoolId, activeOrgName);
+      loadDashboardStats(activeSchoolId, activeHumanId);
+      loadClassStudentsAndSubmissions(activeSchoolId, activeOrgName, activeHumanId);
       loadFeedback();
     }
   };
@@ -258,18 +272,22 @@ function AdminDashboard() {
     }
   };
 
-  const loadDashboardStats = async (orgId: string) => {
-    // 1. Fetch profiles by org_id or school_id
-    const { data: allProfiles } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("org_id", orgId);
+  const loadDashboardStats = async (orgId: string, orgHumanId?: string) => {
+    // 1. Fetch profiles by org_id or school_name
+    let profQuery = supabase.from("profiles").select("role, level, school_name, org_id");
+    if (orgId) {
+      profQuery = profQuery.or(`org_id.eq.${orgId},school_name.ilike.%${currentSchoolName}%`);
+    } else {
+      profQuery = profQuery.ilike("school_name", `%${currentSchoolName}%`);
+    }
+    const { data: rawProfiles } = await profQuery;
+    const allProfiles = filterByOrganization(rawProfiles || []);
 
     const counts = { S1: 0, S2: 0, S3: 0, S4: 0, S5: 0, S6: 0 };
     let studentCount = 0;
     let teacherCount = 0;
 
-    allProfiles?.forEach((s) => {
+    allProfiles.forEach((s) => {
       const rawRole = (s.role || "").toLowerCase();
       if (rawRole.includes("teacher")) {
         teacherCount++;
@@ -284,18 +302,36 @@ function AdminDashboard() {
     });
 
     // 2. Fetch pending submissions
-    const { count: pendingCount } = await supabase
-      .from("project_submissions")
-      .select("*", { count: "exact", head: true })
-      .eq("org_id", orgId)
-      .eq("status", "pending");
+    let pendingCount = 0;
+    try {
+      let subQuery = supabase
+        .from("project_submissions")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending");
+      if (orgHumanId) {
+        subQuery = subQuery.eq("school_key", orgHumanId);
+      }
+      const { count } = await subQuery;
+      if (typeof count === "number") pendingCount = count;
+    } catch (e) {
+      console.warn("Pending subs count query notice:", e);
+    }
 
     // 3. Fetch active teachers (users with teacher role in this org)
-    const { data: teachersInSubs } = await supabase
-      .from("project_submissions")
-      .select("teacher_id, teacher_name")
-      .eq("org_id", orgId)
-      .not("teacher_id", "is", null);
+    let teachersInSubs: any[] = [];
+    try {
+      let teacherSubQuery = supabase
+        .from("project_submissions")
+        .select("teacher_id, teacher_name")
+        .not("teacher_id", "is", null);
+      if (orgHumanId) {
+        teacherSubQuery = teacherSubQuery.eq("school_key", orgHumanId);
+      }
+      const { data } = await teacherSubQuery;
+      teachersInSubs = data || [];
+    } catch (e) {
+      console.warn("Teacher subs query notice:", e);
+    }
 
     const uniqueTeachers = new Set(teachersInSubs?.map((t) => t.teacher_id));
     const finalTeacherCount = Math.max(teacherCount, uniqueTeachers.size);
@@ -359,10 +395,17 @@ function AdminDashboard() {
 
     // 6. Bottleneck analytics
     // Aggregate pending vs verified per teacher
-    const { data: bottlenecks } = await supabase
-      .from("project_submissions")
-      .select("teacher_name, status")
-      .eq("org_id", orgId);
+    let bottlenecks: any[] = [];
+    try {
+      let bnQuery = supabase.from("project_submissions").select("teacher_name, status");
+      if (orgHumanId) {
+        bnQuery = bnQuery.eq("school_key", orgHumanId);
+      }
+      const { data } = await bnQuery;
+      bottlenecks = data || [];
+    } catch (e) {
+      console.warn("Bottleneck query notice:", e);
+    }
 
     const teacherMap: Record<string, { pending: number; verified: number }> = {};
     bottlenecks?.forEach((b) => {
@@ -381,18 +424,39 @@ function AdminDashboard() {
     );
   };
 
-  const loadClassStudentsAndSubmissions = async (orgId: string, orgName: string) => {
+  const loadClassStudentsAndSubmissions = async (
+    orgId: string,
+    orgName: string,
+    orgHumanId?: string,
+  ) => {
     setLoadingList(true);
     try {
       // Load profiles/students
-      const { data: stdData } = await (supabase.from("profiles") as any)
-        .select("id, user_id, display_name, org_id, school_name, role")
-        .eq("org_id", orgId);
+      let profQuery = (supabase.from("profiles") as any).select(
+        "id, user_id, display_name, org_id, school_name, role",
+      );
+      if (orgId) {
+        profQuery = profQuery.or(`org_id.eq.${orgId},school_name.ilike.%${orgName}%`);
+      } else {
+        profQuery = profQuery.ilike("school_name", `%${orgName}%`);
+      }
+      const { data: rawStdData } = await profQuery;
+      const stdData = filterByOrganization(rawStdData || []);
 
       // Load project submissions
-      const { data: subData } = await (supabase.from("project_submissions") as any)
-        .select("id, student_id, total_competency_score, teacher_name, status, created_at, org_id")
-        .eq("org_id", orgId);
+      let subData: any[] = [];
+      try {
+        let subQuery = (supabase.from("project_submissions") as any).select(
+          "id, student_id, total_competency_score, teacher_name, status, created_at, school_key",
+        );
+        if (orgHumanId) {
+          subQuery = subQuery.eq("school_key", orgHumanId);
+        }
+        const { data } = await subQuery;
+        subData = data || [];
+      } catch (e) {
+        console.warn("Submissions query notice:", e);
+      }
 
       // No auto-seeding of fake mock records; respect real institutional data integrity
       if (stdData && stdData.length > 0) {

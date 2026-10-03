@@ -39,6 +39,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { generateStudentRegistryCode } from "@/lib/auth-router";
+import { generateNcdcBoardingSchoolId } from "@/lib/school-id-validator";
+import { useOrganization } from "@/hooks/useOrganization";
+import { RefreshCw } from "lucide-react";
 
 export interface RegistryMember {
   id: string;
@@ -54,15 +57,16 @@ export interface RegistryMember {
 }
 
 export function InstitutionalRegistryModule() {
-  const { user, profile } = useAuth();
-  const currentSchoolId =
-    profile?.org_id ||
-    (typeof window !== "undefined" ? localStorage.getItem("cymatic_org_id") : "") ||
-    "SCH-UG-2026";
-
-  const schoolName = profile?.school_name || "Uganda NCDC Boarding Institution";
+  const { user } = useAuth();
+  const {
+    organizationId: currentSchoolId,
+    orgId: orgUUID,
+    schoolName,
+    regenerateOrganizationId,
+  } = useOrganization();
 
   // State for form
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [memberType, setMemberType] = useState<"teacher" | "student">("student");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -79,10 +83,14 @@ export function InstitutionalRegistryModule() {
     async function loadRoster() {
       setLoadingData(true);
       try {
-        const { data: dbProfiles, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("org_id", currentSchoolId);
+        let query = supabase.from("profiles").select("*");
+        if (orgUUID) {
+          query = query.or(`org_id.eq.${orgUUID},school_name.ilike.%${schoolName.trim()}%`);
+        } else {
+          query = query.ilike("school_name", `%${schoolName.trim()}%`);
+        }
+
+        const { data: dbProfiles, error } = await query.limit(100);
 
         if (error) throw error;
 
@@ -101,7 +109,7 @@ export function InstitutionalRegistryModule() {
               subject: isTeacher ? p.tutor_persona || "Science & STEM" : undefined,
               registryCode:
                 p.referral_code ||
-                `${isTeacher ? "TCH" : "STD"}-${currentSchoolId.slice(-4)}-${p.id.slice(-4)}`,
+                `${isTeacher ? "TCH" : "STD"}-${String(currentSchoolId).slice(-4)}-${p.id.slice(-4)}`,
               status: "active",
               created_at: p.created_at
                 ? p.created_at.split("T")[0]
@@ -120,7 +128,7 @@ export function InstitutionalRegistryModule() {
       }
     }
     loadRoster();
-  }, [currentSchoolId]);
+  }, [currentSchoolId, orgUUID, schoolName]);
 
   const [activeFilter, setActiveFilter] = useState<"ALL" | "teacher" | "student">("ALL");
   const [searchTerm, setSearchTerm] = useState("");
@@ -201,6 +209,25 @@ export function InstitutionalRegistryModule() {
     }
   };
 
+  const handleRegenerateSchoolId = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to regenerate your Institution ID? Existing members can be resynced, and new members will need this new ID to join.",
+      )
+    ) {
+      return;
+    }
+
+    setIsRegenerating(true);
+    try {
+      await regenerateOrganizationId();
+    } catch (err: any) {
+      console.error("Regeneration error:", err);
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${label} copied to clipboard!`);
@@ -232,6 +259,16 @@ export function InstitutionalRegistryModule() {
             <span className="text-xs font-mono text-blue-400 font-bold">
               School ID: {currentSchoolId}
             </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={isRegenerating}
+              onClick={handleRegenerateSchoolId}
+              className="h-6 w-6 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+              title="Regenerate School ID"
+            >
+              <RefreshCw className={`h-3 w-3 ${isRegenerating ? "animate-spin" : ""}`} />
+            </Button>
           </div>
           <h2 className="text-2xl font-black uppercase tracking-tight text-white flex items-center gap-2">
             <Building2 className="h-6 w-6 text-blue-400" />

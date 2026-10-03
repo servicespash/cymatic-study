@@ -62,7 +62,7 @@ function TutorPageContent() {
     useTutorStore();
   const { persona, setPersona } = useTutorVoice();
   const { speak, stopSpeaking, speaking, setVoice, ttsEnabled, setTtsEnabled } = useTutor();
-  const { isAdmin, isTeacher, isStudent } = useAuth();
+  const { isAdmin, isTeacher, isStudent, schoolName } = useAuth();
   const userRole = isAdmin ? "admin" : isTeacher ? "teacher" : isStudent ? "student" : "unknown";
 
   const [input, setInput] = useState("");
@@ -140,10 +140,10 @@ function TutorPageContent() {
     if (messages.length === 0) {
       const roleGreeting =
         userRole === "teacher"
-          ? "Ready to plan today's lessons?"
+          ? `Ready to plan today's lessons for ${schoolName || "your school"}?`
           : userRole === "admin"
-            ? "Ready to manage your institution?"
-            : "Ready to dive into your studies today?";
+            ? `Ready to manage ${schoolName || "your institution"}?`
+            : `Ready to dive into your studies for ${schoolName || "your school"} today?`;
       const greeting: any = {
         id: crypto.randomUUID(),
         sender: "tutor" as const,
@@ -152,7 +152,7 @@ function TutorPageContent() {
       };
       setMessages([greeting]);
     }
-  }, [messages.length, setMessages, displayName, userRole]);
+  }, [messages.length, setMessages, displayName, userRole, schoolName]);
 
   useEffect(() => {
     const handleOnline = () => setOfflineMode(false);
@@ -175,7 +175,7 @@ function TutorPageContent() {
           .from("profiles")
           .select("full_name")
           .eq("user_id", user.id)
-          .single();
+          .maybeSingle();
         if (profile?.full_name) setDisplayName(profile.full_name);
       }
     }
@@ -240,6 +240,7 @@ function TutorPageContent() {
           userRole,
           persona === "Adams" ? "male" : "female",
           "general",
+          schoolName,
         );
         useTutorStore
           .getState()
@@ -297,6 +298,7 @@ function TutorPageContent() {
             messages: historyToSend,
             userName: displayName,
             userRole: userRole,
+            schoolName: schoolName,
             subject: "general",
           }),
         });
@@ -317,6 +319,7 @@ function TutorPageContent() {
             persona: persona === "Adams" ? "male" : "female",
             userName: displayName,
             userRole: userRole,
+            schoolName: schoolName,
             subject: "general",
           }),
         });

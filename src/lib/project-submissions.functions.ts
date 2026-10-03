@@ -259,7 +259,7 @@ export async function loadMyDraftSubmission() {
         "id,status,project_data,phase1_score,phase2_score,phase3_score,phase4_score,total_competency_score,teacher_name,teacher_comments,verified_at,is_verified",
       )
       .eq("student_user_id", user.id)
-      .eq("organization_id", profile?.organization_id ?? null)
+      .eq("school_key", profile?.org_id ?? null)
       .order("updated_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -307,7 +307,7 @@ export async function syncMyDraftSubmission(data: { projectData: any }) {
         .update({
           project_data: data.projectData,
           status: existing.status === "draft" ? "pending" : existing.status,
-          org_id: profile?.organization_id ?? null,
+          school_key: profile?.org_id ?? null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", existing.id)
@@ -322,7 +322,7 @@ export async function syncMyDraftSubmission(data: { projectData: any }) {
       .insert({
         student_user_id: user.id,
         student_id: user.id,
-        org_id: profile?.organization_id ?? null,
+        school_key: profile?.org_id ?? null,
         project_data: data.projectData,
         status: "pending",
       })

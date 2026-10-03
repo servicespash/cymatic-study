@@ -30,6 +30,16 @@ function DiagnosticsPage() {
       for (const table of REQUIRED_TABLES) {
         try {
           const { error } = await (supabase as any).from(table).select("id").limit(1);
+          
+          // Additional deep check for profiles columns if table exists
+          if (!error && table === "profiles") {
+            const { error: colErr } = await (supabase as any).from("profiles").select("is_verified, email").limit(1);
+            if (colErr && colErr.message?.includes("column")) {
+               setResults((prev) => ({ ...prev, [table]: { status: "missing", error: "Missing required columns: is_verified or email" } }));
+               continue;
+            }
+          }
+
           if (error) {
             if (error.code === "PGRST205" || error.message?.includes("cache")) {
               setResults((prev) => ({ ...prev, [table]: { status: "missing" } }));
@@ -56,7 +66,10 @@ function DiagnosticsPage() {
   const anyMissing = Object.values(results).some((r) => r.status === "missing");
 
   const copySql = () => {
-    const sql = `-- Run this in your Supabase SQL Editor to fix missing tables
+    const sql = `-- Run this in your Supabase SQL Editor to fix missing tables and columns
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT false;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT;
+
 CREATE TABLE IF NOT EXISTS public.organizations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,

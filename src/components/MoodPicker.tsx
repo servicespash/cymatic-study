@@ -10,12 +10,15 @@ import { toast } from "sonner";
 export const MoodPicker: React.FC<{ onSelect?: (m: UserMood) => void }> = ({ onSelect }) => {
   const { mood, setMood } = useUserMood();
   const { speak, persona } = useTutor();
-  const { user } = useAuth();
+  const { user, profile, role, schoolName } = useAuth();
   const navigate = useNavigate();
 
   const handleMoodSelect = async (m: UserMood) => {
     setMood(m);
     if (onSelect) onSelect(m);
+
+    const isOnline = typeof navigator !== "undefined" && navigator.onLine;
+    const name = profile?.display_name || user?.email?.split("@")[0] || "Scholar";
 
     // Side effects as per plan.md
     const feedback = await generateEmpathyResponse(
@@ -25,6 +28,8 @@ export const MoodPicker: React.FC<{ onSelect?: (m: UserMood) => void }> = ({ onS
         mood: m,
         time: getTimeContext(),
         isOnline,
+        role: role,
+        schoolName: schoolName,
       },
       "mood_change",
     );

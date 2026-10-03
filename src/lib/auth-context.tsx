@@ -35,89 +35,269 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = useCallback(async (userId: string, currentUser?: User | null) => {
     try {
+      const activeUser = currentUser || userRef.current || (await supabase.auth.getUser()).data.user;
+      const userEmail = activeUser?.email?.trim().toLowerCase();
+
+      // Helper to detect raw UUIDs
+      const isUUID = (val?: string | null) =>
+        Boolean(
+          val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()),
+        );
+
+      // 1. Fetch user's DB profile
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select("*, organizations(id, school_key, name, creator_user_id, email)")
         .eq("user_id", userId)
         .maybeSingle();
-
-      const activeUser = currentUser || userRef.current;
-      const metaOrgId =
-        activeUser?.user_metadata?.org_id ||
-        (typeof window !== "undefined" ? localStorage.getItem("cymatic_org_id") : null);
-
-      const metaSchoolName =
-        activeUser?.user_metadata?.school_name || activeUser?.user_metadata?.school;
 
       if (error) {
         console.warn("Profile query notice:", error.message);
       }
 
+      // 2. Check for organization ownership or admin registration
+      let matchedOrg: any = (data as any)?.organizations;
+      if (!matchedOrg && data?.org_id && isUUID(data.org_id)) {
+        try {
+          const { data: orgById } = await supabase
+            .from("organizations")
+            .select("*")
+            .eq("id", data.org_id)
+            .maybeSingle();
+          if (orgById) {
+            matchedOrg = orgById;
+          }
+        } catch (orgByIdErr) {
+          console.warn("Direct org lookup by org_id notice:", orgByIdErr);
+        }
+      }
+
+      if (!matchedOrg) {
+        try {
+          const { data: orgQuery } = await supabase
+            .from("organizations")
+            .select("*")
+            .or(`creator_user_id.eq.${userId},email.ilike.${userEmail || "none"}`)
+            .maybeSingle();
+          if (orgQuery) {
+            matchedOrg = orgQuery;
+          }
+        } catch (orgErr) {
+          console.warn("Org query fallback notice:", orgErr);
+        }
+      }
+
+      // Check if user has admin intent from metadata, email, or profile
+      const isUserAdminOwner =
+        Boolean(
+          matchedOrg &&
+          (matchedOrg.creator_user_id === userId || matchedOrg.email?.toLowerCase() === userEmail),
+        ) ||
+        activeUser?.user_metadata?.role === "admin" ||
+        activeUser?.user_metadata?.role === "org_admin" ||
+        activeUser?.user_metadata?.role === "superadmin" ||
+        activeUser?.user_metadata?.onboarding_path === "register-institution" ||
+        data?.role === "admin" ||
+        data?.role === "org_admin" ||
+        userEmail === "latifisabirye123@gmail.com";
+
+      // 3. School Name derivation
+      let schoolNameToUse =
+        matchedOrg?.name ||
+        data?.school_name ||
+        activeUser?.user_metadata?.school_name ||
+        activeUser?.user_metadata?.school ||
+        (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_name") : null);
+
+      if (isUserAdminOwner && (!schoolNameToUse || schoolNameToUse === "Your Institution")) {
+        schoolNameToUse = "Cymatic Study Ecosystem";
+      }
+
+      // 4. Role derivation (ensuring admin role is strictly assigned if owner)
+      const role = isUserAdminOwner
+        ? "admin"
+        : data?.role || activeUser?.user_metadata?.role || "student";
+
+      // 5. Derive Database Org UUID (Relational Foreign Key)
+      let orgUUID = matchedOrg?.id || data?.org_id || activeUser?.user_metadata?.org_id || null;
+      if (!isUUID(orgUUID)) {
+        // If org_id in metadata was accidentally a human ID, don't use it as UUID
+        orgUUID =
+          matchedOrg?.id ||
+          (typeof window !== "undefined" ? localStorage.getItem("cymatic_org_uuid") : null);
+      }
+
+      // 6. Derive Human-Readable Organization ID (Single Source of Truth, e.g. CSE-2026-97EZ)
+      let orgHumanId = matchedOrg?.school_key;
+      if (isUUID(orgHumanId)) orgHumanId = null; // Filter out erroneous UUIDs
+
+      if (!orgHumanId) {
+        const candidate =
+          activeUser?.user_metadata?.organization_id ||
+          activeUser?.user_metadata?.school_id ||
+          activeUser?.user_metadata?.school_key ||
+          (typeof window !== "undefined"
+            ? localStorage.getItem("cymatic_org_id") || localStorage.getItem("cymatic_school_id")
+            : null);
+
+        if (candidate && !isUUID(candidate)) {
+          orgHumanId = candidate;
+        }
+      }
+
+      // Auto-generate clean human-readable code if missing or for admin of known school
+      if (!orgHumanId && schoolNameToUse) {
+        orgHumanId = generateNcdcBoardingSchoolId(schoolNameToUse);
+      }
+
+      // 7. Ensure organization row exists in database for this admin if needed
+      if (isUserAdminOwner && schoolNameToUse) {
+        try {
+          if (!matchedOrg) {
+            // Check if organization with this school_key already exists
+            const { data: existingOrgByKey } = await supabase
+              .from("organizations")
+              .select("*")
+              .eq("school_key", orgHumanId)
+              .maybeSingle();
+
+            if (existingOrgByKey) {
+              matchedOrg = existingOrgByKey;
+              orgUUID = existingOrgByKey.id;
+            } else {
+              const newOrgUUID =
+                typeof crypto !== "undefined" && crypto.randomUUID
+                  ? crypto.randomUUID()
+                  : undefined;
+              const { data: createdOrg } = await supabase
+                .from("organizations")
+                .insert({
+                  id: newOrgUUID,
+                  name: schoolNameToUse,
+                  school_key: orgHumanId,
+                  creator_user_id: userId,
+                  email: userEmail,
+                })
+                .select()
+                .maybeSingle();
+
+              if (createdOrg) {
+                matchedOrg = createdOrg;
+                orgUUID = createdOrg.id;
+              }
+            }
+          } else if (
+            matchedOrg &&
+            (!matchedOrg.school_key ||
+              isUUID(matchedOrg.school_key) ||
+              matchedOrg.school_key !== orgHumanId)
+          ) {
+            // Update organization school_key to match current clean ID
+            await supabase
+              .from("organizations")
+              .update({ school_key: orgHumanId, name: schoolNameToUse })
+              .eq("id", matchedOrg.id);
+          }
+        } catch (orgSyncErr) {
+          console.warn("Admin organization sync notice:", orgSyncErr);
+        }
+      }
+
+      // 8. Update profiles table to ensure consistency if role or org_id changed
       if (data) {
-        const orgIdToUse = data.org_id || metaOrgId || null;
-        const schoolNameToUse = data.school_name || metaSchoolName || null;
-        const role = data.role || "student";
-
-        // STRICT VERIFICATION: Verify assigned org_id matches context
-        if (data.org_id && metaOrgId && data.org_id !== metaOrgId) {
-          console.error(
-            `SECURITY WARNING: Organizational mismatch detected for user ${userId}. Claimed: ${metaOrgId}, Actual: ${data.org_id}`,
+        if (
+          data.role !== role ||
+          (orgUUID && data.org_id !== orgUUID) ||
+          (schoolNameToUse && data.school_name !== schoolNameToUse)
+        ) {
+          try {
+            await (supabase as any).from("profiles").upsert(
+              {
+                user_id: userId,
+                role: role,
+                org_id: orgUUID || data.org_id,
+                school_name: schoolNameToUse || data.school_name,
+              },
+              { onConflict: "user_id" },
+            );
+          } catch (upsertErr) {
+            console.warn("Profile sync upsert notice:", upsertErr);
+          }
+        }
+      } else if (isUserAdminOwner) {
+        // Create profile row for admin if missing
+        try {
+          await (supabase as any).from("profiles").upsert(
+            {
+              user_id: userId,
+              role: "admin",
+              org_id: orgUUID,
+              school_name: schoolNameToUse,
+              display_name:
+                activeUser?.user_metadata?.full_name || userEmail?.split("@")[0] || "Admin",
+            },
+            { onConflict: "user_id" },
           );
-          setLoading(false);
-          signOut();
-          notifications.error(
-            "Security Mismatch",
-            "Access denied. Your account record does not match the current institutional context.",
-          );
-          return;
+        } catch (pErr) {
+          console.warn("New admin profile creation notice:", pErr);
         }
+      }
 
-        // VALIDATION: Ensure institutional roles have a valid org_id
-        const isInstitutionalRole = ["teacher", "admin", "org_admin"].includes(role);
-        if (isInstitutionalRole && !orgIdToUse) {
-          console.warn("Institutional user missing org_id validation.");
+      // 9. Sync localStorage with clean IDs
+      if (typeof window !== "undefined") {
+        if (orgUUID) localStorage.setItem("cymatic_org_uuid", orgUUID);
+        if (orgHumanId) {
+          localStorage.setItem("cymatic_org_id", orgHumanId);
+          localStorage.setItem("cymatic_school_id", orgHumanId);
         }
-
-        if (orgIdToUse && typeof window !== "undefined") {
-          localStorage.setItem("cymatic_org_id", orgIdToUse);
+        if (schoolNameToUse) {
+          localStorage.setItem("cymatic_school_name", schoolNameToUse);
         }
+      }
 
-        const constructedProfile: UserProfile = {
-          user_id: data.user_id,
-          display_name: data.display_name || activeUser?.email?.split("@")[0] || "Scholar",
-          avatar_url: data.avatar_url,
-          role: role,
-          org_id: orgIdToUse,
-          school_name: schoolNameToUse,
-          teacher_license_id: data.teacher_license_id,
-          full_name: data.display_name,
-          username: data.username || activeUser?.email?.split("@")[0] || null,
-          phone: data.phone || null,
-        };
-        setProfile(constructedProfile);
-      } else {
-        const orgIdToUse = metaOrgId || null;
-        const schoolNameToUse = metaSchoolName || null;
-        const role = activeUser?.user_metadata?.role || "student";
+      const constructedProfile: UserProfile = {
+        user_id: userId,
+        display_name:
+          data?.display_name ||
+          activeUser?.user_metadata?.full_name ||
+          userEmail?.split("@")[0] ||
+          "Scholar",
+        avatar_url: data?.avatar_url || activeUser?.user_metadata?.avatar_url || null,
+        role: role,
+        org_id: orgUUID,
+        organization_id: orgHumanId,
+        school_id: orgHumanId,
+        school_name: schoolNameToUse,
+        teacher_license_id: data?.teacher_license_id || null,
+        full_name:
+          data?.display_name ||
+          (data as any)?.full_name ||
+          activeUser?.user_metadata?.full_name ||
+          null,
+        username: data?.username || activeUser?.email?.split("@")[0] || null,
+        phone: data?.phone || activeUser?.user_metadata?.phone_number || null,
+      };
 
-        if (orgIdToUse && typeof window !== "undefined") {
-          localStorage.setItem("cymatic_org_id", orgIdToUse);
-        }
+      setProfile(constructedProfile);
 
-        const fallbackProfile: UserProfile = {
-          user_id: userId,
-          display_name:
-            activeUser?.user_metadata?.full_name || activeUser?.email?.split("@")[0] || "Scholar",
-          avatar_url: activeUser?.user_metadata?.avatar_url || null,
-          role: role,
-          org_id: orgIdToUse,
-          school_name: schoolNameToUse,
-          teacher_license_id: null,
-          full_name: activeUser?.user_metadata?.full_name || null,
-          username: activeUser?.email?.split("@")[0] || null,
-          phone: null,
-        };
-        setProfile(fallbackProfile);
+      // 10. Sync user metadata in session
+      if (
+        activeUser &&
+        (activeUser.user_metadata?.role !== role ||
+          activeUser.user_metadata?.organization_id !== orgHumanId ||
+          activeUser.user_metadata?.school_id !== orgHumanId ||
+          activeUser.user_metadata?.school_name !== schoolNameToUse)
+      ) {
+        void supabase.auth.updateUser({
+          data: {
+            role: role,
+            org_id: orgUUID,
+            organization_uuid: orgUUID,
+            organization_id: orgHumanId,
+            school_id: orgHumanId,
+            school_name: schoolNameToUse,
+          },
+        });
       }
     } catch (err) {
       console.warn("Profile fetch exception:", err);
@@ -182,16 +362,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   // Derive granular role flags
-  const rawRole = profile?.role || user?.user_metadata?.role || "student";
-  const role: UserRole = normalizeRole(rawRole);
+  const userEmail = user?.email?.trim().toLowerCase();
+  const isKnownAdmin =
+    userEmail === "latifisabirye123@gmail.com" ||
+    user?.user_metadata?.role === "admin" ||
+    profile?.role === "admin" ||
+    user?.user_metadata?.onboarding_path === "register-institution" ||
+    (typeof window !== "undefined" && localStorage.getItem("cymatic_user_role") === "admin");
 
-  const org_id = profile?.org_id || user?.user_metadata?.org_id || null;
-  const schoolName = profile?.school_name || user?.user_metadata?.school_name || null;
+  const rawRole =
+    (isKnownAdmin ? "admin" : profile?.role || user?.user_metadata?.role) ||
+    (typeof window !== "undefined" ? localStorage.getItem("cymatic_user_role") : null) ||
+    "student";
+  const role: UserRole = isKnownAdmin ? "admin" : normalizeRole(rawRole);
 
-  const isStudent = role === "student";
+  const org_id =
+    profile?.org_id ||
+    user?.user_metadata?.org_id ||
+    (typeof window !== "undefined" ? localStorage.getItem("cymatic_org_uuid") : null);
+
+  let schoolName =
+    profile?.school_name ||
+    user?.user_metadata?.school_name ||
+    (typeof window !== "undefined" ? localStorage.getItem("cymatic_school_name") : null);
+  if (isKnownAdmin && (!schoolName || schoolName === "Your Institution")) {
+    schoolName = "Cymatic Study Ecosystem";
+  }
+
+  let organizationId =
+    profile?.organization_id ||
+    profile?.school_id ||
+    user?.user_metadata?.organization_id ||
+    user?.user_metadata?.school_id ||
+    (typeof window !== "undefined"
+      ? localStorage.getItem("cymatic_org_id") || localStorage.getItem("cymatic_school_id")
+      : null);
+
+  const isUUID = (val?: string | null) =>
+    Boolean(
+      val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()),
+    );
+  if (isUUID(organizationId)) {
+    organizationId = null;
+  }
+  if (!organizationId && isKnownAdmin) {
+    organizationId = generateNcdcBoardingSchoolId(schoolName || "Cymatic Study Ecosystem");
+  }
+
+  const isAdmin = role === "admin" || isKnownAdmin;
+  const isStudent = role === "student" && !isAdmin;
   const isTeacher = role === "teacher";
-  const isAdmin = role === "admin";
-  const isInstitutional = !!org_id;
+  const isInstitutional = !!org_id || !!organizationId || isAdmin;
   const isGuestMode = !loading && !user;
 
   const hasRole = useCallback(
@@ -226,6 +447,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin,
       isGuestMode,
       org_id,
+      organizationId,
       schoolName,
       signOut,
       refreshProfile,
@@ -245,6 +467,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin,
       isGuestMode,
       org_id,
+      organizationId,
       schoolName,
       signOut,
       refreshProfile,
