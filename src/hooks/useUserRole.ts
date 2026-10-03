@@ -14,6 +14,7 @@ export interface UserRoleState {
   isIndependent: boolean;
   isInstitutional: boolean;
   org_id: string | null;
+  schoolId: string | null;
   schoolName: string | null;
   loading: boolean;
   error: string | null;
@@ -167,6 +168,7 @@ export function useUserRole(): UserRoleState {
     isIndependent,
     isInstitutional,
     org_id,
+    schoolId: org_id,
     schoolName,
     loading: authLoading || loading,
     error,

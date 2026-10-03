@@ -8,24 +8,18 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-
-// New components & hooks imports
-import { QuizEngine, type DynamicDailyTask } from "@/lib/quiz-engine";
 import { RoleGate } from "@/components/RoleGate";
 import { createRouteHead } from "@/lib/seo";
 import { RoleGuard } from "@/components/RoleGuard";
 import { useTermProgress } from "@/hooks/useTermProgress";
-
-// Role-specific dashboard views
 import { TeacherDashboard } from "@/components/dashboard/TeacherDashboard";
 import { AdminDashboard } from "@/components/dashboard/AdminDashboard";
 import { StudentDashboard } from "@/components/dashboard/StudentDashboard";
 import { DashboardSwitcher } from "@/components/dashboard/DashboardSwitcher";
-
 import { AuthRouteMiddleware } from "@/middlewares/auth-middleware";
 import { UserProfileCard } from "@/components/UserProfileCard";
-import { QuickQuizButton } from "@/components/QuickQuizButton";
 import { ExportPdfModal } from "@/components/ExportPdfModal";
+import { type DynamicDailyTask } from "@/lib/quiz-engine";
 
 export const Route = createFileRoute("/dashboard")({
   head: () =>
@@ -256,7 +250,7 @@ function DashboardPage() {
   };
 
   const [dailyPoints, setDailyPoints] = useState(0);
-  const [activeTab, setActiveTab] = useState<"missions" | "quizzes" | "tutor" | "projects">(
+  const [activeTab, setActiveTab] = useState<"missions" | "quizzes" | "tutor" | "projects" | "saved">(
     "missions",
   );
 

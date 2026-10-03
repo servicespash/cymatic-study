@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AuthRouteMiddleware } from "@/middlewares/auth-middleware";
+import { useUnifiedSchoolId } from "@/hooks/useUnifiedSchoolId";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useGamificationStore } from "@/store/useGamificationStore";

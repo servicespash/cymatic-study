@@ -62,13 +62,18 @@ export function resolveMediaDetails(item: {
   category?: string | null;
   priority?: string | null;
   title?: string;
+  body?: string; // Add body for scheduled_at check
 }) {
   const url = item.media_url?.trim() || "";
   const mediaType = (item.media_type || "").toLowerCase();
   const category = (item.category || "").toLowerCase();
   const title = (item.title || "").toLowerCase();
-
-  const isLive =
+  
+  // Parse body for scheduled_at
+  const { scheduled_at } = parseNewsBody(item.body || "");
+  const now = new Date();
+  
+  let isLive =
     mediaType === "live_session" ||
     mediaType === "live" ||
     category === "live" ||
@@ -78,6 +83,17 @@ export function resolveMediaDetails(item: {
     title.includes("livestream") ||
     url.includes("/live") ||
     url.includes("youtube.com/live");
+
+  // Refine live status based on scheduled_at if available
+  if (scheduled_at) {
+      const scheduledDate = new Date(scheduled_at);
+      const duration = 2 * 60 * 60 * 1000; // Assume 2-hour sessions
+      if (now >= scheduledDate && now <= new Date(scheduledDate.getTime() + duration)) {
+          isLive = true;
+      } else if (now > new Date(scheduledDate.getTime() + duration)) {
+          isLive = false; // Session concluded
+      }
+  }
 
   const isAudio =
     mediaType === "audio" ||
@@ -229,11 +245,13 @@ export function useNewsFeed() {
 
   useEffect(() => {
     fetchItems(false);
+  }, [fetchItems]);
 
-    // Set up real-time subscription for active news broadcasts
-    const channel = supabase
-      .channel("news_broadcasts_live_updates")
-      .on(
+  useEffect(() => {
+    // Persistent channel to avoid subscription errors
+    const channel = supabase.channel("news_broadcasts_live_updates");
+
+    channel.on(
         "postgres_changes",
         {
           event: "*",
@@ -282,13 +300,14 @@ export function useNewsFeed() {
             return updated;
           });
         },
-      )
-      .subscribe();
+      );
+      
+    channel.subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchItems]);
+  }, []);
 
   return {
     items,

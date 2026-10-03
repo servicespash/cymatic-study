@@ -43,12 +43,18 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
         category: item.category,
         priority: item.priority,
         title: item.title,
+        body: item.body,
       }),
-    [item.media_url, item.media_type, item.category, item.priority, item.title],
+    [item.media_url, item.media_type, item.category, item.priority, item.title, item.body],
   );
 
   const isLive = media.isLive || detectedLive;
   const parsedBody = useMemo(() => parseNewsBody(item.body), [item.body]);
+
+  const [isExpanded, setIsExpanded] = useState(false);
+  const maxLength = 250;
+  const showReadMore = parsedBody.text.length > maxLength;
+  const displayText = isExpanded ? parsedBody.text : parsedBody.text.slice(0, maxLength);
 
   useEffect(() => {
     if (!user) return;
@@ -337,8 +343,16 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
           )}
 
           {/* Body Narrative */}
-          <div className="mt-3 text-sm text-zinc-600 dark:text-zinc-300/90 leading-relaxed whitespace-pre-line break-words line-clamp-4">
-            {renderBody(parsedBody.text)}
+          <div className="mt-3 text-sm text-zinc-600 dark:text-zinc-300/90 leading-relaxed whitespace-pre-line break-words">
+            {renderBody(displayText)}
+            {showReadMore && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-cyan-400 font-bold ml-1 text-xs hover:underline block mt-1"
+              >
+                {isExpanded ? "Read Less" : "...Read More"}
+              </button>
+            )}
           </div>
         </div>
 
