@@ -1,19 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Badge } from "@/components/ui/badge";
 import {
   MessageSquare,
   Share2,
   Clock,
-  Play,
   Radio,
-  AlertCircle,
   BookOpen,
-  Bell,
   Bookmark,
   Heart,
+  Volume2,
+  ExternalLink,
+  User,
+  GraduationCap,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { CommentSection } from "./CommentSection";
 import { MiniAudioPlayer } from "./MiniAudioPlayer";
 import { LiveBadge } from "./LiveBadge";
@@ -22,21 +21,10 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { NewsBroadcastItem, parseNewsBody, resolveMediaDetails } from "@/lib/news-service";
 
 interface NewsCardProps {
-  item: {
-    id: string;
-    title: string;
-    body: string;
-    media_url: string | null;
-    media_type: string | null;
-    category: string | null;
-    published_at: string;
-    is_ad?: boolean;
-    priority?: string;
-    is_active?: boolean;
-    likes_count?: number;
-  };
+  item: NewsBroadcastItem;
 }
 
 export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
@@ -46,8 +34,25 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [likeCount, setLikeCount] = useState<number>(item.likes_count || 0);
 
+  const detectedLive = useLiveSession(item.media_url);
+  const media = useMemo(
+    () =>
+      resolveMediaDetails({
+        media_url: item.media_url,
+        media_type: item.media_type,
+        category: item.category,
+        priority: item.priority,
+        title: item.title,
+      }),
+    [item.media_url, item.media_type, item.category, item.priority, item.title],
+  );
+
+  const isLive = media.isLive || detectedLive;
+  const parsedBody = useMemo(() => parseNewsBody(item.body), [item.body]);
+
   useEffect(() => {
     if (!user) return;
+    let isMounted = true;
     async function fetchUserInteractions() {
       try {
         const { data: interactionData } = await supabase
@@ -57,7 +62,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
           .eq("content_id", item.id)
           .maybeSingle();
 
-        if (interactionData) {
+        if (interactionData && isMounted) {
           setIsLiked(!!interactionData.is_liked);
           setIsBookmarked(!!interactionData.is_bookmarked);
         }
@@ -66,6 +71,9 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
       }
     }
     fetchUserInteractions();
+    return () => {
+      isMounted = false;
+    };
   }, [user, item.id]);
 
   const handleLike = async () => {
@@ -126,24 +134,25 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
     }
   };
 
-  const isPodcast =
-    item.media_type === "audio" ||
-    item.media_type === "podcast" ||
-    item.category?.toLowerCase() === "podcast";
-  const isVideo = item.media_type?.startsWith("video") || item.media_type === "video_podcast";
-  const detectedLive = useLiveSession(item.media_url);
-  const isLive =
-    item.media_type === "live_session" || item.category?.toLowerCase() === "live" || detectedLive;
-
-  const getCategoryIcon = (category: string | null) => {
-    if (isLive) return <Radio className="h-3 w-3 animate-pulse text-red-500" />;
-    switch (category?.toLowerCase()) {
-      case "exams":
-        return <AlertCircle className="h-3 w-3" />;
-      case "curriculum":
-        return <BookOpen className="h-3 w-3" />;
-      default:
-        return <Bell className="h-3 w-3" />;
+  const handleShare = async () => {
+    const shareUrl = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: item.title,
+          text: parsedBody.text.slice(0, 120),
+          url: shareUrl,
+        });
+        return;
+      } catch {
+        // Fallback to clipboard
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(`${item.title}\n${shareUrl}`);
+      toast.success("Link copied to clipboard!");
+    } catch {
+      toast.error("Unable to copy link.");
     }
   };
 
@@ -157,9 +166,10 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
           href={part}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary underline break-all"
+          className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2 break-all inline-flex items-center gap-0.5"
         >
-          {part}
+          <span>{part}</span>
+          <ExternalLink className="h-3 w-3 inline shrink-0 opacity-70" />
         </a>
       ) : (
         <span key={i}>{part}</span>
@@ -167,110 +177,239 @@ export const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
     );
   };
 
+  const formattedDate = useMemo(() => {
+    try {
+      return new Date(item.published_at).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch {
+      return "Recent";
+    }
+  }, [item.published_at]);
+
+  const displayCategory =
+    item.category?.trim() || (item.is_curriculum_update ? "Curriculum" : "General");
+
   return (
-    <motion.div
+    <motion.article
       layout
-      className="bg-card dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group max-w-full min-w-0"
+      className="bg-card dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-zinc-700/80 transition-all flex flex-col group max-w-full min-w-0"
     >
-      {item.media_url && !isPodcast && (
-        <div className="relative aspect-video overflow-hidden bg-black flex items-center justify-center">
-          {isVideo ? (
+      {/* Media Presentation Container */}
+      {media.hasMedia && (
+        <div className="relative w-full aspect-video bg-black overflow-hidden flex items-center justify-center">
+          {/* YouTube or Vimeo iframe embed */}
+          {media.youtubeEmbedUrl ? (
+            <iframe
+              src={media.youtubeEmbedUrl}
+              title={item.title}
+              className="w-full h-full border-0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              loading="lazy"
+            />
+          ) : media.isVideoFile ? (
             <video
-              src={item.media_url}
+              src={media.url}
               controls
+              playsInline
+              preload="metadata"
               className="w-full h-full object-contain"
-              poster={item.media_url.replace(/\.[^/.]+$/, ".jpg")}
+            />
+          ) : media.isAudio ? (
+            <div className="w-full h-full bg-zinc-950 flex flex-col items-center justify-center p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mb-3 text-cyan-400">
+                <Volume2 className="h-6 w-6" />
+              </div>
+              <p className="text-xs font-semibold text-zinc-300 max-w-md line-clamp-1">
+                {item.title}
+              </p>
+              <div className="w-full max-w-md mt-2">
+                <MiniAudioPlayer src={media.url} title={item.title} />
+              </div>
+            </div>
+          ) : media.isImage ? (
+            <img
+              src={media.url}
+              alt={item.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              loading="lazy"
+              onError={(e) => {
+                // If image fails, hide or fallback gracefully
+                (e.target as HTMLElement).style.display = "none";
+              }}
             />
           ) : (
-            <img
-              src={item.media_url}
-              alt={item.title}
-              className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+            <iframe
+              src={media.url}
+              title={item.title}
+              className="w-full h-full border-0"
+              allowFullScreen
               loading="lazy"
             />
           )}
-          {isLive && <LiveBadge className="absolute top-3 left-3 shadow-xl" />}
+
+          {/* Live indicator overlay */}
+          {isLive && (
+            <div className="absolute top-3 left-3 z-10">
+              <LiveBadge showIcon />
+            </div>
+          )}
         </div>
       )}
 
-      {isPodcast && item.media_url && (
-        <div className="relative aspect-[21/9] overflow-hidden bg-zinc-950 flex items-center justify-center p-4">
-          <MiniAudioPlayer src={item.media_url} title={item.title} />
+      {/* Standalone Audio Player when no video frame */}
+      {!media.hasMedia && media.isAudio && (
+        <div className="p-4 bg-zinc-950/60 border-b border-zinc-800">
+          <MiniAudioPlayer src={media.url} title={item.title} />
         </div>
       )}
 
-      {!item.media_url && !isPodcast && (
-        <div className="relative aspect-[21/9] overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center p-6 text-zinc-400">
-          <BookOpen className="h-12 w-12 opacity-20" />
-        </div>
-      )}
+      {/* Card Content Area */}
+      <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between gap-4 min-h-0 min-w-0">
+        <div>
+          {/* Unboxed Metadata Kicker (Zero-Pill Compliance) */}
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400 mb-2.5">
+            {isLive ? (
+              <span className="inline-flex items-center gap-1 font-bold text-red-500 uppercase tracking-wider text-[11px]">
+                <Radio className="h-3 w-3 animate-pulse" />
+                Live Broadcast
+              </span>
+            ) : (
+              <span className="font-semibold text-zinc-700 dark:text-zinc-300 capitalize">
+                {displayCategory}
+              </span>
+            )}
 
-      <div className="p-4 sm:p-5 flex-1 flex flex-col gap-3 min-h-0 min-w-0 break-words">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Badge
-              variant="outline"
-              className={cn(
-                "text-[10px] uppercase font-bold tracking-tight gap-1.5 px-2 py-0.5 max-w-full truncate",
-                isLive ? "border-red-500/50 text-red-500 bg-red-500/5" : "",
+            <span aria-hidden="true" className="text-zinc-600">
+              ·
+            </span>
+
+            <span className="inline-flex items-center gap-1">
+              <Clock className="h-3 w-3 shrink-0" />
+              <time dateTime={item.published_at}>{formattedDate}</time>
+            </span>
+
+            {item.is_curriculum_update && (
+              <>
+                <span aria-hidden="true" className="text-zinc-600">
+                  ·
+                </span>
+                <span className="text-cyan-400 font-medium">NCDC Official</span>
+              </>
+            )}
+
+            {parsedBody.duration && (
+              <>
+                <span aria-hidden="true" className="text-zinc-600">
+                  ·
+                </span>
+                <span>{parsedBody.duration}</span>
+              </>
+            )}
+          </div>
+
+          {/* Main Title */}
+          <h3 className="text-lg sm:text-xl font-bold leading-snug text-zinc-900 dark:text-zinc-100 group-hover:text-cyan-400 transition-colors break-words">
+            {item.title}
+          </h3>
+
+          {/* Structured Speaker / Subject Meta (if parsed from body JSON) */}
+          {(parsedBody.speaker || parsedBody.instructor || parsedBody.subject) && (
+            <div className="mt-2.5 flex flex-wrap items-center gap-3 text-xs text-zinc-400 border-l-2 border-cyan-500/40 pl-2.5 py-0.5">
+              {(parsedBody.speaker || parsedBody.instructor) && (
+                <div className="inline-flex items-center gap-1">
+                  <User className="h-3.5 w-3.5 text-cyan-400" />
+                  <span className="text-zinc-300 font-medium">
+                    {parsedBody.speaker || parsedBody.instructor}
+                  </span>
+                </div>
               )}
-            >
-              {getCategoryIcon(item.category)}
-              {isLive ? "Live Session" : item.category || "General"}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-medium">
-            <Clock className="h-3 w-3 shrink-0" />
-            {new Date(item.published_at).toLocaleDateString()}
+              {parsedBody.subject && (
+                <div className="inline-flex items-center gap-1">
+                  <GraduationCap className="h-3.5 w-3.5 text-zinc-400" />
+                  <span>{parsedBody.subject}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Body Narrative */}
+          <div className="mt-3 text-sm text-zinc-600 dark:text-zinc-300/90 leading-relaxed whitespace-pre-line break-words line-clamp-4">
+            {renderBody(parsedBody.text)}
           </div>
         </div>
 
-        <h3 className="text-base sm:text-lg font-black leading-snug group-hover:text-primary transition-colors line-clamp-2 break-words">
-          {item.title}
-        </h3>
-
-        <div className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 line-clamp-3 leading-relaxed whitespace-pre-wrap flex-1 overflow-hidden break-words">
-          {renderBody(item.body)}
-        </div>
-
-        <div className="mt-3 pt-3 flex flex-wrap items-center justify-between gap-2 border-t border-zinc-100 dark:border-zinc-800">
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+        {/* Card Footer Actions */}
+        <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-4">
             <button
+              type="button"
               onClick={handleLike}
               className={cn(
-                "flex items-center gap-1.5 text-xs font-bold transition-colors",
-                isLiked ? "text-red-500" : "text-zinc-500 hover:text-primary",
+                "inline-flex items-center gap-1.5 font-medium transition-colors py-1 cursor-pointer",
+                isLiked
+                  ? "text-red-500"
+                  : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200",
               )}
+              aria-label={isLiked ? "Unlike broadcast" : "Like broadcast"}
             >
               <Heart className={cn("h-4 w-4", isLiked && "fill-current")} />
               <span>{likeCount > 0 ? likeCount : "Like"}</span>
             </button>
+
             <button
+              type="button"
               onClick={() => setShowComments(!showComments)}
-              className="flex items-center gap-1.5 text-xs font-bold text-zinc-500 hover:text-primary transition-colors"
-            >
-              <MessageSquare className="h-4 w-4" />
-              Comments
-            </button>
-            <button
-              onClick={handleBookmark}
               className={cn(
-                "flex items-center gap-1.5 text-xs font-bold transition-colors",
-                isBookmarked ? "text-primary" : "text-zinc-500 hover:text-primary",
+                "inline-flex items-center gap-1.5 font-medium transition-colors py-1 cursor-pointer",
+                showComments
+                  ? "text-cyan-400"
+                  : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200",
               )}
             >
+              <MessageSquare className="h-4 w-4" />
+              <span>Comments</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleBookmark}
+              className={cn(
+                "inline-flex items-center gap-1.5 font-medium transition-colors py-1 cursor-pointer",
+                isBookmarked
+                  ? "text-cyan-400"
+                  : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200",
+              )}
+              aria-label={isBookmarked ? "Remove bookmark" : "Bookmark broadcast"}
+            >
               <Bookmark className={cn("h-4 w-4", isBookmarked && "fill-current")} />
-              Bookmark
+              <span className="hidden sm:inline">Bookmark</span>
             </button>
           </div>
+
+          <button
+            type="button"
+            onClick={handleShare}
+            className="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            title="Share broadcast"
+            aria-label="Share broadcast"
+          >
+            <Share2 className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
+      {/* Expandable Comment Section */}
       {showComments && (
-        <div className="border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
+        <div className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/70 p-4 sm:p-5">
           <CommentSection contentId={item.id} />
         </div>
       )}
-    </motion.div>
+    </motion.article>
   );
 };
+
+export default NewsCard;

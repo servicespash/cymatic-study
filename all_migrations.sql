@@ -98,6 +98,7 @@ ALTER TABLE public.task_attempts
 
 -- 4. Fix permissions
 GRANT SELECT ON public.content TO anon;
+GRANT SELECT ON public.news_broadcasts TO anon, authenticated;
 
 -- 3. Server-side submission function: validates input, derives passed + points
 CREATE OR REPLACE FUNCTION public.submit_quiz_attempt(

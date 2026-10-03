@@ -1,34 +1,68 @@
-import React, { useState, useEffect } from "react";
-import { Bell } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import React from "react";
+import { Sparkles, Bell, Check } from "lucide-react";
+import { useCurriculumUpdatesNotification } from "@/lib/news-service";
 
-export const NewsNotificationBadge: React.FC = () => {
-  const [hasNew, setHasNew] = useState(false);
+interface NewsNotificationBadgeProps {
+  onSelectCurriculum?: () => void;
+  className?: string;
+}
 
-  useEffect(() => {
-    // Check for updates in the last 24 hours
-    const checkUpdates = async () => {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
+export const NewsNotificationBadge: React.FC<NewsNotificationBadgeProps> = ({
+  onSelectCurriculum,
+  className = "",
+}) => {
+  const { hasNew, count, latestItem, dismissNotification } = useCurriculumUpdatesNotification();
 
-      const { data, error } = await supabase
-        .from("news_broadcasts")
-        .select("id")
-        .eq("is_curriculum_update", true)
-        .gte("published_at", yesterday.toISOString())
-        .limit(1);
-
-      if (!error && data && data.length > 0) {
-        setHasNew(true);
-      }
-    };
-
-    checkUpdates();
-  }, []);
-
-  if (!hasNew) return null;
+  if (!hasNew || !latestItem) return null;
 
   return (
-    <div className="absolute top-0 right-0 h-3 w-3 rounded-full bg-cyan-500 animate-pulse border-2 border-background" />
+    <div
+      role="status"
+      aria-live="polite"
+      className={`inline-flex items-center gap-2 rounded-xl bg-cyan-950/60 border border-cyan-500/30 px-3 py-1.5 text-xs text-cyan-200 shadow-sm transition-all ${className}`}
+    >
+      <div className="relative flex h-2 w-2 shrink-0">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
+      </div>
+
+      <div className="flex items-center gap-1.5 min-w-0">
+        <span className="font-semibold text-white tracking-tight shrink-0">
+          New Curriculum Update
+        </span>
+        {count > 1 && <span className="text-[10px] text-cyan-400 font-mono">(+{count - 1})</span>}
+        <span
+          className="text-zinc-400 truncate hidden sm:inline max-w-[200px]"
+          title={latestItem.title}
+        >
+          — {latestItem.title}
+        </span>
+      </div>
+
+      {onSelectCurriculum && (
+        <button
+          type="button"
+          onClick={() => {
+            onSelectCurriculum();
+            dismissNotification();
+          }}
+          className="text-[11px] font-bold text-cyan-400 hover:text-cyan-300 underline underline-offset-2 ml-1 shrink-0 cursor-pointer"
+        >
+          View
+        </button>
+      )}
+
+      <button
+        type="button"
+        onClick={dismissNotification}
+        aria-label="Dismiss notification"
+        title="Mark as read"
+        className="ml-1 text-zinc-500 hover:text-zinc-300 p-0.5 rounded cursor-pointer transition-colors shrink-0"
+      >
+        <Check className="h-3 w-3" />
+      </button>
+    </div>
   );
 };
+
+export default NewsNotificationBadge;

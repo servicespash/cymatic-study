@@ -591,8 +591,6 @@
 
   .dashboard-grid .relative.aspect-video,
   .dashboard-grid .relative.aspect-\[21\/9\] {
-    min-height: 180px;
-    max-height: 240px;
     width: 100%;
     box-sizing: border-box;
   }
