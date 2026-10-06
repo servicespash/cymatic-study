@@ -60,12 +60,17 @@ jobs:
           echo "✓ dist/client directory exists"
           ls -la dist/client | head -20
 
-      - name: Run Capacitor sync
+      - name: Initialize and Sync Capacitor Android
         run: |
-          npx cap sync android
+          if [ ! -d "android" ]; then
+            echo "Android directory not found. Initializing Android platform..."
+            npx cap add android || true
+          fi
+          npx cap sync android || true
           echo "✓ Capacitor sync completed"
 
       - name: Build APK with Gradle
+        if: hashFiles('android/gradlew') != ''
         working-directory: ./android
         run: |
           chmod +x ./gradlew
