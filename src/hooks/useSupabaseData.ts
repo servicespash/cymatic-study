@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { PostgrestError } from "@supabase/supabase-js";
 import { useAuth } from "@/lib/auth-context";
 
+const isUUID = (val?: string | null) =>
+  Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()));
+
 export function useSupabaseData<T>(
   query: any,
   dependencies: any[] = [],
@@ -24,15 +27,14 @@ export function useSupabaseData<T>(
       try {
         if (typeof query.eq === "function") {
           const tableName = (query as any).table?.table || "";
+          const isUuid = isUUID(organizationId);
 
-          // Map correct column names based on table
-          if (tableName === "profiles") {
-            finalQuery = query.eq("org_id", organizationId);
-          } else if (tableName === "news_broadcasts" || tableName === "news") {
-            // News is typically global
+          if (tableName === "news_broadcasts" || tableName === "news") {
             console.log("useSupabaseData: Skipping org filter for news_broadcasts");
+          } else if (isUuid) {
+            finalQuery = query.eq("org_id", organizationId);
           } else {
-            finalQuery = query.eq("organization_id", organizationId);
+            finalQuery = query.eq("school_key", organizationId);
           }
         }
       } catch (e) {

@@ -51,7 +51,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   completeTaskAndSync,
 }) => {
   return (
-    <div className="space-y-8">
+    <div className="dashboard-container">
       <SubjectPracticeReminder />
 
       {/* Dashboard Navigation */}
@@ -64,6 +64,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
+          className="dashboard-grid"
         >
           {activeTab === "missions" && (
             <MissionsTab

@@ -30,30 +30,23 @@ function StudentsPage() {
     setLoading(true);
     try {
       let stdData: any[] = [];
-      try {
-        let query = (supabase.from("student_records") as any).select(
-          "id, user_id, display_name, org_id, school_name, role",
-        );
-        if (orgId) {
-          query = query.or(`org_id.eq.${orgId},school_name.ilike.%${schoolName}%`);
-        } else if (schoolName) {
-          query = query.ilike("school_name", `%${schoolName}%`);
+      let query = supabase.from("profiles").select("id, user_id, display_name, org_id, school_name, role");
+      
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orgId?.trim() || "");
+
+      if (orgId) {
+        if (isUuid) {
+           query = query.eq("org_id", orgId);
+        } else {
+           query = query.eq("school_name", schoolName);
         }
-        const res = await query;
-        if (res.error) throw res.error;
-        stdData = res.data || [];
-      } catch (e: any) {
-        console.error("Error loading student records, falling back to profiles:", e);
-        // Fallback to profiles table
-        let query = supabase.from("profiles").select("id, display_name, org_id, school_name, role");
-        if (orgId) {
-          query = query.or(`org_id.eq.${orgId},school_name.ilike.%${schoolName}%`);
-        } else if (schoolName) {
-          query = query.ilike("school_name", `%${schoolName}%`);
-        }
-        const res = await query;
-        stdData = res.data?.map((s) => ({ ...s, user_id: s.id, org_id: s.org_id })) || [];
+      } else if (schoolName) {
+        query = query.ilike("school_name", `%${schoolName}%`);
       }
+
+      const res = await query;
+      if (res.error) throw res.error;
+      stdData = res.data?.map((s) => ({ ...s, user_id: s.user_id || s.id, org_id: s.org_id })) || [];
 
       // Filter with single source of truth helper
       const matchedProfiles = filterByOrganization(stdData);
@@ -123,7 +116,7 @@ function StudentsPage() {
         setSearchTerm={setSearchTerm}
         setInspectedStudent={() => {}}
         onRefresh={loadStudents}
-        currentOrgId={currentOrgId}
+        currentOrgId={orgId}
       />
     </div>
   );

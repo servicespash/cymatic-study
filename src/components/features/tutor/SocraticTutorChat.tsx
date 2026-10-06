@@ -10,6 +10,7 @@ import { ChatSidebar } from "./ChatSidebar";
 import { ExportPdfModal } from "@/components/ExportPdfModal";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import { GreetingService } from "@/lib/GreetingService";
 
 import { LinkifiedText } from "@/components/LinkifiedText";
 
@@ -23,21 +24,27 @@ interface TopicConfig {
 
 export function SocraticTutorChat() {
   const { user, isTeacher, isAdmin } = useAuth();
-  const [displayName, setDisplayName] = useState("Learner");
+  const [userProfileData, setUserProfileData] = useState<{ full_name?: string; role?: string; school_name?: string }>({});
 
   useEffect(() => {
     async function fetchProfile() {
       if (user?.id) {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("full_name")
+          .select("full_name, role, school_name")
           .eq("user_id", user.id)
           .maybeSingle();
-        if (profile?.full_name) setDisplayName(profile.full_name);
+        if (profile) {
+          setUserProfileData({
+            full_name: profile.full_name || user.user_metadata?.full_name,
+            role: profile.role || user.user_metadata?.role,
+            school_name: profile.school_name || user.user_metadata?.school_name,
+          });
+        }
       }
     }
     fetchProfile();
-  }, [user?.id]);
+  }, [user]);
 
   const [activeSubject, setActiveSubject] = useState("Mathematics");
   const { messages, setMessages } = useTutorStore();
@@ -71,18 +78,19 @@ export function SocraticTutorChat() {
     },
   ];
 
-  // Fetch dynamic welcome message
+  // Fetch dynamic context-aware welcome message
   useEffect(() => {
     if (messages.length === 0) {
+      const greetingText = GreetingService.generateFromSession(user, userProfileData, activeSubject);
       const greeting: ChatMessage = {
         id: crypto.randomUUID(),
         sender: "tutor",
-        text: `Hello ${displayName}! I'm your Socratic mentor. I'm here to help you explore the NCDC curriculum with curiosity and wisdom. Which subject or topic would you like to dive into today?`,
+        text: greetingText,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
       setMessages([greeting]);
     }
-  }, [displayName, messages.length, setMessages]);
+  }, [userProfileData, messages.length, setMessages, user, isAdmin, isTeacher]);
 
   useEffect(() => {
     const SpeechRecognition =

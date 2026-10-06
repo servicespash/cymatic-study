@@ -4,6 +4,9 @@ import { db } from "@/lib/db";
 import { z } from "zod";
 import { useAuth } from "@/lib/auth-context";
 
+const isUUID = (val?: string | null) =>
+  Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()));
+
 function resolveDexieTable(tableName: string) {
   const tableMap: Record<string, any> = {
     news: db.news || db.news_broadcasts,
@@ -71,17 +74,13 @@ export function useRealtimeData<T>(
 
         if (organizationId) {
           // STRICT FILTERING: Prevent cross-school data leakage
-          // Map correct column names based on table
-          if (table === "profiles") {
-            query = query.eq("org_id", organizationId);
-          } else if (table === "news_broadcasts" || table === "news") {
-            // News is typically global or doesn't have org_id in current schema
+          const isUuid = isUUID(organizationId);
+          if (table === "news_broadcasts" || table === "news") {
             console.log("useRealtimeData: Skipping org filter for news_broadcasts");
-          } else if (table === "project_submissions" || table === "submissions") {
+          } else if (isUuid) {
             query = query.eq("org_id", organizationId);
           } else {
-            // Default to organization_id for others (UUID)
-            query = query.eq("organization_id", organizationId);
+            query = query.eq("school_key", organizationId);
           }
         }
 

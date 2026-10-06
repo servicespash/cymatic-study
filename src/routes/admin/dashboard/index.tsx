@@ -539,9 +539,9 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="w-full bg-background text-foreground selection:bg-blue-600/30">
-      {/* Main Command Center */}
-      <main className="p-4 md:p-8 app-container dashboard-container space-y-8 w-full max-w-7xl mx-auto">
+    <div className="dashboard-container">
+      <MainNavigation backTo="/" label="Home" />
+      <main className="p-4 md:p-8 space-y-8 w-full max-w-7xl mx-auto">
         {/* Horizontal Navigation for remaining modules */}
         <div className="flex overflow-x-auto gap-2 pb-2 mb-6 border-b border-border/50 hide-scrollbar">
           {[

@@ -51,7 +51,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   const navigate = useNavigate();
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="dashboard-grid animate-in fade-in duration-700">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h2 className="text-3xl font-black tracking-tight text-white uppercase">Teacher Hub</h2>
@@ -76,7 +76,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         </div>
       </div>
 
-      <div className="dashboard-grid">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="border-zinc-800 bg-zinc-950/50 backdrop-blur-xl">
           <CardHeader className="p-4">
             <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">
@@ -128,7 +128,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
       <TeacherGradingStation />
 
-      <div className="space-y-6">
+      <div className="dashboard-grid">
         <h3 className="text-sm font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2">
           <Users className="h-4 w-4 text-blue-500" /> Active Student Stream
         </h3>

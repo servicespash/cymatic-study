@@ -18,7 +18,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const navigate = useNavigate();
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="dashboard-grid animate-in fade-in duration-700">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h2 className="text-3xl font-black tracking-tight text-white uppercase">

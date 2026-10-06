@@ -18,6 +18,7 @@ import { StudentDashboard } from "@/components/dashboard/StudentDashboard";
 import { DashboardSwitcher } from "@/components/dashboard/DashboardSwitcher";
 import { AuthRouteMiddleware } from "@/middlewares/auth-middleware";
 import { UserProfileCard } from "@/components/UserProfileCard";
+import { MainNavigation } from "@/components/layout/MainNavigation";
 import { ExportPdfModal } from "@/components/ExportPdfModal";
 import { type DynamicDailyTask } from "@/lib/quiz-engine";
 import { useOrganization } from "@/hooks/useOrganization";
@@ -95,13 +96,16 @@ function DashboardPage() {
 
   const loadTasks = async () => {
     try {
-      let query = supabase.from("dashboard_tasks").select("*");
+      let query = supabase.from("daily_tasks" as any).select("*");
+      
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test((orgId || organizationId)?.trim() || "");
 
       if (orgId || organizationId) {
-        const filters = ["organization_id.is.null"];
-        if (orgId) filters.push(`organization_id.eq.${orgId}`);
-        if (organizationId) filters.push(`organization_id.eq.${organizationId}`);
-        query = query.or(filters.join(","));
+        if (isUuid) {
+           query = query.eq("organization_id", orgId || organizationId);
+        } else {
+           query = query.eq("school_key", orgId || organizationId);
+        }
       } else {
         query = query.is("organization_id", null);
       }
@@ -132,7 +136,7 @@ function DashboardPage() {
     // Refresh when local storage updates
     window.addEventListener("storage", loadTasks);
     return () => window.removeEventListener("storage", loadTasks);
-  }, [org_id]);
+  }, [orgId]);
 
   // Fetch real institutional student data
   useEffect(() => {
@@ -215,7 +219,7 @@ function DashboardPage() {
     };
 
     void fetchRealData();
-  }, [user?.id, isTeacher, isAdmin, org_id, profile?.org_id, profile?.school_name, isGuestMode]);
+  }, [user?.id, isTeacher, isAdmin, orgId, profile?.org_id, profile?.school_name, isGuestMode]);
 
   const handleTeacherCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,7 +229,7 @@ function DashboardPage() {
     }
 
     try {
-      const { error } = await supabase.from("dashboard_tasks" as any).insert({
+      const { error } = await supabase.from("daily_tasks" as any).insert({
         title: manualTitle,
         subject: manualSubject,
         description: manualDesc,
@@ -233,7 +237,7 @@ function DashboardPage() {
         points: manualPoints,
         tutor_explanation: manualExplanation,
         created_by: "teacher",
-        organization_id: org_id,
+        organization_id: orgId,
       });
 
       if (error) throw error;
@@ -296,7 +300,9 @@ function DashboardPage() {
   }
 
   return (
-    <div className="app-container dashboard-container space-y-8 min-h-screen bg-background text-foreground">
+    <div className="dashboard-container">
+      <MainNavigation />
+
       {/* USER PROFILE & SCHOOL ID BANNER */}
       <UserProfileCard />
 
@@ -304,7 +310,7 @@ function DashboardPage() {
       <DashboardSwitcher />
 
       <RoleGate.Admin>
-        <Card className="border-blue-600/30 bg-gradient-to-r from-blue-950/40 via-indigo-950/20 to-black p-6 text-white shadow-xl animate-in fade-in">
+        <Card className="dashboard-grid border-blue-600/30 bg-gradient-to-r from-blue-950/40 via-indigo-950/20 to-black p-6 text-white shadow-xl animate-in fade-in">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -334,40 +340,42 @@ function DashboardPage() {
       </RoleGate.Admin>
 
       {/* RENDER ACTIVE DASHBOARD ACCORDING TO ROLE VIA CENTRALIZED RoleGuard */}
-      <RoleGuard
-        admin={<AdminDashboard profile={profile} />}
-        teacher={
-          <TeacherDashboard
-            profile={profile}
-            realStudents={realStudents}
-            loadingStudents={loadingStudents}
-            manualTitle={manualTitle}
-            setManualTitle={setManualTitle}
-            manualSubject={manualSubject}
-            setManualSubject={setManualSubject}
-            manualType={manualType}
-            setManualType={setManualType}
-            manualDesc={manualDesc}
-            setManualDesc={setManualDesc}
-            manualExplanation={manualExplanation}
-            setManualExplanation={setManualExplanation}
-            handleTeacherCreateTask={handleTeacherCreateTask}
-          />
-        }
-        student={
-          <StudentDashboard
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            setIsPdfModalOpen={setIsPdfModalOpen}
-            showSnoozed={showSnoozed}
-            setShowSnoozed={setShowSnoozed}
-            visibleTasks={visibleTasks}
-            loadTasks={loadTasks}
-            setSelectedExplTask={setSelectedExplTask}
-            completeTaskAndSync={completeTaskAndSync}
-          />
-        }
-      />
+      <div className="dashboard-grid">
+        <RoleGuard
+          admin={<AdminDashboard profile={profile} />}
+          teacher={
+            <TeacherDashboard
+              profile={profile}
+              realStudents={realStudents}
+              loadingStudents={loadingStudents}
+              manualTitle={manualTitle}
+              setManualTitle={setManualTitle}
+              manualSubject={manualSubject}
+              setManualSubject={setManualSubject}
+              manualType={manualType}
+              setManualType={setManualType}
+              manualDesc={manualDesc}
+              setManualDesc={setManualDesc}
+              manualExplanation={manualExplanation}
+              setManualExplanation={setManualExplanation}
+              handleTeacherCreateTask={handleTeacherCreateTask}
+            />
+          }
+          student={
+            <StudentDashboard
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              setIsPdfModalOpen={setIsPdfModalOpen}
+              showSnoozed={showSnoozed}
+              setShowSnoozed={setShowSnoozed}
+              visibleTasks={visibleTasks}
+              loadTasks={loadTasks}
+              setSelectedExplTask={setSelectedExplTask}
+              completeTaskAndSync={completeTaskAndSync}
+            />
+          }
+        />
+      </div>
 
       <AnimatePresence>
         {selectedExplTask && (

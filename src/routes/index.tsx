@@ -285,7 +285,80 @@ export function HomePage() {
   const activeGoalMax = selectedGoal === "daily" ? 20 : selectedGoal === "weekly" ? 50 : 100;
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-8 pb-16 max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ROLE-SPECIFIC COMMAND & WORKSPACE BAR */}
+      {isAdmin && (
+        <section className="pt-6">
+          <div className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-6 sm:p-8 backdrop-blur-md shadow-lg">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="space-y-1 text-center md:text-left">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-600 text-white uppercase tracking-wider">
+                  <Landmark className="w-3.5 h-3.5" />
+                  Institutional Administrator Node
+                </span>
+                <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+                  Welcome, Administrator {user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Admin"}
+                </h2>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Your campus command center is active. Oversee department analytics, staff credentials, and institutional rosters.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  to="/admin/dashboard"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md"
+                >
+                  <Landmark className="w-4 h-4" />
+                  Admin Console
+                </Link>
+                <Link
+                  to="/teacher"
+                  className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-secondary/80 hover:bg-secondary text-secondary-foreground text-xs font-bold transition-all border border-border"
+                >
+                  Teacher Station
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {isTeacher && !isAdmin && (
+        <section className="pt-6">
+          <div className="rounded-3xl border border-teal-500/30 bg-teal-500/10 p-6 sm:p-8 backdrop-blur-md shadow-lg">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="space-y-1 text-center md:text-left">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-teal-600 text-white uppercase tracking-wider">
+                  <Briefcase className="w-3.5 h-3.5" />
+                  Faculty &amp; Assessment Workspace
+                </span>
+                <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+                  Welcome, Teacher {user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Faculty"}
+                </h2>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Manage student grading, grading queues, and curriculum performance insights.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  to="/teacher"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-md"
+                >
+                  <Briefcase className="w-4 h-4" />
+                  Teacher Station
+                </Link>
+                <Link
+                  to="/marking"
+                  className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-secondary/80 hover:bg-secondary text-secondary-foreground text-xs font-bold transition-all border border-border"
+                >
+                  Marking Desk
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Hero Header */}
       <section className="relative overflow-hidden px-4 py-12 md:py-16">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">

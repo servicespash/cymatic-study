@@ -23,6 +23,7 @@ import { BadgeToastNotification } from "@/components/BadgeToastNotification";
 import { GlobalProviders } from "@/lib/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
+import { SessionInitializerMiddleware } from "@/components/SessionInitializerMiddleware";
 
 function NotFoundComponent() {
   return (
@@ -184,9 +185,11 @@ function RootComponent() {
     return (
       <GlobalErrorBoundary>
         <GlobalProviders>
-          <div className="min-h-screen bg-background">
-            <Outlet />
-          </div>
+          <SessionInitializerMiddleware>
+            <div className="min-h-screen bg-background">
+              <Outlet />
+            </div>
+          </SessionInitializerMiddleware>
         </GlobalProviders>
       </GlobalErrorBoundary>
     );
@@ -195,25 +198,27 @@ function RootComponent() {
   return (
     <GlobalErrorBoundary>
       <GlobalProviders>
-        <CymaticBackground />
-        <LivePulseIndicator />
-        <MoodOverlay />
-        <BadgeToastNotification />
-        <MobileInstallPrompt />
-        <PWAInstallPrompt />
-        <div className="min-h-screen grid grid-rows-[auto_1fr_auto] grid-cols-1 max-w-[1920px] mx-auto w-full bg-background shadow-2xl">
-          <Navbar />
-          <main className="flex-1 w-full page-container">
-            <Outlet />
-          </main>
-          <footer className="border-t border-border/60 px-4 py-8 text-center text-xs text-muted-foreground pb-24">
-            <p className="font-medium">
-              {BRAND.name} × {BRAND.partner} — {BRAND.tagline} {BRAND.flag}
-            </p>
-            <p className="mt-1">Support: {BRAND.support} · © 2026 Pash Media Services</p>
-          </footer>
-          <FloatingTutor />
-        </div>
+        <SessionInitializerMiddleware>
+          <CymaticBackground />
+          <LivePulseIndicator />
+          <MoodOverlay />
+          <BadgeToastNotification />
+          <MobileInstallPrompt />
+          <PWAInstallPrompt />
+          <div className="min-h-screen grid grid-rows-[auto_1fr_auto] grid-cols-1 max-w-[1920px] mx-auto w-full bg-background shadow-2xl">
+            <Navbar />
+            <main className="flex-1 w-full page-container">
+              <Outlet />
+            </main>
+            <footer className="border-t border-border/60 px-4 py-8 text-center text-xs text-muted-foreground pb-24">
+              <p className="font-medium">
+                {BRAND.name} × {BRAND.partner} — {BRAND.tagline} {BRAND.flag}
+              </p>
+              <p className="mt-1">Support: {BRAND.support} · © 2026 Pash Media Services</p>
+            </footer>
+            <FloatingTutor />
+          </div>
+        </SessionInitializerMiddleware>
       </GlobalProviders>
     </GlobalErrorBoundary>
   );
