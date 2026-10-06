@@ -88,10 +88,10 @@ export default defineConfig({
     tsconfigPaths(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "robots.txt", "sitemap.xml"],
+      includeAssets: ["favicon.ico", "robots.txt", "sitemap.xml", "pwa-192x192.png", "pwa-512x512.png"],
       workbox: {
-        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
-        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        globPatterns: ["**/*.{js,css,html,ico,png,jpg}"],
       },
       manifest: {
         name: "Latty's Cymatic Study",
