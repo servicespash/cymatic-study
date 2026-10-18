@@ -76,6 +76,7 @@ import { DisciplineNudges } from "@/components/DisciplineNudges";
 import { SupabaseLivePulseHeader } from "@/components/SupabaseLivePulseHeader";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 import { useOrganization } from "@/hooks/useOrganization";
+import { MainNavigation } from "@/components/MainNavigation";
 
 export const Route = createFileRoute("/admin/dashboard/")({
   head: () => ({

@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { Ctx, type AuthCtx, type UserProfile } from "./auth-context-core";
 import { normalizeRole, type UserRole } from "@/hooks/useUserRole";
 import { notifications } from "@/lib/notifications";
+import { generateNcdcBoardingSchoolId } from "@/lib/school-id-validator";
 
 const REFERRAL_STORAGE_KEY = "cymatic_signup_referral_code";
 

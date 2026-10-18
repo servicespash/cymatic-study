@@ -90,12 +90,12 @@ export function DashboardLayout({ children, activeSection }: DashboardLayoutProp
   const Icon = config.icon;
 
   return (
-    <div className="min-h-screen bg-background text-foreground space-y-6">
+    <div className="dashboard-container">
       {/* DYNAMIC HMI GREETING COMPONENT */}
       <DynamicGreeting />
 
       {/* ROLE BANNER & CONTEXT HEADER */}
-      <div className="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md p-4 sm:p-5 shadow-sm">
+      <div className="dashboard-grid rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md p-4 sm:p-5 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
@@ -159,7 +159,7 @@ export function DashboardLayout({ children, activeSection }: DashboardLayoutProp
       </div>
 
       {/* DASHBOARD CONTENT BODY */}
-      <div className="space-y-6">{children}</div>
+      <div className="dashboard-grid">{children}</div>
     </div>
   );
 }

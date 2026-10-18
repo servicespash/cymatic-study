@@ -26,44 +26,51 @@ export function TeacherApprovalTable() {
 
   async function fetchPendingTeachers() {
     setLoading(true);
-    // Join with public.users to get email and verification status
-    // Use any cast to bypass missing relationship types
-    const { data, error } = await (supabase as any)
-      .from("profiles")
-      .select(`
-        *,
-        users:user_id (
-          email,
-          is_verified
-        )
-      `)
-      .eq("org_id", schoolId)
-      .eq("role", "teacher");
+    try {
+      let query = supabase
+        .from("profiles")
+        .select("*")
+        .eq("role", "teacher");
 
-    if (error) {
-      console.error("Error fetching pending teachers:", error);
-      toast.error("Failed to load pending teachers");
-    } else {
-      // Filter manually if the join doesn't support nested filtering reliably on all versions
-      const filtered = (data || []).filter((p: any) => p.users?.is_verified === false);
-      setPendingTeachers(filtered);
+      if (schoolId) {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(schoolId);
+        if (isUuid) {
+          query = query.eq("org_id", schoolId);
+        }
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Error fetching pending teachers:", error);
+        toast.error("Failed to load pending teachers");
+      } else {
+        const filtered = (data || []).filter((p: any) => p.is_verified === false);
+        setPendingTeachers(filtered);
+      }
+    } catch (err) {
+      console.error("Error in fetchPendingTeachers:", err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   async function handleApprove(userId: string) {
-    // Update verification status in the users table
-    const { error } = await (supabase as any)
-      .from("users")
-      .update({ is_verified: true })
-      .eq("id", userId);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ is_verified: true })
+        .eq("user_id", userId);
 
-    if (error) {
-      console.error("Approval error:", error);
-      toast.error("Failed to approve teacher");
-    } else {
-      toast.success("Teacher approved successfully");
-      fetchPendingTeachers();
+      if (error) {
+        console.error("Approval error:", error);
+        toast.error("Failed to approve teacher");
+      } else {
+        toast.success("Teacher approved successfully");
+        fetchPendingTeachers();
+      }
+    } catch (err) {
+      console.error("Error in handleApprove:", err);
     }
   }
 

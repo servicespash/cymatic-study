@@ -65,6 +65,7 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@resend/chat-sdk-adapter": "^0.2.2",
+    "@sentry/react": "^11.8.0",
     "@supabase/server": "^1.2.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.4",

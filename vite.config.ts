@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
-import tsconfigPaths from "vite-tsconfig-paths";
+
 import { VitePWA } from "vite-plugin-pwa";
 import fs from "fs";
 import path from "path";
@@ -85,13 +85,44 @@ export default defineConfig({
     TanStackRouterVite(),
     react(),
     tailwindcss(),
-    tsconfigPaths(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "robots.txt", "sitemap.xml", "pwa-192x192.png", "pwa-512x512.png"],
+      includeAssets: [
+        "favicon.ico",
+        "favicon.svg",
+        "icon.svg",
+        "robots.txt",
+        "sitemap.xml",
+        "pwa-192x192.png",
+        "pwa-512x512.png",
+      ],
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        globPatterns: ["**/*.{js,css,html,ico,png,jpg}"],
+        globPatterns: ["**/*.{js,css,html,ico,png,jpg,svg}"],
+        runtimeCaching: [
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+            },
+          },
+          {
+            urlPattern: /\.(?:pdf)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'pdf-cache',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 7 * 24 * 60 * 60,
+              },
+            },
+          },
+        ],
       },
       manifest: {
         name: "Latty's Cymatic Study",
@@ -104,6 +135,12 @@ export default defineConfig({
         scope: "/",
         start_url: "/",
         icons: [
+          {
+            src: "/favicon.svg",
+            sizes: "any",
+            type: "image/svg+xml",
+            purpose: "any",
+          },
           {
             src: "/pwa-192x192.png",
             sizes: "192x192",
@@ -124,7 +161,16 @@ export default defineConfig({
       },
     }),
   ],
+  resolve: {
+    tsconfigPaths: true,
+  },
   base: "/",
+  server: {
+    hmr: false,
+    watch: {
+      ignored: ["**/node_modules/**", "**/.wrangler/**"],
+    },
+  },
   define: {
     "process.env.BUILD_MODE": JSON.stringify("lite"),
     "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(
@@ -138,17 +184,22 @@ export default defineConfig({
         "sb_publishable_Q6c0ZU7hu-Ow6bdzbK5-ig_S74FsIK0",
     ),
   },
-  server: {
-    watch: {
-      ignored: ["**/node_modules/**", "**/.wrangler/**"],
-    },
-  },
   build: {
     outDir: "dist",
     emptyOutDir: true,
     rollupOptions: {
       input: {
         main: "./index.html",
+      },
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("html2canvas") || id.includes("supabase")) {
+              return "vendor-heavy";
+            }
+            return "vendor";
+          }
+        },
       },
     },
   },

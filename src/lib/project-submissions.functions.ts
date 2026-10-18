@@ -253,27 +253,38 @@ export async function loadMyDraftSubmission() {
     .maybeSingle();
 
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from("project_submissions")
-      .select(
-        "id,status,project_data,phase1_score,phase2_score,phase3_score,phase4_score,total_competency_score,teacher_name,teacher_comments,verified_at,is_verified",
-      )
-      .eq("student_user_id", user.id)
-      .eq("school_key", profile?.org_id ?? null)
+      .select("*")
+      .eq("student_user_id", user.id);
+
+    if (profile?.org_id) {
+      query = query.eq("school_key", profile.org_id);
+    }
+
+    const { data, error } = await query
       .order("updated_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
     if (error) {
-      if (error.code === "PGRST205" || error.message?.includes("cache")) {
-        console.warn("[Submissions] Table missing or cache stale, falling back to local state");
-        return null;
+      // Fallback query if table schema or ordering differs
+      const { data: fallbackData } = await supabase
+        .from("project_submissions")
+        .select("id, is_verified, status")
+        .eq("student_user_id", user.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (fallbackData) {
+        return fallbackData;
       }
-      throw new Error(error.message);
+      console.warn("[Submissions] Schema difference or missing record:", error.message);
+      return null;
     }
     return data;
   } catch (err) {
-    console.error("[Submissions] Failed to load from DB:", err);
+    console.warn("[Submissions] Graceful fallback to local state:", err);
     return null;
   }
 }

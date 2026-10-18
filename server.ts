@@ -149,7 +149,7 @@ async function startServer() {
     const { createServer } = await import("vite");
     console.log("[Boot] Importing vite succeeded. Creating server...");
     const vite = await createServer({
-      server: { middlewareMode: true },
+      server: { middlewareMode: true, hmr: false },
       appType: "spa",
     });
     console.log("[Boot] Vite server created. Applying middlewares...");

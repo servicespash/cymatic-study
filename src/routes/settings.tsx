@@ -31,7 +31,7 @@ export const Route = createFileRoute("/settings")({
 function SettingsPage() {
   const { language, setLanguage } = useLanguageStore();
   const { user } = useAuth();
-  const { isAdmin } = useOrganization();
+  const { isAdmin, isTeacher } = useOrganization();
 
   const isUserAdmin = isAdmin || user?.email === "latifisabirye123@gmail.com";
 
