@@ -47,6 +47,9 @@ for (const item of manifest.documents) {
   }
 
   const sha256 = crypto.createHash("sha256").update(bytes).digest("hex");
+  if (item.expected_sha256 && sha256 !== item.expected_sha256) {
+    throw new Error(`SHA-256 mismatch for ${filePath}: expected ${item.expected_sha256}, got ${sha256}`);
+  }
   const parser = new PDFParse({ data: new Uint8Array(bytes) });
   let parsed;
   try {
@@ -60,6 +63,9 @@ for (const item of manifest.documents) {
     throw new Error(`PDF text extraction returned too little text: ${filePath}. OCR may be required.`);
   }
   const pageCount = Number(parsed?.total ?? parsed?.pages?.length ?? 0) || null;
+  if (item.expected_page_count && pageCount !== item.expected_page_count) {
+    throw new Error(`Page-count mismatch for ${filePath}: expected ${item.expected_page_count}, got ${pageCount ?? "unknown"}`);
+  }
   const headings = [...new Set(extractedText.split(/\r?\n/)
     .map((line) => line.replace(/\s+/g, " ").trim())
     .filter((line) =>
