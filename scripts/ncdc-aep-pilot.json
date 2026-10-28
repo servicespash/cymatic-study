@@ -1,0 +1,32 @@
+{
+  "documents": [
+    {
+      "id": "ncdc-aep-physics-lsc-level-1-2-2023",
+      "title": "Accelerated Education Programme Physics Syllabus, Revised Lower Secondary (Level 1 and 2)",
+      "subject_label": "Physics",
+      "curriculum_programme": "Uganda Accelerated Education Programme (AEP)",
+      "level_labels": [
+        "Level 1",
+        "Level 2"
+      ],
+      "source_organization": "National Curriculum Development Centre (NCDC), Uganda",
+      "source_url": "https://ncdc.go.ug/books/",
+      "file": "./NCDC_AEP_PHYSICS_LSC_level-1and-2.pdf_Web-file-Final-08.03.2024.pdf",
+      "license_status": "pending_permission"
+    },
+    {
+      "id": "ncdc-aep-biology-lsc-level-1-2-2023",
+      "title": "Accelerated Education Programme Biology Syllabus, Revised Lower Secondary (Level 1 and 2)",
+      "subject_label": "Biology",
+      "curriculum_programme": "Uganda Accelerated Education Programme (AEP)",
+      "level_labels": [
+        "Level 1",
+        "Level 2"
+      ],
+      "source_organization": "National Curriculum Development Centre (NCDC), Uganda",
+      "source_url": "https://ncdc.go.ug/books/",
+      "file": "./NCDC_AEP_BIOLOGY_LSC_level-1and-2_-Final-2024-Web-file_Final-08.03.2024.pdf",
+      "license_status": "pending_permission"
+    }
+  ]
+}
