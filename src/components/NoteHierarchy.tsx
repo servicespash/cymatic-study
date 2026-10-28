@@ -8,6 +8,7 @@ import {
 import { classLevels, subjectLabels } from "@/lib/constants";
 import { getCombinedTopics, getCombinedTopicNote } from "@/lib/curriculum-store";
 import { BookOpenText } from "lucide-react";
+import { AepCurriculumIndex } from "@/components/curriculum/AepCurriculumIndex";
 
 interface NoteHierarchyProps {
   onSelectNote: (note: any, topic: any) => void;
@@ -15,7 +16,9 @@ interface NoteHierarchyProps {
 
 export const NoteHierarchy = ({ onSelectNote }: NoteHierarchyProps) => {
   return (
-    <Accordion type="multiple" className="w-full space-y-2">
+    <div className="space-y-4">
+      <AepCurriculumIndex />
+      <Accordion type="multiple" className="w-full space-y-2">
       {classLevels.map((cls) => (
         <AccordionItem
           key={cls.level}
@@ -52,6 +55,7 @@ export const NoteHierarchy = ({ onSelectNote }: NoteHierarchyProps) => {
           </AccordionContent>
         </AccordionItem>
       ))}
-    </Accordion>
+      </Accordion>
+    </div>
   );
 };
