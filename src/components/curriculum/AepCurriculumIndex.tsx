@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { BookOpen, ChevronDown, ExternalLink, FileText, Loader2, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 
 type SourceDocument = {
   id: string;
@@ -32,6 +33,8 @@ export function AepCurriculumIndex() {
   const [expanded, setExpanded] = useState(true);
   const [selectedLevel, setSelectedLevel] = useState("All levels");
   const [offlineSnapshot, setOfflineSnapshot] = useState(false);
+  const { isAdmin } = useAuth();
+  const [reviewingTopicId, setReviewingTopicId] = useState<string | null>(null);
 
   const loadIndex = async () => {
     setLoading(true);
@@ -99,6 +102,21 @@ export function AepCurriculumIndex() {
   useEffect(() => {
     void loadIndex();
   }, []);
+
+  const markTopicReviewed = async (topic: IndexedTopic) => {
+    if (!isAdmin) return;
+    setReviewingTopicId(topic.id);
+    const { error: updateError } = await (supabase as any)
+      .from("curriculum_document_topics")
+      .update({ review_status: "reviewed", updated_at: new Date().toISOString() })
+      .eq("id", topic.id);
+    setReviewingTopicId(null);
+    if (updateError) {
+      setError("Could not save review status: " + updateError.message);
+      return;
+    }
+    await loadIndex();
+  };
 
   const visibleTopics = useMemo(
     () => topics.filter((topic) => selectedLevel === "All levels" || topic.level_label === selectedLevel),
@@ -213,11 +231,26 @@ export function AepCurriculumIndex() {
                           {topic.level_label}{topic.source_page ? ` · Source page ${topic.source_page}` : " · Source page needs review"}
                         </p>
                       </div>
-                      {document.source_url && (
-                        <a href={document.source_url} target="_blank" rel="noreferrer" aria-label={`Open source for ${topic.title}`} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      )}
+                      <div className="flex flex-col items-end gap-1">
+                        <span className={`rounded-full px-2 py-1 text-[10px] ${topic.review_status === "reviewed" || topic.review_status === "approved" ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "bg-amber-500/10 text-amber-700 dark:text-amber-300"}`}>
+                          {topic.review_status === "reviewed" || topic.review_status === "approved" ? "Reviewed" : "Needs review"}
+                        </span>
+                        {isAdmin && topic.review_status !== "reviewed" && topic.review_status !== "approved" && (
+                          <button
+                            type="button"
+                            disabled={reviewingTopicId === topic.id}
+                            onClick={() => void markTopicReviewed(topic)}
+                            className="rounded-md border border-border px-2 py-1 text-[10px] hover:bg-muted disabled:opacity-50"
+                          >
+                            {reviewingTopicId === topic.id ? "Saving…" : "Mark reviewed"}
+                          </button>
+                        )}
+                        {document.source_url && (
+                          <a href={document.source_url} target="_blank" rel="noreferrer" aria-label={`Open source for ${topic.title}`} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
