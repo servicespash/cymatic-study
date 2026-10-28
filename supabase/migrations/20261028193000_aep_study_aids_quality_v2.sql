@@ -55,7 +55,7 @@ set
 from revised_notes as r
 where n.id = r.id;
 
--- Preserve explicit non-public review status for all 27 indexed topic records.
+-- Preserve explicit non-public review status for all 39 indexed topic records.
 update public.curriculum_document_topics
 set review_status = 'needs_review'
 where id in (
