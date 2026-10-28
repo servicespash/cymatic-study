@@ -246,9 +246,25 @@ function DeveloperConsolePage() {
           body: formData,
         });
 
-        const json = await response.json();
+        const responseText = await response.text();
+        let json: { error?: string; data?: ParsedCurriculumDocument; message?: string };
+
+        try {
+          json = JSON.parse(responseText) as typeof json;
+        } catch {
+          const detail = responseText.trim().slice(0, 180);
+          throw new Error(
+            responseText.trim().length === 0
+              ? `PDF ingestion endpoint returned an empty response (HTTP ${response.status}). Check the deployed server route and runtime logs.`
+              : `PDF ingestion endpoint returned non-JSON content (HTTP ${response.status}). ${detail || "Check the deployed server route and runtime logs."}`,
+          );
+        }
+
         if (!response.ok) {
-          throw new Error(json.error || "Failed to process PDF curriculum file.");
+          throw new Error(json.error || json.message || `PDF ingestion failed (HTTP ${response.status}).`);
+        }
+        if (!json.data || !Array.isArray(json.data.topics)) {
+          throw new Error("PDF ingestion response is missing the structured topics array.");
         }
         parsedDocument = json.data;
       } else {
