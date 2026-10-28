@@ -239,7 +239,9 @@ function DeveloperConsolePage() {
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         const accessToken = sessionData.session?.access_token;
         if (sessionError || !accessToken) {
-          throw new Error("Your authenticated session is missing or expired. Sign in again before uploading.");
+          throw new Error(
+            "Your authenticated session is missing or expired. Sign in again before uploading.",
+          );
         }
 
         const formData = new FormData();
@@ -267,7 +269,9 @@ function DeveloperConsolePage() {
         }
 
         if (!response.ok) {
-          throw new Error(json.error || json.message || `PDF ingestion failed (HTTP ${response.status}).`);
+          throw new Error(
+            json.error || json.message || `PDF ingestion failed (HTTP ${response.status}).`,
+          );
         }
         if (!json.data || !Array.isArray(json.data.topics)) {
           throw new Error("PDF ingestion response is missing the structured topics array.");
@@ -285,7 +289,10 @@ function DeveloperConsolePage() {
 
       // AEP documents are persisted to the programme-specific Supabase index.
       // Never route AEP Level 1/2 into the ordinary Senior 1/2 localStorage deck.
-      if (parsedDocument.curriculumProgramme === "Uganda Accelerated Education Programme (AEP)" && parsedDocument.sourceDocumentId) {
+      if (
+        parsedDocument.curriculumProgramme === "Uganda Accelerated Education Programme (AEP)" &&
+        parsedDocument.sourceDocumentId
+      ) {
         const aepRows = parsedDocument.topics.map((topic) => ({
           source_document_id: parsedDocument.sourceDocumentId,
           level_label: topic.curriculumLevelLabel,
@@ -300,7 +307,9 @@ function DeveloperConsolePage() {
           .upsert(aepRows, { onConflict: "source_document_id,level_label,topic_number" });
 
         if (saveError) {
-          throw new Error(`PDF text extracted, but saving the AEP topic index failed: ${saveError.message}`);
+          throw new Error(
+            `PDF text extracted, but saving the AEP topic index failed: ${saveError.message}`,
+          );
         }
 
         setLastParsedDoc(parsedDocument);

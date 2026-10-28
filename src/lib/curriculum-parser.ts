@@ -42,16 +42,41 @@ export interface ParsedCurriculumTopic {
 
 export function detectScienceSubject(text: string): ScienceSubjectId {
   const lower = text.toLowerCase();
-  if (lower.includes("physics") || lower.includes("newton") || lower.includes("kinematics") || lower.includes("circuit") || lower.includes("optics")) {
+  if (
+    lower.includes("physics") ||
+    lower.includes("newton") ||
+    lower.includes("kinematics") ||
+    lower.includes("circuit") ||
+    lower.includes("optics")
+  ) {
     return "physics";
   }
-  if (lower.includes("chemistry") || lower.includes("mole") || lower.includes("periodic table") || lower.includes("reaction") || lower.includes("acid")) {
+  if (
+    lower.includes("chemistry") ||
+    lower.includes("mole") ||
+    lower.includes("periodic table") ||
+    lower.includes("reaction") ||
+    lower.includes("acid")
+  ) {
     return "chemistry";
   }
-  if (lower.includes("biology") || lower.includes("cell") || lower.includes("photosynthesis") || lower.includes("ecosystem") || lower.includes("genetics") || lower.includes("organism")) {
+  if (
+    lower.includes("biology") ||
+    lower.includes("cell") ||
+    lower.includes("photosynthesis") ||
+    lower.includes("ecosystem") ||
+    lower.includes("genetics") ||
+    lower.includes("organism")
+  ) {
     return "biology";
   }
-  if (lower.includes("agriculture") || lower.includes("crop") || lower.includes("soil") || lower.includes("livestock") || lower.includes("agronomy")) {
+  if (
+    lower.includes("agriculture") ||
+    lower.includes("crop") ||
+    lower.includes("soil") ||
+    lower.includes("livestock") ||
+    lower.includes("agronomy")
+  ) {
     return "agriculture";
   }
   return "mathematics";
@@ -59,7 +84,13 @@ export function detectScienceSubject(text: string): ScienceSubjectId {
 
 export function detectSeniorLevel(text: string): number {
   const lower = text.toLowerCase();
-  if (lower.includes("senior 6") || lower.includes("s.6") || lower.includes("advanced level") || lower.includes("s6")) return 6;
+  if (
+    lower.includes("senior 6") ||
+    lower.includes("s.6") ||
+    lower.includes("advanced level") ||
+    lower.includes("s6")
+  )
+    return 6;
   if (lower.includes("senior 5") || lower.includes("s.5") || lower.includes("s5")) return 5;
   if (lower.includes("senior 4") || lower.includes("s.4") || lower.includes("s4")) return 4;
   if (lower.includes("senior 3") || lower.includes("s.3") || lower.includes("s3")) return 3;
@@ -73,7 +104,10 @@ export function parseCurriculumText(text: string, filename: string): ParsedCurri
   const words = text.split(/\s+/).filter(Boolean);
 
   // Heuristic topic splitting by lines starting with "Topic", "Chapter", or capitalized bold headings
-  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const lines = text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
   const topics: ParsedCurriculumTopic[] = [];
 
   let currentTopicTitle = "Core Foundation Topic";
@@ -103,11 +137,16 @@ export function parseCurriculumText(text: string, filename: string): ParsedCurri
     if (currentSections.length === 0) {
       currentSections.push({
         heading: "Comprehensive Study Notes",
-        content: currentOverview || "Detailed multi-paragraph textbook explanation covering fundamental principles, mechanisms, and academic investigations.",
+        content:
+          currentOverview ||
+          "Detailed multi-paragraph textbook explanation covering fundamental principles, mechanisms, and academic investigations.",
       });
     }
 
-    const topicId = `${subject}_s${level}_${topics.length + 1}_${currentTopicTitle.toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 30)}`;
+    const topicId = `${subject}_s${level}_${topics.length + 1}_${currentTopicTitle
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "_")
+      .slice(0, 30)}`;
 
     topics.push({
       id: topicId,
@@ -115,8 +154,17 @@ export function parseCurriculumText(text: string, filename: string): ParsedCurri
       subject,
       level,
       overviewConcept: currentOverview || `Core overview concept for ${currentTopicTitle}.`,
-      subtopics: currentSubtopics.length > 0 ? currentSubtopics : ["Introduction & Definitions", "Core Principles", "Applications & Investigations"],
-      competencies: currentCompetencies.length > 0 ? currentCompetencies : ["Understand key theoretical framework", "Perform calculations and practical data analysis"],
+      subtopics:
+        currentSubtopics.length > 0
+          ? currentSubtopics
+          : ["Introduction & Definitions", "Core Principles", "Applications & Investigations"],
+      competencies:
+        currentCompetencies.length > 0
+          ? currentCompetencies
+          : [
+              "Understand key theoretical framework",
+              "Perform calculations and practical data analysis",
+            ],
       formulas: currentFormulas,
       sections: currentSections,
       examples: currentExamples,
@@ -136,7 +184,10 @@ export function parseCurriculumText(text: string, filename: string): ParsedCurri
     const line = lines[i];
 
     // Check if line is a topic header
-    if (/^(topic|chapter|unit)\s+\d+/i.test(line) || (/^[A-Z\s]{5,50}$/.test(line) && line.length > 8 && !line.includes("SECTION"))) {
+    if (
+      /^(topic|chapter|unit)\s+\d+/i.test(line) ||
+      (/^[A-Z\s]{5,50}$/.test(line) && line.length > 8 && !line.includes("SECTION"))
+    ) {
       if (currentTopicTitle && (activeSectionBody.length > 0 || currentOverview)) {
         flushTopic();
       }
@@ -146,14 +197,26 @@ export function parseCurriculumText(text: string, filename: string): ParsedCurri
     }
 
     // Check standard academic headers
-    if (/^(introduction|overview|fundamental principles|practical investigations|exam competencies|worked examples|summary|exercises):?/i.test(line)) {
+    if (
+      /^(introduction|overview|fundamental principles|practical investigations|exam competencies|worked examples|summary|exercises):?/i.test(
+        line,
+      )
+    ) {
       flushSection();
       activeHeading = line.replace(/:$/, "").trim();
       continue;
     }
 
     // Extract formulas (lines with math symbols or equals)
-    if (line.includes("=") && (line.includes("+") || line.includes("-") || line.includes("*") || line.includes("/") || line.includes("v =") || line.includes("F ="))) {
+    if (
+      line.includes("=") &&
+      (line.includes("+") ||
+        line.includes("-") ||
+        line.includes("*") ||
+        line.includes("/") ||
+        line.includes("v =") ||
+        line.includes("F ="))
+    ) {
       currentFormulas.push(line);
     }
 
@@ -193,7 +256,11 @@ export function parseCurriculumText(text: string, filename: string): ParsedCurri
   }
 
   // Register asset diagrams if any markdown images exist in text
-  const registered = assetManager.extractAndRegisterDiagramMarkers(text, subject, topics[0]?.id || "general");
+  const registered = assetManager.extractAndRegisterDiagramMarkers(
+    text,
+    subject,
+    topics[0]?.id || "general",
+  );
   if (registered.registeredAssets.length > 0 && topics[0]) {
     topics[0].diagramReferences = registered.registeredAssets.map((a) => ({
       virtualPath: a.virtualPath,
@@ -212,7 +279,6 @@ export function parseCurriculumText(text: string, filename: string): ParsedCurri
     rawExtractedText: text,
   };
 }
-
 
 // These headings are validated against extracted source text before staging; they are not inferred from standard Senior 1–6 labels.
 type AepTopicSeed = { level: "Level 1" | "Level 2"; number: number; title: string; page: number };
@@ -237,7 +303,12 @@ const AEP_BIOLOGY_TOPICS: AepTopicSeed[] = [
   { level: "Level 1", number: 4, title: "Insects", page: 8 },
   { level: "Level 1", number: 5, title: "Flowering Plants", page: 10 },
   { level: "Level 1", number: 6, title: "Physical and Chemical Properties of Soil", page: 12 },
-  { level: "Level 1", number: 7, title: "Soil Erosion and Conservation: Causes, Effects and Prevention", page: 14 },
+  {
+    level: "Level 1",
+    number: 7,
+    title: "Soil Erosion and Conservation: Causes, Effects and Prevention",
+    page: 14,
+  },
   { level: "Level 1", number: 8, title: "Nutrition Types and Nutrient Compounds", page: 16 },
   { level: "Level 1", number: 9, title: "Nutrition in Green Plants", page: 18 },
   { level: "Level 1", number: 10, title: "Nutrition in Mammals", page: 20 },
@@ -252,7 +323,12 @@ const AEP_BIOLOGY_TOPICS: AepTopicSeed[] = [
   { level: "Level 2", number: 7, title: "Locomotion in Mammals", page: 37 },
   { level: "Level 2", number: 8, title: "Growth in Plants and Animals", page: 39 },
   { level: "Level 2", number: 9, title: "Development in Plants and Animals", page: 41 },
-  { level: "Level 2", number: 10, title: "Asexual Reproduction in Plants (Vegetative Reproduction)", page: 43 },
+  {
+    level: "Level 2",
+    number: 10,
+    title: "Asexual Reproduction in Plants (Vegetative Reproduction)",
+    page: 43,
+  },
   { level: "Level 2", number: 11, title: "Sexual Reproduction in Plants", page: 44 },
   { level: "Level 2", number: 12, title: "Sexual Reproduction in Human", page: 46 },
   { level: "Level 2", number: 13, title: "Inheritance", page: 49 },
@@ -268,9 +344,10 @@ function normalizeHeading(value: string): string {
 
 function parseAepSyllabusText(text: string, filename: string): ParsedCurriculumDocument {
   const subject: ScienceSubjectId = /biology/i.test(text.slice(0, 5000)) ? "biology" : "physics";
-  const documentId = subject === "biology"
-    ? "ncdc-aep-biology-lsc-level-1-2-2023"
-    : "ncdc-aep-physics-lsc-level-1-2-2023";
+  const documentId =
+    subject === "biology"
+      ? "ncdc-aep-biology-lsc-level-1-2-2023"
+      : "ncdc-aep-physics-lsc-level-1-2-2023";
   const seeds = subject === "biology" ? AEP_BIOLOGY_TOPICS : AEP_PHYSICS_TOPICS;
   const normalizedText = normalizeHeading(text);
   const topics: ParsedCurriculumTopic[] = seeds
@@ -285,7 +362,8 @@ function parseAepSyllabusText(text: string, filename: string): ParsedCurriculumD
       sourceDocumentId: documentId,
       sourcePage: seed.page,
       topicNumber: seed.number,
-      overviewConcept: "Topic heading extracted from the NCDC source syllabus; original study notes require developer review.",
+      overviewConcept:
+        "Topic heading extracted from the NCDC source syllabus; original study notes require developer review.",
       subtopics: [],
       competencies: [],
       formulas: [],
@@ -296,9 +374,15 @@ function parseAepSyllabusText(text: string, filename: string): ParsedCurriculumD
 
   if (topics.length !== seeds.length) {
     const missing = seeds.filter((seed) => !topics.some((topic) => topic.title === seed.title));
-    throw new Error("AEP PDF text was extracted, but " + topics.length + "/" + seeds.length +
-      " expected headings were verified. Missing: " + missing.map((item) => item.title).join(", ") +
-      ". Check extraction quality before staging.");
+    throw new Error(
+      "AEP PDF text was extracted, but " +
+        topics.length +
+        "/" +
+        seeds.length +
+        " expected headings were verified. Missing: " +
+        missing.map((item) => item.title).join(", ") +
+        ". Check extraction quality before staging.",
+    );
   }
 
   return {
@@ -358,7 +442,11 @@ export async function parseRobustCurriculum(
       await pdf.destroy();
     }
 
-    textContent = pages.join("\n\n").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+    textContent = pages
+      .join("\n\n")
+      .replace(/[ \t]+/g, " ")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
     if (textContent.length < 100) {
       throw new Error(
         "PDF contains too little extractable text. It may be scanned; OCR is required before deterministic ingestion.",
@@ -373,8 +461,10 @@ export async function parseRobustCurriculum(
   }
 
   // Keep AEP levels separate; never relabel them Senior 1/2.
-  if (/accelerated education programme|\bAEP\b/i.test(textContent) &&
-      /\blevels?\s*1\s*(?:and|&)\s*2\b/i.test(textContent)) {
+  if (
+    /accelerated education programme|\bAEP\b/i.test(textContent) &&
+    /\blevels?\s*1\s*(?:and|&)\s*2\b/i.test(textContent)
+  ) {
     return parseAepSyllabusText(textContent, filename);
   }
 

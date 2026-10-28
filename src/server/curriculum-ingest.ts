@@ -35,8 +35,10 @@ async function verifyAuthenticatedCurriculumAdmin(req: Request): Promise<boolean
     .maybeSingle();
 
   const role = profileError ? "" : String(profile?.role || "").toLowerCase();
-  return ["admin", "org_admin", "superadmin"].includes(role) ||
-    data.user.email?.trim().toLowerCase() === "latifisabirye123@gmail.com";
+  return (
+    ["admin", "org_admin", "superadmin"].includes(role) ||
+    data.user.email?.trim().toLowerCase() === "latifisabirye123@gmail.com"
+  );
 }
 
 const upload = multer({
@@ -51,7 +53,8 @@ export async function handleCurriculumIngestRequest(req: Request, res: Response)
   const authorized = await verifyAuthenticatedCurriculumAdmin(req);
   if (!authorized) {
     return res.status(401).json({
-      error: "Unauthorized: sign in with the authorised curriculum administrator account before uploading.",
+      error:
+        "Unauthorized: sign in with the authorised curriculum administrator account before uploading.",
     });
   }
 
