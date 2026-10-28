@@ -26,6 +26,10 @@ import {
   Search,
   ThumbsUp,
   ThumbsDown,
+  Pin,
+  Edit3,
+  Code,
+  BookOpen,
 } from "lucide-react";
 import { VisionLiveSession } from "@/components/VisionLiveSession";
 import { supabase } from "@/integrations/supabase/client";
@@ -534,94 +538,143 @@ function ChatRoomPage() {
         </div>
       )}
 
-      {/* Sidebar Drawer Context Manager */}
+      {/* Cohort Peer Network Sidebar Drawer */}
       <div
-        className={`fixed inset-y-0 left-0 z-[110] w-72 bg-zinc-900 border-r border-white/10 shadow-2xl transform transition-transform duration-300 ease-in-out ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed inset-y-0 left-0 z-[110] w-80 bg-zinc-950/95 border-r border-white/10 shadow-2xl backdrop-blur-2xl transform transition-transform duration-300 ease-in-out flex flex-col justify-between ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
-        <div className="flex flex-col h-full p-6">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-lg font-black text-white uppercase tracking-tighter">
-              Chat Context
-            </h3>
+        <div className="flex flex-col h-full p-4 overflow-y-auto space-y-5">
+          {/* Top Bar: Title & Close */}
+          <div className="flex items-center justify-between pt-1">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <div>
+                <h3 className="text-sm font-black text-white tracking-tight uppercase">Cohort Study Network</h3>
+                <p className="text-[10px] text-zinc-500 font-medium">Classrooms & Peer Channels</p>
+              </div>
+            </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setSidebarOpen(false)}
-              className="h-8 w-8 text-zinc-500"
+              className="h-8 w-8 text-zinc-400 hover:text-white"
             >
               <X className="h-5 w-5" />
             </Button>
           </div>
 
-          <div className="flex-1 space-y-6">
-            <div className="space-y-3">
-              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">
-                Active Space
-              </p>
-              <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 space-y-1">
-                <p className="font-bold text-primary text-sm">{chatContext.label}</p>
-                <p className="text-[10px] text-primary/70 uppercase font-black">
-                  {chatContext.type}
-                </p>
-              </div>
+          {/* Active Cohort Space Card */}
+          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Active Space</span>
+              <Badge variant="outline" className="text-[9px] border-primary/30 bg-primary/10 text-primary">
+                {isInstitutional ? "Verified School" : "Independent"}
+              </Badge>
             </div>
+            <p className="text-xs font-bold text-white truncate">{chatContext.label}</p>
+            <p className="text-[10px] text-zinc-500">
+              {isInstitutional ? "School-wide cohort monitored by teachers & AI" : "Open peer study space with AI assistance"}
+            </p>
+          </div>
 
-            {chatContext.isStaff && (
-              <div className="space-y-3">
-                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">
-                  Switch Level View
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  {["S1", "S2", "S3", "S4", "S5", "S6"].map((lvl) => (
-                    <button
-                      key={lvl}
-                      onClick={() => {
-                        setManualLevel(lvl);
-                        setSidebarOpen(false);
-                        toast.success(`Switched to ${lvl} Chatroom`);
-                      }}
-                      className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
-                        chatContext.level === lvl
-                          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
-                          : "bg-white/5 text-zinc-500 hover:text-white hover:bg-white/10"
-                      }`}
-                    >
-                      {lvl}
-                    </button>
-                  ))}
+          {/* Study Channels */}
+          <div className="space-y-1.5">
+            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-2">
+              Cohort Channels
+            </p>
+            {[
+              { id: "general", name: "general-study", desc: "Main cohort discussions" },
+              { id: "stem", name: "stem-labs", desc: "Math, Physics & Chemistry" },
+              { id: "code", name: "code-projects", desc: "Software, web & digital design" },
+              { id: "revision", name: "exam-revision", desc: "Past papers, quizzes & mocks" },
+            ].map((ch) => (
+              <button
+                key={ch.id}
+                onClick={() => {
+                  setSidebarOpen(false);
+                  toast.info(`Switched to #${ch.name}`);
+                }}
+                className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-white/5 text-left text-xs transition-colors group"
+              >
+                <div>
+                  <div className="font-semibold text-zinc-200 group-hover:text-primary flex items-center gap-1.5">
+                    <span className="text-zinc-500">#</span>
+                    <span>{ch.name}</span>
+                  </div>
+                  <div className="text-[10px] text-zinc-500">{ch.desc}</div>
+                </div>
+                <div className="h-2 w-2 rounded-full bg-emerald-500/80" />
+              </button>
+            ))}
+          </div>
+
+          {/* Teacher Pinned Notice */}
+          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-1.5">
+            <div className="flex items-center gap-1.5 text-amber-400 text-xs font-bold">
+              <Pin className="h-3.5 w-3.5" />
+              <span>Teacher Announcement</span>
+            </div>
+            <p className="text-[11px] text-zinc-300 leading-relaxed">
+              Term mock reviews are underway. Tag <strong className="text-amber-300">@AI Tutor</strong> in chat if you need an instant step-by-step breakdown.
+            </p>
+          </div>
+
+          {/* Active Cohort Members */}
+          <div className="space-y-2 pt-2 border-t border-white/5">
+            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-2">
+              Online Members
+            </p>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl bg-white/5">
+                <Avatar className="h-6 w-6">
+                  <AvatarFallback className="bg-primary/20 text-primary text-[9px] font-bold">ED</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-white truncate">Ms. Nalubega</p>
+                  <p className="text-[9px] text-zinc-500">Faculty Lead</p>
+                </div>
+                <Badge variant="outline" className="text-[8px] border-emerald-500/30 text-emerald-400 py-0">Staff</Badge>
+              </div>
+              <div className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-white/5">
+                <div className="relative">
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback className="bg-zinc-800 text-[9px] font-bold text-zinc-400">LI</AvatarFallback>
+                  </Avatar>
+                  <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-zinc-950" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-zinc-300 truncate">{profile?.display_name || user?.user_metadata?.full_name || "Latif Isabirye"}</p>
+                  <p className="text-[9px] text-zinc-500">You · Senior Scholar</p>
                 </div>
               </div>
-            )}
-
-            <div className="space-y-3">
-              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">
-                Channels
-              </p>
-              <div className="space-y-1">
-                {["General Discussion", "Physics Lab", "Math Solutions", "Biology Study"].map(
-                  (channel) => (
-                    <button
-                      key={channel}
-                      className="w-full text-left px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition-colors flex items-center gap-3"
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                      {channel}
-                    </button>
-                  ),
-                )}
+              <div className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-white/5">
+                <div className="relative">
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback className="bg-zinc-800 text-[9px] font-bold text-zinc-400">MK</AvatarFallback>
+                  </Avatar>
+                  <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-zinc-950" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-zinc-300 truncate">Mukasa Brian</p>
+                  <p className="text-[9px] text-zinc-500">Peer Scholar</p>
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="pt-6 border-t border-white/5">
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-3 text-zinc-500 hover:text-white"
-            >
-              <Settings className="h-5 w-5" />
-              Settings
-            </Button>
-          </div>
+        {/* Bottom Actions */}
+        <div className="p-4 border-t border-white/10 bg-zinc-950 flex items-center justify-between gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleInvite}
+            className="w-full border-primary/20 bg-primary/10 hover:bg-primary/20 text-xs font-bold text-primary"
+          >
+            <Share2 className="mr-2 h-3.5 w-3.5" />
+            Invite Classmates
+          </Button>
         </div>
       </div>
 
@@ -715,14 +768,41 @@ function ChatRoomPage() {
           </div>
 
           {messages.length === 0 && (
-            <div className="py-12 text-center">
-              <div className="mx-auto h-20 w-20 flex items-center justify-center rounded-full bg-zinc-900 border border-white/5 mb-4">
-                <MessageSquare className="h-10 w-10 text-zinc-700" />
+            <div className="py-8 sm:py-16 text-center max-w-lg mx-auto space-y-6">
+              <div className="h-16 w-16 mx-auto rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-xl shadow-primary/10">
+                <Users className="h-8 w-8" />
               </div>
-              <h3 className="font-bold text-zinc-400">Secure Network Initiated</h3>
-              <p className="text-xs text-zinc-600 uppercase tracking-widest mt-1">
-                Waiting for data packets...
-              </p>
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-white tracking-tight">
+                  Welcome to the Cohort Study Room
+                </h3>
+                <p className="text-sm text-zinc-400 max-w-sm mx-auto leading-relaxed">
+                  Collaborate with your classmates, share study files, and ask questions. Your teachers and the AI study co-moderator are here to assist.
+                </p>
+              </div>
+
+              {/* Starter peer discussion prompts */}
+              <div className="space-y-2 pt-2">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                  Start a peer discussion
+                </p>
+                <div className="flex flex-col gap-2 max-w-md mx-auto">
+                  {[
+                    "How do we balance redox reactions in acidic media?",
+                    "Can someone review my solution for today's calculus quiz?",
+                    "Share recommended study resources for upcoming exams",
+                  ].map((starter) => (
+                    <button
+                      key={starter}
+                      onClick={() => setNewMessage(starter)}
+                      className="text-left px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs text-zinc-300 hover:text-white transition-all flex items-center justify-between group"
+                    >
+                      <span className="truncate">{starter}</span>
+                      <MessageSquare className="h-3.5 w-3.5 text-zinc-500 group-hover:text-primary shrink-0 ml-2" />
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

@@ -1,0 +1,39 @@
+{
+  "documentTitle": "Uganda National Curriculum Development Center - Open Science Notes",
+  "subjectTitle": "physics",
+  "levelLabel": "Senior 1",
+  "levelNumber": 1,
+  "topics": [
+    {
+      "id": "physics_s1_kinematics_open_1",
+      "title": "Introduction to Kinematics & Motion",
+      "subject": "physics",
+      "level": 1,
+      "overviewConcept": "Kinematics is the branch of classical mechanics that describes the motion of points, bodies, and systems of bodies without consideration of the forces acting on them.",
+      "subtopics": [
+        "Definition of Distance and Displacement",
+        "Speed, Velocity and Acceleration",
+        "Graphical Analysis of Motion"
+      ],
+      "competencies": [
+        "Distinguish between scalar and vector quantities",
+        "Calculate average velocity and acceleration from experimental data"
+      ],
+      "formulas": [
+        "v = u + at",
+        "s = ut + 0.5 * a * t^2",
+        "v^2 = u^2 + 2as"
+      ],
+      "sections": [
+        {
+          "heading": "Fundamental Principles of Motion",
+          "content": "Motion is change in position of an object with respect to its surroundings in a given interval of time. Distance is a scalar quantity representing total path length, whereas displacement is a vector quantity representing the shortest straight-line distance from start to finish."
+        },
+        {
+          "heading": "Practical Investigations",
+          "content": "Using a ticker-timer or motion sensor to record the movement of a trolley down an inclined plane. Measuring dot intervals allows calculation of instantaneous velocity and acceleration."
+        }
+      ]
+    }
+  ]
+}

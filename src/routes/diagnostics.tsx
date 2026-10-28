@@ -30,13 +30,22 @@ function DiagnosticsPage() {
       for (const table of REQUIRED_TABLES) {
         try {
           const { error } = await (supabase as any).from(table).select("id").limit(1);
-          
+
           // Additional deep check for profiles columns if table exists
           if (!error && table === "profiles") {
-            const { error: colErr } = await (supabase as any).from("profiles").select("is_verified, email").limit(1);
+            const { error: colErr } = await (supabase as any)
+              .from("profiles")
+              .select("is_verified, email")
+              .limit(1);
             if (colErr && colErr.message?.includes("column")) {
-               setResults((prev) => ({ ...prev, [table]: { status: "missing", error: "Missing required columns: is_verified or email" } }));
-               continue;
+              setResults((prev) => ({
+                ...prev,
+                [table]: {
+                  status: "missing",
+                  error: "Missing required columns: is_verified or email",
+                },
+              }));
+              continue;
             }
           }
 

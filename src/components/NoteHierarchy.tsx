@@ -6,8 +6,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { classLevels, subjectLabels } from "@/lib/constants";
-import { topics } from "@/data/topics";
-import { topicNotes } from "@/data/notes";
+import { getCombinedTopics, getCombinedTopicNote } from "@/lib/curriculum-store";
 import { BookOpenText } from "lucide-react";
 
 interface NoteHierarchyProps {
@@ -26,9 +25,7 @@ export const NoteHierarchy = ({ onSelectNote }: NoteHierarchyProps) => {
           <AccordionTrigger className="font-bold">{cls.label}</AccordionTrigger>
           <AccordionContent className="space-y-4 pt-2">
             {Object.entries(subjectLabels).map(([subjId, subjLabel]) => {
-              const subjTopics = topics.filter(
-                (t) => t.subject === subjId && t.level === cls.level,
-              );
+              const subjTopics = getCombinedTopics(subjId, cls.level);
               if (subjTopics.length === 0) return null;
 
               return (
@@ -36,7 +33,7 @@ export const NoteHierarchy = ({ onSelectNote }: NoteHierarchyProps) => {
                   <h4 className="text-sm font-semibold text-muted-foreground">{subjLabel}</h4>
                   <div className="pl-4 space-y-1">
                     {subjTopics.map((topic) => {
-                      const note = topicNotes.find((n) => n.topicId === topic.id);
+                      const note = getCombinedTopicNote(topic.id);
                       return (
                         <button
                           key={topic.id}

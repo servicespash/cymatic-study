@@ -8,8 +8,17 @@ import { useTutor } from "@/lib/TutorService";
 import { Button } from "@/components/ui/button";
 
 import { LinkifiedText } from "@/components/LinkifiedText";
+import { GeminiZeroState } from "./GeminiZeroState";
 
-export function ChatArea({ messages, isLoading }: { messages: Message[]; isLoading: boolean }) {
+export function ChatArea({
+  messages,
+  isLoading,
+  onSelectSuggestion,
+}: {
+  messages: Message[];
+  isLoading: boolean;
+  onSelectSuggestion?: (text: string) => void;
+}) {
   const { isTeacher, isAdmin } = useAuth();
   const { persona, sessionId, sessions, updateSessionMeta } = useTutorStore();
   const currentSession = sessions.find((s) => s.id === sessionId);
@@ -83,6 +92,11 @@ export function ChatArea({ messages, isLoading }: { messages: Message[]; isLoadi
           Export PDF
         </button>
       </div>
+      {messages.length === 0 && (
+        <div className="py-6 sm:py-12 w-full">
+          <GeminiZeroState onSelectPrompt={onSelectSuggestion} />
+        </div>
+      )}
       {messages.map((msg) => {
         const isStudent = msg.sender === "student" || msg.sender === "user";
         return (

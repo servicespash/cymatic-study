@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DexieSyncIndicator } from "@/components/DexieSyncIndicator";
 import { cn } from "@/lib/utils";
 
 export interface MainNavigationProps {
@@ -41,12 +42,18 @@ export function MainNavigation({
   // Role-specific dynamic menu items
   const menuItems = React.useMemo(() => {
     if (isAdmin) {
-      return [
-        { to: "/admin/dashboard", label: "Admin Dashboard", icon: ShieldCheck, badge: "Admin" },
+      const baseItems = [
         { to: "/teacher", label: "Teacher Station", icon: PenTool },
         { to: "/admin/dashboard/students", label: "Student Roster", icon: GraduationCap },
         { to: "/analytics", label: "Analytics", icon: LineChart },
         { to: "/tools", label: "Classroom Tools", icon: Calculator },
+      ];
+
+      // We can check user email here if we had access, but for now we'll just keep it
+      // The secure restriction is in the routes.
+      return [
+        { to: "/admin/dashboard", label: "Admin Dashboard", icon: ShieldCheck, badge: "Admin" },
+        ...baseItems,
       ];
     }
 
@@ -81,13 +88,19 @@ export function MainNavigation({
     ];
   }, [isAdmin, isTeacher, isStudent]);
 
-  const roleBadge = isAdmin ? "Administrator" : isTeacher ? "Faculty" : isStudent ? "Learner" : "Guest";
+  const roleBadge = isAdmin
+    ? "Administrator"
+    : isTeacher
+      ? "Faculty"
+      : isStudent
+        ? "Learner"
+        : "Guest";
 
   return (
     <nav
       className={cn(
         "w-full rounded-2xl border border-border/60 bg-card/70 p-3 sm:p-4 backdrop-blur-md shadow-sm mb-6",
-        className
+        className,
       )}
       aria-label="Main Role-Aware Navigation"
     >
@@ -112,9 +125,14 @@ export function MainNavigation({
             <span className="hidden sm:inline">Home</span>
           </Link>
 
-          <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 border-primary/30 text-primary bg-primary/10">
+          <Badge
+            variant="outline"
+            className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 border-primary/30 text-primary bg-primary/10"
+          >
             {roleBadge}
           </Badge>
+
+          <DexieSyncIndicator />
         </div>
 
         {/* Dynamic Role-Based Menu Items */}
@@ -130,7 +148,7 @@ export function MainNavigation({
                     "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200",
                     isActive
                       ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   <Icon className="w-3.5 h-3.5" />

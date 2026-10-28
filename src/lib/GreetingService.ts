@@ -29,7 +29,7 @@ export class GreetingService {
       profileData?.role ||
       meta.role ||
       (email?.toLowerCase() === "latifisabirye123@gmail.com" ? "admin" : "student");
-      
+
     const role =
       rawRole.toLowerCase().includes("admin") || rawRole.toLowerCase().includes("org_admin")
         ? "admin"
@@ -39,7 +39,11 @@ export class GreetingService {
 
     const fullName = profileData?.full_name || meta.full_name || meta.name || null;
     const schoolName =
-      profileData?.school_name || meta.school_name || meta.school || meta.organization_id || "Cymatic Study Ecosystem";
+      profileData?.school_name ||
+      meta.school_name ||
+      meta.school ||
+      meta.organization_id ||
+      "Cymatic Study Ecosystem";
 
     return GreetingService.generateGreeting({
       fullName,

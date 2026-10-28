@@ -161,9 +161,7 @@ export function AdminSettings() {
   };
 
   const toggleSelectMember = (id: string) => {
-    setMembers((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, selected: !m.selected } : m))
-    );
+    setMembers((prev) => prev.map((m) => (m.id === id ? { ...m, selected: !m.selected } : m)));
   };
 
   const toggleSelectAll = () => {
@@ -171,7 +169,8 @@ export function AdminSettings() {
     setMembers((prev) => prev.map((m) => ({ ...m, selected: !allSelected })));
   };
 
-  const origin = typeof window !== "undefined" ? window.location.origin : "https://study.cymatichub.xyz";
+  const origin =
+    typeof window !== "undefined" ? window.location.origin : "https://study.cymatichub.xyz";
   const studentInviteLink = `${origin}/signup?school_id=${encodeURIComponent(activeOrgId)}&role=join-student`;
   const teacherInviteLink = `${origin}/signup?school_id=${encodeURIComponent(activeOrgId)}&role=join-teacher`;
 
@@ -191,7 +190,10 @@ export function AdminSettings() {
             <Badge className="bg-indigo-600 text-white font-black text-[10px] uppercase tracking-wider">
               Institutional Authority Node
             </Badge>
-            <Badge variant="outline" className="border-indigo-400/30 text-indigo-300 font-mono text-xs">
+            <Badge
+              variant="outline"
+              className="border-indigo-400/30 text-indigo-300 font-mono text-xs"
+            >
               Prefix: {currentShortCode}
             </Badge>
           </div>
@@ -206,10 +208,10 @@ export function AdminSettings() {
             Institutional Management: {currentSchoolName}
           </h2>
           <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-            Eliminate all confusion between School ID and Organization ID. There is only one unified ID
-            (<strong className="text-indigo-300">{activeOrgId}</strong>), derived directly from your school acronym
-            (<strong className="text-indigo-300">{currentShortCode}</strong>). Use it to bind students, verify teachers,
-            and manage continuous assessment silos.
+            Eliminate all confusion between School ID and Organization ID. There is only one unified
+            ID (<strong className="text-indigo-300">{activeOrgId}</strong>), derived directly from
+            your school acronym (<strong className="text-indigo-300">{currentShortCode}</strong>).
+            Use it to bind students, verify teachers, and manage continuous assessment silos.
           </p>
         </div>
       </div>
@@ -223,7 +225,8 @@ export function AdminSettings() {
               School Details &amp; Short Form Acronym
             </h3>
             <p className="text-xs text-zinc-400 mt-0.5">
-              Change your institution name. The system automatically computes your 3-4 letter acronym prefix.
+              Change your institution name. The system automatically computes your 3-4 letter
+              acronym prefix.
             </p>
           </div>
           <Badge className="bg-zinc-800 text-indigo-400 font-mono text-xs px-3 py-1">
@@ -247,12 +250,17 @@ export function AdminSettings() {
                 disabled={savingName}
                 className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shrink-0 px-4"
               >
-                {savingName ? <RefreshCw className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
+                {savingName ? (
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                ) : (
+                  <Save className="h-3.5 w-3.5 mr-1.5" />
+                )}
                 Save Name
               </Button>
             </div>
             <p className="text-[11px] text-zinc-500">
-              Derived acronym for this name is: <strong className="text-indigo-400">{currentShortCode}</strong>.
+              Derived acronym for this name is:{" "}
+              <strong className="text-indigo-400">{currentShortCode}</strong>.
             </p>
           </div>
         </form>
@@ -267,7 +275,8 @@ export function AdminSettings() {
               Unified Institution ID (Source of Truth)
             </h3>
             <p className="text-xs text-zinc-400 mt-0.5">
-              The single public key used to invite members and link them into your institutional database silo.
+              The single public key used to invite members and link them into your institutional
+              database silo.
             </p>
           </div>
 
@@ -299,11 +308,16 @@ export function AdminSettings() {
               className="text-zinc-400 hover:text-white"
               title="Copy ID"
             >
-              {copiedId ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+              {copiedId ? (
+                <Check className="h-4 w-4 text-emerald-400" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
             </Button>
           </div>
           <p className="text-[11px] text-zinc-500 max-w-md mx-auto">
-            Share this exact code with teachers and students during signup, or provide them with one-click binding links below.
+            Share this exact code with teachers and students during signup, or provide them with
+            one-click binding links below.
           </p>
         </div>
 
@@ -321,10 +335,16 @@ export function AdminSettings() {
             </p>
             <Button
               size="sm"
-              onClick={() => copyText(studentInviteLink, setCopiedStudentLink, "Student Invite Link")}
+              onClick={() =>
+                copyText(studentInviteLink, setCopiedStudentLink, "Student Invite Link")
+              }
               className="w-full bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white text-xs font-bold"
             >
-              {copiedStudentLink ? <Check className="h-3.5 w-3.5 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
+              {copiedStudentLink ? (
+                <Check className="h-3.5 w-3.5 mr-1" />
+              ) : (
+                <Copy className="h-3.5 w-3.5 mr-1" />
+              )}
               Copy Student Invite Link
             </Button>
           </div>
@@ -341,10 +361,16 @@ export function AdminSettings() {
             </p>
             <Button
               size="sm"
-              onClick={() => copyText(teacherInviteLink, setCopiedTeacherLink, "Teacher Invite Link")}
+              onClick={() =>
+                copyText(teacherInviteLink, setCopiedTeacherLink, "Teacher Invite Link")
+              }
               className="w-full bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-bold"
             >
-              {copiedTeacherLink ? <Check className="h-3.5 w-3.5 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
+              {copiedTeacherLink ? (
+                <Check className="h-3.5 w-3.5 mr-1" />
+              ) : (
+                <Copy className="h-3.5 w-3.5 mr-1" />
+              )}
               Copy Teacher Invite Link
             </Button>
           </div>
@@ -398,7 +424,8 @@ export function AdminSettings() {
                 No external scholars or teachers linked yet under this school name.
               </p>
               <p className="text-[11px] text-zinc-600">
-                Share your active code <strong className="text-indigo-400">{activeOrgId}</strong> or student invite link to register cohorts.
+                Share your active code <strong className="text-indigo-400">{activeOrgId}</strong> or
+                student invite link to register cohorts.
               </p>
             </div>
           ) : (
@@ -413,7 +440,11 @@ export function AdminSettings() {
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <button type="button" className="text-indigo-400 shrink-0">
-                        {m.selected ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4 text-zinc-600" />}
+                        {m.selected ? (
+                          <CheckSquare className="h-4 w-4" />
+                        ) : (
+                          <Square className="h-4 w-4 text-zinc-600" />
+                        )}
                       </button>
                       <div className="min-w-0">
                         <p className="text-xs font-bold text-white truncate">

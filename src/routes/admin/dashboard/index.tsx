@@ -77,6 +77,7 @@ import { SupabaseLivePulseHeader } from "@/components/SupabaseLivePulseHeader";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 import { useOrganization } from "@/hooks/useOrganization";
 import { MainNavigation } from "@/components/MainNavigation";
+import { StudentPerformanceTable } from "@/components/admin/StudentPerformanceTable";
 
 export const Route = createFileRoute("/admin/dashboard/")({
   head: () => ({
@@ -877,33 +878,19 @@ function AdminDashboard() {
               </Card>
             </div>
 
-            {/* STUDENTS TABLE */}
+            {/* STUDENTS PERFORMANCE GRADEBOOK TABLE */}
             <Card className="border-white/5 bg-black/40 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="text-base font-black uppercase">
-                  Class Roll & Individual Performance
+                  Class Roll &amp; Student Performance Gradebook
                 </CardTitle>
                 <CardDescription>
-                  Click 'Inspect' to view detailed project submissions and teacher assessment sheets
-                  for any student.
+                  Filter student marked projects and competency evaluations by class level (Senior
+                  1–6) and stream.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <StudentMatrix
-                  students={filteredStudents}
-                  loading={loadingList}
-                  searchTerm={searchQuery}
-                  setSearchTerm={setSearchQuery}
-                  setInspectedStudent={setInspectedStudent}
-                  onRefresh={() => {
-                    loadClassStudentsAndSubmissions(
-                      currentOrgId,
-                      org?.name || "Institutional School",
-                    );
-                    loadDashboardStats(currentOrgId);
-                  }}
-                  currentOrgId={currentOrgId}
-                />
+                <StudentPerformanceTable schoolId={currentOrgId} />
               </CardContent>
             </Card>
           </div>

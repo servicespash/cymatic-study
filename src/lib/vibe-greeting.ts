@@ -19,14 +19,18 @@ export function generateVibeGreeting(options: VibeGreetingOptions): string {
   const honorific =
     normalizedRole === "teacher"
       ? "Teacher"
-      : normalizedRole === "admin" || normalizedRole === "administrator" || normalizedRole === "org_admin"
+      : normalizedRole === "admin" ||
+          normalizedRole === "administrator" ||
+          normalizedRole === "org_admin"
         ? "Administrator"
         : "Scholar";
 
   const addressedName =
     normalizedRole === "teacher"
       ? `Teacher ${firstName}`
-      : normalizedRole === "admin" || normalizedRole === "administrator" || normalizedRole === "org_admin"
+      : normalizedRole === "admin" ||
+          normalizedRole === "administrator" ||
+          normalizedRole === "org_admin"
         ? `Administrator ${firstName}`
         : firstName;
 

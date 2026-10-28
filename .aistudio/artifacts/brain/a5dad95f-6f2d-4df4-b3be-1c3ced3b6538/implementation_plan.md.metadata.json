@@ -1,0 +1,6 @@
+{
+  "summary":  "Architectural plan to strictly decouple the Cohort Peer Chat (/chat) from the 1-on-1 AI Tutor Workspace (/tutor). Restores the multi-student collaborative room with peer channels, presence indicators, and AI co-moderator in /chat. Overhauls the Tutor Workspace drawer in /tutor to match the Gemini mobile drawer with dynamic session history from useTutorStore, live transcript search, pin toggles, subject hubs, and user profile footer without any hardcoded session entries.",
+  "updatedAt":  "2026-10-27T10:14:06.187844520Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

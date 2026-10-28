@@ -5,6 +5,8 @@ export interface ChatSession {
   id?: number;
   title?: string;
   summary?: string;
+  pinned?: boolean;
+  category?: string;
   messages: Array<{
     id: string;
     sender: "student" | "tutor" | "socratic_tutor";

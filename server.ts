@@ -12,6 +12,7 @@ import { handleNcdcNewsRequest } from "./src/server/ncdc-news";
 import { handleDynamicNotesRequest } from "./src/server/dynamic-notes";
 import { handleEmailRequest } from "./src/server/email-router";
 import { handleAttendanceRequest } from "./src/server/attendance";
+import { handleCurriculumIngestRequest } from "./src/server/curriculum-ingest";
 
 async function startServer() {
   console.log("[Boot] Current working directory:", process.cwd());
@@ -25,8 +26,8 @@ async function startServer() {
   const PORT = 3000;
 
   // Body parsers
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json({ limit: "50mb" }));
+  app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
   // Helper to convert Express request to Web Request
   function toWebRequest(req: express.Request): Request {
@@ -134,6 +135,15 @@ async function startServer() {
       res.status(response.status).json(data);
     } catch (error: any) {
       console.error("Attendance API error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/curriculum-ingest", async (req, res) => {
+    try {
+      await handleCurriculumIngestRequest(req, res);
+    } catch (error: any) {
+      console.error("Curriculum Ingest API error:", error);
       res.status(500).json({ error: error.message });
     }
   });

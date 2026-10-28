@@ -27,13 +27,12 @@ export function TeacherApprovalTable() {
   async function fetchPendingTeachers() {
     setLoading(true);
     try {
-      let query = supabase
-        .from("profiles")
-        .select("*")
-        .eq("role", "teacher");
+      let query = supabase.from("profiles").select("*").eq("role", "teacher");
 
       if (schoolId) {
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(schoolId);
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          schoolId,
+        );
         if (isUuid) {
           query = query.eq("org_id", schoolId);
         }

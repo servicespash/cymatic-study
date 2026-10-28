@@ -22,7 +22,7 @@ if (rootElement) {
     <StrictMode>
       <ErrorBoundary>
         <Sentry.ErrorBoundary fallback={<p>An error occurred</p>}>
-           <RouterProvider router={router} />
+          <RouterProvider router={router} />
         </Sentry.ErrorBoundary>
       </ErrorBoundary>
     </StrictMode>,

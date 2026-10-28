@@ -24,7 +24,11 @@ interface TopicConfig {
 
 export function SocraticTutorChat() {
   const { user, isTeacher, isAdmin } = useAuth();
-  const [userProfileData, setUserProfileData] = useState<{ full_name?: string; role?: string; school_name?: string }>({});
+  const [userProfileData, setUserProfileData] = useState<{
+    full_name?: string;
+    role?: string;
+    school_name?: string;
+  }>({});
 
   useEffect(() => {
     async function fetchProfile() {
@@ -81,7 +85,11 @@ export function SocraticTutorChat() {
   // Fetch dynamic context-aware welcome message
   useEffect(() => {
     if (messages.length === 0) {
-      const greetingText = GreetingService.generateFromSession(user, userProfileData, activeSubject);
+      const greetingText = GreetingService.generateFromSession(
+        user,
+        userProfileData,
+        activeSubject,
+      );
       const greeting: ChatMessage = {
         id: crypto.randomUUID(),
         sender: "tutor",

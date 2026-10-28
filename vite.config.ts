@@ -102,9 +102,9 @@ export default defineConfig({
         runtimeCaching: [
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
-            handler: 'CacheFirst',
+            handler: "CacheFirst",
             options: {
-              cacheName: 'images-cache',
+              cacheName: "images-cache",
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 30 * 24 * 60 * 60,
@@ -113,9 +113,9 @@ export default defineConfig({
           },
           {
             urlPattern: /\.(?:pdf)$/,
-            handler: 'CacheFirst',
+            handler: "CacheFirst",
             options: {
-              cacheName: 'pdf-cache',
+              cacheName: "pdf-cache",
               expiration: {
                 maxEntries: 20,
                 maxAgeSeconds: 7 * 24 * 60 * 60,
@@ -128,8 +128,8 @@ export default defineConfig({
         name: "Latty's Cymatic Study",
         short_name: "CymaticHub",
         description: "Uganda Secondary NCDC Curriculum Study Companion",
-        theme_color: "#0a1628",
-        background_color: "#0a1628",
+        theme_color: "#090d16",
+        background_color: "#090d16",
         display: "standalone",
         orientation: "portrait",
         scope: "/",

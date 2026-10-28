@@ -126,16 +126,34 @@ export function InputField({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask anything..."
+          placeholder={isListening ? "Listening to your voice..." : "Ask anything..."}
           aria-label="Message input"
           className="flex-1 bg-transparent py-3 px-2 text-sm text-white placeholder:text-zinc-600 focus:outline-none resize-none max-h-32 overflow-y-auto"
         />
+
+        {/* Oscilloscope / Pulsing Visual Indicator during Recording */}
+        {isListening && (
+          <div className="flex items-center gap-1 px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-full animate-pulse mr-2">
+            <span className="w-1 h-4 bg-red-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+            <span className="w-1 h-6 bg-red-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+            <span className="w-1 h-3 bg-red-500 rounded-full animate-bounce" />
+            <span className="text-[10px] font-mono text-red-400 font-semibold uppercase tracking-wider ml-1 hidden sm:inline">
+              Listening
+            </span>
+          </div>
+        )}
+
         <button
           onClick={toggleListening}
-          className={`p-3 hover:text-white transition-colors cursor-pointer ${isListening ? "text-red-500 animate-pulse" : "text-zinc-500"}`}
+          className={`p-3 transition-all cursor-pointer rounded-full ${
+            isListening
+              ? "bg-red-500 text-white shadow-lg animate-pulse"
+              : "text-zinc-500 hover:text-white"
+          }`}
           aria-label={isListening ? "Stop voice input" : "Start voice input"}
+          title={isListening ? "Listening active..." : "Click to speak"}
         >
-          {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+          {isListening ? <MicOff className="h-5 w-5 animate-spin" /> : <Mic className="h-5 w-5" />}
         </button>
         <button
           onClick={onSubmit}

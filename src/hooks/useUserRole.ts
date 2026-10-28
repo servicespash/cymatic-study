@@ -105,7 +105,8 @@ export function useUserRole(): UserRoleState {
 
       if (profileRes.data) {
         fetchedOrgUUID = profileRes.data.org_id;
-        fetchedSchoolName = (profileRes.data as any).organizations?.name || profileRes.data.school_name;
+        fetchedSchoolName =
+          (profileRes.data as any).organizations?.name || profileRes.data.school_name;
         fetchedOrgHumanId = (profileRes.data as any).organizations?.school_key;
       }
 
@@ -142,7 +143,9 @@ export function useUserRole(): UserRoleState {
 
       // Helper to detect raw UUIDs
       const isUUID = (val?: string | null) =>
-        Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()));
+        Boolean(
+          val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()),
+        );
 
       if (isUUID(fetchedOrgHumanId)) {
         fetchedOrgHumanId = null;
@@ -157,7 +160,13 @@ export function useUserRole(): UserRoleState {
 
       if (!fetchedOrgHumanId && fetchedSchoolName) {
         const words = fetchedSchoolName.trim().toUpperCase().split(/\s+/);
-        const code = words.length >= 2 ? words.map((w: string) => w[0]).join("").slice(0, 4) : "CSE";
+        const code =
+          words.length >= 2
+            ? words
+                .map((w: string) => w[0])
+                .join("")
+                .slice(0, 4)
+            : "CSE";
         fetchedOrgHumanId = `${code}-2026-97EZ`;
       }
 

@@ -39,7 +39,9 @@ interface UnifiedInstitutionalDirectoryProps {
 }
 
 const isUUID = (val?: string | null) =>
-  Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()));
+  Boolean(
+    val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()),
+  );
 
 export function UnifiedInstitutionalDirectory({ schoolId }: UnifiedInstitutionalDirectoryProps) {
   const [loading, setLoading] = useState(false);
@@ -58,7 +60,9 @@ export function UnifiedInstitutionalDirectory({ schoolId }: UnifiedInstitutional
     try {
       let rosterData: any[] = [];
       const isUuid = isUUID(schoolId);
-      let query = (supabase.from("directory_roster") as any).select("id, user_id, display_name, role, created_at");
+      let query = (supabase.from("directory_roster") as any).select(
+        "id, user_id, display_name, role, created_at",
+      );
       if (isUuid) {
         query = query.eq("org_id", schoolId);
       } else {
@@ -75,9 +79,7 @@ export function UnifiedInstitutionalDirectory({ schoolId }: UnifiedInstitutional
           console.warn(
             "directory_roster view not found in schema cache. Falling back to profiles.",
           );
-          let profQuery = supabase
-            .from("profiles")
-            .select("id, display_name, role, created_at");
+          let profQuery = supabase.from("profiles").select("id, display_name, role, created_at");
           if (isUuid) {
             profQuery = profQuery.eq("org_id", schoolId);
           } else {

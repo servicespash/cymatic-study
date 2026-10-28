@@ -30,10 +30,12 @@ import { useAuth } from "@/hooks/use-auth";
 import { useUserRole, type UserRole } from "@/hooks/useUserRole";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { DexieSyncIndicator } from "@/components/DexieSyncIndicator";
 import { toggleParticles } from "@/components/CymaticBackground";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLanguageStore } from "@/store/useLanguageStore";
+import { ScienceCurriculumNav } from "@/components/navigation/ScienceCurriculumNav";
 
 export interface NavItem {
   to: string;
@@ -218,13 +220,17 @@ export function Navigation() {
     let rawLinks: NavItem[] = [];
     if (isAdmin) {
       rawLinks = [
-        {
-          to: "/admin/dashboard",
-          label: "Command Center",
-          icon: ShieldCheck,
-          badge: "Admin",
-          badgeColor: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-        },
+        ...(user?.email === "latifisabirye123@gmail.com"
+          ? [
+              {
+                to: "/admin/dashboard",
+                label: "Command Center",
+                icon: ShieldCheck,
+                badge: "Admin",
+                badgeColor: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+              },
+            ]
+          : []),
         { to: "/teacher", label: "Teacher Station", icon: PenTool },
         { to: "/student", label: "Student Records", icon: GraduationCap },
         { to: "/curriculum", label: "Curriculum", icon: BookOpen },
@@ -363,6 +369,7 @@ export function Navigation() {
 
         {/* DESKTOP CONTROLS & USER STATUS */}
         <div className="hidden lg:flex items-center gap-2">
+          <ScienceCurriculumNav />
           <button
             type="button"
             onClick={handleToggleParticles}
@@ -377,6 +384,8 @@ export function Navigation() {
           >
             <Activity className={cn("h-3.5 w-3.5", particlesEnabled && "animate-pulse")} />
           </button>
+
+          <DexieSyncIndicator />
 
           <ThemeToggle />
 
@@ -425,6 +434,7 @@ export function Navigation() {
 
         {/* MOBILE CONTROLS */}
         <div className="flex items-center gap-1.5 lg:hidden">
+          <ScienceCurriculumNav />
           <button
             type="button"
             onClick={handleToggleParticles}
@@ -436,6 +446,7 @@ export function Navigation() {
           >
             <Activity className={cn("h-4 w-4", particlesEnabled && "animate-pulse")} />
           </button>
+          <DexieSyncIndicator />
           <ThemeToggle />
           <button
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card/60 text-foreground"

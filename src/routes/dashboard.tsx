@@ -97,14 +97,16 @@ function DashboardPage() {
   const loadTasks = async () => {
     try {
       let query = supabase.from("daily_tasks" as any).select("*");
-      
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test((orgId || organizationId)?.trim() || "");
+
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        (orgId || organizationId)?.trim() || "",
+      );
 
       if (orgId || organizationId) {
         if (isUuid) {
-           query = query.eq("organization_id", orgId || organizationId);
+          query = query.eq("organization_id", orgId || organizationId);
         } else {
-           query = query.eq("school_key", orgId || organizationId);
+          query = query.eq("school_key", orgId || organizationId);
         }
       } else {
         query = query.is("organization_id", null);
@@ -258,7 +260,9 @@ function DashboardPage() {
   };
 
   const [dailyPoints, setDailyPoints] = useState(0);
-  const [activeTab, setActiveTab] = useState<"missions" | "quizzes" | "tutor" | "projects" | "saved">("missions");
+  const [activeTab, setActiveTab] = useState<
+    "missions" | "quizzes" | "tutor" | "projects" | "saved"
+  >("missions");
 
   // Fetch daily points on mount or when user changes
   useEffect(() => {

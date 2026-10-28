@@ -119,7 +119,14 @@ const DashboardNav = ({ activeTab, setActiveTab }: any) => (
   </div>
 );
 
-const MissionsTab = ({ visibleTasks, showSnoozed, setShowSnoozed, loadTasks, setSelectedExplTask, completeTaskAndSync }: any) => (
+const MissionsTab = ({
+  visibleTasks,
+  showSnoozed,
+  setShowSnoozed,
+  loadTasks,
+  setSelectedExplTask,
+  completeTaskAndSync,
+}: any) => (
   <div className="space-y-6">
     <SearchEngine />
     <div className="bg-zinc-900/80 backdrop-blur-md rounded-2xl p-6 border border-zinc-800/80 shadow-xl space-y-4">
@@ -224,9 +231,7 @@ const MissionsTab = ({ visibleTasks, showSnoozed, setShowSnoozed, loadTasks, set
 const QuizzesTab = () => (
   <div className="bg-zinc-900/80 backdrop-blur-md rounded-2xl p-6 border border-zinc-800/80 shadow-xl space-y-4">
     <div>
-      <h3 className="text-white font-bold text-lg tracking-tight">
-        Standard Subject Quizzes
-      </h3>
+      <h3 className="text-white font-bold text-lg tracking-tight">Standard Subject Quizzes</h3>
       <p className="text-zinc-500 text-xs">
         Test your academic competence under real secondary assessment standards.
       </p>
@@ -263,9 +268,7 @@ const QuizzesTab = () => (
           </span>
           <div>
             <h4 className="font-bold text-sm text-white">{q.label}</h4>
-            <p className="text-[10px] text-zinc-400 mt-1">
-              Start interactive quiz assessment
-            </p>
+            <p className="text-[10px] text-zinc-400 mt-1">Start interactive quiz assessment</p>
           </div>
         </button>
       ))}
@@ -316,7 +319,9 @@ const SavedItemsTab = () => {
   const bookmarkedItems = items.filter((item) => bookmarkedIds.includes(item.id));
 
   if (loading) {
-    return <div className="p-8 text-center text-zinc-500 animate-pulse">Loading saved broadcasts...</div>;
+    return (
+      <div className="p-8 text-center text-zinc-500 animate-pulse">Loading saved broadcasts...</div>
+    );
   }
 
   if (bookmarkedItems.length === 0) {

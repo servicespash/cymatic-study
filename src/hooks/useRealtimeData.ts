@@ -5,7 +5,9 @@ import { z } from "zod";
 import { useAuth } from "@/lib/auth-context";
 
 const isUUID = (val?: string | null) =>
-  Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()));
+  Boolean(
+    val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()),
+  );
 
 function resolveDexieTable(tableName: string) {
   const tableMap: Record<string, any> = {

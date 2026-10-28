@@ -68,11 +68,11 @@ export function resolveMediaDetails(item: {
   const mediaType = (item.media_type || "").toLowerCase();
   const category = (item.category || "").toLowerCase();
   const title = (item.title || "").toLowerCase();
-  
+
   // Parse body for scheduled_at
   const { scheduled_at } = parseNewsBody(item.body || "");
   const now = new Date();
-  
+
   let isLive =
     mediaType === "live_session" ||
     mediaType === "live" ||
@@ -86,13 +86,13 @@ export function resolveMediaDetails(item: {
 
   // Refine live status based on scheduled_at if available
   if (scheduled_at) {
-      const scheduledDate = new Date(scheduled_at);
-      const duration = 2 * 60 * 60 * 1000; // Assume 2-hour sessions
-      if (now >= scheduledDate && now <= new Date(scheduledDate.getTime() + duration)) {
-          isLive = true;
-      } else if (now > new Date(scheduledDate.getTime() + duration)) {
-          isLive = false; // Session concluded
-      }
+    const scheduledDate = new Date(scheduled_at);
+    const duration = 2 * 60 * 60 * 1000; // Assume 2-hour sessions
+    if (now >= scheduledDate && now <= new Date(scheduledDate.getTime() + duration)) {
+      isLive = true;
+    } else if (now > new Date(scheduledDate.getTime() + duration)) {
+      isLive = false; // Session concluded
+    }
   }
 
   const isAudio =

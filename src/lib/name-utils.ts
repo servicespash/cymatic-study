@@ -1,9 +1,14 @@
 /**
-  * Utility to format raw user names or email handles into clean professional display names.
-  * Prevents raw email handles (e.g. latifisabirye123) from appearing as names.
-  */
+ * Utility to format raw user names or email handles into clean professional display names.
+ * Prevents raw email handles (e.g. latifisabirye123) from appearing as names.
+ */
 export function formatUserName(rawName?: string | null, email?: string | null): string {
-  if (rawName && rawName.trim() && !rawName.includes("@") && !rawName.match(/^[a-z0-9._-]+[0-9]{3,}$/i)) {
+  if (
+    rawName &&
+    rawName.trim() &&
+    !rawName.includes("@") &&
+    !rawName.match(/^[a-z0-9._-]+[0-9]{3,}$/i)
+  ) {
     return rawName.trim();
   }
   if (email) {
@@ -25,7 +30,11 @@ export function formatUserName(rawName?: string | null, email?: string | null): 
   return "Scholar";
 }
 
-export function getAddressedName(fullName?: string | null, email?: string | null, role?: string | null): { firstName: string; addressedName: string; roleLabel: string } {
+export function getAddressedName(
+  fullName?: string | null,
+  email?: string | null,
+  role?: string | null,
+): { firstName: string; addressedName: string; roleLabel: string } {
   const clean = formatUserName(fullName, email);
   const firstName = clean.split(/\s+/)[0];
   const normalizedRole = (role || "student").toLowerCase();
@@ -33,7 +42,11 @@ export function getAddressedName(fullName?: string | null, email?: string | null
   let roleLabel = "Scholar";
   let addressedName = firstName;
 
-  if (normalizedRole === "admin" || normalizedRole === "administrator" || normalizedRole === "org_admin") {
+  if (
+    normalizedRole === "admin" ||
+    normalizedRole === "administrator" ||
+    normalizedRole === "org_admin"
+  ) {
     roleLabel = "Administrator";
     addressedName = `Administrator ${firstName}`;
   } else if (normalizedRole === "teacher") {
@@ -50,9 +63,13 @@ export function generateContextAwareGreeting(options: {
   role?: string | null;
   schoolName?: string | null;
 }): string {
-  const { firstName, addressedName, roleLabel } = getAddressedName(options.fullName, options.email, options.role);
+  const { firstName, addressedName, roleLabel } = getAddressedName(
+    options.fullName,
+    options.email,
+    options.role,
+  );
   const school = options.schoolName || "Cymatic Study Ecosystem";
-  
+
   const hour = new Date().getHours();
   const timeGreeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
@@ -64,4 +81,3 @@ export function generateContextAwareGreeting(options: {
   }
   return `${timeGreeting}, ${addressedName}! Welcome back to your learning hub. Your personalized path in NCDC Lower and Upper Secondary subjects is ready. What topic in Mathematics, Physics, Chemistry, Biology, or History shall we explore and master together today?`;
 }
-

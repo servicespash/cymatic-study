@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { db, ChatSession } from "@/lib/db";
 import { supabase } from "@/lib/supabase";
-import { toast } from "sonner";
 
 export type Message = {
   id: string;
@@ -28,6 +27,7 @@ interface TutorState {
   updateSessionMeta: (id: number, meta: { title?: string; summary?: string }) => Promise<void>;
   deleteSession: (id: number) => Promise<void>;
   loadSession: (id: number) => Promise<void>;
+  togglePinSession: (id: number) => Promise<void>;
   syncToSupabase: () => Promise<void>;
 }
 
@@ -74,10 +74,28 @@ export const useTutorStore = create<TutorState>((set, get) => ({
     try {
       if (db?.chatSessions) {
         const sessions = await db.chatSessions.toArray();
-        set({ sessions: sessions.sort((a, b) => b.timestamp - a.timestamp) });
+        set({
+          sessions: sessions.sort(
+            (a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.timestamp - a.timestamp,
+          ),
+        });
       }
     } catch (e) {
       console.warn("Failed to load chat sessions:", e);
+    }
+  },
+
+  togglePinSession: async (id: number) => {
+    try {
+      if (db?.chatSessions) {
+        const session = await db.chatSessions.get(id);
+        if (session) {
+          await db.chatSessions.update(id, { pinned: !session.pinned });
+          await get().loadSessions();
+        }
+      }
+    } catch (e) {
+      console.warn("Failed toggling pin:", e);
     }
   },
 

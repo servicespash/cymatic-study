@@ -30,15 +30,19 @@ function StudentsPage() {
     setLoading(true);
     try {
       let stdData: any[] = [];
-      let query = supabase.from("profiles").select("id, user_id, display_name, org_id, school_name, role");
-      
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orgId?.trim() || "");
+      let query = supabase
+        .from("profiles")
+        .select("id, user_id, display_name, org_id, school_name, role");
+
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        orgId?.trim() || "",
+      );
 
       if (orgId) {
         if (isUuid) {
-           query = query.eq("org_id", orgId);
+          query = query.eq("org_id", orgId);
         } else {
-           query = query.eq("school_name", schoolName);
+          query = query.eq("school_name", schoolName);
         }
       } else if (schoolName) {
         query = query.ilike("school_name", `%${schoolName}%`);
@@ -46,7 +50,8 @@ function StudentsPage() {
 
       const res = await query;
       if (res.error) throw res.error;
-      stdData = res.data?.map((s) => ({ ...s, user_id: s.user_id || s.id, org_id: s.org_id })) || [];
+      stdData =
+        res.data?.map((s) => ({ ...s, user_id: s.user_id || s.id, org_id: s.org_id })) || [];
 
       // Filter with single source of truth helper
       const matchedProfiles = filterByOrganization(stdData);

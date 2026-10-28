@@ -32,30 +32,25 @@ export const useTutorVoice = () => {
   // Load persisted persona and preferences from Supabase on mount
   useEffect(() => {
     const loadPersistedData = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("tutor_persona, voice_volume, voice_speed")
-          .eq("user_id", user.id)
-          .maybeSingle();
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("tutor_persona")
+            .eq("user_id", user.id)
+            .maybeSingle();
 
-        if (data) {
-          if (
-            data.tutor_persona &&
-            (data.tutor_persona === "Adams" || data.tutor_persona === "Haawa")
-          ) {
-            setPersona(data.tutor_persona as "Adams" | "Haawa");
-          }
-          if (data.voice_volume !== null) {
-            tutor.setVolume(data.voice_volume);
-          }
-          if (data.voice_speed !== null) {
-            tutor.setSpeed(data.voice_speed);
+          if (!error && data && data.tutor_persona) {
+            if (data.tutor_persona === "Adams" || data.tutor_persona === "Haawa") {
+              setPersona(data.tutor_persona as "Adams" | "Haawa");
+            }
           }
         }
+      } catch (err) {
+        console.warn("[TutorVoice] Profile preferences load bypassed:", err);
       }
     };
 
@@ -75,17 +70,24 @@ export const useTutorVoice = () => {
     }
 
     debounceTimerRef.current = setTimeout(async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
 
-      const { error } = await supabase.from("profiles").update(updates).eq("user_id", user.id);
+        const { error } = await supabase
+          .from("profiles")
+          .update({ tutor_persona: updates.tutor_persona })
+          .eq("user_id", user.id);
 
-      if (error) {
-        console.error("[Settings Sync] Failed to persist to Supabase:", error);
-      } else {
-        console.log("[Settings Sync] Preferences successfully updated in cloud");
+        if (error) {
+          console.warn("[Settings Sync] Failed to persist persona to Supabase:", error.message);
+        } else {
+          console.log("[Settings Sync] Persona successfully updated in cloud");
+        }
+      } catch (err) {
+        console.warn("[Settings Sync] Error persisting settings:", err);
       }
     }, 1500); // 1.5s debounce to prevent database chatter
   }, []);
@@ -104,12 +106,6 @@ export const useTutorVoice = () => {
     // Immediate engine update
     if (updates.volume !== undefined) tutor.setVolume(updates.volume);
     if (updates.speed !== undefined) tutor.setSpeed(updates.speed);
-
-    // Debounced cloud sync
-    syncToSupabaseDebounced({
-      voice_volume: updates.volume ?? tutor.volume,
-      voice_speed: updates.speed ?? tutor.speed,
-    });
   };
 
   /**

@@ -19,14 +19,25 @@ import {
   Mic,
   Bell,
   HardDrive,
+  Pin,
+  Edit3,
+  Sparkles,
+  BookOpen,
+  Video,
+  Code,
+  GraduationCap,
+  ChevronRight,
+  ArrowLeft,
 } from "lucide-react";
 import { useTutorStore } from "@/store/useTutorStore";
+import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, useMemo, useEffect } from "react";
 import { format } from "date-fns";
 import { exportChatToPDF } from "@/lib/chat-pdf-export";
@@ -40,9 +51,12 @@ import { toast } from "sonner";
 type SidebarMenu = "history" | "search" | "analytics" | "settings";
 
 export function ChatSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const { sessions, sessionId, loadSession, createNewSession, deleteSession } = useTutorStore();
+  const { sessions, sessionId, loadSession, createNewSession, deleteSession, togglePinSession } =
+    useTutorStore();
+  const { user, profile } = useAuth();
   const [activeMenu, setActiveMenu] = useState<SidebarMenu | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
 
   const filteredSessions = useMemo(() => {
@@ -56,6 +70,41 @@ export function ChatSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
           s.messages.some((m) => m.text.toLowerCase().includes(q)),
       );
     }
+    if (selectedCategory === "students") {
+      result = result.filter(
+        (s) =>
+          s.title?.toLowerCase().includes("curriculum") ||
+          s.title?.toLowerCase().includes("quiz") ||
+          s.title?.toLowerCase().includes("study") ||
+          s.messages.some((m) =>
+            m.text.toLowerCase().includes("exam") ||
+            m.text.toLowerCase().includes("quiz") ||
+            m.text.toLowerCase().includes("math") ||
+            m.text.toLowerCase().includes("science"),
+          ),
+      );
+    } else if (selectedCategory === "images") {
+      result = result.filter(
+        (s) =>
+          s.title?.toLowerCase().includes("image") ||
+          s.title?.toLowerCase().includes("diagram") ||
+          s.messages.some((m) =>
+            m.text.toLowerCase().includes("diagram") ||
+            m.text.toLowerCase().includes("draw") ||
+            m.text.toLowerCase().includes("visual"),
+          ),
+      );
+    } else if (selectedCategory === "videos") {
+      result = result.filter(
+        (s) =>
+          s.title?.toLowerCase().includes("video") ||
+          s.title?.toLowerCase().includes("media") ||
+          s.messages.some((m) =>
+            m.text.toLowerCase().includes("video") ||
+            m.text.toLowerCase().includes("color grading"),
+          ),
+      );
+    }
     if (dateRange.from) {
       result = result.filter((s) => format(s.timestamp, "yyyy-MM-dd") >= dateRange.from);
     }
@@ -63,7 +112,7 @@ export function ChatSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
       result = result.filter((s) => format(s.timestamp, "yyyy-MM-dd") <= dateRange.to);
     }
     return result;
-  }, [sessions, searchQuery, dateRange]);
+  }, [sessions, searchQuery, selectedCategory, dateRange]);
 
   const librarySessions = useMemo(() => {
     return sessions.filter((s) => s.summary);
@@ -162,63 +211,214 @@ export function ChatSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
       )}
     >
       {/* Header */}
-      <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {activeMenu && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-lg -ml-2"
-              onClick={() => setActiveMenu(null)}
-            >
-              <Plus className="w-4 h-4 rotate-45" />
-            </Button>
-          )}
-          <h2 className="text-zinc-100 font-bold tracking-tight">
-            {activeMenu ? menuItems.find((m) => m.id === activeMenu)?.label : "Tutor Workspace"}
-          </h2>
-        </div>
-        <Button variant="ghost" size="icon" onClick={onClose} className="lg:hidden h-8 w-8">
+      <div className="p-4 border-b border-white/5 flex items-center justify-between">
+        {activeMenu ? (
+          <button
+            onClick={() => setActiveMenu(null)}
+            className="flex items-center gap-2 text-xs font-bold text-zinc-400 hover:text-white transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Workspace</span>
+          </button>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            <h2 className="text-sm font-black text-white tracking-tight">Gemini AI Studio</h2>
+          </div>
+        )}
+        <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 text-zinc-400 hover:text-white">
           <X className="w-4 h-4" />
         </Button>
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {!activeMenu ? (
-          /* Main Menu List */
-          <div className="p-4 space-y-2">
-            <Button
-              className="w-full justify-start h-16 rounded-2xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 mb-6"
+          /* Gemini Mobile Workspace View */
+          <div className="flex flex-col h-full p-4 overflow-y-auto space-y-4">
+            {/* New Chat Primary Pill */}
+            <button
               onClick={() => {
                 createNewSession();
                 onClose();
+                toast.info("Started fresh tutor session");
               }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-full bg-white/10 hover:bg-white/15 text-white font-bold text-xs transition-all shadow-sm"
             >
-              <div className="h-10 w-10 rounded-xl bg-cyan-500/20 flex items-center justify-center mr-4">
-                <Plus className="w-5 h-5" />
-              </div>
-              <div className="text-left">
-                <div className="text-sm font-bold">New Session</div>
-                <div className="text-[10px] opacity-70">Start fresh discussion</div>
-              </div>
-            </Button>
+              <Edit3 className="w-4 h-4 text-primary" />
+              <span>New chat</span>
+            </button>
 
-            {menuItems.map((item) => (
-              <Button
-                key={item.id}
-                variant="ghost"
-                className="w-full justify-start h-20 rounded-3xl hover:bg-zinc-900 group border border-transparent hover:border-zinc-800/50"
-                onClick={() => setActiveMenu(item.id as SidebarMenu)}
+            {/* Search Chats Input */}
+            <div className="relative">
+              <Search className="absolute left-3.5 top-2.5 h-3.5 w-3.5 text-zinc-500" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search chats"
+                className="w-full bg-white/5 border border-white/10 rounded-full pl-9 pr-4 py-2 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-primary/50"
+              />
+            </div>
+
+            {/* Category Navigation (from Screenshot 1) */}
+            <div className="space-y-1 text-xs font-semibold text-zinc-400">
+              <button
+                onClick={() => {
+                  setSelectedCategory(selectedCategory === "students" ? null : "students");
+                }}
+                className={cn(
+                  "w-full flex items-center justify-between px-3 py-2 rounded-xl transition-colors",
+                  selectedCategory === "students" ? "bg-white/10 text-white" : "hover:bg-white/5 hover:text-white",
+                )}
               >
-                <div className="h-12 w-12 rounded-2xl bg-zinc-900 flex items-center justify-center mr-4 group-hover:bg-zinc-800 transition-colors">
-                  <item.icon className="w-5 h-5 text-zinc-400 group-hover:text-cyan-400" />
+                <div className="flex items-center gap-3">
+                  <GraduationCap className="w-4 h-4 text-sky-400" />
+                  <span>Students</span>
                 </div>
-                <div className="text-left">
-                  <div className="text-sm font-bold text-zinc-100">{item.label}</div>
-                  <div className="text-xs text-zinc-500 mt-0.5">{item.desc}</div>
+                {selectedCategory === "students" && <span className="text-[10px] text-sky-400 font-bold">Active</span>}
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedCategory(selectedCategory === "images" ? null : "images");
+                }}
+                className={cn(
+                  "w-full flex items-center justify-between px-3 py-2 rounded-xl transition-colors",
+                  selectedCategory === "images" ? "bg-white/10 text-white" : "hover:bg-white/5 hover:text-white",
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <Sparkles className="w-4 h-4 text-purple-400" />
+                  <span>Images</span>
                 </div>
-              </Button>
-            ))}
+                {selectedCategory === "images" && <span className="text-[10px] text-purple-400 font-bold">Active</span>}
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedCategory(selectedCategory === "videos" ? null : "videos");
+                }}
+                className={cn(
+                  "w-full flex items-center justify-between px-3 py-2 rounded-xl transition-colors",
+                  selectedCategory === "videos" ? "bg-white/10 text-white" : "hover:bg-white/5 hover:text-white",
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <Video className="w-4 h-4 text-emerald-400" />
+                  <span>Videos</span>
+                </div>
+                {selectedCategory === "videos" && <span className="text-[10px] text-emerald-400 font-bold">Active</span>}
+              </button>
+              <button
+                onClick={() => setActiveMenu("history")}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/5 hover:text-white transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <BookOpen className="w-4 h-4 text-amber-400" />
+                  <span>Library</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-zinc-600" />
+              </button>
+              <button
+                onClick={() => setActiveMenu("analytics")}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/5 hover:text-white transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <BarChart3 className="w-4 h-4 text-rose-400" />
+                  <span>Notebooks</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-zinc-600" />
+              </button>
+            </div>
+
+            {/* Recents Section (100% Dynamic from useTutorStore - No Hardcoding!) */}
+            <div className="space-y-2 pt-2 border-t border-white/5">
+              <div className="flex items-center justify-between px-2">
+                <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+                  Recents
+                </p>
+                {selectedCategory && (
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    className="text-[10px] text-primary hover:underline"
+                  >
+                    Clear filter
+                  </button>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                {filteredSessions.length > 0 ? (
+                  filteredSessions.map((session) => {
+                    const title =
+                      session.title ||
+                      session.messages[0]?.text?.slice(0, 42) ||
+                      `Study Session #${session.id}`;
+                    const isCurrent = session.id === sessionId;
+
+                    return (
+                      <div
+                        key={session.id}
+                        className={cn(
+                          "w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl transition-colors group cursor-pointer",
+                          isCurrent
+                            ? "bg-primary/10 text-white border border-primary/20"
+                            : "hover:bg-white/5 text-zinc-300 hover:text-white",
+                        )}
+                      >
+                        <div
+                          onClick={() => {
+                            loadSession(session.id!);
+                            onClose();
+                          }}
+                          className="flex-1 truncate text-xs"
+                          title={title}
+                        >
+                          <span className="truncate block font-medium">{title}</span>
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              togglePinSession(session.id!);
+                            }}
+                            title={session.pinned ? "Unpin session" : "Pin session"}
+                            className="p-1 rounded-md text-zinc-500 hover:text-primary transition-colors"
+                          >
+                            <Pin
+                              className={cn(
+                                "w-3.5 h-3.5 transition-transform",
+                                session.pinned
+                                  ? "text-primary fill-primary/30"
+                                  : "opacity-40 group-hover:opacity-80",
+                              )}
+                            />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteSession(session.id!);
+                              toast.info("Session removed");
+                            }}
+                            title="Delete session"
+                            className="p-1 rounded-md text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="px-3 py-6 text-center space-y-2">
+                    <p className="text-xs text-zinc-500">
+                      {searchQuery
+                        ? `No sessions found matching "${searchQuery}"`
+                        : "No past sessions yet. Start a discussion above!"}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         ) : (
           /* Sub Menu View */
@@ -459,8 +659,42 @@ export function ChatSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
         )}
       </div>
 
-      <div className="p-5 border-t border-zinc-800 bg-zinc-950">
-        <DeploymentStatus />
+      {/* Bottom User Account Row (from Screenshot 1) */}
+      <div className="p-4 border-t border-white/10 bg-zinc-950 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <Avatar className="h-9 w-9 border border-white/20 shrink-0">
+            <AvatarImage src={profile?.avatar_url} />
+            <AvatarFallback className="bg-primary/20 text-primary font-bold text-xs">
+              {(profile?.display_name || user?.user_metadata?.full_name || "Latif Isabirye")
+                .substring(0, 2)
+                .toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-white truncate">
+              {profile?.display_name || user?.user_metadata?.full_name || "Latif Isabirye"}
+            </p>
+            <p className="text-[10px] text-zinc-500 truncate">Senior Scholar</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={() => toast.success("You are on the Pro Scholar Plan")}
+            className="px-2.5 py-1 rounded-full bg-primary/20 hover:bg-primary/30 text-primary text-[10px] font-bold transition-colors cursor-pointer"
+          >
+            Upgrade
+          </button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setActiveMenu(activeMenu === "settings" ? null : "settings")}
+            className="h-8 w-8 text-zinc-400 hover:text-white"
+            title="Tutor Settings & Voice"
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -743,6 +977,11 @@ function SidebarSettingsView() {
           >
             <RefreshCw className="w-3 h-3" /> Force Background Sync
           </Button>
+        </div>
+
+        {/* CDN & Deployment Status */}
+        <div className="pt-6 border-t border-zinc-800">
+          <DeploymentStatus />
         </div>
       </div>
     </ScrollArea>

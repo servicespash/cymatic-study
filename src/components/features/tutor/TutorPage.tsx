@@ -199,14 +199,15 @@ function TutorPageContent() {
     stopSpeaking();
   };
 
-  const handleSendMessage = async () => {
-    if ((!input.trim() && !attachedFile) || isLoading) return;
+  const handleSendMessage = async (textOverride?: string) => {
+    const rawInput = typeof textOverride === "string" ? textOverride : input;
+    if ((!rawInput.trim() && !attachedFile) || isLoading) return;
 
     // Stop speaking whenever a new message is sent
     stopSpeaking();
 
     // Prepare message texts
-    const studentPromptText = input.trim();
+    const studentPromptText = rawInput.trim();
     const userMsgText = attachedFile
       ? `[File Attached: ${attachedFile.name}]\n\n${studentPromptText}`.trim()
       : studentPromptText;
@@ -483,9 +484,16 @@ function TutorPageContent() {
         <div className="flex-1 flex gap-4 p-4 overflow-hidden z-0">
           <div className="flex-1 overflow-hidden z-0 flex flex-col">
             {messages.length === 0 ? (
-              <MainContainer displayName={displayName} />
+              <MainContainer
+                displayName={displayName}
+                onSelectPrompt={(prompt) => handleSendMessage(prompt)}
+              />
             ) : (
-              <ChatArea messages={messages} isLoading={isLoading} />
+              <ChatArea
+                messages={messages}
+                isLoading={isLoading}
+                onSelectSuggestion={(prompt) => handleSendMessage(prompt)}
+              />
             )}
           </div>
 

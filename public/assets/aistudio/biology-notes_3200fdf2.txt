@@ -1,0 +1,276 @@
+# Biology — Notes
+
+## Cell Biology (S1)
+Cell structure, types and functions.
+
+### Cell Structure
+All living things are made of cells. A cell has: cell membrane (controls what enters/leaves), cytoplasm (where reactions occur), nucleus (contains DNA, controls cell activities).
+
+### Plant vs Animal Cells
+Both have: membrane, cytoplasm, nucleus, mitochondria, ribosomes. Plant cells ALSO have: cell wall (cellulose, for support), chloroplasts (for photosynthesis), large vacuole (contains cell sap).
+
+### Key Organelles
+Mitochondria: site of respiration ('powerhouse'). Ribosomes: site of protein synthesis. Chloroplasts: contain chlorophyll for photosynthesis (plants only).
+
+### Levels of Organisation
+Cell → Tissue (group of similar cells) → Organ (group of tissues) → Organ system (group of organs) → Organism.
+
+### Microscopy
+Magnification = image size / actual size. Light microscope: magnifies up to ×1500. Electron microscope: magnifies up to ×500,000.
+
+
+## Classification of Living Things (S1)
+Grouping organisms into kingdoms and smaller groups.
+
+### Characteristics of Life (MRS GREN)
+Movement, Respiration, Sensitivity, Growth, Reproduction, Excretion, Nutrition. All living organisms show these characteristics.
+
+### Five Kingdoms
+Animalia: multicellular, no cell wall, heterotrophic. Plantae: multicellular, cell wall, autotrophic. Fungi: cell wall (chitin), saprophytic. Protista: mostly unicellular. Prokaryotae: no nucleus (bacteria).
+
+### Vertebrate Groups
+Fish: gills, scales, cold-blooded. Amphibians: moist skin, cold-blooded. Reptiles: dry scaly skin, cold-blooded. Birds: feathers, warm-blooded. Mammals: hair/fur, warm-blooded, produce milk.
+
+### Binomial Nomenclature
+Two-part Latin name: Genus + species. Written in italics. Genus capitalised, species lowercase. Example: Homo sapiens.
+
+
+## Nutrition in Plants (S1)
+Photosynthesis and mineral nutrition.
+
+**Key formulas:**
+- 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂ (photosynthesis)
+
+### Photosynthesis
+6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂ (in the presence of light and chlorophyll). Takes place in chloroplasts. Converts light energy to chemical energy (glucose).
+
+### Factors Affecting Photosynthesis
+Light intensity: more light → faster rate (up to a point). CO₂ concentration. Temperature. Water availability. The slowest factor is the limiting factor.
+
+### Leaf Structure
+Upper epidermis: transparent, allows light through. Palisade layer: packed with chloroplasts for photosynthesis. Spongy mesophyll: air spaces for gas exchange. Stomata: pores for gas exchange (controlled by guard cells).
+
+### Mineral Nutrition
+Nitrates: for making proteins. Phosphates: for DNA and energy transfer. Potassium: for enzyme function. Magnesium: for chlorophyll.
+
+
+## Nutrition in Humans (S1)
+Food groups, balanced diet and digestion.
+
+### Food Groups
+Carbohydrates: energy source (starch, glucose). Proteins: growth and repair (amino acids). Fats: energy store and insulation. Vitamins and minerals: needed in small amounts for health. Water and fibre.
+
+### Balanced Diet
+Contains all food groups in correct proportions. Needs vary by age, activity level, and health. In Uganda: common staples include matooke, posho, beans, groundnuts, and greens.
+
+### Food Tests
+Starch: iodine solution → blue-black. Glucose: Benedict's solution + heat → orange/red. Protein: Biuret reagent → purple/violet. Fat: rub on paper → translucent spot.
+
+### Digestion
+Mechanical: teeth break food into smaller pieces. Chemical: enzymes break down large molecules. Amylase: starch → maltose. Protease: protein → amino acids. Lipase: fats → fatty acids + glycerol.
+
+
+## Human Body Systems (S2)
+Digestive, circulatory and respiratory systems.
+
+### Digestive System
+Mouth → Oesophagus → Stomach → Small intestine (duodenum, ileum) → Large intestine → Rectum → Anus. Enzymes at each stage break down specific nutrients.
+
+### Circulatory System
+Double circulatory system: heart → lungs (pulmonary) and heart → body (systemic). Heart has 4 chambers: left/right atria and ventricles. Arteries carry blood away from heart, veins carry blood to heart, capillaries exchange substances.
+
+### Blood Components
+Red blood cells: carry oxygen (haemoglobin). White blood cells: fight infection. Platelets: clotting. Plasma: liquid carrying dissolved substances.
+
+### Respiratory System
+Air path: nose → trachea → bronchi → bronchioles → alveoli. Gas exchange in alveoli: O₂ into blood, CO₂ out. Alveoli have thin walls, large surface area, rich blood supply.
+
+
+## Transport in Plants (S2)
+Water uptake, transpiration and translocation.
+
+**Key formulas:**
+- Rate of transpiration ∝ surface area, temperature, wind
+
+### Water Uptake
+Root hair cells absorb water by osmosis (water moves from high to low water concentration). Minerals absorbed by active transport.
+
+### Xylem and Phloem
+Xylem: transports water and minerals UP from roots (dead cells, thick walls). Phloem: transports sugars UP and DOWN (living cells). This is translocation.
+
+### Transpiration
+Loss of water vapour from leaves through stomata. Creates a 'pull' that draws water up. Factors: temperature, humidity, wind speed, light intensity.
+
+
+## Excretion (S2)
+Removal of metabolic waste from the body.
+
+### What is Excretion?
+Removal of metabolic waste products from the body. NOT the same as egestion (removal of undigested food).
+
+### The Kidney
+Filters blood to remove urea, excess water, and salts. Each kidney contains about 1 million nephrons. Process: ultrafiltration → selective reabsorption → urine formation.
+
+### Liver Functions
+Deamination of excess amino acids (produces urea). Detoxification. Bile production. Storage of glycogen, vitamins, and iron.
+
+
+## Reproduction in Plants (S2)
+Sexual and asexual reproduction in plants.
+
+### Flower Structure
+Sepals: protect the bud. Petals: attract pollinators. Stamens (anther + filament): male part, produce pollen. Carpel (stigma + style + ovary): female part, contains ovules.
+
+### Pollination
+Transfer of pollen from anther to stigma. Self-pollination: same plant. Cross-pollination: different plants (by wind or insects).
+
+### Fertilisation and Seed Formation
+Pollen tube grows down style to ovule. Male nucleus fuses with female nucleus. Ovule → seed. Ovary → fruit.
+
+### Asexual Reproduction
+One parent, offspring genetically identical (clones). Methods: runners, tubers, bulbs, stem cuttings.
+
+
+## Ecology & Environment (S3)
+Ecosystems, food chains and conservation.
+
+### Ecosystems
+An ecosystem includes all living organisms (community) and non-living factors (habitat). Biotic factors: predation, competition, disease. Abiotic factors: temperature, light, water, pH.
+
+### Food Chains and Webs
+Producer → Primary consumer → Secondary consumer → Tertiary consumer. Energy decreases at each level (~10% transferred). Pyramids of numbers, biomass, and energy.
+
+### Nutrient Cycles
+Carbon cycle: photosynthesis removes CO₂, respiration and combustion release CO₂. Nitrogen cycle: nitrogen-fixing bacteria → nitrates → plants → animals → decomposers.
+
+### Conservation
+Protecting habitats and species. Methods: national parks, seed banks, captive breeding. In Uganda: Bwindi (gorillas), Queen Elizabeth National Park.
+
+
+## Coordination & Response (S3)
+Nervous system, hormones and responses.
+
+### Nervous System
+CNS = brain + spinal cord. Sensory neurones carry impulses TO the CNS. Motor neurones carry impulses FROM the CNS. Relay neurones connect them.
+
+### Reflex Arc
+Stimulus → Receptor → Sensory neurone → Relay neurone → Motor neurone → Effector → Response. Reflexes are fast, automatic, protective.
+
+### Hormones
+Chemical messengers in blood. Slower but longer-lasting than nerves. Insulin: lowers blood sugar. Adrenaline: fight or flight.
+
+### Homeostasis
+Maintaining constant internal environment. Examples: body temperature (37°C), blood sugar, water balance. Uses negative feedback.
+
+
+## Reproduction in Humans (S3)
+Male and female reproductive systems, growth and development.
+
+### Male Reproductive System
+Testes: produce sperm and testosterone. Sperm duct carries sperm. Prostate gland adds fluid to make semen.
+
+### Female Reproductive System
+Ovaries: produce eggs and hormones. Oviducts: where fertilisation occurs. Uterus: where embryo develops.
+
+### Menstrual Cycle
+About 28 days. Day 1-5: menstruation. Day 6-13: lining builds up. Day 14: ovulation. Day 15-28: lining maintained.
+
+### Pregnancy
+Fertilised egg implants in uterus. Placenta exchanges O₂, nutrients, waste. Gestation ≈ 9 months.
+
+
+## Respiration (S3)
+Aerobic and anaerobic respiration in organisms.
+
+**Key formulas:**
+- C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + Energy (aerobic)
+- C₆H₁₂O₆ → 2C₂H₅OH + 2CO₂ + Energy (anaerobic in yeast)
+
+### Aerobic Respiration
+C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + Energy. In mitochondria. Requires oxygen. Releases large amount of energy.
+
+### Anaerobic Respiration
+In animals: glucose → lactic acid + some energy. In yeast: glucose → ethanol + CO₂ + energy (fermentation).
+
+### Comparison
+Aerobic: needs O₂, more energy, produces CO₂ + H₂O. Anaerobic: no O₂, less energy, produces lactic acid or ethanol.
+
+
+## Genetics & Evolution (S4)
+Heredity, DNA, natural selection.
+
+**Key formulas:**
+- Phenotype ratio (monohybrid) = 3:1
+- Genotype ratio = 1:2:1
+
+### DNA
+Double helix structure. Made of nucleotides (sugar + phosphate + base). Bases: A-T, G-C (complementary base pairing). DNA carries genetic information.
+
+### Genetics Terms
+Gene: section of DNA coding for a protein. Allele: different versions. Genotype: alleles an organism has (e.g., Tt). Phenotype: physical characteristic. Dominant: expressed with one copy. Recessive: needs two copies.
+
+### Genetic Crosses
+Use Punnett squares. Monohybrid: Tt × Tt gives 1TT : 2Tt : 1tt (3:1 phenotype ratio). Test cross: cross with homozygous recessive to find unknown genotype.
+
+### Natural Selection and Evolution
+Variation exists in a population. Those with advantageous traits survive and reproduce more. Over many generations, the population evolves.
+
+
+## Biotechnology (S4)
+Applications of biology in industry and medicine.
+
+### Genetic Engineering
+Cutting a gene from one organism and inserting it into another using restriction enzymes and ligase. Used to produce human insulin in bacteria.
+
+### Selective Breeding
+Choosing parents with desired traits to breed. Over generations, the desired trait becomes more common. Used for crops and livestock.
+
+### Fermentation in Industry
+Yeast ferments sugar to make bread (CO₂ makes it rise), beer (ethanol), and yoghurt (lactic acid bacteria).
+
+### Ethical Considerations
+GM foods: benefits (higher yield, pest resistance) vs concerns (unknown long-term effects). Cloning: useful in medicine but raises ethical questions about human cloning.
+
+
+## Disease and Immunity (S4)
+Pathogens, immune system and disease prevention.
+
+### Pathogens
+Bacteria: treated with antibiotics. Viruses: cannot be treated with antibiotics. Fungi: cause athlete's foot, ringworm. Protists: cause malaria (Plasmodium).
+
+### Body's Defences
+First line: skin, mucus, stomach acid. Second line: phagocytes (engulf pathogens). Third line: lymphocytes produce specific antibodies and antitoxins.
+
+### Vaccination
+Injecting a dead/weakened form of pathogen. Immune system produces antibodies and memory cells. If exposed again, response is faster and stronger.
+
+### HIV/AIDS
+HIV attacks helper T-cells (immune system). Transmitted through body fluids. Leads to AIDS (immune system too weak to fight infections). No cure, but antiretroviral drugs slow progression.
+
+
+## Human Influence on the Environment (S4)
+How human activities affect ecosystems.
+
+### Deforestation
+Clearing forests for farming, timber, building. Consequences: loss of biodiversity, soil erosion, increased CO₂, disrupted water cycle.
+
+### Pollution
+Air: CO₂ (greenhouse effect), SO₂ (acid rain), smoke. Water: sewage, fertilisers (eutrophication), industrial waste. Land: landfill, pesticides.
+
+### Global Warming
+Greenhouse gases (CO₂, CH₄) trap heat in atmosphere. Consequences: rising sea levels, extreme weather, habitat loss. Solutions: renewable energy, reduce emissions.
+
+### Conservation
+Sustainable development: meeting present needs without compromising future. Methods: recycling, reforestation, protected areas, sustainable fishing and farming.
+
+
+## Cytology, Histology & Biochemistry (S5)
+Cell structure, specialized tissues, and biomolecules.
+
+
+## Genetics, Coordination & Ecology (S6)
+Gene action, nervous/endocrine regulation, and population ecology.
+
+**Key formulas:**
+- p² + 2pq + q² = 1 (Hardy-Weinberg)
+

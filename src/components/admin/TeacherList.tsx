@@ -27,13 +27,12 @@ export function TeacherList() {
   async function fetchTeachers() {
     setLoading(true);
     try {
-      let query = supabase
-        .from("profiles")
-        .select("*")
-        .eq("role", "teacher");
+      let query = supabase.from("profiles").select("*").eq("role", "teacher");
 
       if (schoolId) {
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(schoolId);
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          schoolId,
+        );
         if (isUuid) {
           query = query.eq("org_id", schoolId);
         }
@@ -47,7 +46,9 @@ export function TeacherList() {
       } else {
         const flattened = (data || []).map((p: any) => ({
           ...p,
-          email: p.email || `${p.display_name?.toLowerCase().replace(/\s+/g, "") || "teacher"}@school.edu`,
+          email:
+            p.email ||
+            `${p.display_name?.toLowerCase().replace(/\s+/g, "") || "teacher"}@school.edu`,
           is_verified: p.is_verified ?? true,
         }));
         setTeachers(flattened);

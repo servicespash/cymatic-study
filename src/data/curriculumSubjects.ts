@@ -26,10 +26,11 @@ export interface CurriculumSubject {
   level: "Senior 1–4 (O-Level)" | "Senior 5–6 (A-Level)";
   type: "Compulsory" | "Selectable" | "Optional";
   classRange: string;
+  room: "Sciences" | "Arts" | "Humanities";
 }
 
 export const curriculumSubjects: CurriculumSubject[] = [
-  // A-Level (Senior 5 & 6) - Arranged together!
+  // A-Level (Senior 5 & 6)
   {
     title: "Physics (Advanced)",
     description:
@@ -40,6 +41,7 @@ export const curriculumSubjects: CurriculumSubject[] = [
     level: "Senior 5–6 (A-Level)",
     type: "Selectable",
     classRange: "S.5 - S.6",
+    room: "Sciences",
   },
   {
     title: "Chemistry (Advanced)",
@@ -51,6 +53,7 @@ export const curriculumSubjects: CurriculumSubject[] = [
     level: "Senior 5–6 (A-Level)",
     type: "Selectable",
     classRange: "S.5 - S.6",
+    room: "Sciences",
   },
   {
     title: "Biology (Advanced)",
@@ -61,6 +64,7 @@ export const curriculumSubjects: CurriculumSubject[] = [
     level: "Senior 5–6 (A-Level)",
     type: "Selectable",
     classRange: "S.5 - S.6",
+    room: "Sciences",
   },
   {
     title: "Pure Mathematics (Advanced)",
@@ -71,37 +75,7 @@ export const curriculumSubjects: CurriculumSubject[] = [
     level: "Senior 5–6 (A-Level)",
     type: "Selectable",
     classRange: "S.5 - S.6",
-  },
-  {
-    title: "Economics",
-    description: "Macroeconomics, microeconomics, and economic development of Uganda.",
-    icon: Briefcase,
-    gradient: "entrepreneurship",
-    category: "economics",
-    level: "Senior 5–6 (A-Level)",
-    type: "Selectable",
-    classRange: "S.5 - S.6",
-  },
-  {
-    title: "History (Advanced)",
-    description:
-      "African nationalism, the history of East Africa, European history, and international affairs.",
-    icon: Landmark,
-    gradient: "history",
-    category: "history",
-    level: "Senior 5–6 (A-Level)",
-    type: "Selectable",
-    classRange: "S.5 - S.6",
-  },
-  {
-    title: "Geography (Advanced)",
-    description: "Physical geography, practical map work, and world development systems.",
-    icon: Compass,
-    gradient: "geography",
-    category: "geography",
-    level: "Senior 5–6 (A-Level)",
-    type: "Selectable",
-    classRange: "S.5 - S.6",
+    room: "Sciences",
   },
   {
     title: "Subsidiary Mathematics",
@@ -113,6 +87,7 @@ export const curriculumSubjects: CurriculumSubject[] = [
     level: "Senior 5–6 (A-Level)",
     type: "Compulsory",
     classRange: "S.5 - S.6 (Subsidiary)",
+    room: "Sciences",
   },
   {
     title: "Subsidiary ICT",
@@ -123,50 +98,9 @@ export const curriculumSubjects: CurriculumSubject[] = [
     level: "Senior 5–6 (A-Level)",
     type: "Compulsory",
     classRange: "S.5 - S.6 (Subsidiary)",
+    room: "Sciences",
   },
-  {
-    title: "General Paper",
-    description:
-      "Contemporary global and national affairs, critical thinking, and essay argumentation.",
-    icon: FileText,
-    gradient: "english",
-    category: "english",
-    level: "Senior 5–6 (A-Level)",
-    type: "Compulsory",
-    classRange: "S.5 - S.6 (Subsidiary)",
-  },
-  {
-    title: "Literature in English (Advanced)",
-    description: "Critical analysis of prose, drama, poetry, and modern literature movements.",
-    icon: BookOpen,
-    gradient: "english",
-    category: "english",
-    level: "Senior 5–6 (A-Level)",
-    type: "Selectable",
-    classRange: "S.5 - S.6",
-  },
-  {
-    title: "Divinity",
-    description:
-      "Detailed study of Old Testament prophets, New Testament Gospels, and Christian history.",
-    icon: Sparkles,
-    gradient: "history",
-    category: "divinity",
-    level: "Senior 5–6 (A-Level)",
-    type: "Optional",
-    classRange: "S.5 - S.6",
-  },
-  {
-    title: "Islamic Religious Education (Advanced)",
-    description: "In-depth study of Quranic sciences, Hadith literature, and Islamic law.",
-    icon: Sparkles,
-    gradient: "history",
-    category: "ire",
-    level: "Senior 5–6 (A-Level)",
-    type: "Optional",
-    classRange: "S.5 - S.6",
-  },
-  // O-Level (Senior 1 to Senior 4)
+  // O-Level
   {
     title: "Mathematics",
     description:
@@ -177,6 +111,7 @@ export const curriculumSubjects: CurriculumSubject[] = [
     level: "Senior 1–4 (O-Level)",
     type: "Compulsory",
     classRange: "S.1 - S.4",
+    room: "Sciences",
   },
   {
     title: "Physics",
@@ -187,6 +122,7 @@ export const curriculumSubjects: CurriculumSubject[] = [
     level: "Senior 1–4 (O-Level)",
     type: "Compulsory",
     classRange: "S.1 - S.4",
+    room: "Sciences",
   },
   {
     title: "Chemistry",
@@ -197,6 +133,7 @@ export const curriculumSubjects: CurriculumSubject[] = [
     level: "Senior 1–4 (O-Level)",
     type: "Compulsory",
     classRange: "S.1 - S.4",
+    room: "Sciences",
   },
   {
     title: "Biology",
@@ -207,49 +144,7 @@ export const curriculumSubjects: CurriculumSubject[] = [
     level: "Senior 1–4 (O-Level)",
     type: "Compulsory",
     classRange: "S.1 - S.4",
-  },
-  {
-    title: "English Language",
-    description:
-      "Syllabus on descriptive, narrative, and creative writing, grammar, and comprehension.",
-    icon: BookOpen,
-    gradient: "english",
-    category: "english",
-    level: "Senior 1–4 (O-Level)",
-    type: "Compulsory",
-    classRange: "S.1 - S.4",
-  },
-  {
-    title: "History & Political Education",
-    description:
-      "Ugandan history, East African history, constitutional development, and citizenship.",
-    icon: Landmark,
-    gradient: "history",
-    category: "history",
-    level: "Senior 1–4 (O-Level)",
-    type: "Compulsory",
-    classRange: "S.1 - S.4",
-  },
-  {
-    title: "Geography",
-    description:
-      "Map reading, aerial photography, climate, and development studies of East Africa.",
-    icon: Compass,
-    gradient: "geography",
-    category: "geography",
-    level: "Senior 1–4 (O-Level)",
-    type: "Compulsory",
-    classRange: "S.1 - S.4",
-  },
-  {
-    title: "Entrepreneurship Education",
-    description: "Introduction to business setup, bookkeeping, taxation, and business management.",
-    icon: Briefcase,
-    gradient: "entrepreneurship",
-    category: "entrepreneurship",
-    level: "Senior 1–4 (O-Level)",
-    type: "Optional",
-    classRange: "S.1 - S.4",
+    room: "Sciences",
   },
   {
     title: "Information & Communications Tech",
@@ -261,37 +156,7 @@ export const curriculumSubjects: CurriculumSubject[] = [
     level: "Senior 1–4 (O-Level)",
     type: "Selectable",
     classRange: "S.1 - S.4",
-  },
-  {
-    title: "Kiswahili",
-    description: "Kiswahili vocabulary, grammar, reading comprehension, and creative speaking.",
-    icon: Languages,
-    gradient: "physics",
-    category: "swahili",
-    level: "Senior 1–4 (O-Level)",
-    type: "Optional",
-    classRange: "S.1 - S.4",
-  },
-  {
-    title: "Luganda Language",
-    description: "Grammar, orthography, traditional literature, and cultural proverbs of Luganda.",
-    icon: Languages,
-    gradient: "history",
-    category: "luganda",
-    level: "Senior 1–4 (O-Level)",
-    type: "Optional",
-    classRange: "S.1 - S.4",
-  },
-  {
-    title: "Literature in English",
-    description:
-      "Introduction to character study, setting analysis, drama plays, and poetic devices.",
-    icon: BookOpen,
-    gradient: "english",
-    category: "literature",
-    level: "Senior 1–4 (O-Level)",
-    type: "Optional",
-    classRange: "S.1 - S.4",
+    room: "Sciences",
   },
   {
     title: "Agriculture",
@@ -303,45 +168,6 @@ export const curriculumSubjects: CurriculumSubject[] = [
     level: "Senior 1–4 (O-Level)",
     type: "Selectable",
     classRange: "S.1 - S.4",
-  },
-  {
-    title: "Fine Art",
-    description: "Still life painting, graphics, nature study, sculpture, and craft work.",
-    icon: Palette,
-    gradient: "chemistry",
-    category: "art",
-    level: "Senior 1–4 (O-Level)",
-    type: "Optional",
-    classRange: "S.1 - S.4",
-  },
-  {
-    title: "Christian Religious Education",
-    description: "Biblical covenants, life of Jesus, Christian values, and community service.",
-    icon: Bookmark,
-    gradient: "geography",
-    category: "cre",
-    level: "Senior 1–4 (O-Level)",
-    type: "Optional",
-    classRange: "S.1 - S.4",
-  },
-  {
-    title: "Islamic Religious Education",
-    description: "Study of the Holy Quran, Hadith, Fiqh, and Islamic history and civilization.",
-    icon: Bookmark,
-    gradient: "geography",
-    category: "ire",
-    level: "Senior 1–4 (O-Level)",
-    type: "Optional",
-    classRange: "S.1 - S.4",
-  },
-  {
-    title: "Commerce",
-    description: "Introduction to trade, banking, insurance, transportation, and warehousing.",
-    icon: Briefcase,
-    gradient: "entrepreneurship",
-    category: "entrepreneurship",
-    level: "Senior 1–4 (O-Level)",
-    type: "Optional",
-    classRange: "S.1 - S.4",
+    room: "Sciences",
   },
 ];

@@ -7,6 +7,7 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { Shield } from "lucide-react";
 
 import appCss from "../styles.css?url";
 import { Navbar } from "@/components/layout/Navbar";
@@ -24,6 +25,8 @@ import { GlobalProviders } from "@/lib/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 import { SessionInitializerMiddleware } from "@/components/SessionInitializerMiddleware";
+import { StudyBreakOverlay } from "@/components/StudyBreakOverlay";
+import { WellnessOnboardingModal } from "@/components/WellnessOnboardingModal";
 
 function NotFoundComponent() {
   return (
@@ -205,16 +208,35 @@ function RootComponent() {
           <BadgeToastNotification />
           <MobileInstallPrompt />
           <PWAInstallPrompt />
+          <StudyBreakOverlay />
+          <WellnessOnboardingModal />
           <div className="min-h-screen grid grid-rows-[auto_1fr_auto] grid-cols-1 max-w-[1920px] mx-auto w-full bg-background shadow-2xl">
             <Navbar />
-            <main className="flex-1 w-full page-container">
+            <main className="flex-1 w-full">
               <Outlet />
             </main>
-            <footer className="border-t border-border/60 px-4 py-8 text-center text-xs text-muted-foreground pb-24">
-              <p className="font-medium">
-                {BRAND.name} × {BRAND.partner} — {BRAND.tagline} {BRAND.flag}
-              </p>
-              <p className="mt-1">Support: {BRAND.support} · © 2026 Pash Media Services</p>
+            <footer className="border-t border-border/60 px-6 py-8 text-xs text-muted-foreground pb-32 relative z-30 bg-background/95 backdrop-blur-md">
+              <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="text-center md:text-left">
+                  <p className="font-medium text-foreground/85">
+                    {BRAND.name} × {BRAND.partner} — {BRAND.tagline} {BRAND.flag}
+                  </p>
+                  <p className="mt-1">Support: {BRAND.support} · © 2026 Pash Media Services</p>
+                </div>
+
+                {/* Right Footer: Developer Console Shield */}
+                <div className="flex items-center gap-3 md:pr-24 lg:pr-28">
+                  <Link
+                    to="/developer-console"
+                    title="Developer Console"
+                    aria-label="Developer Console"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full border border-border/90 bg-card/90 hover:bg-card text-muted-foreground hover:text-foreground shadow-sm hover:border-primary/50 hover:shadow-primary/10 transition-all font-semibold group cursor-pointer"
+                  >
+                    <Shield className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+                    <span className="text-xs">Developer Console</span>
+                  </Link>
+                </div>
+              </div>
             </footer>
             <FloatingTutor />
           </div>

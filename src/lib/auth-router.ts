@@ -21,20 +21,23 @@ export function determineUserDashboardRoute(
   userMetadata?: Record<string, any>,
 ): RouteDecision {
   const rawRole = (profile?.role || userMetadata?.role || "student").toLowerCase();
-  
+
   // Relational Anchor (UUID)
   const profileOrgUUID = profile?.org_id;
   const metaOrgUUID = userMetadata?.org_id || userMetadata?.organization_uuid;
 
   // Identity Anchor (SHCUGI...)
   const profileOrgHumanId = profile?.organization_id || profile?.school_id;
-  const metaOrgHumanId = userMetadata?.organization_id || userMetadata?.school_id || userMetadata?.school_key;
+  const metaOrgHumanId =
+    userMetadata?.organization_id || userMetadata?.school_id || userMetadata?.school_key;
 
   const orgUUID = profileOrgUUID || metaOrgUUID || null;
-  const orgHumanId = 
-    profileOrgHumanId || 
-    metaOrgHumanId || 
-    (typeof window !== "undefined" ? localStorage.getItem("cymatic_org_id") || localStorage.getItem("cymatic_school_id") : null) ||
+  const orgHumanId =
+    profileOrgHumanId ||
+    metaOrgHumanId ||
+    (typeof window !== "undefined"
+      ? localStorage.getItem("cymatic_org_id") || localStorage.getItem("cymatic_school_id")
+      : null) ||
     null;
 
   const isInstitutional = Boolean(orgUUID || (orgHumanId && orgHumanId.trim().length > 0));

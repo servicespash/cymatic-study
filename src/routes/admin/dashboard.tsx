@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, useLocation } from "@tanstack/react-router";
 import { AuthRouteMiddleware } from "@/middlewares/auth-middleware";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
-import { LayoutDashboard, GraduationCap, Users, Settings } from "lucide-react";
+import { LayoutDashboard, GraduationCap, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/admin/dashboard")({

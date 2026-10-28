@@ -36,7 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = useCallback(async (userId: string, currentUser?: User | null) => {
     try {
-      const activeUser = currentUser || userRef.current || (await supabase.auth.getUser()).data.user;
+      const activeUser =
+        currentUser || userRef.current || (await supabase.auth.getUser()).data.user;
       const userEmail = activeUser?.email?.trim().toLowerCase();
 
       // Helper to detect raw UUIDs

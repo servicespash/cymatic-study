@@ -26,8 +26,13 @@ interface UserProfileCardProps {
 
 export function UserProfileCard({ className = "", showActions = true }: UserProfileCardProps) {
   const { user, profile, signOut } = useAuth();
-  const { organizationId: schoolId, schoolName, isAdmin: isUserAdmin, isTeacher, isInstitutional } =
-    useOrganization();
+  const {
+    organizationId: schoolId,
+    schoolName,
+    isAdmin: isUserAdmin,
+    isTeacher,
+    isInstitutional,
+  } = useOrganization();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);

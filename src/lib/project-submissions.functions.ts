@@ -253,10 +253,7 @@ export async function loadMyDraftSubmission() {
     .maybeSingle();
 
   try {
-    let query = supabase
-      .from("project_submissions")
-      .select("*")
-      .eq("student_user_id", user.id);
+    let query = supabase.from("project_submissions").select("*").eq("student_user_id", user.id);
 
     if (profile?.org_id) {
       query = query.eq("school_key", profile.org_id);

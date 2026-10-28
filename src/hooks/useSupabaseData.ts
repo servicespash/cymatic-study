@@ -4,7 +4,9 @@ import { PostgrestError } from "@supabase/supabase-js";
 import { useAuth } from "@/lib/auth-context";
 
 const isUUID = (val?: string | null) =>
-  Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()));
+  Boolean(
+    val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()),
+  );
 
 export function useSupabaseData<T>(
   query: any,

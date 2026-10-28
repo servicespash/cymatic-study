@@ -8,10 +8,7 @@ export function DynamicGreeting() {
   const { user, profile } = useAuth();
   const { role, schoolName } = useUserRole();
 
-  const rawName =
-    profile?.display_name ||
-    user?.user_metadata?.full_name ||
-    null;
+  const rawName = profile?.display_name || user?.user_metadata?.full_name || null;
   const email = user?.email || null;
   const normalizedRole = (role || profile?.role || "student").toLowerCase();
 

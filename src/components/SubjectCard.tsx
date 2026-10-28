@@ -10,6 +10,7 @@ export interface SubjectType {
   level?: string;
   type?: string;
   classRange?: string;
+  room?: "Sciences" | "Arts" | "Humanities";
 }
 
 const gradientMap: Record<string, string> = {
@@ -38,7 +39,7 @@ export function SubjectCard({ subject, delay = 0 }: { subject: SubjectType; dela
 
   return (
     <Link
-      to="/quizzes"
+      to="/lessons"
       search={{ subject: subject.category }}
       style={{ animationDelay: `${delay}ms` }}
       className="group relative flex h-[190px] flex-col justify-between overflow-hidden rounded-xl border border-border bg-card p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md dark:hover:shadow-primary/5"
@@ -95,7 +96,7 @@ export function SubjectCard({ subject, delay = 0 }: { subject: SubjectType; dela
           {subject.level?.split(" ")[0] || "O-Level"}
         </span>
         <div className="inline-flex items-center gap-1 opacity-90 transition-all group-hover:gap-1.5 group-hover:opacity-100">
-          Start quiz
+          Explore lessons
           <ArrowRight className="h-3 w-3" />
         </div>
       </div>

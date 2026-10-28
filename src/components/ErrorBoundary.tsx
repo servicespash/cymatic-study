@@ -62,7 +62,8 @@ export class ErrorBoundary extends Component<Props, State> {
             Module Temporarily Unavailable
           </h2>
           <p className="mb-6 text-sm text-muted-foreground max-w-md leading-relaxed">
-            We encountered a temporary issue while loading this section. Our system has automatically logged the incident for review.
+            We encountered a temporary issue while loading this section. Our system has
+            automatically logged the incident for review.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2.5">
             <Button
@@ -100,4 +101,3 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
-
