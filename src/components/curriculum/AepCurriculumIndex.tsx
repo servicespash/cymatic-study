@@ -23,11 +23,23 @@ type IndexedTopic = {
   review_status: string;
 };
 
+type IndexedNote = {
+  id: string;
+  source_topic_id: string | null;
+  source_document_id: string;
+  title: string;
+  summary: string;
+  study_sections: { heading: string; content: string }[];
+  review_status: string;
+  publication_status: string;
+};
+
 const LEVEL_ORDER = ["Level 1", "Level 2"];
 
 export function AepCurriculumIndex() {
   const [documents, setDocuments] = useState<SourceDocument[]>([]);
   const [topics, setTopics] = useState<IndexedTopic[]>([]);
+  const [notes, setNotes] = useState<IndexedNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(true);
@@ -41,7 +53,7 @@ export function AepCurriculumIndex() {
     setError(null);
     setOfflineSnapshot(false);
 
-    const [documentsResult, topicsResult] = await Promise.all([
+    const [documentsResult, topicsResult, notesResult] = await Promise.all([
       supabase
         .from("curriculum_documents")
         .select("id,title,subject_label,curriculum_programme,level_labels,source_url,page_count")
@@ -58,6 +70,13 @@ export function AepCurriculumIndex() {
         ])
         .order("level_label", { ascending: true })
         .order("topic_number", { ascending: true }),
+      (supabase as any)
+        .from("curriculum_document_notes")
+        .select("id,source_topic_id,source_document_id,title,summary,study_sections,review_status,publication_status")
+        .in("source_document_id", [
+          "ncdc-aep-physics-lsc-level-1-2-2023",
+          "ncdc-aep-biology-lsc-level-1-2-2023",
+        ]),
     ]);
 
     if (documentsResult.error || topicsResult.error) {
@@ -68,6 +87,12 @@ export function AepCurriculumIndex() {
           if (Array.isArray(snapshot.documents) && Array.isArray(snapshot.topics)) {
             setDocuments(snapshot.documents);
             setTopics(snapshot.topics);
+            try {
+              const cachedNotes = localStorage.getItem("cymatic-aep-curriculum-notes-v1");
+              setNotes(cachedNotes ? (JSON.parse(cachedNotes) as IndexedNote[]) : []);
+            } catch {
+              setNotes([]);
+            }
             setOfflineSnapshot(true);
             setError(null);
           } else {
@@ -88,10 +113,14 @@ export function AepCurriculumIndex() {
     } else {
       const nextDocuments = (documentsResult.data || []) as SourceDocument[];
       const nextTopics = (topicsResult.data || []) as IndexedTopic[];
+      const nextNotes = notesResult.error ? [] : ((notesResult.data || []) as IndexedNote[]);
       setDocuments(nextDocuments);
       setTopics(nextTopics);
+      setNotes(nextNotes);
       try {
+        const publicNotes = nextNotes.filter((note) => note.review_status === "approved" && note.publication_status === "published");
         localStorage.setItem("cymatic-aep-curriculum-index-v1", JSON.stringify({ documents: nextDocuments, topics: nextTopics, cachedAt: new Date().toISOString() }));
+        localStorage.setItem("cymatic-aep-curriculum-notes-v1", JSON.stringify(publicNotes));
       } catch (cacheError) {
         console.warn("Curriculum index loaded but could not be cached for offline use.", cacheError);
       }
@@ -113,6 +142,25 @@ export function AepCurriculumIndex() {
     setReviewingTopicId(null);
     if (updateError) {
       setError("Could not save review status: " + updateError.message);
+      return;
+    }
+    await loadIndex();
+  };
+
+  const approveNote = async (note: IndexedNote) => {
+    if (!isAdmin) return;
+    setReviewingTopicId(note.source_topic_id || note.id);
+    const { error: updateError } = await (supabase as any)
+      .from("curriculum_document_notes")
+      .update({
+        review_status: "approved",
+        publication_status: "published",
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("id", note.id);
+    setReviewingTopicId(null);
+    if (updateError) {
+      setError("Could not approve note: " + updateError.message);
       return;
     }
     await loadIndex();
@@ -230,6 +278,31 @@ export function AepCurriculumIndex() {
                         <p className="mt-1 text-xs text-muted-foreground">
                           {topic.level_label}{topic.source_page ? ` · Source page ${topic.source_page}` : " · Source page needs review"}
                         </p>
+                        {notes.filter((note) => note.source_topic_id === topic.id).map((note) => (
+                          <div key={note.id} className="mt-3 rounded-lg border border-border bg-background/70 p-3">
+                            <p className="text-xs font-semibold">Original study-note draft</p>
+                            <p className="mt-1 text-sm leading-relaxed">{note.summary}</p>
+                            {note.study_sections?.map((section, index) => (
+                              <div key={section.heading + index} className="mt-2">
+                                <p className="text-xs font-semibold text-muted-foreground">{section.heading}</p>
+                                <p className="text-sm">{section.content}</p>
+                              </div>
+                            ))}
+                            <p className="mt-2 text-[10px] text-muted-foreground">
+                              {note.review_status === "approved" && note.publication_status === "published" ? "Approved and published" : "Awaiting developer review"}
+                            </p>
+                            {isAdmin && !(note.review_status === "approved" && note.publication_status === "published") && (
+                              <button
+                                type="button"
+                                disabled={reviewingTopicId === (note.source_topic_id || note.id)}
+                                onClick={() => void approveNote(note)}
+                                className="mt-2 rounded-md border border-emerald-600/40 px-2 py-1 text-xs hover:bg-emerald-500/10 disabled:opacity-50"
+                              >
+                                {reviewingTopicId === (note.source_topic_id || note.id) ? "Saving…" : "Approve & publish original note"}
+                              </button>
+                            )}
+                          </div>
+                        ))}
                       </div>
                       <div className="flex flex-col items-end gap-1">
                         <span className={`rounded-full px-2 py-1 text-[10px] ${topic.review_status === "reviewed" || topic.review_status === "approved" ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "bg-amber-500/10 text-amber-700 dark:text-amber-300"}`}>
