@@ -47,6 +47,14 @@ const upload = multer({
 export async function handleCurriculumIngestRequest(req: Request, res: Response) {
   console.log("[API] POST /api/curriculum-ingest - Robust ingestion started");
 
+  // Authenticate before multer buffers any uploaded file into memory.
+  const authorized = await verifyAuthenticatedCurriculumAdmin(req);
+  if (!authorized) {
+    return res.status(401).json({
+      error: "Unauthorized: sign in with the authorised curriculum administrator account before uploading.",
+    });
+  }
+
   upload.single("file")(req, res, async (err) => {
     if (err) {
       return res.status(400).json({ error: "File upload failed: " + err.message });
@@ -56,15 +64,6 @@ export async function handleCurriculumIngestRequest(req: Request, res: Response)
       return res
         .status(400)
         .json({ error: "No file uploaded. Please select a valid PDF or text curriculum file." });
-    }
-
-    // The browser-side developer gate is not a security boundary. Verify the
-    // Supabase access token and database admin role on the server for every upload.
-    const authorized = await verifyAuthenticatedCurriculumAdmin(req);
-    if (!authorized) {
-      return res.status(401).json({
-        error: "Unauthorized: sign in with the authorised curriculum administrator account before uploading.",
-      });
     }
 
     try {
