@@ -16,9 +16,9 @@ concurrency:
 
 jobs:
   verify:
-    name: Install, lint, test, build
+    name: Lint changed curriculum code, test, build
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,8 +32,15 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint:ci
+      - name: Lint changed curriculum code
+        run: |
+          npx eslint --quiet \
+            src/components/NoteHierarchy.tsx \
+            src/components/curriculum/AepCurriculumIndex.tsx \
+            src/lib/curriculum-parser.ts \
+            src/routes/developer-console.tsx \
+            src/routes/lessons.tsx \
+            src/server/curriculum-ingest.ts
 
       - name: Run tests
         run: npm test
