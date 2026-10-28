@@ -49,14 +49,16 @@ jobs:
             src/lib/curriculum-parser.ts \
             src/routes/developer-console.tsx \
             src/routes/lessons.tsx \
-            src/server/curriculum-ingest.ts
+            src/server/curriculum-ingest.ts \\
+            src/routes/aep.tsx \\
+            functions/api/curriculum-ingest.ts
 
       - name: Persist formatter fixes to the PR branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if ! git diff --quiet; then
-            git add src/components/NoteHierarchy.tsx src/components/curriculum/AepCurriculumIndex.tsx src/lib/curriculum-parser.ts src/routes/developer-console.tsx src/routes/lessons.tsx src/server/curriculum-ingest.ts supabase/migrations/20261028140000_curriculum_lesson_index_and_notes.sql supabase/migrations/20261028150000_curriculum_admin_review_policies.sql supabase/migrations/20261028153000_curriculum_admin_topic_insert_policy.sql supabase/seeds/ncdc_aep_pilot_index.sql supabase/seeds/ncdc_aep_pilot_notes.sql
+            git add src/components/NoteHierarchy.tsx src/components/curriculum/AepCurriculumIndex.tsx src/lib/curriculum-parser.ts src/routes/developer-console.tsx src/routes/lessons.tsx src/server/curriculum-ingest.ts src/routes/aep.tsx functions/api/curriculum-ingest.ts supabase/migrations/20261028140000_curriculum_lesson_index_and_notes.sql supabase/migrations/20261028150000_curriculum_admin_review_policies.sql supabase/migrations/20261028153000_curriculum_admin_topic_insert_policy.sql supabase/seeds/ncdc_aep_pilot_index.sql supabase/seeds/ncdc_aep_pilot_notes.sql
             git commit -m "style(curriculum): apply formatter and safe lint fixes"
             git push origin HEAD:fix-curriculum-ingest-pdf
           fi
