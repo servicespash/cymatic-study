@@ -31,10 +31,12 @@ export function AepCurriculumIndex() {
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(true);
   const [selectedLevel, setSelectedLevel] = useState("All levels");
+  const [offlineSnapshot, setOfflineSnapshot] = useState(false);
 
   const loadIndex = async () => {
     setLoading(true);
     setError(null);
+    setOfflineSnapshot(false);
 
     const [documentsResult, topicsResult] = await Promise.all([
       supabase
@@ -56,16 +58,40 @@ export function AepCurriculumIndex() {
     ]);
 
     if (documentsResult.error || topicsResult.error) {
-      setError(
-        documentsResult.error?.message ||
-          topicsResult.error?.message ||
-          "The curriculum index could not be loaded.",
-      );
-      setDocuments([]);
-      setTopics([]);
+      try {
+        const cached = localStorage.getItem("cymatic-aep-curriculum-index-v1");
+        if (cached) {
+          const snapshot = JSON.parse(cached) as { documents: SourceDocument[]; topics: IndexedTopic[] };
+          if (Array.isArray(snapshot.documents) && Array.isArray(snapshot.topics)) {
+            setDocuments(snapshot.documents);
+            setTopics(snapshot.topics);
+            setOfflineSnapshot(true);
+            setError(null);
+          } else {
+            setError("Cached curriculum index is invalid. Reconnect and refresh.");
+            setDocuments([]);
+            setTopics([]);
+          }
+        } else {
+          setError(documentsResult.error?.message || topicsResult.error?.message || "The curriculum index could not be loaded.");
+          setDocuments([]);
+          setTopics([]);
+        }
+      } catch {
+        setError("Could not read the offline curriculum cache. Reconnect and refresh.");
+        setDocuments([]);
+        setTopics([]);
+      }
     } else {
-      setDocuments((documentsResult.data || []) as SourceDocument[]);
-      setTopics((topicsResult.data || []) as IndexedTopic[]);
+      const nextDocuments = (documentsResult.data || []) as SourceDocument[];
+      const nextTopics = (topicsResult.data || []) as IndexedTopic[];
+      setDocuments(nextDocuments);
+      setTopics(nextTopics);
+      try {
+        localStorage.setItem("cymatic-aep-curriculum-index-v1", JSON.stringify({ documents: nextDocuments, topics: nextTopics, cachedAt: new Date().toISOString() }));
+      } catch (cacheError) {
+        console.warn("Curriculum index loaded but could not be cached for offline use.", cacheError);
+      }
     }
     setLoading(false);
   };
@@ -107,6 +133,11 @@ export function AepCurriculumIndex() {
           <p className="text-sm text-muted-foreground">
             These are Accelerated Education Programme (AEP) levels from the source syllabi. They are kept separate from Senior 1–6 until an official equivalence is confirmed.
           </p>
+          {offlineSnapshot && (
+            <p role="status" className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+              Offline mode: showing the last cached index. Reconnect and refresh to check for updates.
+            </p>
+          )}
 
           <div className="flex flex-wrap items-center gap-2">
             {["All levels", ...LEVEL_ORDER].map((level) => (
