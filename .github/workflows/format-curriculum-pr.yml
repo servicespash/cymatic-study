@@ -1,0 +1,75 @@
+name: Format curriculum PR files
+
+on:
+  push:
+    branches:
+      - fix-curriculum-ingest-pdf
+    paths:
+      - "src/components/NoteHierarchy.tsx"
+      - "src/components/curriculum/AepCurriculumIndex.tsx"
+      - "src/lib/curriculum-parser.ts"
+      - "src/routes/developer-console.tsx"
+      - "src/routes/lessons.tsx"
+      - "src/server/curriculum-ingest.ts"
+      - "supabase/migrations/20261028140000_curriculum_lesson_index_and_notes.sql"
+      - "supabase/migrations/20261028150000_curriculum_admin_review_policies.sql"
+      - "supabase/migrations/20261028153000_curriculum_admin_topic_insert_policy.sql"
+      - "supabase/seeds/ncdc_aep_pilot_index.sql"
+      - "supabase/seeds/ncdc_aep_pilot_notes.sql"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: curriculum-format-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-curriculum-ingest-pdf
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Format changed curriculum files
+        run: |
+          npx prettier --write \
+            src/components/NoteHierarchy.tsx \
+            src/components/curriculum/AepCurriculumIndex.tsx \
+            src/lib/curriculum-parser.ts \
+            src/routes/developer-console.tsx \
+            src/routes/lessons.tsx \
+            src/server/curriculum-ingest.ts \
+            supabase/migrations/20261028140000_curriculum_lesson_index_and_notes.sql \
+            supabase/migrations/20261028150000_curriculum_admin_review_policies.sql \
+            supabase/migrations/20261028153000_curriculum_admin_topic_insert_policy.sql \
+            supabase/seeds/ncdc_aep_pilot_index.sql \
+            supabase/seeds/ncdc_aep_pilot_notes.sql
+      - name: Apply safe ESLint autofixes
+        run: |
+          npx eslint --fix \
+            src/components/NoteHierarchy.tsx \
+            src/components/curriculum/AepCurriculumIndex.tsx \
+            src/lib/curriculum-parser.ts \
+            src/routes/developer-console.tsx \
+            src/routes/lessons.tsx \
+            src/server/curriculum-ingest.ts
+      - name: Commit formatting fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet; then
+            git add src/components/NoteHierarchy.tsx src/components/curriculum/AepCurriculumIndex.tsx src/lib/curriculum-parser.ts src/routes/developer-console.tsx src/routes/lessons.tsx src/server/curriculum-ingest.ts supabase/migrations/20261028140000_curriculum_lesson_index_and_notes.sql supabase/migrations/20261028150000_curriculum_admin_review_policies.sql supabase/migrations/20261028153000_curriculum_admin_topic_insert_policy.sql supabase/seeds/ncdc_aep_pilot_index.sql supabase/seeds/ncdc_aep_pilot_notes.sql
+            git commit -m "style(curriculum): apply formatter and safe lint fixes"
+            git push origin HEAD:fix-curriculum-ingest-pdf
+          else
+            echo "No formatting changes required."
+          fi
