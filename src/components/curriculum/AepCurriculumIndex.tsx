@@ -1,0 +1,200 @@
+import { useEffect, useMemo, useState } from "react";
+import { BookOpen, ChevronDown, ExternalLink, FileText, Loader2, RefreshCw } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+type SourceDocument = {
+  id: string;
+  title: string;
+  subject_label: string;
+  curriculum_programme: string;
+  level_labels: string[];
+  source_url: string | null;
+  page_count: number | null;
+};
+
+type IndexedTopic = {
+  id: string;
+  source_document_id: string;
+  level_label: string;
+  topic_number: number;
+  title: string;
+  source_page: number | null;
+  review_status: string;
+};
+
+const LEVEL_ORDER = ["Level 1", "Level 2"];
+
+export function AepCurriculumIndex() {
+  const [documents, setDocuments] = useState<SourceDocument[]>([]);
+  const [topics, setTopics] = useState<IndexedTopic[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(true);
+  const [selectedLevel, setSelectedLevel] = useState("All levels");
+
+  const loadIndex = async () => {
+    setLoading(true);
+    setError(null);
+
+    const [documentsResult, topicsResult] = await Promise.all([
+      supabase
+        .from("curriculum_documents")
+        .select("id,title,subject_label,curriculum_programme,level_labels,source_url,page_count")
+        .in("id", [
+          "ncdc-aep-physics-lsc-level-1-2-2023",
+          "ncdc-aep-biology-lsc-level-1-2-2023",
+        ]),
+      supabase
+        .from("curriculum_document_topics")
+        .select("id,source_document_id,level_label,topic_number,title,source_page,review_status")
+        .in("source_document_id", [
+          "ncdc-aep-physics-lsc-level-1-2-2023",
+          "ncdc-aep-biology-lsc-level-1-2-2023",
+        ])
+        .order("level_label", { ascending: true })
+        .order("topic_number", { ascending: true }),
+    ]);
+
+    if (documentsResult.error || topicsResult.error) {
+      setError(
+        documentsResult.error?.message ||
+          topicsResult.error?.message ||
+          "The curriculum index could not be loaded.",
+      );
+      setDocuments([]);
+      setTopics([]);
+    } else {
+      setDocuments((documentsResult.data || []) as SourceDocument[]);
+      setTopics((topicsResult.data || []) as IndexedTopic[]);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    void loadIndex();
+  }, []);
+
+  const visibleTopics = useMemo(
+    () => topics.filter((topic) => selectedLevel === "All levels" || topic.level_label === selectedLevel),
+    [topics, selectedLevel],
+  );
+
+  const countFor = (documentId: string) =>
+    visibleTopics.filter((topic) => topic.source_document_id === documentId).length;
+
+  return (
+    <section className="mb-6 overflow-hidden rounded-2xl border border-primary/25 bg-card/70 shadow-sm">
+      <button
+        type="button"
+        onClick={() => setExpanded((value) => !value)}
+        className="flex w-full items-center justify-between gap-3 p-4 text-left hover:bg-muted/30"
+        aria-expanded={expanded}
+      >
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="rounded-xl bg-primary/10 p-2 text-primary"><BookOpen className="h-5 w-5" /></div>
+          <div>
+            <h2 className="font-semibold">NCDC AEP curriculum index</h2>
+            <p className="text-xs text-muted-foreground">
+              Physics and Biology · Levels 1–2 · {topics.length} indexed headings
+            </p>
+          </div>
+        </div>
+        <ChevronDown className={`h-5 w-5 shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
+      </button>
+
+      {expanded && (
+        <div className="space-y-4 border-t border-border p-4">
+          <p className="text-sm text-muted-foreground">
+            These are Accelerated Education Programme (AEP) levels from the source syllabi. They are kept separate from Senior 1–6 until an official equivalence is confirmed.
+          </p>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {["All levels", ...LEVEL_ORDER].map((level) => (
+              <button
+                key={level}
+                type="button"
+                onClick={() => setSelectedLevel(level)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${selectedLevel === level ? "border-primary bg-primary text-primary-foreground" : "border-border hover:bg-muted"}`}
+              >
+                {level}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => void loadIndex()}
+              className="ml-auto inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted"
+            >
+              <RefreshCw className="h-3.5 w-3.5" /> Refresh
+            </button>
+          </div>
+
+          {loading && (
+            <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading indexed topics from Supabase…
+            </div>
+          )}
+          {!loading && error && (
+            <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm">
+              <p className="font-semibold">Curriculum index unavailable</p>
+              <p className="mt-1 text-muted-foreground">{error}</p>
+              <p className="mt-1 text-xs text-muted-foreground">Check the development database migration and read policies. No sample topics are substituted.</p>
+            </div>
+          )}
+          {!loading && !error && topics.length === 0 && (
+            <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+              Supabase returned no indexed topics. The interface will not invent curriculum entries.
+            </div>
+          )}
+
+          {!loading && !error && documents.map((document) => {
+            const documentTopics = visibleTopics.filter((topic) => topic.source_document_id === document.id);
+            if (documentTopics.length === 0) return null;
+            return (
+              <div key={document.id} className="overflow-hidden rounded-xl border border-border">
+                <div className="flex flex-wrap items-start justify-between gap-3 bg-muted/20 p-3">
+                  <div>
+                    <h3 className="font-semibold">{document.subject_label}</h3>
+                    <p className="text-xs text-muted-foreground">{document.title}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {document.curriculum_programme} · {document.page_count ?? "Page count unknown"} pages · {countFor(document.id)} headings
+                    </p>
+                  </div>
+                  {document.source_url && (
+                    <a
+                      href={document.source_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-xs font-medium hover:bg-muted"
+                    >
+                      <FileText className="h-3.5 w-3.5" /> Official source <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
+                <div className="divide-y divide-border">
+                  {documentTopics.map((topic) => (
+                    <div key={topic.id} className="flex items-start gap-3 px-3 py-3">
+                      <span className="mt-0.5 min-w-8 rounded-md bg-primary/10 px-2 py-1 text-center text-xs font-semibold text-primary">
+                        {topic.topic_number}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium">{topic.title}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {topic.level_label}{topic.source_page ? ` · Source page ${topic.source_page}` : " · Source page needs review"}
+                        </p>
+                      </div>
+                      {document.source_url && (
+                        <a href={document.source_url} target="_blank" rel="noreferrer" aria-label={`Open source for ${topic.title}`} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
