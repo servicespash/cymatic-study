@@ -251,7 +251,13 @@ export function AepCurriculumIndex({ standalone = false }: { standalone?: boolea
     visibleTopics.filter((topic) => topic.source_document_id === documentId).length;
 
   return (
-    <section className={standalone ? "mx-auto w-full max-w-7xl overflow-hidden bg-background" : "mb-6 overflow-hidden rounded-2xl border border-primary/25 bg-card/70 shadow-sm"}>
+    <section
+      className={
+        standalone
+          ? "mx-auto w-full max-w-7xl overflow-hidden bg-background"
+          : "mb-6 overflow-hidden rounded-2xl border border-primary/25 bg-card/70 shadow-sm"
+      }
+    >
       <button
         type="button"
         onClick={() => setExpanded((value) => !value)}
@@ -263,7 +269,9 @@ export function AepCurriculumIndex({ standalone = false }: { standalone?: boolea
             <BookOpen className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="font-semibold">{standalone ? "Accelerated Education Programme" : "NCDC AEP curriculum index"}</h2>
+            <h2 className="font-semibold">
+              {standalone ? "Accelerated Education Programme" : "NCDC AEP curriculum index"}
+            </h2>
             <p className="text-xs text-muted-foreground">
               Physics and Biology · Levels 1–2 · {topics.length} indexed headings
             </p>
@@ -275,7 +283,13 @@ export function AepCurriculumIndex({ standalone = false }: { standalone?: boolea
       </button>
 
       {expanded && (
-        <div className={standalone ? "space-y-6 border-t border-border px-3 py-5 sm:px-6 lg:px-8" : "space-y-4 border-t border-border p-4"}>
+        <div
+          className={
+            standalone
+              ? "space-y-6 border-t border-border px-3 py-5 sm:px-6 lg:px-8"
+              : "space-y-4 border-t border-border p-4"
+          }
+        >
           <p className="text-sm text-muted-foreground">
             These are Accelerated Education Programme (AEP) levels from the source syllabi. They are
             kept separate from Senior 1–6 until an official equivalence is confirmed.
@@ -368,18 +382,32 @@ export function AepCurriculumIndex({ standalone = false }: { standalone?: boolea
                   <div className="divide-y divide-border">
                     {documentTopics.map((topic) => {
                       const topicNotes = notes.filter((note) => note.source_topic_id === topic.id);
-                      const publishedNote = topicNotes.find((note) => note.review_status === "approved" && note.publication_status === "published");
+                      const publishedNote = topicNotes.find(
+                        (note) =>
+                          note.review_status === "approved" &&
+                          note.publication_status === "published",
+                      );
                       const note = publishedNote || topicNotes[0];
-                      const sourcePageUrl = document.source_url && topic.source_page
-                        ? document.source_url + "#page=" + topic.source_page
-                        : document.source_url;
+                      const sourcePageUrl =
+                        document.source_url && topic.source_page
+                          ? document.source_url + "#page=" + topic.source_page
+                          : document.source_url;
                       return (
                         <details key={topic.id} className="group">
                           <summary className="flex cursor-pointer list-none items-start gap-3 px-4 py-4 hover:bg-muted/30 sm:px-5">
-                            <span className="mt-0.5 min-w-9 rounded-lg bg-primary/10 px-2 py-1.5 text-center text-xs font-semibold text-primary">{topic.topic_number}</span>
+                            <span className="mt-0.5 min-w-9 rounded-lg bg-primary/10 px-2 py-1.5 text-center text-xs font-semibold text-primary">
+                              {topic.topic_number}
+                            </span>
                             <span className="min-w-0 flex-1">
-                              <span className="block text-sm font-semibold leading-6 sm:text-base">{topic.title}</span>
-                              <span className="mt-1 block text-xs text-muted-foreground">{topic.level_label}{topic.source_page ? " · Source page " + topic.source_page : " · Source page needs review"}</span>
+                              <span className="block text-sm font-semibold leading-6 sm:text-base">
+                                {topic.title}
+                              </span>
+                              <span className="mt-1 block text-xs text-muted-foreground">
+                                {topic.level_label}
+                                {topic.source_page
+                                  ? " · Source page " + topic.source_page
+                                  : " · Source page needs review"}
+                              </span>
                             </span>
                             <ChevronDown className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
                           </summary>
@@ -387,42 +415,90 @@ export function AepCurriculumIndex({ standalone = false }: { standalone?: boolea
                             {note ? (
                               <article className="max-w-4xl space-y-4">
                                 <div>
-                                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{publishedNote ? "Published study aid" : "Draft study aid"}</p>
+                                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                    {publishedNote ? "Published study aid" : "Draft study aid"}
+                                  </p>
                                   <h4 className="mt-1 text-lg font-semibold">{note.title}</h4>
                                   <p className="mt-2 text-sm leading-7">{note.summary}</p>
                                 </div>
                                 {(note.study_sections || []).map((section, index) => (
-                                  <section key={section.heading + index} className="rounded-xl border border-border bg-card p-4">
+                                  <section
+                                    key={section.heading + index}
+                                    className="rounded-xl border border-border bg-card p-4"
+                                  >
                                     <h5 className="text-sm font-semibold">{section.heading}</h5>
-                                    <p className="mt-2 whitespace-pre-line text-sm leading-7 text-muted-foreground">{section.content}</p>
+                                    <p className="mt-2 whitespace-pre-line text-sm leading-7 text-muted-foreground">
+                                      {section.content}
+                                    </p>
                                   </section>
                                 ))}
                                 <div className="flex flex-wrap gap-2 pt-1">
-                                  <button type="button" onClick={() => downloadNotePdf(note, topic, document)} className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium hover:bg-muted">
+                                  <button
+                                    type="button"
+                                    onClick={() => downloadNotePdf(note, topic, document)}
+                                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium hover:bg-muted"
+                                  >
                                     <FileText className="h-4 w-4" /> Download study aid PDF
                                   </button>
                                   {sourcePageUrl && (
-                                    <a href={sourcePageUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">
-                                      <ExternalLink className="h-4 w-4" /> Open official syllabus{topic.source_page ? " at page " + topic.source_page : ""}
+                                    <a
+                                      href={sourcePageUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+                                    >
+                                      <ExternalLink className="h-4 w-4" /> Open official syllabus
+                                      {topic.source_page ? " at page " + topic.source_page : ""}
                                     </a>
                                   )}
                                   {isAdmin && note.review_status !== "approved" && (
-                                    <button type="button" disabled={reviewingTopicId === (note.source_topic_id || note.id)} onClick={() => void approveNote(note)} className="rounded-lg border border-emerald-600/40 px-3 py-2 text-sm hover:bg-emerald-500/10 disabled:opacity-50">
-                                      {reviewingTopicId === (note.source_topic_id || note.id) ? "Saving…" : "Approve & publish study aid"}
+                                    <button
+                                      type="button"
+                                      disabled={
+                                        reviewingTopicId === (note.source_topic_id || note.id)
+                                      }
+                                      onClick={() => void approveNote(note)}
+                                      className="rounded-lg border border-emerald-600/40 px-3 py-2 text-sm hover:bg-emerald-500/10 disabled:opacity-50"
+                                    >
+                                      {reviewingTopicId === (note.source_topic_id || note.id)
+                                        ? "Saving…"
+                                        : "Approve & publish study aid"}
                                     </button>
                                   )}
                                 </div>
                               </article>
                             ) : (
-                              <p className="text-sm text-muted-foreground">No study aid is linked to this topic yet. Open the official syllabus to study the source material.</p>
+                              <p className="text-sm text-muted-foreground">
+                                No study aid is linked to this topic yet. Open the official syllabus
+                                to study the source material.
+                              </p>
                             )}
                             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
-                              <span className="text-xs text-muted-foreground">Source: {document.title}{topic.source_page ? " · printed page " + topic.source_page : ""}</span>
+                              <span className="text-xs text-muted-foreground">
+                                Source: {document.title}
+                                {topic.source_page ? " · printed page " + topic.source_page : ""}
+                              </span>
                               <div className="flex items-center gap-2">
-                                <span className={`rounded-full px-2 py-1 text-xs ${topic.review_status === "reviewed" || topic.review_status === "approved" ? "bg-emerald-500/10 text-emerald-700" : "bg-amber-500/10 text-amber-700"}`}>{topic.review_status === "reviewed" || topic.review_status === "approved" ? "Reviewed" : "Needs review"}</span>
-                                {isAdmin && topic.review_status !== "reviewed" && topic.review_status !== "approved" && (
-                                  <button type="button" disabled={reviewingTopicId === topic.id} onClick={() => void markTopicReviewed(topic)} className="rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted disabled:opacity-50">{reviewingTopicId === topic.id ? "Saving…" : "Mark reviewed"}</button>
-                                )}
+                                <span
+                                  className={`rounded-full px-2 py-1 text-xs ${topic.review_status === "reviewed" || topic.review_status === "approved" ? "bg-emerald-500/10 text-emerald-700" : "bg-amber-500/10 text-amber-700"}`}
+                                >
+                                  {topic.review_status === "reviewed" ||
+                                  topic.review_status === "approved"
+                                    ? "Reviewed"
+                                    : "Needs review"}
+                                </span>
+                                {isAdmin &&
+                                  topic.review_status !== "reviewed" &&
+                                  topic.review_status !== "approved" && (
+                                    <button
+                                      type="button"
+                                      disabled={reviewingTopicId === topic.id}
+                                      onClick={() => void markTopicReviewed(topic)}
+                                      className="rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted disabled:opacity-50"
+                                    >
+                                      {reviewingTopicId === topic.id ? "Saving…" : "Mark reviewed"}
+                                    </button>
+                                  )}
                               </div>
                             </div>
                           </div>

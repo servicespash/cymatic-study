@@ -185,12 +185,17 @@ function LessonsPage() {
               <span className="min-w-0">
                 <span className="block font-semibold">AEP Curriculum Library</span>
                 <span className="mt-1 block text-sm leading-6 text-muted-foreground">
-                  Open the separate Physics and Biology index, expand one topic at a time, and read the linked official syllabus without crowding the S1–S6 lesson page.
+                  Open the separate Physics and Biology index, expand one topic at a time, and read
+                  the linked official syllabus without crowding the S1–S6 lesson page.
                 </span>
-                <span className="mt-2 block text-xs text-muted-foreground">39 indexed headings · AEP Level 1 and Level 2</span>
+                <span className="mt-2 block text-xs text-muted-foreground">
+                  39 indexed headings · AEP Level 1 and Level 2
+                </span>
               </span>
             </span>
-            <span className="shrink-0 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground group-hover:opacity-90">Open library</span>
+            <span className="shrink-0 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground group-hover:opacity-90">
+              Open library
+            </span>
           </Link>
           {/* Page Title & Context */}
           <div>
