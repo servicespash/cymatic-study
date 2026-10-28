@@ -158,8 +158,8 @@ export function parseCurriculumText(text: string, filename: string): ParsedCurri
     }
 
     // Extract subtopics if bullet or numbered
-    if (/^(\d+\.[\d\.]*|[•\-\*])\s+/.test(line)) {
-      currentSubtopics.push(line.replace(/^(\d+\.[\d\.]*|[•\-\*])\s+/, ""));
+    if (/^(\d+\.[\d.]*|[•*-])\s+/.test(line)) {
+      currentSubtopics.push(line.replace(/^(\d+\.[\d.]*|[•*-])\s+/, ""));
     }
 
     if (!currentOverview && activeHeading === "Overview Concepts") {
