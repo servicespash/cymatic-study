@@ -14,6 +14,8 @@ export interface ParsedCurriculumDocument {
   subjectTitle: ScienceSubjectId;
   levelLabel: string;
   levelNumber: number;
+  curriculumProgramme?: string;
+  sourceDocumentId?: string;
   topics: ParsedCurriculumTopic[];
   totalWordCount: number;
   rawExtractedText: string;
@@ -24,6 +26,11 @@ export interface ParsedCurriculumTopic {
   title: string;
   subject: ScienceSubjectId;
   level: number;
+  curriculumLevelLabel?: string;
+  curriculumProgramme?: string;
+  sourceDocumentId?: string;
+  sourcePage?: number;
+  topicNumber?: number;
   overviewConcept: string;
   subtopics: string[];
   competencies: string[];
@@ -206,6 +213,106 @@ export function parseCurriculumText(text: string, filename: string): ParsedCurri
   };
 }
 
+
+type AepTopicSeed = { level: "Level 1" | "Level 2"; number: number; title: string; page: number };
+
+const AEP_PHYSICS_TOPICS: AepTopicSeed[] = [
+  { level: "Level 1", number: 1, title: "Measurements", page: 2 },
+  { level: "Level 1", number: 2, title: "Forces and their Effects", page: 5 },
+  { level: "Level 1", number: 3, title: "Light", page: 15 },
+  { level: "Level 1", number: 4, title: "Waves", page: 18 },
+  { level: "Level 1", number: 5, title: "Earth and Space Physics", page: 22 },
+  { level: "Level 2", number: 1, title: "Thermal Physics", page: 28 },
+  { level: "Level 2", number: 2, title: "Electricity and Magnetism", page: 36 },
+  { level: "Level 2", number: 3, title: "Atomic and Nuclear Physics", page: 48 },
+  { level: "Level 2", number: 4, title: "Satellites and Communication", page: 52 },
+  { level: "Level 2", number: 5, title: "Digital Electronics", page: 53 },
+];
+
+const AEP_BIOLOGY_TOPICS: AepTopicSeed[] = [
+  { level: "Level 1", number: 1, title: "Introduction to Biology", page: 1 },
+  { level: "Level 1", number: 2, title: "Cells", page: 2 },
+  { level: "Level 1", number: 3, title: "Classification", page: 4 },
+  { level: "Level 1", number: 4, title: "Insects", page: 8 },
+  { level: "Level 1", number: 5, title: "Flowering Plants", page: 10 },
+  { level: "Level 1", number: 6, title: "Physical and Chemical Properties of Soil", page: 12 },
+  { level: "Level 1", number: 7, title: "Soil Erosion and Conservation: Causes, Effects and Prevention", page: 14 },
+  { level: "Level 1", number: 8, title: "Nutrition Types and Nutrient Compounds", page: 16 },
+  { level: "Level 1", number: 9, title: "Nutrition in Green Plants", page: 18 },
+  { level: "Level 1", number: 10, title: "Nutrition in Mammals", page: 20 },
+  { level: "Level 1", number: 11, title: "Transport in Plants", page: 23 },
+  { level: "Level 1", number: 12, title: "Transport in Animals", page: 25 },
+  { level: "Level 2", number: 1, title: "Gaseous Exchange", page: 27 },
+  { level: "Level 2", number: 2, title: "Aerobic and Anaerobic Respiration", page: 29 },
+  { level: "Level 2", number: 3, title: "Excretion in Animals", page: 31 },
+  { level: "Level 2", number: 4, title: "Chemical Coordination in Humans", page: 32 },
+  { level: "Level 2", number: 5, title: "Nervous Coordination in Humans", page: 34 },
+  { level: "Level 2", number: 6, title: "Receptor Organs in Man", page: 36 },
+  { level: "Level 2", number: 7, title: "Locomotion in Mammals", page: 37 },
+  { level: "Level 2", number: 8, title: "Growth in Plants and Animals", page: 39 },
+  { level: "Level 2", number: 9, title: "Development in Plants and Animals", page: 41 },
+  { level: "Level 2", number: 10, title: "Asexual Reproduction in Plants (Vegetative Reproduction)", page: 43 },
+  { level: "Level 2", number: 11, title: "Sexual Reproduction in Plants", page: 44 },
+  { level: "Level 2", number: 12, title: "Sexual Reproduction in Human", page: 46 },
+  { level: "Level 2", number: 13, title: "Inheritance", page: 49 },
+  { level: "Level 2", number: 14, title: "Introduction to Ecology", page: 51 },
+  { level: "Level 2", number: 15, title: "Food Chains and Food Webs", page: 52 },
+  { level: "Level 2", number: 16, title: "Associations in Biological Communities", page: 54 },
+  { level: "Level 2", number: 17, title: "Humans and the Natural Environment", page: 55 },
+];
+
+function normalizeHeading(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function parseAepSyllabusText(text: string, filename: string): ParsedCurriculumDocument {
+  const subject: ScienceSubjectId = /biology/i.test(text.slice(0, 5000)) ? "biology" : "physics";
+  const documentId = subject === "biology"
+    ? "ncdc-aep-biology-lsc-level-1-2-2023"
+    : "ncdc-aep-physics-lsc-level-1-2-2023";
+  const seeds = subject === "biology" ? AEP_BIOLOGY_TOPICS : AEP_PHYSICS_TOPICS;
+  const normalizedText = normalizeHeading(text);
+  const topics: ParsedCurriculumTopic[] = seeds
+    .filter((seed) => normalizedText.includes(normalizeHeading(seed.title)))
+    .map((seed) => ({
+      id: documentId + "-" + seed.level.toLowerCase().replace(/\s+/g, "-") + "-" + seed.number,
+      title: seed.title,
+      subject,
+      level: seed.level === "Level 1" ? 1 : 2,
+      curriculumLevelLabel: seed.level,
+      curriculumProgramme: "Uganda Accelerated Education Programme (AEP)",
+      sourceDocumentId: documentId,
+      sourcePage: seed.page,
+      topicNumber: seed.number,
+      overviewConcept: "Topic heading extracted from the NCDC source syllabus; original study notes require developer review.",
+      subtopics: [],
+      competencies: [],
+      formulas: [],
+      sections: [],
+      examples: [],
+      diagramReferences: [],
+    }));
+
+  if (topics.length !== seeds.length) {
+    const missing = seeds.filter((seed) => !topics.some((topic) => topic.title === seed.title));
+    throw new Error("AEP PDF text was extracted, but " + topics.length + "/" + seeds.length +
+      " expected headings were verified. Missing: " + missing.map((item) => item.title).join(", ") +
+      ". Check extraction quality before staging.");
+  }
+
+  return {
+    documentTitle: filename,
+    subjectTitle: subject,
+    levelLabel: "AEP Levels 1–2",
+    levelNumber: 1,
+    curriculumProgramme: "Uganda Accelerated Education Programme (AEP)",
+    sourceDocumentId: documentId,
+    topics,
+    totalWordCount: text.split(/\s+/).filter(Boolean).length,
+    rawExtractedText: text,
+  };
+}
+
 export async function parseRobustCurriculum(
   data: Buffer | string,
   filename: string,
@@ -236,12 +343,13 @@ export async function parseRobustCurriculum(
         const pageText = content.items
           .map((item: unknown) => {
             if (item && typeof item === "object" && "str" in item) {
-              return String((item as { str: unknown }).str ?? "");
+              const entry = item as { str: unknown; hasEOL?: boolean };
+              const value = String(entry.str ?? "");
+              return value ? value + (entry.hasEOL ? "\n" : " ") : "";
             }
             return "";
           })
-          .filter(Boolean)
-          .join(" ");
+          .join("");
         pages.push(pageText);
         page.cleanup();
       }
@@ -249,7 +357,7 @@ export async function parseRobustCurriculum(
       await pdf.destroy();
     }
 
-    textContent = pages.join("\\n\\n").replace(/[ \\t]+/g, " ").trim();
+    textContent = pages.join("\n\n").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
     if (textContent.length < 100) {
       throw new Error(
         "PDF contains too little extractable text. It may be scanned; OCR is required before deterministic ingestion.",
@@ -263,13 +371,10 @@ export async function parseRobustCurriculum(
     throw new Error("No readable text was extracted from the selected document.");
   }
 
-  // AEP Level 1/2 is not equivalent by default to Senior 1/2. Do not silently
-  // misclassify this source in the existing S1-S6 lesson hierarchy.
-  if (/accelerated education programme|\\bAEP\\b/i.test(textContent) &&
-      /\\blevels?\\s*1\\s*(?:and|&)\\s*2\\b/i.test(textContent)) {
-    throw new Error(
-      "This PDF is an NCDC Accelerated Education Programme (AEP) Level 1/2 syllabus. The current injector only supports the standard Senior 1-6 hierarchy, so it was not staged under Senior 1 or Senior 2. Add an explicit AEP curriculum mapping before importing it.",
-    );
+  // Keep AEP levels separate; never relabel them Senior 1/2.
+  if (/accelerated education programme|\bAEP\b/i.test(textContent) &&
+      /\blevels?\s*1\s*(?:and|&)\s*2\b/i.test(textContent)) {
+    return parseAepSyllabusText(textContent, filename);
   }
 
   return parseCurriculumText(textContent, filename);
