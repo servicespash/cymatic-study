@@ -236,13 +236,19 @@ function DeveloperConsolePage() {
 
       if (isPdf) {
         // Send to backend endpoint which uses pdf-parse and deterministic parsing (zero AI quota streaming)
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        const accessToken = sessionData.session?.access_token;
+        if (sessionError || !accessToken) {
+          throw new Error("Your authenticated session is missing or expired. Sign in again before uploading.");
+        }
+
         const formData = new FormData();
         formData.append("file", selectedFile);
-        formData.append("passcode", actionPasscode.trim());
         formData.append("uploader_email", getVerifiedAdminEmail() || authEmail);
 
         const response = await fetch("/api/curriculum-ingest", {
           method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}` },
           body: formData,
         });
 
