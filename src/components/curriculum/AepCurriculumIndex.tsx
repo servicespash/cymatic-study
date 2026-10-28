@@ -54,14 +54,14 @@ export function AepCurriculumIndex() {
     setOfflineSnapshot(false);
 
     const [documentsResult, topicsResult, notesResult] = await Promise.all([
-      supabase
+      (supabase as any)
         .from("curriculum_documents")
         .select("id,title,subject_label,curriculum_programme,level_labels,source_url,page_count")
         .in("id", [
           "ncdc-aep-physics-lsc-level-1-2-2023",
           "ncdc-aep-biology-lsc-level-1-2-2023",
         ]),
-      supabase
+      (supabase as any)
         .from("curriculum_document_topics")
         .select("id,source_document_id,level_label,topic_number,title,source_page,review_status")
         .in("source_document_id", [
