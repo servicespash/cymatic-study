@@ -185,6 +185,7 @@ export default defineConfig({
     ),
   },
   build: {
+    target: ["es2015", "chrome64", "firefox67", "safari11.1", "edge79"],
     outDir: "dist",
     emptyOutDir: true,
     rollupOptions: {
