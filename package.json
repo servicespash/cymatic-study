@@ -17,7 +17,8 @@
     "lint:ci": "eslint . --quiet",
     "format": "prettier --write .",
     "test": "vitest run",
-    "sync-types": "supabase gen types typescript --local > ./src/lib/database.types.ts"
+    "sync-types": "supabase gen types typescript --local > ./src/lib/database.types.ts",
+    "validate:aep-study-aids": "node scripts/validate-aep-study-aids.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.12",
