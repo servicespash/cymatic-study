@@ -57,8 +57,6 @@ jobs:
             src/routes/lessons.tsx \
             src/routes/aep.tsx \
             src/server/curriculum-ingest.ts \
-            functions/api/curriculum-ingest.ts
-
       - name: Persist formatter fixes to the PR branch
         run: |
           git config user.name "github-actions[bot]"
@@ -79,8 +77,6 @@ jobs:
             src/routes/lessons.tsx \
             src/routes/aep.tsx \
             src/server/curriculum-ingest.ts \
-            functions/api/curriculum-ingest.ts
-
       - name: Run tests
         run: npm test
 
