@@ -2,7 +2,10 @@ import { Request, Response } from "express";
 import multer from "multer";
 import { parseRobustCurriculum } from "../lib/curriculum-parser.js";
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024, files: 1 },
+});
 
 export async function handleCurriculumIngestRequest(req: Request, res: Response) {
   console.log("[API] POST /api/curriculum-ingest - Robust ingestion started");
@@ -22,10 +25,18 @@ export async function handleCurriculumIngestRequest(req: Request, res: Response)
     const passcode = (req.body?.passcode || req.headers["x-admin-passcode"] || "")
       .toString()
       .trim();
-    if (passcode && passcode !== "290350") {
+    const expectedPasscode = process.env.CURRICULUM_INGEST_PASSCODE?.trim();
+
+    if (!expectedPasscode) {
+      return res.status(503).json({
+        error: "Curriculum ingestion is not configured on this deployment. Set CURRICULUM_INGEST_PASSCODE on the server before uploading documents.",
+      });
+    }
+
+    if (!passcode || passcode !== expectedPasscode) {
       return res
         .status(401)
-        .json({ error: "Unauthorized: Invalid structured developer password." });
+        .json({ error: "Unauthorized: a valid developer ingestion passcode is required." });
     }
 
     try {
