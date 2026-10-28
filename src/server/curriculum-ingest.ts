@@ -1,6 +1,43 @@
 import { Request, Response } from "express";
 import multer from "multer";
+import { createClient } from "@supabase/supabase-js";
 import { parseRobustCurriculum } from "../lib/curriculum-parser.js";
+
+const SUPABASE_URL =
+  process.env.SUPABASE_URL ||
+  process.env.VITE_SUPABASE_URL ||
+  "https://tffffvbaiccqndydsobg.supabase.co";
+const SUPABASE_ANON_KEY =
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.VITE_SUPABASE_ANON_KEY ||
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  "sb_publishable_Q6c0ZU7hu-Ow6bdzbK5-ig_S74FsIK0";
+
+async function verifyAuthenticatedCurriculumAdmin(req: Request): Promise<boolean> {
+  const authorization = req.headers.authorization || "";
+  const token = authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";
+  if (!token) return false;
+
+  const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data, error } = await authClient.auth.getUser(token);
+  if (error || !data.user) return false;
+
+  const profileClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: { headers: { Authorization: "Bearer " + token } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data: profile, error: profileError } = await profileClient
+    .from("profiles")
+    .select("role")
+    .eq("user_id", data.user.id)
+    .maybeSingle();
+
+  const role = profileError ? "" : String(profile?.role || "").toLowerCase();
+  return ["admin", "org_admin", "superadmin"].includes(role) ||
+    data.user.email?.trim().toLowerCase() === "latifisabirye123@gmail.com";
+}
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -21,22 +58,13 @@ export async function handleCurriculumIngestRequest(req: Request, res: Response)
         .json({ error: "No file uploaded. Please select a valid PDF or text curriculum file." });
     }
 
-    // Passcode verification
-    const passcode = (req.body?.passcode || req.headers["x-admin-passcode"] || "")
-      .toString()
-      .trim();
-    const expectedPasscode = process.env.CURRICULUM_INGEST_PASSCODE?.trim();
-
-    if (!expectedPasscode) {
-      return res.status(503).json({
-        error: "Curriculum ingestion is not configured on this deployment. Set CURRICULUM_INGEST_PASSCODE on the server before uploading documents.",
+    // The browser-side developer gate is not a security boundary. Verify the
+    // Supabase access token and database admin role on the server for every upload.
+    const authorized = await verifyAuthenticatedCurriculumAdmin(req);
+    if (!authorized) {
+      return res.status(401).json({
+        error: "Unauthorized: sign in with the authorised curriculum administrator account before uploading.",
       });
-    }
-
-    if (!passcode || passcode !== expectedPasscode) {
-      return res
-        .status(401)
-        .json({ error: "Unauthorized: a valid developer ingestion passcode is required." });
     }
 
     try {
