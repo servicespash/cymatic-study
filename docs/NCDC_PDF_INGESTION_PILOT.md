@@ -27,7 +27,7 @@ SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVER_ONLY_KEY \
 node scripts/ingest-curriculum-pdfs.mjs --manifest ./scripts/ncdc-aep-pilot.json --commit
 ```
 
-Keep the service-role key server-side and out of `VITE_*` variables. The interactive developer uploader verifies the signed-in Supabase session and admin profile before buffering a PDF. Do not commit generated reports if they contain private paths or metadata you do not want public.
+Keep the service-role key server-side and out of `VITE_*` variables. The development CI workflow formats the changed application files, runs targeted ESLint, executes the test suite, and builds both the client and server. The interactive developer uploader verifies the signed-in Supabase session and admin profile before buffering a PDF. Do not commit generated reports if they contain private paths or metadata you do not want public.
 
 ## Release gates
 
