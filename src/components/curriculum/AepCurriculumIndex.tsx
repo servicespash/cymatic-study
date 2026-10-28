@@ -386,7 +386,12 @@ export function AepCurriculumIndex() {
                                 key={note.id}
                                 className="mt-3 rounded-lg border border-border bg-background/70 p-3"
                               >
-                                <p className="text-xs font-semibold">Original study-note draft</p>
+                                <p className="text-xs font-semibold">
+                                  {note.review_status === "approved" &&
+                                  note.publication_status === "published"
+                                    ? "Published study note"
+                                    : "Original study-note draft"}
+                                </p>
                                 <p className="mt-1 text-sm leading-relaxed">{note.summary}</p>
                                 {note.study_sections?.map((section, index) => (
                                   <div key={section.heading + index} className="mt-2">
