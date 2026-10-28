@@ -64,7 +64,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if ! git diff --quiet; then
-            git add src/components/NoteHierarchy.tsx src/components/curriculum/AepCurriculumIndex.tsx src/lib/curriculum-parser.ts src/routes/developer-console.tsx src/routes/lessons.tsx src/routes/aep.tsx src/server/curriculum-ingest.ts functions/api/curriculum-ingest.ts
+            git add src/components/NoteHierarchy.tsx src/components/curriculum/AepCurriculumIndex.tsx src/lib/curriculum-parser.ts src/routes/developer-console.tsx src/routes/lessons.tsx src/routes/aep.tsx src/server/curriculum-ingest.ts
             git commit -m "style(aep): format curriculum library and ingestion route"
             git push origin HEAD:feat/aep-library-and-pages-ingest
           fi
