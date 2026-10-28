@@ -40,10 +40,6 @@ jobs:
             src/routes/developer-console.tsx \
             src/routes/lessons.tsx \
             src/server/curriculum-ingest.ts \
-            supabase/migrations/20261028140000_curriculum_lesson_index_and_notes.sql \
-            supabase/migrations/20261028150000_curriculum_admin_review_policies.sql \
-            supabase/migrations/20261028153000_curriculum_admin_topic_insert_policy.sql \
-            supabase/seeds/ncdc_aep_pilot_index.sql \
 
       - name: Apply safe ESLint autofixes
         run: |
