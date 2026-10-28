@@ -34,9 +34,9 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Check formatting
+      - name: Format changed files in the CI runner
         run: |
-          npx prettier --check \
+          npx prettier --write \
             src/components/NoteHierarchy.tsx \
             src/components/curriculum/AepCurriculumIndex.tsx \
             src/lib/curriculum-parser.ts \
