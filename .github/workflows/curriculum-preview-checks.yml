@@ -5,7 +5,7 @@ on:
     branches: [main]
   push:
     branches:
-      - fix-curriculum-ingest-pdf
+      - feat/aep-library-and-pages-ingest
 
 permissions:
   contents: write
@@ -23,7 +23,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: fix-curriculum-ingest-pdf
+          ref: feat/aep-library-and-pages-ingest
           fetch-depth: 0
 
       - name: Set up Node.js
@@ -66,7 +66,7 @@ jobs:
           if ! git diff --quiet; then
             git add src/components/NoteHierarchy.tsx src/components/curriculum/AepCurriculumIndex.tsx src/lib/curriculum-parser.ts src/routes/developer-console.tsx src/routes/lessons.tsx src/routes/aep.tsx src/server/curriculum-ingest.ts functions/api/curriculum-ingest.ts
             git commit -m "style(aep): format curriculum library and ingestion route"
-            git push origin HEAD:fix-curriculum-ingest-pdf
+            git push origin HEAD:feat/aep-library-and-pages-ingest
           fi
 
       - name: Lint changed curriculum code
