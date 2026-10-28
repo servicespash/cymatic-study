@@ -277,8 +277,38 @@ function DeveloperConsolePage() {
         throw new Error("Unable to extract structured topics from this document.");
       }
 
-      // Automatically stage the extracted topics into the Staging Deck
-      const stagedList = stageParsedDocument(
+      // AEP documents are persisted to the programme-specific Supabase index.
+      // Never route AEP Level 1/2 into the ordinary Senior 1/2 localStorage deck.
+      if (parsedDocument.curriculumProgramme === "Uganda Accelerated Education Programme (AEP)" && parsedDocument.sourceDocumentId) {
+        const aepRows = parsedDocument.topics.map((topic) => ({
+          source_document_id: parsedDocument.sourceDocumentId,
+          level_label: topic.curriculumLevelLabel,
+          topic_number: topic.topicNumber,
+          title: topic.title,
+          source_page: topic.sourcePage,
+          review_status: "needs_review",
+        }));
+
+        const { error: saveError } = await (supabase as any)
+          .from("curriculum_document_topics")
+          .upsert(aepRows, { onConflict: "source_document_id,level_label,topic_number" });
+
+        if (saveError) {
+          throw new Error(`PDF text extracted, but saving the AEP topic index failed: ${saveError.message}`);
+        }
+
+        setLastParsedDoc(parsedDocument);
+        refresh();
+        toast.success("AEP syllabus extracted and saved for review", {
+          id: toastId,
+          description: `Verified ${parsedDocument.topics.length} topic headings for ${parsedDocument.subjectTitle}. Source page references retained; notes still require review.`,
+        });
+        setActiveIngestSubTab("document");
+        return;
+      }
+
+      // Standard S1-S6 material continues through the existing local staging deck.
+      stageParsedDocument(
         parsedDocument,
         isPdf ? "pdf" : "txt",
         fileName,
@@ -293,7 +323,6 @@ function DeveloperConsolePage() {
         description: `Extracted ${parsedDocument.topics.length} topics for ${parsedDocument.subjectTitle} (${parsedDocument.levelLabel}). Ready for verification.`,
       });
 
-      // Switch view to staging deck so the developer can immediately review
       setActiveIngestSubTab("staging");
     } catch (err: any) {
       const msg = err.message || "Failed to parse curriculum file.";
