@@ -8,7 +8,7 @@ on:
       - feat/aep-library-and-pages-ingest
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: curriculum-preview-${{ github.ref }}
@@ -23,7 +23,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: feat/aep-library-and-pages-ingest
           fetch-depth: 0
 
       - name: Set up Node.js
@@ -35,9 +34,9 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Format changed application files
+      - name: Check formatting
         run: |
-          npx prettier --write \
+          npx prettier --check \
             src/components/NoteHierarchy.tsx \
             src/components/curriculum/AepCurriculumIndex.tsx \
             src/lib/curriculum-parser.ts \
@@ -45,21 +44,11 @@ jobs:
             src/routes/lessons.tsx \
             src/routes/aep.tsx \
             src/server/curriculum-ingest.ts \
-            functions/api/curriculum-ingest.ts
+            functions/api/curriculum-ingest.ts \
+            scripts/validate-aep-study-aids.mjs \
+            package.json
 
-      - name: Apply safe ESLint autofixes
-        run: |
-          npx eslint --fix \
-            src/components/NoteHierarchy.tsx \
-            src/components/curriculum/AepCurriculumIndex.tsx \
-            src/lib/curriculum-parser.ts \
-            src/routes/developer-console.tsx \
-            src/routes/lessons.tsx \
-            src/routes/aep.tsx \
-            src/server/curriculum-ingest.ts \
-      # Formatting is checked in the ephemeral runner; CI does not push commits back to the PR branch.
-
-      - name: Lint changed curriculum code
+      - name: Lint changed application code
         run: |
           npx eslint --quiet \
             src/components/NoteHierarchy.tsx \
@@ -68,7 +57,11 @@ jobs:
             src/routes/developer-console.tsx \
             src/routes/lessons.tsx \
             src/routes/aep.tsx \
-            src/server/curriculum-ingest.ts \
+            src/server/curriculum-ingest.ts
+
+      - name: Validate AEP study-aid content
+        run: npm run validate:aep-study-aids
+
       - name: Run tests
         run: npm test
 
