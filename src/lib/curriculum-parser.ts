@@ -209,8 +209,68 @@ export function parseCurriculumText(text: string, filename: string): ParsedCurri
 export async function parseRobustCurriculum(
   data: Buffer | string,
   filename: string,
-  _isPdf: boolean
+  isPdf: boolean,
 ): Promise<ParsedCurriculumDocument> {
-  const textContent = typeof data === "string" ? data : data.toString("utf-8");
+  let textContent: string;
+
+  if (isPdf) {
+    if (typeof data === "string") {
+      throw new Error("PDF ingestion requires binary file data.");
+    }
+
+    // Import PDF.js only in the server-side ingestion path. Converting raw PDF
+    // bytes to UTF-8 is not PDF text extraction and can produce corrupt content.
+    const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+    const loadingTask = pdfjs.getDocument({
+      data: new Uint8Array(data),
+      useSystemFonts: true,
+      isEvalSupported: false,
+    });
+
+    const pdf = await loadingTask.promise;
+    const pages: string[] = [];
+    try {
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+        const page = await pdf.getPage(pageNumber);
+        const content = await page.getTextContent();
+        const pageText = content.items
+          .map((item: unknown) => {
+            if (item && typeof item === "object" && "str" in item) {
+              return String((item as { str: unknown }).str ?? "");
+            }
+            return "";
+          })
+          .filter(Boolean)
+          .join(" ");
+        pages.push(pageText);
+        page.cleanup();
+      }
+    } finally {
+      await pdf.destroy();
+    }
+
+    textContent = pages.join("\\n\\n").replace(/[ \\t]+/g, " ").trim();
+    if (textContent.length < 100) {
+      throw new Error(
+        "PDF contains too little extractable text. It may be scanned; OCR is required before deterministic ingestion.",
+      );
+    }
+  } else {
+    textContent = typeof data === "string" ? data : data.toString("utf-8");
+  }
+
+  if (!textContent.trim()) {
+    throw new Error("No readable text was extracted from the selected document.");
+  }
+
+  // AEP Level 1/2 is not equivalent by default to Senior 1/2. Do not silently
+  // misclassify this source in the existing S1-S6 lesson hierarchy.
+  if (/accelerated education programme|\\bAEP\\b/i.test(textContent) &&
+      /\\blevels?\\s*1\\s*(?:and|&)\\s*2\\b/i.test(textContent)) {
+    throw new Error(
+      "This PDF is an NCDC Accelerated Education Programme (AEP) Level 1/2 syllabus. The current injector only supports the standard Senior 1-6 hierarchy, so it was not staged under Senior 1 or Senior 2. Add an explicit AEP curriculum mapping before importing it.",
+    );
+  }
+
   return parseCurriculumText(textContent, filename);
 }
