@@ -1,3 +1,5 @@
+drop policy if exists "Curriculum admins can insert document topic headings" on public.curriculum_document_topics;
+
 create policy "Curriculum admins can insert document topic headings"
 on public.curriculum_document_topics
 for insert
