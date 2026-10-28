@@ -1,11 +1,62 @@
 import { Request, Response } from "express";
 import multer from "multer";
+import { createClient } from "@supabase/supabase-js";
 import { parseRobustCurriculum } from "../lib/curriculum-parser.js";
 
-const upload = multer({ storage: multer.memoryStorage() });
+const SUPABASE_URL =
+  process.env.SUPABASE_URL ||
+  process.env.VITE_SUPABASE_URL ||
+  "https://tffffvbaiccqndydsobg.supabase.co";
+const SUPABASE_ANON_KEY =
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.VITE_SUPABASE_ANON_KEY ||
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  "sb_publishable_Q6c0ZU7hu-Ow6bdzbK5-ig_S74FsIK0";
+
+async function verifyAuthenticatedCurriculumAdmin(req: Request): Promise<boolean> {
+  const authorization = req.headers.authorization || "";
+  const token = authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";
+  if (!token) return false;
+
+  const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data, error } = await authClient.auth.getUser(token);
+  if (error || !data.user) return false;
+
+  const profileClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: { headers: { Authorization: "Bearer " + token } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data: profile, error: profileError } = await profileClient
+    .from("profiles")
+    .select("role")
+    .eq("user_id", data.user.id)
+    .maybeSingle();
+
+  const role = profileError ? "" : String(profile?.role || "").toLowerCase();
+  return (
+    ["admin", "org_admin", "superadmin"].includes(role) ||
+    data.user.email?.trim().toLowerCase() === "latifisabirye123@gmail.com"
+  );
+}
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024, files: 1 },
+});
 
 export async function handleCurriculumIngestRequest(req: Request, res: Response) {
   console.log("[API] POST /api/curriculum-ingest - Robust ingestion started");
+
+  // Authenticate before multer buffers any uploaded file into memory.
+  const authorized = await verifyAuthenticatedCurriculumAdmin(req);
+  if (!authorized) {
+    return res.status(401).json({
+      error:
+        "Unauthorized: sign in with the authorised curriculum administrator account before uploading.",
+    });
+  }
 
   upload.single("file")(req, res, async (err) => {
     if (err) {
@@ -16,16 +67,6 @@ export async function handleCurriculumIngestRequest(req: Request, res: Response)
       return res
         .status(400)
         .json({ error: "No file uploaded. Please select a valid PDF or text curriculum file." });
-    }
-
-    // Passcode verification
-    const passcode = (req.body?.passcode || req.headers["x-admin-passcode"] || "")
-      .toString()
-      .trim();
-    if (passcode && passcode !== "290350") {
-      return res
-        .status(401)
-        .json({ error: "Unauthorized: Invalid structured developer password." });
     }
 
     try {

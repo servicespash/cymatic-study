@@ -45,6 +45,7 @@ import { DiagramLightboxModal } from "@/components/curriculum/DiagramLightboxMod
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { GlassmorphismSubjectSidebar } from "@/components/navigation/GlassmorphismSubjectSidebar";
+import { AepCurriculumIndex } from "@/components/curriculum/AepCurriculumIndex";
 
 export const Route = createFileRoute("/lessons")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -174,6 +175,7 @@ function LessonsPage() {
 
         {/* Main Content Area */}
         <main className="lg:col-span-9 space-y-6 min-w-0">
+          <AepCurriculumIndex />
           {/* Page Title & Context */}
           <div>
             <SemanticHeading
