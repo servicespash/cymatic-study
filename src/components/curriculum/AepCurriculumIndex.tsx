@@ -374,7 +374,7 @@ export function AepCurriculumIndex({ standalone = false }: { standalone?: boolea
                         ? document.source_url + "#page=" + topic.source_page
                         : document.source_url;
                       return (
-                        <details key={topic.id} className="group border-b border-border last:border-b-0">
+                        <details key={topic.id} className="group">
                           <summary className="flex cursor-pointer list-none items-start gap-3 px-4 py-4 hover:bg-muted/30 sm:px-5">
                             <span className="mt-0.5 min-w-9 rounded-lg bg-primary/10 px-2 py-1.5 text-center text-xs font-semibold text-primary">{topic.topic_number}</span>
                             <span className="min-w-0 flex-1">
@@ -387,9 +387,7 @@ export function AepCurriculumIndex({ standalone = false }: { standalone?: boolea
                             {note ? (
                               <article className="max-w-4xl space-y-4">
                                 <div>
-                                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                    {publishedNote ? "Published study aid" : "Draft study aid"}
-                                  </p>
+                                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{publishedNote ? "Published study aid" : "Draft study aid"}</p>
                                   <h4 className="mt-1 text-lg font-semibold">{note.title}</h4>
                                   <p className="mt-2 text-sm leading-7">{note.summary}</p>
                                 </div>
@@ -405,7 +403,7 @@ export function AepCurriculumIndex({ standalone = false }: { standalone?: boolea
                                   </button>
                                   {sourcePageUrl && (
                                     <a href={sourcePageUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">
-                                      <ExternalLink className="h-4 w-4" /> Open official syllabus at page {topic.source_page ?? ""}
+                                      <ExternalLink className="h-4 w-4" /> Open official syllabus{topic.source_page ? " at page " + topic.source_page : ""}
                                     </a>
                                   )}
                                   {isAdmin && note.review_status !== "approved" && (
@@ -431,75 +429,6 @@ export function AepCurriculumIndex({ standalone = false }: { standalone?: boolea
                         </details>
                       );
                     })}
-                                <p className="mt-2 text-[10px] text-muted-foreground">
-                                  {note.review_status === "approved" &&
-                                  note.publication_status === "published"
-                                    ? "Approved and published"
-                                    : "Awaiting developer review"}
-                                </p>
-                                <button
-                                  type="button"
-                                  onClick={() => downloadNotePdf(note, topic, document)}
-                                  className="mt-2 rounded-md border border-border px-2 py-1 text-xs hover:bg-muted"
-                                >
-                                  Download original study-note PDF
-                                </button>
-                                {isAdmin &&
-                                  !(
-                                    note.review_status === "approved" &&
-                                    note.publication_status === "published"
-                                  ) && (
-                                    <button
-                                      type="button"
-                                      disabled={
-                                        reviewingTopicId === (note.source_topic_id || note.id)
-                                      }
-                                      onClick={() => void approveNote(note)}
-                                      className="mt-2 rounded-md border border-emerald-600/40 px-2 py-1 text-xs hover:bg-emerald-500/10 disabled:opacity-50"
-                                    >
-                                      {reviewingTopicId === (note.source_topic_id || note.id)
-                                        ? "Saving…"
-                                        : "Approve & publish original note"}
-                                    </button>
-                                  )}
-                              </div>
-                            ))}
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <span
-                            className={`rounded-full px-2 py-1 text-[10px] ${topic.review_status === "reviewed" || topic.review_status === "approved" ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "bg-amber-500/10 text-amber-700 dark:text-amber-300"}`}
-                          >
-                            {topic.review_status === "reviewed" ||
-                            topic.review_status === "approved"
-                              ? "Reviewed"
-                              : "Needs review"}
-                          </span>
-                          {isAdmin &&
-                            topic.review_status !== "reviewed" &&
-                            topic.review_status !== "approved" && (
-                              <button
-                                type="button"
-                                disabled={reviewingTopicId === topic.id}
-                                onClick={() => void markTopicReviewed(topic)}
-                                className="rounded-md border border-border px-2 py-1 text-[10px] hover:bg-muted disabled:opacity-50"
-                              >
-                                {reviewingTopicId === topic.id ? "Saving…" : "Mark reviewed"}
-                              </button>
-                            )}
-                          {document.source_url && (
-                            <a
-                              href={document.source_url}
-                              target="_blank"
-                              rel="noreferrer"
-                              aria-label={`Open source for ${topic.title}`}
-                              className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
               );
