@@ -153,12 +153,21 @@ jobs:
               comment += `\n⚠️ Check [build logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.\n`;
             }
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number || null,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            }).catch(e => console.log('Note: Could not comment on commit', e.message));
+            if (context.issue && context.issue.number) {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              }).catch(e => console.log('Note: Could not comment on issue', e.message));
+            } else if (context.sha) {
+              await github.rest.repos.createCommitComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: context.sha,
+                body: comment
+              }).catch(e => console.log('Note: Could not comment on commit', e.message));
+            }
 
       - name: Notify on failure
         if: failure()

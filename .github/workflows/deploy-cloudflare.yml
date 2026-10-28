@@ -1,0 +1,21 @@
+name: Trigger Cloudflare Pages Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Cloudflare Pages Webhook
+        run: |
+          echo "Triggering Cloudflare Pages deployment webhook..."
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/106aca1a-02ae-46d7-88cf-fbb1642671db")
+          echo "Cloudflare Webhook Response HTTP Status: $RESPONSE"
+          if [ "$RESPONSE" -ge 200 ] && [ "$RESPONSE" -lt 300 ]; then
+            echo "✓ Cloudflare deployment triggered successfully!"
+          else
+            echo "⚠️ Cloudflare webhook returned status $RESPONSE (non-blocking)"
+          fi
