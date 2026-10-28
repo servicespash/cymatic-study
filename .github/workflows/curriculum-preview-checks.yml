@@ -44,7 +44,6 @@ jobs:
             supabase/migrations/20261028150000_curriculum_admin_review_policies.sql \
             supabase/migrations/20261028153000_curriculum_admin_topic_insert_policy.sql \
             supabase/seeds/ncdc_aep_pilot_index.sql \
-            supabase/seeds/ncdc_aep_pilot_notes.sql
 
       - name: Apply safe ESLint autofixes
         run: |
