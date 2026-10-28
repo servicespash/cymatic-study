@@ -12,6 +12,8 @@
       "source_organization": "National Curriculum Development Centre (NCDC), Uganda",
       "source_url": "https://ncdc.go.ug/books/",
       "file": "./NCDC_AEP_PHYSICS_LSC_level-1and-2.pdf_Web-file-Final-08.03.2024.pdf",
+      "expected_sha256": "7f9ee8dd74273a25aba66fcd3fff2274bb216df03a60555d8eb30a149670baf8",
+      "expected_page_count": 96,
       "license_status": "pending_permission"
     },
     {
@@ -26,6 +28,8 @@
       "source_organization": "National Curriculum Development Centre (NCDC), Uganda",
       "source_url": "https://ncdc.go.ug/books/",
       "file": "./NCDC_AEP_BIOLOGY_LSC_level-1and-2_-Final-2024-Web-file_Final-08.03.2024.pdf",
+      "expected_sha256": "cb423898d150519e6f07d86298c26a7ea5c931665072f11ea271b04df781f557",
+      "expected_page_count": 96,
       "license_status": "pending_permission"
     }
   ]
