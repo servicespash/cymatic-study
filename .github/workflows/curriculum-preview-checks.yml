@@ -1,0 +1,42 @@
+name: Curriculum preview checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - fix-curriculum-ingest-pdf
+
+permissions:
+  contents: read
+
+concurrency:
+  group: curriculum-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Install, lint, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint:ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Production build
+        run: npm run build
