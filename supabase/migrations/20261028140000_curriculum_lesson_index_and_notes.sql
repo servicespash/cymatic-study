@@ -1,6 +1,8 @@
 -- Public lesson browsing for source-derived topic headings only.
 -- Draft PDFs and extracted full text remain private; the pilot exposes metadata/headings,
 -- source page references, and official source links so learners can navigate the index.
+drop policy if exists "Public can read pilot curriculum document metadata" on public.curriculum_documents;
+
 create policy "Public can read pilot curriculum document metadata"
 on public.curriculum_documents
 for select
@@ -11,6 +13,8 @@ using (
     'ncdc-aep-biology-lsc-level-1-2-2023'
   )
 );
+
+drop policy if exists "Public can read curriculum document topic headings" on public.curriculum_document_topics;
 
 create policy "Public can read curriculum document topic headings"
 on public.curriculum_document_topics
@@ -54,6 +58,8 @@ create index if not exists curriculum_document_notes_topic_idx
   on public.curriculum_document_notes (source_document_id, level_label, title);
 
 alter table public.curriculum_document_notes enable row level security;
+
+drop policy if exists "Public can read published approved curriculum notes" on public.curriculum_document_notes;
 
 create policy "Public can read published approved curriculum notes"
 on public.curriculum_document_notes
