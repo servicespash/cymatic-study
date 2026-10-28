@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { BookOpen, ChevronDown, ExternalLink, FileText, Loader2, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { jsPDF } from "jspdf";
 
 type SourceDocument = {
   id: string;
@@ -131,6 +132,50 @@ export function AepCurriculumIndex() {
   useEffect(() => {
     void loadIndex();
   }, []);
+
+  const downloadNotePdf = (note: IndexedNote, topic: IndexedTopic, document: SourceDocument) => {
+    const pdf = new jsPDF();
+    const margin = 16;
+    const width = pdf.internal.pageSize.getWidth() - margin * 2;
+    let y = 20;
+    const addParagraph = (heading: string, body: string) => {
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(11);
+      pdf.text(heading, margin, y);
+      y += 6;
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(10);
+      const lines = pdf.splitTextToSize(body, width);
+      for (const line of lines) {
+        if (y > 275) {
+          pdf.addPage();
+          y = 20;
+        }
+        pdf.text(line, margin, y);
+        y += 5;
+      }
+      y += 4;
+    };
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(16);
+    const titleLines = pdf.splitTextToSize(note.title, width);
+    pdf.text(titleLines, margin, y);
+    y += titleLines.length * 7 + 3;
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9);
+    pdf.text(document.subject_label + " · " + topic.level_label + " · Uganda AEP", margin, y);
+    y += 10;
+
+    addParagraph("Core idea", note.summary);
+    for (const section of note.study_sections || []) {
+      addParagraph(section.heading, section.content);
+    }
+    addParagraph("Source reference", document.title + " · printed page " + (topic.source_page ?? "not verified") + "\n" + (document.source_url || ""));
+    addParagraph("Attribution", "Original short study aid prepared for Cymatic Study from the listed curriculum topic. This is not a reproduction of the source PDF. Check the official syllabus for the complete curriculum wording.");
+
+    pdf.save(note.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-study-note.pdf");
+  };
 
   const markTopicReviewed = async (topic: IndexedTopic) => {
     if (!isAdmin) return;
@@ -291,6 +336,13 @@ export function AepCurriculumIndex() {
                             <p className="mt-2 text-[10px] text-muted-foreground">
                               {note.review_status === "approved" && note.publication_status === "published" ? "Approved and published" : "Awaiting developer review"}
                             </p>
+                            <button
+                              type="button"
+                              onClick={() => downloadNotePdf(note, topic, document)}
+                              className="mt-2 rounded-md border border-border px-2 py-1 text-xs hover:bg-muted"
+                            >
+                              Download original study-note PDF
+                            </button>
                             {isAdmin && !(note.review_status === "approved" && note.publication_status === "published") && (
                               <button
                                 type="button"
