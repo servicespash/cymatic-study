@@ -214,6 +214,7 @@ export function parseCurriculumText(text: string, filename: string): ParsedCurri
 }
 
 
+// These headings are validated against extracted source text before staging; they are not inferred from standard Senior 1–6 labels.
 type AepTopicSeed = { level: "Level 1" | "Level 2"; number: number; title: string; page: number };
 
 const AEP_PHYSICS_TOPICS: AepTopicSeed[] = [
