@@ -45,7 +45,6 @@ import { DiagramLightboxModal } from "@/components/curriculum/DiagramLightboxMod
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { GlassmorphismSubjectSidebar } from "@/components/navigation/GlassmorphismSubjectSidebar";
-import { AepCurriculumIndex } from "@/components/curriculum/AepCurriculumIndex";
 
 export const Route = createFileRoute("/lessons")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -175,7 +174,29 @@ function LessonsPage() {
 
         {/* Main Content Area */}
         <main className="lg:col-span-9 space-y-6 min-w-0">
-          <AepCurriculumIndex />
+          <Link
+            to="/aep"
+            className="group flex w-full items-center justify-between gap-4 rounded-2xl border border-primary/25 bg-card p-4 shadow-sm transition-colors hover:border-primary/50 hover:bg-muted/30 sm:p-5"
+          >
+            <span className="flex min-w-0 items-start gap-3">
+              <span className="rounded-xl bg-primary/10 p-3 text-primary">
+                <BookOpenText className="h-5 w-5" />
+              </span>
+              <span className="min-w-0">
+                <span className="block font-semibold">AEP Curriculum Library</span>
+                <span className="mt-1 block text-sm leading-6 text-muted-foreground">
+                  Open the separate Physics and Biology index, expand one topic at a time, and read
+                  the linked official syllabus without crowding the S1–S6 lesson page.
+                </span>
+                <span className="mt-2 block text-xs text-muted-foreground">
+                  39 indexed headings · AEP Level 1 and Level 2
+                </span>
+              </span>
+            </span>
+            <span className="shrink-0 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground group-hover:opacity-90">
+              Open library
+            </span>
+          </Link>
           {/* Page Title & Context */}
           <div>
             <SemanticHeading
