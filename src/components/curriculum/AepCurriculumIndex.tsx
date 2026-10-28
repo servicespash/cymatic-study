@@ -387,7 +387,7 @@ export function AepCurriculumIndex({ standalone = false }: { standalone?: boolea
                           note.review_status === "approved" &&
                           note.publication_status === "published",
                       );
-                      const note = publishedNote || topicNotes[0];
+                      const note = publishedNote || (isAdmin ? topicNotes[0] : undefined);
                       const sourcePageUrl =
                         document.source_url && topic.source_page
                           ? document.source_url + "#page=" + topic.source_page
